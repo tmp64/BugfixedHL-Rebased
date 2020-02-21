@@ -1,0 +1,86 @@
+add_sources(
+	include/VGUI.h
+	include/VGUI_ActionSignal.h
+	include/VGUI_App.h
+	include/VGUI_Bitmap.h
+	include/VGUI_BitmapTGA.h
+	include/VGUI_Border.h
+	include/VGUI_BorderLayout.h
+	include/VGUI_BorderPair.h
+	include/VGUI_BuildGroup.h
+	include/VGUI_Button.h
+	include/VGUI_ButtonController.h
+	include/VGUI_ButtonGroup.h
+	include/VGUI_ChangeSignal.h
+	include/VGUI_CheckButton.h
+	include/VGUI_Color.h
+	include/VGUI_ComboKey.h
+	include/VGUI_ConfigWizard.h
+	include/VGUI_Cursor.h
+	include/VGUI_Dar.h
+	include/VGUI_DataInputStream.h
+	include/VGUI_Desktop.h
+	include/VGUI_DesktopIcon.h
+	include/VGUI_EditPanel.h
+	include/VGUI_EtchedBorder.h
+	include/VGUI_FileInputStream.h
+	include/VGUI_FlowLayout.h
+	include/VGUI_FocusChangeSignal.h
+	include/VGUI_FocusNavGroup.h
+	include/VGUI_Font.h
+	include/VGUI_Frame.h
+	include/VGUI_FrameSignal.h
+	include/VGUI_GridLayout.h
+	include/VGUI_HeaderPanel.h
+	include/VGUI_Image.h
+	include/VGUI_ImagePanel.h
+	include/VGUI_InputSignal.h
+	include/VGUI_InputStream.h
+	include/VGUI_IntChangeSignal.h
+	include/VGUI_IntLabel.h
+	include/VGUI_KeyCode.h
+	include/VGUI_Label.h
+	include/VGUI_Layout.h
+	include/VGUI_LayoutInfo.h
+	include/VGUI_LineBorder.h
+	include/VGUI_ListPanel.h
+	include/VGUI_LoweredBorder.h
+	include/VGUI_Menu.h
+	include/VGUI_MenuItem.h
+	include/VGUI_MenuSeparator.h
+	include/VGUI_MessageBox.h
+	include/VGUI_MiniApp.h
+	include/VGUI_MouseCode.h
+	include/VGUI_Panel.h
+	include/VGUI_Point.h
+	include/VGUI_PopupMenu.h
+	include/VGUI_ProgressBar.h
+	include/VGUI_RadioButton.h
+	include/VGUI_RaisedBorder.h
+	include/VGUI_RepaintSignal.h
+	include/VGUI_Scheme.h
+	include/VGUI_ScrollBar.h
+	include/VGUI_ScrollPanel.h
+	include/VGUI_Slider.h
+	include/VGUI_StackLayout.h
+	include/VGUI_String.h
+	include/VGUI_Surface.h
+	include/VGUI_SurfaceBase.h
+	include/VGUI_SurfaceGL.h
+	include/VGUI_TablePanel.h
+	include/VGUI_TabPanel.h
+	include/VGUI_TaskBar.h
+	include/VGUI_TextEntry.h
+	include/VGUI_TextGrid.h
+	include/VGUI_TextImage.h
+	include/VGUI_TextPanel.h
+	include/VGUI_TickSignal.h
+	include/VGUI_ToggleButton.h
+	include/VGUI_TreeFolder.h
+	include/VGUI_WizardPanel.h
+)
+
+get_sources( VGUI_INCLUDE_FILES )
+clear_sources()
+
+set( VGUI_INCLUDE_FILES "${VGUI_INCLUDE_FILES}" PARENT_SCOPE )

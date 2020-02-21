@@ -1,0 +1,50 @@
+add_sources(
+	CMakeLists.txt
+	beamdef.h
+	bhl_urls.h
+	cl_entity.h
+	com_model.h
+	con_nprint.h
+	const.h
+	crc.h
+	cvardef.h
+	demo_api.h
+	director_cmds.h
+	dlight.h
+	dll_state.h
+	entity_state.h
+	entity_types.h
+	enums.h
+	event_api.h
+	event_args.h
+	event_flags.h
+	hltv.h
+	in_buttons.h
+	ivoicetweak.h
+	mathlib.h
+	net_api.h
+	netadr.h
+	nowin.h
+	parsemsg.cpp
+	parsemsg.h
+	particledef.h
+	pmtrace.h
+	port.h
+	qfont.h
+	r_efx.h
+	r_studioint.h
+	ref_params.h
+	screenfade.h
+	Sequence.h
+	studio_event.h
+	triangleapi.h
+	usercmd.h
+	weaponinfo.h
+	winsani_in.h
+	winsani_out.h
+)
+
+get_sources( HL_COMMON_SRCS )
+clear_sources()
+
+set( HL_COMMON_SRCS "${HL_COMMON_SRCS}" PARENT_SCOPE )

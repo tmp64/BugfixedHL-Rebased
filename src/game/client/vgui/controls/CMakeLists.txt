@@ -1,0 +1,18 @@
+add_sources(
+	CMakeLists.txt
+	checkbutton2.cpp
+	checkbutton2.h
+	defaultinputsignal.h
+	grid.cpp
+	grid.h
+	helpers.cpp
+	helpers.h
+	listbox.cpp
+	listbox.h
+	loadtga.cpp
+	loadtga.h
+	scrollbar2.cpp
+	scrollbar2.h
+	slider2.cpp
+	slider2.h
+)

@@ -1,0 +1,73 @@
+add_sources(
+	CMakeLists.txt
+	camera.h
+	cdll_int.cpp
+	cl_dll.h
+	cl_util.h
+	com_weapons.cpp
+	com_weapons.h
+	demo.cpp
+	demo.h
+	entity.cpp
+	ev_common.cpp
+	ev_hldm.cpp
+	ev_hldm.h
+	events.cpp
+	eventscripts.h
+	Exports.h
+	GameStudioModelRenderer.cpp
+	GameStudioModelRenderer.h
+	global_consts.h
+	hud.cpp
+	hud.h
+	hud_iface.h
+	hud_msg.cpp
+	hud_redraw.cpp
+	hud_update.cpp
+	in_camera.cpp
+	in_defs.h
+	input.cpp
+	inputw32.cpp
+	interpolation.cpp
+	interpolation.h
+	kbutton.h
+	player_info.h
+	studio_util.cpp
+	studio_util.h
+	StudioModelRenderer.cpp
+	StudioModelRenderer.h
+	tf_defs.h
+	tri.cpp
+	tri.h
+	util.cpp
+	util_vector.h
+	vgui_int.cpp
+	vgui_int.h
+	view.cpp
+	view.h
+	voice_banmgr.cpp
+	voice_banmgr.h
+	voice_status.cpp
+	voice_status.h
+	wrect.h
+	
+	# Weapons
+	../server/crossbow.cpp
+	../server/crowbar.cpp
+	../server/egon.cpp
+	../server/gauss.cpp
+	../server/handgrenade.cpp
+	../server/wpn_shared/hl_wpn_glock.cpp
+	../server/hornetgun.cpp
+	../server/mp5.cpp
+	../server/python.cpp
+	../server/rpg.cpp
+	../server/satchel.cpp
+	../server/shotgun.cpp
+	../server/squeakgrenade.cpp
+	../server/tripmine.cpp
+)
+
+add_subdirectory( hl )
+add_subdirectory( vgui )
+add_subdirectory( hud )

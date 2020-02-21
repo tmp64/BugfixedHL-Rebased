@@ -1,0 +1,5 @@
+# CMake build directory
+/build
+/build_*
+/_build
+/_build_*

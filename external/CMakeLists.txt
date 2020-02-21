@@ -1,0 +1,5 @@
+add_subdirectory( SDL2 )
+add_subdirectory( vgui )
+
+set( SDL2_INCLUDE_FILES "${SDL2_INCLUDE_FILES}" PARENT_SCOPE )
+set( VGUI_INCLUDE_FILES "${VGUI_INCLUDE_FILES}" PARENT_SCOPE )

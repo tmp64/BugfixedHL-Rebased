@@ -1,0 +1,37 @@
+add_sources(
+	CMakeLists.txt
+	ammo.cpp
+	ammo.h
+	ammo_secondary.cpp
+	ammo_secondary.h
+	ammohistory.cpp
+	ammohistory.h
+	base.h
+	base.cpp
+	battery.cpp
+	battery.h
+	death_notice.cpp
+	death_notice.h
+	flashlight.cpp
+	flashlight.h
+	geiger.cpp
+	geiger.h
+	health.cpp
+	health.h
+	menu.cpp
+	menu.h
+	message.cpp
+	message.h
+	saytext.cpp
+	saytext.h
+	spectator.cpp
+	spectator.h
+	status_icons.cpp
+	status_icons.h
+	statusbar.cpp
+	statusbar.h
+	text_message.cpp
+	text_message.h
+	train.cpp
+	train.h
+)

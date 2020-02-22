@@ -4,8 +4,6 @@ add_sources(
 	steam/steamtypes.h
 	archtypes.h
 	FileSystem.h
-	interface.cpp
-	interface.h
 	keydefs.h
 	particleman.h
 	pman_particlemem.h

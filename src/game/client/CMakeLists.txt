@@ -4,6 +4,8 @@ add_sources(
 	cdll_int.cpp
 	cl_dll.h
 	cl_util.h
+	client_vgui.cpp
+	client_vgui.h
 	com_weapons.cpp
 	com_weapons.h
 	demo.cpp

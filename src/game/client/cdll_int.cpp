@@ -21,9 +21,9 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "netadr.h"
+
 #undef INTERFACE_H
-#include "../public/interface.h"
-//#include "vgui_schememanager.h"
+#include <tier1/interface.h>
 
 extern "C"
 {
@@ -43,7 +43,6 @@ extern "C"
 #
 #include "tri.h"
 #include "vgui/TeamFortressViewport.h"
-#include "../public/interface.h"
 #include "voice_status.h"
 
 cl_enginefunc_t gEngfuncs;

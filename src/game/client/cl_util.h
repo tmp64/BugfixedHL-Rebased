@@ -26,7 +26,6 @@
 #include <cstdarg>
 #include <cstring>
 #include <algorithm>
-#include "console.h"
 #include "cvardef.h"
 
 // Client assert macro. To be replaced with tier0's Assert

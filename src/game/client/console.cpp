@@ -1,5 +1,6 @@
 #define TIER2_GAMEUI_INTERNALS
 #include <cstdarg>
+#include <queue>
 #include <tier2/tier2.h>
 #include <IGameConsole.h>
 
@@ -27,6 +28,9 @@ public:
 	void *m_pConsole;
 };
 
+//-----------------------------------------------------
+// Console color hook
+//-----------------------------------------------------
 // Default color for checking that offset is correct
 static const Color s_DefaultColor = Color(216, 222, 211, 255);
 static const Color s_DefaultDColor = Color(196, 181, 80, 255);
@@ -40,15 +44,62 @@ static Color *s_ConColor = &s_StubColor;
 static Color *s_ConDColor = &s_StubDColor;
 
 static void HookConsoleColor();
+
+//-----------------------------------------------------
+// Early console
+// Console is not yet initialized when client's Initialize()
+// and IClientVGUI::Initialize() are called.
+//
+// EarlyConPrintf saves the messages and DumpEarlyCon prints
+// them when the console is ready.
+//-----------------------------------------------------
+constexpr size_t EARLY_CON_BUFFER_SIZE = 512;
+
+struct EarlyConItem
+{
+	char *buf;
+	Color color;
+};
+
+using ConPrintfFn = void (*)(const char *fmt, ...);
+
+static ConPrintfFn s_fnEnginePrintf = nullptr;
+static ConPrintfFn s_fnEngineDPrintf = nullptr;
+static std::queue<EarlyConItem> s_EarlyConQueue;
+
+static void EnableEarlyCon();
+static void EarlyConPrintf(const char *fmt, ...);
+static void DisableEarlyCon();
+static void DumpEarlyCon();
+
+//-----------------------------------------------------
+// Console redirection
+// Con_Printf doesn't work until after HUD_Init finishes.
+// EnablePassthrough redirects it to Con_DPrintf, which
+// does work.
+//-----------------------------------------------------
+static void EnableRedirection();
+static void DisableRedirection();
 }
 
 void console::Initialize()
 {
+	s_fnEnginePrintf = gEngfuncs.Con_Printf;
+	s_fnEngineDPrintf = gEngfuncs.Con_DPrintf;
+	EnableEarlyCon();
 }
 
 void console::HudInit()
 {
+	DisableEarlyCon();
+	EnableRedirection();
 	HookConsoleColor();
+	DumpEarlyCon();
+}
+
+void console::HudPostInit()
+{
+	DisableRedirection();
 }
 
 ::Color console::GetColor()
@@ -116,6 +167,59 @@ void console::HookConsoleColor()
 	{
 		ConPrintf(ConColor::Red, "Failed to hook console color.\n");
 	}
+}
+
+//-----------------------------------------------------
+// Early console
+//-----------------------------------------------------
+void console::EnableEarlyCon()
+{
+	gEngfuncs.Con_Printf = EarlyConPrintf;
+	gEngfuncs.Con_DPrintf = EarlyConPrintf;
+}
+
+void console::EarlyConPrintf(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+
+	char *buf = new char[EARLY_CON_BUFFER_SIZE];
+	vsnprintf(buf, EARLY_CON_BUFFER_SIZE, fmt, args);
+	s_EarlyConQueue.push({ buf, GetColor() });
+
+	va_end(args);
+}
+
+void console::DisableEarlyCon()
+{
+	gEngfuncs.Con_Printf = s_fnEnginePrintf;
+	gEngfuncs.Con_DPrintf = s_fnEngineDPrintf;
+}
+
+void console::DumpEarlyCon()
+{
+	while (s_EarlyConQueue.size() > 0)
+	{
+		EarlyConItem &item = s_EarlyConQueue.front();
+		SetColor(item.color);
+		gEngfuncs.Con_Printf("%s", item.buf);
+		delete[] item.buf;
+		s_EarlyConQueue.pop();
+	}
+	ResetColor();
+}
+
+//-----------------------------------------------------
+// Console redirection
+//-----------------------------------------------------
+void console::EnableRedirection()
+{
+	gEngfuncs.Con_Printf = s_fnEngineDPrintf;
+}
+
+void console::DisableRedirection()
+{
+	gEngfuncs.Con_Printf = s_fnEnginePrintf;
 }
 
 //-----------------------------------------------------

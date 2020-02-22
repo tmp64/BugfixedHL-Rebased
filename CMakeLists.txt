@@ -302,6 +302,11 @@ set( GAME_COMMON_INCLUDE_PATHS
 )
 
 #-----------------------------------------------------------------
+# Source SDK
+#-----------------------------------------------------------------
+add_subdirectory( source_sdk )
+
+#-----------------------------------------------------------------
 # Client library
 #-----------------------------------------------------------------
 # Add in the shared sources
@@ -332,10 +337,12 @@ add_auto_deploy( client PublishPathClient.txt )
 target_include_directories( client PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
 	${GAME_COMMON_INCLUDE_PATHS}
+	${SOURCE_SDK_INCLUDE_PATHS}
 )
 
 target_compile_definitions( client PRIVATE
 	${GAME_COMMON_DEFINES}
+	${SOURCE_SDK_DEFINES}
 	CLIENT_DLL
 )
 
@@ -354,6 +361,7 @@ endif()
 
 # Link with dependencies
 target_link_libraries( client 
+	${SOURCE_SDK_LIBS}
 	vgui
 	SDL2
 	${CLIENT_PLAT_LIBS}

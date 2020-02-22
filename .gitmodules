@@ -1,0 +1,3 @@
+[submodule "source_sdk"]
+	path = source_sdk
+	url = https://github.com/tmp64/hl1_source_sdk.git

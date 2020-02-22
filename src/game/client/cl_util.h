@@ -16,8 +16,6 @@
 // cl_util.h
 //
 
-#include "cvardef.h"
-
 #ifndef TRUE
 #define TRUE  1
 #define FALSE 0
@@ -28,6 +26,8 @@
 #include <cstdarg>
 #include <cstring>
 #include <algorithm>
+#include "console.h"
+#include "cvardef.h"
 
 // Client assert macro. To be replaced with tier0's Assert
 #define Assert assert

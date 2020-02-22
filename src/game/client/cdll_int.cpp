@@ -44,6 +44,7 @@ extern "C"
 #include "tri.h"
 #include "vgui/TeamFortressViewport.h"
 #include "voice_status.h"
+#include "console.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -154,6 +155,8 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 
 	memcpy(&gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t));
 
+	console::Initialize();
+
 	EV_HookEvents();
 	CL_LoadParticleMan();
 
@@ -194,6 +197,7 @@ the hud variables.
 void CL_DLLEXPORT HUD_Init(void)
 {
 	//	RecClHudInit();
+	console::HudInit();
 	InitInput();
 	gHUD.Init();
 	Scheme_Init();
@@ -266,6 +270,7 @@ void CL_DLLEXPORT HUD_Frame(double time)
 {
 	//	RecClHudFrame(time);
 
+	gHUD.Frame(time);
 	GetClientVoiceMgr()->Frame(time);
 }
 
@@ -299,6 +304,24 @@ void CL_DLLEXPORT HUD_DirectorMessage(int iSize, void *pbuf)
 	CHudSpectator::Get()->DirectorMessage(iSize, pbuf);
 }
 
+//---------------------------------------------------
+// Client shutdown
+//---------------------------------------------------
+void CL_UnloadParticleMan(void);
+void ShutdownInput();
+
+void CL_DLLEXPORT HUD_Shutdown(void)
+{
+	//	RecClShutdown();
+
+	gHUD.Shutdown();
+	ShutdownInput();
+	CL_UnloadParticleMan();
+}
+
+//---------------------------------------------------
+// Particle Manager
+//---------------------------------------------------
 void CL_UnloadParticleMan(void)
 {
 	Sys_UnloadModule(g_hParticleManModule);

@@ -8,6 +8,8 @@ add_sources(
 	client_vgui.h
 	com_weapons.cpp
 	com_weapons.h
+	console.cpp
+	console.h
 	demo.cpp
 	demo.h
 	entity.cpp

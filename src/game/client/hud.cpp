@@ -357,6 +357,20 @@ void CHud::VidInit(void)
 		i->VidInit();
 }
 
+void CHud::Frame(double time)
+{
+	while (m_NextFrameQueue.size())
+	{
+		auto &i = m_NextFrameQueue.front();
+		i();
+		m_NextFrameQueue.pop();
+	}
+}
+
+void CHud::Shutdown()
+{
+}
+
 int CHud::MsgFunc_Logo(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
@@ -502,4 +516,10 @@ int CHud::MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
 float CHud::GetSensitivity(void)
 {
 	return m_flMouseSensitivity;
+}
+
+void CHud::CallOnNextFrame(std::function<void()> f)
+{
+	Assert(f);
+	m_NextFrameQueue.push(f);
 }

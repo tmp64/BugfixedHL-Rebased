@@ -1013,23 +1013,3 @@ void ShutdownInput(void)
 	IN_Shutdown();
 	KB_Shutdown();
 }
-
-#include "interface.h"
-void CL_UnloadParticleMan(void);
-
-#if defined(_TFC)
-void ClearEventList(void);
-#endif
-
-void CL_DLLEXPORT HUD_Shutdown(void)
-{
-	//	RecClShutdown();
-
-	ShutdownInput();
-
-#if defined(_TFC)
-	ClearEventList();
-#endif
-
-	CL_UnloadParticleMan();
-}

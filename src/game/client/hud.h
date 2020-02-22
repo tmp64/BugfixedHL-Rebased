@@ -20,7 +20,9 @@
 // CHud handles the message, calculation, and drawing the HUD
 //
 
+#include <functional>
 #include <vector>
+#include <queue>
 #include "global_consts.h"
 #include "hud/base.h"
 
@@ -104,6 +106,8 @@ public:
 	~CHud();
 	void Init(void);
 	void VidInit(void);
+	void Frame(double time);
+	void Shutdown();
 	void Think(void);
 	int Redraw(float flTime, int intermission);
 	int UpdateClientData(client_data_t *cdata, float time);
@@ -132,6 +136,8 @@ public:
 
 	float GetSensitivity();
 
+	void CallOnNextFrame(std::function<void()> f);
+
 private:
 	HSPRITE m_hsprLogo;
 	int m_iLogo;
@@ -147,6 +153,8 @@ private:
 	std::vector<HSPRITE> m_rghSprites; /*[HUD_SPRITE_COUNT]*/ // the sprites loaded from hud.txt
 	std::vector<wrect_t> m_rgrcRects; /*[HUD_SPRITE_COUNT]*/
 	std::vector<char> m_rgszSpriteNames; /*[HUD_SPRITE_COUNT][MAX_SPRITE_NAME_LENGTH]*/
+
+	std::queue<std::function<void()>> m_NextFrameQueue;
 
 	template <typename T>
 	inline T *RegisterHudElem()

@@ -30,10 +30,13 @@ typedef unsigned short word;
 typedef float vec_t;
 
 #include "util_vector.h"
+
+#ifndef EXPORT
 #ifdef _WIN32
 #define EXPORT _declspec(dllexport)
 #else
 #define EXPORT __attribute__((visibility("default")))
+#endif
 #endif
 
 #include "../engine/cdll_int.h"

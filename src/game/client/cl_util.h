@@ -21,15 +21,12 @@
 #define FALSE 0
 #endif
 
-#include <cassert>
 #include <cstdio>
 #include <cstdarg>
 #include <cstring>
 #include <algorithm>
+#include <tier0/dbg.h>
 #include "cvardef.h"
-
-// Client assert macro. To be replaced with tier0's Assert
-#define Assert assert
 
 inline void HookMessage(const char *pszName, UserMsgHookFn fn)
 {

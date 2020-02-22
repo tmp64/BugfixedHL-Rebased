@@ -1,6 +1,7 @@
 #define TIER2_GAMEUI_INTERNALS
 #include <cstdarg>
 #include <queue>
+#include <tier0/dbg.h>
 #include <tier2/tier2.h>
 #include <IGameConsole.h>
 
@@ -80,6 +81,15 @@ static void DumpEarlyCon();
 //-----------------------------------------------------
 static void EnableRedirection();
 static void DisableRedirection();
+
+//-----------------------------------------------------
+// tier0 spew output
+// By default tier0 spew output goes in stdout but
+// stdout is closed in GoldSrc.
+//-----------------------------------------------------
+static SpewOutputFunc_t s_fnDefaultSpewOutput = nullptr;
+static void EnableSpewOutputFunc();
+static void DisableSpewOutputFunc();
 }
 
 void console::Initialize()
@@ -87,6 +97,7 @@ void console::Initialize()
 	s_fnEnginePrintf = gEngfuncs.Con_Printf;
 	s_fnEngineDPrintf = gEngfuncs.Con_DPrintf;
 	EnableEarlyCon();
+	EnableSpewOutputFunc();
 }
 
 void console::HudInit()
@@ -100,6 +111,11 @@ void console::HudInit()
 void console::HudPostInit()
 {
 	DisableRedirection();
+}
+
+void console::HudShutdown()
+{
+	DisableSpewOutputFunc();
 }
 
 ::Color console::GetColor()
@@ -220,6 +236,34 @@ void console::EnableRedirection()
 void console::DisableRedirection()
 {
 	gEngfuncs.Con_Printf = s_fnEnginePrintf;
+}
+
+//-----------------------------------------------------
+// tier0 spew output
+//-----------------------------------------------------
+void console::EnableSpewOutputFunc()
+{
+	s_fnDefaultSpewOutput = GetSpewOutputFunc();
+
+	SpewOutputFunc([](SpewType_t spewType, tchar const *pMsg) -> SpewRetval_t {
+		if (spewType == SPEW_ASSERT)
+		{
+			ConPrintf(ConColor::Red, "%s", pMsg);
+			return SPEW_DEBUGGER;
+		}
+		else if (spewType == SPEW_ERROR)
+			ConPrintf(ConColor::Red, "%s", pMsg);
+		else if (spewType == SPEW_WARNING)
+			ConPrintf(ConColor::Yellow, "%s", pMsg);
+		else
+			ConPrintf("%s", pMsg);
+		return SPEW_CONTINUE;
+	});
+}
+
+void console::DisableSpewOutputFunc()
+{
+	SpewOutputFunc(s_fnDefaultSpewOutput);
 }
 
 //-----------------------------------------------------

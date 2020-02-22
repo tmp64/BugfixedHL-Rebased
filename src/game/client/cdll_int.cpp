@@ -318,6 +318,7 @@ void CL_DLLEXPORT HUD_Shutdown(void)
 	gHUD.Shutdown();
 	ShutdownInput();
 	CL_UnloadParticleMan();
+	console::HudShutdown();
 }
 
 //---------------------------------------------------

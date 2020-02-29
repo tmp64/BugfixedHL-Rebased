@@ -27,9 +27,13 @@
 //
 typedef unsigned char byte;
 typedef unsigned short word;
+typedef unsigned int func_t; //
+typedef unsigned int string_t; // from engine's pr_comp.h;
 typedef float vec_t;
 
-#include "util_vector.h"
+#include <mathlib/mathlib.h>
+
+using vec3_t = Vector;
 
 #ifndef EXPORT
 #ifdef _WIN32

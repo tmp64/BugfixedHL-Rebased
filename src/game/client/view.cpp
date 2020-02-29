@@ -639,7 +639,7 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 	// Use predicted origin as view origin.
 	VectorCopy(pparams->simorg, view->origin);
 	view->origin[2] += (waterOffset);
-	VectorAdd(view->origin, pparams->viewheight, view->origin);
+	VectorAdd((float *)view->origin, pparams->viewheight, (float *)view->origin);
 
 	// Let the viewmodel shake at about 10% of the amplitude
 	gEngfuncs.V_ApplyShake(view->origin, view->angles, 0.9);
@@ -716,7 +716,7 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 		static float lastorg[3];
 		vec3_t delta;
 
-		VectorSubtract(pparams->simorg, lastorg, delta);
+		VectorSubtract(pparams->simorg, lastorg, (vec_t *)delta);
 
 		if (Length(delta) != 0.0)
 		{
@@ -762,13 +762,13 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 			{
 				frac = (t - ViewInterp.OriginTime[foundidx & ORIGIN_MASK]) / dt;
 				frac = min(1.0, frac);
-				VectorSubtract(ViewInterp.Origins[(foundidx + 1) & ORIGIN_MASK], ViewInterp.Origins[foundidx & ORIGIN_MASK], delta);
-				VectorMA(ViewInterp.Origins[foundidx & ORIGIN_MASK], frac, delta, neworg);
+				VectorSubtract(ViewInterp.Origins[(foundidx + 1) & ORIGIN_MASK], ViewInterp.Origins[foundidx & ORIGIN_MASK], (vec_t *)delta);
+				VectorMA(ViewInterp.Origins[foundidx & ORIGIN_MASK], frac, (vec_t *)delta, (vec_t *)neworg);
 
 				// Dont interpolate large changes
 				if (Length(delta) < 64)
 				{
-					VectorSubtract(neworg, pparams->simorg, delta);
+					VectorSubtract(neworg, pparams->simorg, (vec_t *)delta);
 
 					VectorAdd(pparams->simorg, delta, pparams->simorg);
 					VectorAdd(pparams->vieworg, delta, pparams->vieworg);
@@ -1612,8 +1612,8 @@ void V_CalcSpectatorRefdef(struct ref_params_s *pparams)
 
 	// write back new values into pparams
 	VectorCopy(v_cl_angles, pparams->cl_viewangles);
-	VectorCopy(v_angles, pparams->viewangles)
-	    VectorCopy(v_origin, pparams->vieworg);
+	VectorCopy(v_angles, pparams->viewangles);
+	VectorCopy(v_origin, pparams->vieworg);
 }
 
 void CL_DLLEXPORT V_CalcRefdef(struct ref_params_s *pparams)

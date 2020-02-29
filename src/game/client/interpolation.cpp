@@ -104,37 +104,37 @@ void CInterpolation::SetWaypoints(vec3_t *prev, vec3_t start, vec3_t end, vec3_t
 	{
 		a = start - end;
 		float dist = a.Length() / 2.0f;
-		a = a.Normalize();
+		a = a.Normalized();
 		b = *next - end;
-		b = b.Normalize();
+		b = b.Normalized();
 		c = a - b;
-		c = c.Normalize();
+		c = c.Normalized();
 		m_Center = end + c * dist;
 	}
 	else if (!next)
 	{
 		a = *prev - start;
-		a = a.Normalize();
+		a = a.Normalized();
 		b = end - start;
 		float dist = b.Length() / 2.0f;
-		b = b.Normalize();
+		b = b.Normalized();
 		c = b - a;
-		c = c.Normalize();
+		c = c.Normalized();
 		m_Center = start + c * dist;
 	}
 	else
 	{
 		// we have a previous and a next point, great!
 		a = *prev - start;
-		a = a.Normalize();
+		a = a.Normalized();
 		b = end - start;
-		b = b.Normalize();
+		b = b.Normalized();
 		c = b - a;
 
 		a = start - end;
-		a = a.Normalize();
+		a = a.Normalized();
 		b = *next - end;
-		b = b.Normalize();
+		b = b.Normalized();
 		d = a - b;
 
 		GetPointBetweenLines(m_Center, start, c, end, d);

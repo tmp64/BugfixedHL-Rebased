@@ -44,7 +44,6 @@ add_sources(
 	tri.cpp
 	tri.h
 	util.cpp
-	util_vector.h
 	vgui_int.cpp
 	vgui_int.h
 	view.cpp

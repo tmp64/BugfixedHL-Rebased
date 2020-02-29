@@ -27,12 +27,10 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
-#include "vgui_int.h"
-#include "vgui/TeamFortressViewport.h"
+#include "vgui/client_viewport.h"
 
 #include "demo.h"
 #include "demo_api.h"
-#include "vgui/ScorePanel.h"
 #include "voice_status.h"
 
 // HUD Elements
@@ -71,11 +69,12 @@ public:
 				iTeam = 0;
 			}
 
-			iTeam = iTeam % iNumberOfTeamColors;
+			// FIXME:
+			/*iTeam = iTeam % iNumberOfTeamColors;
 
 			color[0] = iTeamColors[iTeam][0];
 			color[1] = iTeamColors[iTeam][1];
-			color[2] = iTeamColors[iTeam][2];
+			color[2] = iTeamColors[iTeam][2];*/
 		}
 	}
 
@@ -91,10 +90,12 @@ public:
 
 	virtual bool CanShowSpeakerLabels()
 	{
-		if (gViewPort && gViewPort->m_pScoreBoard)
+		// FIXME:
+		/*if (gViewPort && gViewPort->m_pScoreBoard)
 			return !gViewPort->m_pScoreBoard->isVisible();
 		else
-			return false;
+			return false;*/
+		return true;
 	}
 };
 static CHLVoiceStatusHelper g_VoiceStatusHelper;
@@ -104,13 +105,13 @@ extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, i
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
 
-template <int (TeamFortressViewport::*FUNC)(const char *, int, void *)>
+template <void (CClientViewport::*FUNC)(const char *, int, void *)>
 void HookViewportMessage(const char *name)
 {
 	gEngfuncs.pfnHookUserMsg((char *)name, [](const char *pszName, int iSize, void *pbuf) -> int {
 		if (gViewPort)
-			return (gViewPort->*FUNC)(pszName, iSize, pbuf);
-		return 0;
+			(gViewPort->*FUNC)(pszName, iSize, pbuf);
+		return 1;
 	});
 }
 
@@ -149,8 +150,9 @@ void CHud::Init(void)
 
 	// TFFree CommandMenu
 	HookCommand("+commandmenu", [] {
-		if (gViewPort)
-			gViewPort->ShowCommandMenu(gViewPort->m_StandardMenu);
+		// FIXME:
+		//if (gViewPort)
+		//	gViewPort->ShowCommandMenu(gViewPort->m_StandardMenu);
 	});
 
 	HookCommand("-commandmenu", [] {
@@ -170,26 +172,26 @@ void CHud::Init(void)
 
 	HookCommand("about", AboutCommand);
 
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_ValClass>("ValClass");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_TeamNames>("TeamNames");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_Feign>("Feign");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_Detpack>("Detpack");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_MOTD>("MOTD");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_BuildSt>("BuildSt");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_RandomPC>("RandomPC");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_ServerName>("ServerName");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_ScoreInfo>("ScoreInfo");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_TeamScore>("TeamScore");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_TeamInfo>("TeamInfo");
+	HookViewportMessage<&CClientViewport::MsgFunc_ValClass>("ValClass");
+	HookViewportMessage<&CClientViewport::MsgFunc_TeamNames>("TeamNames");
+	HookViewportMessage<&CClientViewport::MsgFunc_Feign>("Feign");
+	HookViewportMessage<&CClientViewport::MsgFunc_Detpack>("Detpack");
+	HookViewportMessage<&CClientViewport::MsgFunc_MOTD>("MOTD");
+	HookViewportMessage<&CClientViewport::MsgFunc_BuildSt>("BuildSt");
+	HookViewportMessage<&CClientViewport::MsgFunc_RandomPC>("RandomPC");
+	HookViewportMessage<&CClientViewport::MsgFunc_ServerName>("ServerName");
+	HookViewportMessage<&CClientViewport::MsgFunc_ScoreInfo>("ScoreInfo");
+	HookViewportMessage<&CClientViewport::MsgFunc_TeamScore>("TeamScore");
+	HookViewportMessage<&CClientViewport::MsgFunc_TeamInfo>("TeamInfo");
 
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_Spectator>("Spectator");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_AllowSpec>("AllowSpec");
+	HookViewportMessage<&CClientViewport::MsgFunc_Spectator>("Spectator");
+	HookViewportMessage<&CClientViewport::MsgFunc_AllowSpec>("AllowSpec");
 
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_SpecFade>("SpecFade");
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_ResetFade>("ResetFade");
+	HookViewportMessage<&CClientViewport::MsgFunc_SpecFade>("SpecFade");
+	HookViewportMessage<&CClientViewport::MsgFunc_ResetFade>("ResetFade");
 
 	// VGUI Menus
-	HookViewportMessage<&TeamFortressViewport::MsgFunc_VGUIMenu>("VGUIMenu");
+	HookViewportMessage<&CClientViewport::MsgFunc_VGUIMenu>("VGUIMenu");
 
 	CVAR_CREATE("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO); // controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE("hud_takesshots", "0", FCVAR_ARCHIVE); // controls whether or not to automatically take screenshots at the end of a round

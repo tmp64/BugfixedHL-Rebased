@@ -18,8 +18,8 @@
 #include <math.h>
 #include "hud.h"
 #include "cl_util.h"
-
-#include "vgui/TeamFortressViewport.h"
+#include "hud/spectator.h"
+#include "vgui/client_viewport.h"
 
 #define MAX_LOGO_FRAMES 56
 
@@ -114,7 +114,7 @@ int CHud::Redraw(float flTime, int intermission)
 		{
 			m_iIntermission = intermission;
 			gViewPort->HideCommandMenu();
-			gViewPort->HideVGUIMenu();
+			//gViewPort->HideVGUIMenu();	// FIXME:
 			gViewPort->ShowScoreBoard();
 			gViewPort->UpdateSpectatorPanel();
 

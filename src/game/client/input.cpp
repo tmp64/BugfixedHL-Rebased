@@ -21,8 +21,10 @@ extern "C"
 #include <ctype.h>
 #include "Exports.h"
 #include "voice_status.h"
+#include "hud/health.h"
+#include "hud/spectator.h"
 
-#include "vgui/TeamFortressViewport.h"
+#include "vgui/client_viewport.h"
 
 extern int g_iAlive;
 

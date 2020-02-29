@@ -44,8 +44,6 @@ add_sources(
 	tri.cpp
 	tri.h
 	util.cpp
-	vgui_int.cpp
-	vgui_int.h
 	view.cpp
 	view.h
 	voice_banmgr.cpp

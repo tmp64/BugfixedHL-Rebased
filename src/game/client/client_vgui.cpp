@@ -4,6 +4,7 @@
 #include <tier2/tier2.h>
 #include <vgui_controls/Controls.h>
 #include "client_vgui.h"
+#include "vgui/client_viewport.h"
 
 EXPOSE_SINGLE_INTERFACE(CClientVGUI, IClientVGUI, ICLIENTVGUI_NAME);
 
@@ -17,6 +18,8 @@ void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 		Error("Failed to intialize VGUI2\n");
 		Assert(false);
 	}
+
+	new CClientViewport();
 }
 
 void CClientVGUI::Start()
@@ -29,7 +32,7 @@ void CClientVGUI::SetParent(vgui2::VPANEL parent)
 
 int CClientVGUI::UseVGUI1()
 {
-	return true;
+	return false;
 }
 
 void CClientVGUI::HideScoreBoard()

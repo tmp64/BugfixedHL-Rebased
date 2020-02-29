@@ -31,7 +31,6 @@ extern "C"
 }
 
 #include <string.h>
-#include "vgui_int.h"
 #include "interface.h"
 
 #ifdef _WIN32
@@ -42,13 +41,12 @@ extern "C"
 #include "Exports.h"
 #
 #include "tri.h"
-#include "vgui/TeamFortressViewport.h"
 #include "voice_status.h"
 #include "console.h"
+#include "hud/spectator.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
-TeamFortressViewport *gViewPort = NULL;
 
 #include "particleman.h"
 CSysModule *g_hParticleManModule = NULL;
@@ -179,8 +177,6 @@ int CL_DLLEXPORT HUD_VidInit(void)
 	//	RecClHudVidInit();
 	gHUD.VidInit();
 
-	VGui_Startup();
-
 	return 1;
 }
 
@@ -200,7 +196,6 @@ void CL_DLLEXPORT HUD_Init(void)
 	console::HudInit();
 	InitInput();
 	gHUD.Init();
-	Scheme_Init();
 	console::HudPostInit();
 }
 
@@ -303,6 +298,19 @@ void CL_DLLEXPORT HUD_DirectorMessage(int iSize, void *pbuf)
 	//	RecClDirectorMessage(iSize, pbuf);
 
 	CHudSpectator::Get()->DirectorMessage(iSize, pbuf);
+}
+
+/*
+==========================
+HUD_ChatInputPosition
+
+Sets the location of the input for chat text
+==========================
+*/
+
+void CL_DLLEXPORT HUD_ChatInputPosition(int *x, int *y)
+{
+	// Do nothing
 }
 
 //---------------------------------------------------

@@ -24,7 +24,7 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "menu.h"
-#include "vgui/TeamFortressViewport.h"
+#include "vgui/client_viewport.h"
 #include "text_message.h"
 
 #define MAX_MENU_STRING 512

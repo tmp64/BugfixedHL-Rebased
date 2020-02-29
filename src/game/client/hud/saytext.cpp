@@ -26,7 +26,7 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "saytext.h"
-#include "vgui/TeamFortressViewport.h"
+#include "vgui/client_viewport.h"
 
 extern float *GetClientColor(int clientIndex);
 

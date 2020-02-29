@@ -29,7 +29,7 @@
 #include "ammo.h"
 #include "ammohistory.h"
 #include "menu.h"
-#include "vgui/TeamFortressViewport.h"
+#include "vgui/client_viewport.h"
 
 WEAPON *gpActiveSel; // NULL means off, 1 means just the menu bar, otherwise
     // this points to the active weapon menu item

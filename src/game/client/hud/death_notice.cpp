@@ -22,7 +22,8 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "death_notice.h"
-#include "vgui/TeamFortressViewport.h"
+#include "spectator.h"
+#include "vgui/client_viewport.h"
 
 struct DeathNoticeItem
 {

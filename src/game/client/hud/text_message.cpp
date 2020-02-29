@@ -28,7 +28,7 @@
 #include "text_message.h"
 #include "saytext.h"
 
-#include "vgui/TeamFortressViewport.h"
+#include "vgui/client_viewport.h"
 
 DEFINE_HUD_ELEM(CHudTextMessage);
 

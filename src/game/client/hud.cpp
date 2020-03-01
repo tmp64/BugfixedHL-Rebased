@@ -525,3 +525,94 @@ void CHud::CallOnNextFrame(std::function<void()> f)
 	Assert(f);
 	m_NextFrameQueue.push(f);
 }
+
+CON_COMMAND(find, "Searches cvars and commands for a string.")
+{
+	struct FindResult
+	{
+		const char *name;
+		cvar_t *cvar;
+	};
+
+	if (ConCommand::ArgC() != 2)
+	{
+		ConPrintf("Searches cvars and commands for a string.\n");
+		ConPrintf("Usage: find <string>\n");
+		return;
+	}
+
+	const char *str_orig = ConCommand::ArgV(1);
+	char str[128];
+	safe_strcpy(str, str_orig, sizeof(str));
+	for (char *c = str; *c; c++)
+		*c = tolower(*c);
+
+	std::vector<FindResult> found;
+
+	// Iterate all cvars
+	{
+		char buf[128];
+		cvar_t *item = gEngfuncs.GetFirstCvarPtr();
+		for (; item; item = item->next)
+		{
+			safe_strcpy(buf, item->name, sizeof(buf));
+			for (char *c = buf; *c; c++)
+				*c = tolower(*c);
+			if (strstr(buf, str))
+				found.push_back(FindResult { item->name, item });
+		}
+	}
+
+	// Iterate all commands
+	{
+		char buf[128];
+		cmd_function_t *item = gEngfuncs.GetFirstCmdFunctionHandle();
+		for (; item; item = item->next)
+		{
+			safe_strcpy(buf, item->name, sizeof(buf));
+			for (char *c = buf; *c; c++)
+				*c = tolower(*c);
+			if (strstr(buf, str))
+				found.push_back(FindResult { item->name, nullptr });
+		}
+	}
+
+	// Sort array
+	qsort(found.data(), found.size(), sizeof(FindResult), [](const void *i, const void *j) -> int {
+		const FindResult *lhs = (const FindResult *)i;
+		const FindResult *rhs = (const FindResult *)j;
+		return strcmp(lhs->name, rhs->name);
+	});
+
+	// Display results
+	for (FindResult &i : found)
+	{
+		if (i.cvar)
+		{
+			ConVar *cv = CvarSystem::FindCvar(i.cvar);
+
+			ConPrintf("%s = \"%s\"", i.name, i.cvar->string);
+
+			if (cv)
+			{
+				ConPrintf(" (def. \"%s\")\n", cv->GetDefaultValue());
+				ConPrintf("        %s\n", cv->GetDescription());
+			}
+			else
+			{
+				ConPrintf("\n");
+			}
+		}
+		else
+		{
+			ConCommand *cv = static_cast<ConCommand *>(CvarSystem::FindItem(i.name));
+
+			ConPrintf("%s (command)\n", i.name);
+
+			if (cv)
+			{
+				ConPrintf("        %s\n", cv->GetDescription());
+			}
+		}
+	}
+}

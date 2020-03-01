@@ -6,6 +6,8 @@ add_sources(
 	com_model.h
 	con_nprint.h
 	const.h
+	convar.h
+	convar.cpp
 	crc.h
 	cvardef.h
 	demo_api.h

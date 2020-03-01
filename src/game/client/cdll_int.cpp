@@ -154,7 +154,7 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 	memcpy(&gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t));
 
 	console::Initialize();
-
+	CvarSystem::RegisterCvars();
 	EV_HookEvents();
 	CL_LoadParticleMan();
 

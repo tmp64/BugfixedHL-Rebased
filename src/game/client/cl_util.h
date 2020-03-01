@@ -27,6 +27,8 @@
 #include <algorithm>
 #include <tier0/dbg.h>
 #include "cvardef.h"
+#include <convar.h>
+#include "console.h"
 
 inline void HookMessage(const char *pszName, UserMsgHookFn fn)
 {

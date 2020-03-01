@@ -49,12 +49,12 @@ void CClientVGUI::HideAllVGUIMenu()
 
 void CClientVGUI::ActivateClientUI()
 {
-	gViewPort->ActivateClientUI();
+	g_pViewport->ActivateClientUI();
 }
 
 void CClientVGUI::HideClientUI()
 {
-	gViewPort->HideClientUI();
+	g_pViewport->HideClientUI();
 }
 
 void CClientVGUI::Shutdown()

@@ -114,7 +114,7 @@ void CHudDeathNotice::Draw(float flTime)
 		rgDeathNoticeList[i].flDisplayTime = min(rgDeathNoticeList[i].flDisplayTime, gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME);
 
 		// Only draw if the viewport will let me
-		if (gViewPort && gViewPort->AllowedToPrintText())
+		if (g_pViewport && g_pViewport->AllowedToPrintText())
 		{
 			// Draw the death notice
 			y = DEATHNOTICE_TOP + 2 + (20 * i); //!!!
@@ -173,8 +173,8 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	strcpy(killedwith, "d_");
 	strncat(killedwith, READ_STRING(), 32);
 
-	if (gViewPort)
-		gViewPort->DeathMsg(killer, victim);
+	if (g_pViewport)
+		g_pViewport->DeathMsg(killer, victim);
 
 	CHudSpectator::Get()->DeathMessage(victim);
 	int i;
@@ -189,8 +189,8 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 		i = MAX_DEATHNOTICES - 1;
 	}
 
-	if (gViewPort)
-		gViewPort->GetAllPlayersInfo();
+	if (g_pViewport)
+		g_pViewport->GetAllPlayersInfo();
 
 	// Get the Killer's name
 	char *killer_name = g_PlayerInfoList[killer].name;

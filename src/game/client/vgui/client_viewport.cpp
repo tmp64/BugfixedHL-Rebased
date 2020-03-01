@@ -13,13 +13,13 @@ int g_iUser1 = 0;
 int g_iUser2 = 0;
 int g_iUser3 = 0;
 
-CClientViewport *gViewPort = nullptr;
+CClientViewport *g_pViewport = nullptr;
 
 CClientViewport::CClientViewport()
     : BaseClass(nullptr, "CClientViewport")
 {
-	Assert(!gViewPort);
-	gViewPort = this;
+	Assert(!g_pViewport);
+	g_pViewport = this;
 
 	SetParent(g_pEngineVGui->GetPanel(PANEL_CLIENTDLL));
 

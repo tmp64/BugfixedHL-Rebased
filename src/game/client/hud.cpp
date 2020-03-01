@@ -80,7 +80,7 @@ public:
 
 	virtual void UpdateCursorState()
 	{
-		gViewPort->UpdateCursorState();
+		g_pViewport->UpdateCursorState();
 	}
 
 	virtual int GetAckIconHeight()
@@ -91,8 +91,8 @@ public:
 	virtual bool CanShowSpeakerLabels()
 	{
 		// FIXME:
-		/*if (gViewPort && gViewPort->m_pScoreBoard)
-			return !gViewPort->m_pScoreBoard->isVisible();
+		/*if (g_pViewport && g_pViewport->m_pScoreBoard)
+			return !g_pViewport->m_pScoreBoard->isVisible();
 		else
 			return false;*/
 		return true;
@@ -109,8 +109,8 @@ template <void (CClientViewport::*FUNC)(const char *, int, void *)>
 void HookViewportMessage(const char *name)
 {
 	gEngfuncs.pfnHookUserMsg((char *)name, [](const char *pszName, int iSize, void *pbuf) -> int {
-		if (gViewPort)
-			(gViewPort->*FUNC)(pszName, iSize, pbuf);
+		if (g_pViewport)
+			(g_pViewport->*FUNC)(pszName, iSize, pbuf);
 		return 1;
 	});
 }
@@ -151,23 +151,23 @@ void CHud::Init(void)
 	// TFFree CommandMenu
 	HookCommand("+commandmenu", [] {
 		// FIXME:
-		//if (gViewPort)
-		//	gViewPort->ShowCommandMenu(gViewPort->m_StandardMenu);
+		//if (g_pViewport)
+		//	g_pViewport->ShowCommandMenu(g_pViewport->m_StandardMenu);
 	});
 
 	HookCommand("-commandmenu", [] {
-		if (gViewPort)
-			gViewPort->InputSignalHideCommandMenu();
+		if (g_pViewport)
+			g_pViewport->InputSignalHideCommandMenu();
 	});
 
 	HookCommand("ForceCloseCommandMenu", [] {
-		if (gViewPort)
-			gViewPort->HideCommandMenu();
+		if (g_pViewport)
+			g_pViewport->HideCommandMenu();
 	});
 
 	HookCommand("special", [] {
-		if (gViewPort)
-			gViewPort->InputPlayerSpecial();
+		if (g_pViewport)
+			g_pViewport->InputPlayerSpecial();
 	});
 
 	HookCommand("about", AboutCommand);
@@ -229,7 +229,7 @@ void CHud::Init(void)
 
 	RegisterHudElem<CVoiceStatus>();
 	CVoiceStatus::Get()->SetVoiceStatusHelper(&g_VoiceStatusHelper);
-	CVoiceStatus::Get()->SetParentPanel((vgui::Panel **)&gViewPort);
+	CVoiceStatus::Get()->SetParentPanel((vgui::Panel **)&g_pViewport);
 
 	// Init HUD elements
 	for (CHudElem *i : m_HudList)

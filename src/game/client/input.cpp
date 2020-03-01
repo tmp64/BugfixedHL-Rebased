@@ -366,8 +366,8 @@ int CL_DLLEXPORT HUD_Key_Event(int down, int keynum, const char *pszCurrentBindi
 {
 	//	RecClKeyEvent(down, keynum, pszCurrentBinding);
 
-	if (gViewPort)
-		return gViewPort->KeyInput(down, keynum, pszCurrentBinding);
+	if (g_pViewport)
+		return g_pViewport->KeyInput(down, keynum, pszCurrentBinding);
 
 	return 1;
 }
@@ -509,18 +509,18 @@ void IN_Impulse(void)
 void IN_ScoreDown(void)
 {
 	KeyDown(&in_score);
-	if (gViewPort)
+	if (g_pViewport)
 	{
-		gViewPort->ShowScoreBoard();
+		g_pViewport->ShowScoreBoard();
 	}
 }
 
 void IN_ScoreUp(void)
 {
 	KeyUp(&in_score);
-	if (gViewPort)
+	if (g_pViewport)
 	{
-		gViewPort->HideScoreBoard();
+		g_pViewport->HideScoreBoard();
 	}
 }
 

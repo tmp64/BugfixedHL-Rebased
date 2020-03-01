@@ -95,7 +95,7 @@ void CHudSayText::Draw(float flTime)
 {
 	int y = Y_START;
 
-	if ((gViewPort && gViewPort->AllowedToPrintText() == FALSE) || !m_HUD_saytext->value)
+	if ((g_pViewport && g_pViewport->AllowedToPrintText() == FALSE) || !m_HUD_saytext->value)
 		return;
 
 	// make sure the scrolltime is within reasonable bounds,  to guard against the clock being reset
@@ -168,7 +168,7 @@ int CHudSayText::MsgFunc_SayText(const char *pszName, int iSize, void *pbuf)
 
 void CHudSayText::SayTextPrint(const char *pszBuf, int iBufSize, int clientIndex)
 {
-	if (gViewPort && gViewPort->AllowedToPrintText() == FALSE)
+	if (g_pViewport && g_pViewport->AllowedToPrintText() == FALSE)
 	{
 		// Print it straight to the console
 		ConsolePrint(pszBuf);

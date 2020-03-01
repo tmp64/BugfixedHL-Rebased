@@ -51,6 +51,6 @@ private:
 	vgui2::AnimationController *m_pAnimController = nullptr;
 };
 
-extern CClientViewport *gViewPort;
+extern CClientViewport *g_pViewport;
 
 #endif

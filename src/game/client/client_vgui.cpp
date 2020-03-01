@@ -3,6 +3,8 @@
 #include <tier1/tier1.h>
 #include <tier2/tier2.h>
 #include <IEngineVGui.h>
+#include <FileSystem.h>
+#include <KeyValues.h>
 #include <vgui_controls/Controls.h>
 #include <vgui/IPanel.h>
 #include <convar.h>
@@ -100,4 +102,55 @@ CON_COMMAND(vgui_dumptree, "Dumps VGUI2 panel tree for debugging.")
 {
 	ConPrintf("Green - visible\nRed - hidden\n\n");
 	DumpPanel(g_pEngineVGui->GetPanel(PANEL_ROOT), 0, true);
+}
+
+vgui2::HScheme LoadSchemeFromFile(const char *fileNameOrig, const char *tag)
+{
+	char fileName[256];
+	Q_StripExtension(fileNameOrig, fileName, sizeof(fileName));
+
+	char fileNameComp[256];
+	snprintf(fileNameComp, sizeof(fileNameComp), "%s_compiled.res", fileName);
+
+	// Get orig file modification date
+	int origModDate = g_pFullFileSystem->GetFileTime(fileNameOrig);
+
+	// Try to open compiled file
+	bool bNeedRecompile = false;
+	KeyValues *compiled = new KeyValues("Scheme");
+	if (compiled->LoadFromFile(g_pFullFileSystem, fileNameComp))
+	{
+		// Check modification date
+		int modDate = compiled->GetInt("OrigModDate");
+		if (origModDate == 0 || modDate == 0 || origModDate != modDate)
+			bNeedRecompile = true;
+	}
+	else
+	{
+		// Failed to open
+		bNeedRecompile = true;
+	}
+	compiled->deleteThis();
+
+	if (bNeedRecompile)
+	{
+		// Load original file
+		KeyValuesAD orig(new KeyValues("Scheme"));
+		if (orig->LoadFromFile(g_pFullFileSystem, fileNameOrig))
+		{
+			// Set modification date
+			orig->SetInt("OrigModDate", origModDate);
+
+			// Save new file
+			orig->SaveToFile(g_pFullFileSystem, fileNameComp);
+		}
+		else
+		{
+			Error("Failed to open scheme file: %s\n", fileNameOrig);
+			return 0;
+		}
+	}
+
+	// Load compiled file
+	return vgui2::scheme()->LoadSchemeFromFile(fileNameComp, tag);
 }

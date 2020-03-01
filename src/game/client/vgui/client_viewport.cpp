@@ -26,6 +26,7 @@ CClientViewport::CClientViewport()
 	SetSize(10, 10); // Quiet "parent not sized yet" spew
 	SetKeyBoardInputEnabled(false);
 	SetMouseInputEnabled(false);
+	SetProportional(true);
 
 	// create our animation controller
 	m_pAnimController = new vgui2::AnimationController(this);
@@ -76,7 +77,7 @@ void CClientViewport::ReloadScheme(const char *fromFile)
 	if (fromFile != NULL)
 	{
 		// "ui/resource/ClientScheme.res"
-		vgui2::HScheme scheme = vgui2::scheme()->LoadSchemeFromFile(fromFile, "HudScheme");
+		vgui2::HScheme scheme = LoadSchemeFromFile(fromFile, "ClientScheme");
 
 		SetScheme(scheme);
 		SetProportional(true);

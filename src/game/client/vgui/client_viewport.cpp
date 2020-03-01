@@ -1,7 +1,9 @@
 #include <KeyValues.h>
 #include <vgui_controls/AnimationController.h>
+#include <IEngineVGui.h>
 
 #include "client_viewport.h"
+#include "client_vgui.h"
 #include "hud.h"
 
 // FIXME: Move it to hud.cpp
@@ -13,39 +15,32 @@ int g_iUser3 = 0;
 
 CClientViewport *gViewPort = nullptr;
 
-CClientViewport::CClientViewport() :
-	BaseClass(nullptr, "CClientViewport")
+CClientViewport::CClientViewport()
+    : BaseClass(nullptr, "CClientViewport")
 {
 	Assert(!gViewPort);
 	gViewPort = this;
+
+	SetParent(g_pEngineVGui->GetPanel(PANEL_CLIENTDLL));
 
 	SetSize(10, 10); // Quiet "parent not sized yet" spew
 	SetKeyBoardInputEnabled(false);
 	SetMouseInputEnabled(false);
 
-	vgui2::HScheme scheme = vgui2::scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme");
-	SetScheme(scheme);
-	SetProportional(true);
-
 	// create our animation controller
 	m_pAnimController = new vgui2::AnimationController(this);
-	m_pAnimController->SetScheme(scheme);
 	m_pAnimController->SetProportional(true);
 
-	// Attempt to load all hud animations
-	if (LoadHudAnimations() == false)
-	{
-		// Fall back to just the main
-		if (!m_pAnimController->SetScriptFile(GetVPanel(), "scripts/HudAnimations.txt", true))
-		{
-			Assert(false);
-		}
-	}
+	// Load scheme
+	ReloadScheme(VGUI2_ROOT_DIR "resource/ClientScheme.res");
+
+	// Hide viewport
+	HideClientUI();
 }
 
 bool CClientViewport::LoadHudAnimations()
 {
-	const char *HUDANIMATION_MANIFEST_FILE = "scripts/hudanimations_manifest.txt";
+	const char *HUDANIMATION_MANIFEST_FILE = VGUI2_ROOT_DIR "scripts/hudanimations_manifest.txt";
 	KeyValues *manifest = new KeyValues(HUDANIMATION_MANIFEST_FILE);
 	if (!manifest->LoadFromFile(g_pFullFileSystem, HUDANIMATION_MANIFEST_FILE))
 	{
@@ -75,6 +70,50 @@ bool CClientViewport::LoadHudAnimations()
 	return true;
 }
 
+void CClientViewport::ReloadScheme(const char *fromFile)
+{
+	// See if scheme should change
+	if (fromFile != NULL)
+	{
+		// "ui/resource/ClientScheme.res"
+		vgui2::HScheme scheme = vgui2::scheme()->LoadSchemeFromFile(fromFile, "HudScheme");
+
+		SetScheme(scheme);
+		SetProportional(true);
+		m_pAnimController->SetScheme(scheme);
+	}
+
+	// Force a reload
+	if (LoadHudAnimations() == false)
+	{
+		// Fall back to just the main
+		if (m_pAnimController->SetScriptFile(GetVPanel(), VGUI2_ROOT_DIR "scripts/HudAnimations.txt", true) == false)
+		{
+			Assert(!("Failed to load ui/scripts/HudAnimations.txt"));
+		}
+	}
+
+	SetProportional(true);
+
+	// reload the .res file from disk
+	LoadControlSettings(VGUI2_ROOT_DIR "scripts/HudLayout.res");
+
+	InvalidateLayout(true, true);
+}
+
+void CClientViewport::ActivateClientUI()
+{
+	SetVisible(true);
+}
+
+void CClientViewport::HideClientUI()
+{
+	SetVisible(false);
+}
+
+//-------------------------------------------------------
+// Viewport messages
+//-------------------------------------------------------
 void CClientViewport::MsgFunc_ValClass(const char *pszName, int iSize, void *pbuf)
 {
 }

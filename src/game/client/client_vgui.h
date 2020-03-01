@@ -2,6 +2,8 @@
 #define CLIENT_VGUI_H
 #include <IClientVGUI.h>
 
+#define VGUI2_ROOT_DIR "ui/"
+
 class CClientVGUI : public IClientVGUI
 {
 public:

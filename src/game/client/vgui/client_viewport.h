@@ -9,6 +9,9 @@ class CClientViewport : public vgui2::EditablePanel
 public:
 	CClientViewport();
 	bool LoadHudAnimations();
+	void ReloadScheme(const char *fromFile);
+	void ActivateClientUI();
+	void HideClientUI();
 
 	// Messages
 	void MsgFunc_ValClass(const char *pszName, int iSize, void *pbuf);

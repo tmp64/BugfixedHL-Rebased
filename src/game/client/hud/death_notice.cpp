@@ -53,7 +53,7 @@ float g_ColorGrey[3] = { 0.8, 0.8, 0.8 };
 
 float *GetClientColor(int clientIndex)
 {
-	switch (g_PlayerExtraInfo[clientIndex].teamnumber)
+	switch (GetPlayerInfo(clientIndex)->GetTeamNumber())
 	{
 	case 1:
 		return g_ColorBlue;
@@ -193,24 +193,26 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 		g_pViewport->GetAllPlayersInfo();
 
 	// Get the Killer's name
-	char *killer_name = g_PlayerInfoList[killer].name;
-	if (!killer_name)
+	CPlayerInfo *killerInfo = nullptr;
+	const char *killer_name;
+	if (killer != 0 && (killerInfo = GetPlayerInfo(killer)->Update())->IsConnected())
 	{
-		killer_name = "";
-		rgDeathNoticeList[i].szKiller[0] = 0;
-	}
-	else
-	{
+		killer_name = killerInfo->GetName();
 		rgDeathNoticeList[i].KillerColor = GetClientColor(killer);
 		strncpy(rgDeathNoticeList[i].szKiller, killer_name, MAX_PLAYERNAME_LENGTH);
 		rgDeathNoticeList[i].szKiller[MAX_PLAYERNAME_LENGTH - 1] = 0;
 	}
+	else
+	{
+		killer_name = "";
+		rgDeathNoticeList[i].szKiller[0] = 0;
+	}
 
 	// Get the Victim's name
-	char *victim_name = NULL;
+	const char *victim_name = NULL;
 	// If victim is -1, the killer killed a specific, non-player object (like a sentrygun)
 	if (((char)victim) != -1)
-		victim_name = g_PlayerInfoList[victim].name;
+		victim_name = GetPlayerInfo(victim)->Update()->GetName();
 	if (!victim_name)
 	{
 		victim_name = "";

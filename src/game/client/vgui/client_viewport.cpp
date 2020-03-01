@@ -220,7 +220,7 @@ void CClientViewport::GetAllPlayersInfo(void)
 {
 	for (int i = 1; i < MAX_PLAYERS; i++)
 	{
-		gEngfuncs.pfnGetPlayerInfo(i, &g_PlayerInfoList[i]);
+		GetPlayerInfo(i)->Update();
 	}
 }
 

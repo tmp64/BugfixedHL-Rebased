@@ -195,8 +195,7 @@ void CHudSayText::SayTextPrint(const char *pszBuf, int iBufSize, int clientIndex
 	// if it's a say message, search for the players name in the string
 	if (*pszBuf == 2 && clientIndex > 0)
 	{
-		gEngfuncs.pfnGetPlayerInfo(clientIndex, &g_PlayerInfoList[clientIndex]);
-		const char *pName = g_PlayerInfoList[clientIndex].name;
+		const char *pName = GetPlayerInfo(clientIndex)->Update()->GetName();
 
 		if (pName)
 		{

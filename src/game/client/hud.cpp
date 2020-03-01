@@ -50,9 +50,6 @@
 #include "hud/status_icons.h"
 #include "hud/menu.h"
 
-hud_player_info_t g_PlayerInfoList[MAX_PLAYERS + 1]; // player info from the engine
-extra_player_info_t g_PlayerExtraInfo[MAX_PLAYERS + 1]; // additional player info sent directly to the client dll
-
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {
 public:
@@ -60,22 +57,24 @@ public:
 	{
 		color[0] = color[1] = color[2] = 255;
 
-		if (entindex >= 0 && entindex < sizeof(g_PlayerExtraInfo) / sizeof(g_PlayerExtraInfo[0]))
+		int iTeam = 0;
+
+		if (entindex >= 1 && entindex <= MAX_PLAYERS)
 		{
-			int iTeam = g_PlayerExtraInfo[entindex].teamnumber;
+			iTeam = GetPlayerInfo(entindex)->Update()->GetTeamNumber();
 
 			if (iTeam < 0)
 			{
 				iTeam = 0;
 			}
-
-			// FIXME:
-			/*iTeam = iTeam % iNumberOfTeamColors;
-
-			color[0] = iTeamColors[iTeam][0];
-			color[1] = iTeamColors[iTeam][1];
-			color[2] = iTeamColors[iTeam][2];*/
 		}
+
+		// FIXME:
+		/*iTeam = iTeam % iNumberOfTeamColors;
+
+		color[0] = iTeamColors[iTeam][0];
+		color[1] = iTeamColors[iTeam][1];
+		color[2] = iTeamColors[iTeam][2];*/
 	}
 
 	virtual void UpdateCursorState()
@@ -138,6 +137,10 @@ void CHud::Init(void)
 {
 	// Check that elem list is empty
 	Assert(m_HudList.empty());
+
+	// Set player info IDs
+	for (int i = 1; i < MAX_PLAYERS; i++)
+		CPlayerInfo::m_sPlayerInfo[i].m_iIndex = i;
 
 	HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
 	HookHudMessage<&CHud::MsgFunc_ResetHUD>("ResetHUD");

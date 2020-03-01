@@ -35,6 +35,7 @@ add_sources(
 	interpolation.cpp
 	interpolation.h
 	kbutton.h
+	player_info.cpp
 	player_info.h
 	studio_util.cpp
 	studio_util.h

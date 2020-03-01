@@ -25,6 +25,7 @@
 #include <queue>
 #include "global_consts.h"
 #include "hud/base.h"
+#include "player_info.h"
 
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH    0x00FF1010 //255,160,0
@@ -39,37 +40,6 @@
 
 #define HUD_ACTIVE       1
 #define HUD_INTERMISSION 2
-
-struct extra_player_info_t
-{
-	short frags;
-	short deaths;
-	short playerclass;
-	short health; // UNUSED currently, spectator UI would like this
-	bool dead; // UNUSED currently, spectator UI would like this
-	short teamnumber;
-	char teamname[MAX_TEAM_NAME];
-};
-
-struct team_info_t
-{
-	char name[MAX_TEAM_NAME];
-	short frags;
-	short deaths;
-	short ping;
-	short packetloss;
-	short ownteam;
-	short players;
-	int already_drawn;
-	int scores_overriden;
-	int teamnumber;
-};
-
-#include "player_info.h"
-
-//
-//-----------------------------------------------------
-//
 
 class CHud
 {

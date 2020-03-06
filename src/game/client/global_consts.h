@@ -26,6 +26,7 @@ enum
 #define MAX_PLAYERNAME_LENGTH 32
 #define MAX_TEAMNAME_SIZE     32
 
-#define MAX_MOTD_LENGTH 1536
+#define MAX_MOTD_LENGTH         1536
+#define MAX_UNICODE_MOTD_LENGTH (MAX_MOTD_LENGTH * 2) // Some Unicode charachters take two or more bytes in UTF8
 
 #endif // GLOBALCONSTS_H

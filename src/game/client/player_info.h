@@ -82,6 +82,7 @@ private:
 	static CPlayerInfo m_sPlayerInfo[MAX_PLAYERS + 1];
 	friend CPlayerInfo *GetPlayerInfo(int idx);
 	friend class CHud;
+	friend class CClientViewport;
 };
 
 inline CPlayerInfo *GetPlayerInfo(int idx)

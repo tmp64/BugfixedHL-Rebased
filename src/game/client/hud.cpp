@@ -190,9 +190,6 @@ void CHud::Init(void)
 	HookViewportMessage<&CClientViewport::MsgFunc_Spectator>("Spectator");
 	HookViewportMessage<&CClientViewport::MsgFunc_AllowSpec>("AllowSpec");
 
-	HookViewportMessage<&CClientViewport::MsgFunc_SpecFade>("SpecFade");
-	HookViewportMessage<&CClientViewport::MsgFunc_ResetFade>("ResetFade");
-
 	// VGUI Menus
 	HookViewportMessage<&CClientViewport::MsgFunc_VGUIMenu>("VGUIMenu");
 

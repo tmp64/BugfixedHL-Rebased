@@ -44,6 +44,7 @@ extern "C"
 #include "voice_status.h"
 #include "console.h"
 #include "hud/spectator.h"
+#include "vgui/client_viewport.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -441,10 +442,10 @@ public:
 	// returns the name of the server the user is connected to, if any
 	virtual const char *GetServerHostName()
 	{
-		/*if (gViewPortInterface)
+		if (g_pViewport)
 		{
-			return gViewPortInterface->GetServerName();
-		}*/
+			return g_pViewport->GetServerName();
+		}
 		return "";
 	}
 

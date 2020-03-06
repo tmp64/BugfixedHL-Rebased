@@ -45,6 +45,8 @@ public:
 
 	void ShowVGUIMenu(int iMenu);
 
+	const char *GetServerName();
+
 	// TeamFortressViewport stubs
 	void UpdateCursorState();
 	void ShowCommandMenu(int menuIndex);

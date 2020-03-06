@@ -150,6 +150,11 @@ void CClientViewport::ShowVGUIMenu(int iMenu)
 	}
 }
 
+const char *CClientViewport::GetServerName()
+{
+	return m_szServerName;
+}
+
 void CClientViewport::UpdateOnPlayerInfo()
 {
 	// TODO:

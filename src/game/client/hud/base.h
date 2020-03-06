@@ -9,15 +9,6 @@
 
 #define MAX_SPRITE_NAME_LENGTH 24
 
-#ifndef _WIN32
-#define _cdecl
-#endif
-
-typedef struct
-{
-	unsigned char r, g, b, a;
-} RGBA;
-
 typedef struct cvar_s cvar_t;
 
 //----------------------------------------------------------

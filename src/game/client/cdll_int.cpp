@@ -18,45 +18,27 @@
 // this implementation handles the linking of the engine to the DLL
 //
 
-#include "hud.h"
-#include "cl_util.h"
-#include "netadr.h"
-
-#undef INTERFACE_H
-#include <tier1/interface.h>
-
 extern "C"
 {
-#include "pm_shared.h"
+#include <pm_shared.h>
 }
 
-#include <string.h>
-#include "interface.h"
-
-#ifdef _WIN32
-#include "winsani_in.h"
-#include <windows.h>
-#include "winsani_out.h"
-#endif
-#include "Exports.h"
-#
+#include <cstring>
+#include <tier1/interface.h>
+#include <cl_dll/IGameClientExports.h>
+#include "hud.h"
+#include "cl_util.h"
 #include "tri.h"
 #include "voice_status.h"
-#include "console.h"
 #include "hud/spectator.h"
 #include "vgui/client_viewport.h"
+#include "Exports.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
 
-#include "particleman.h"
-CSysModule *g_hParticleManModule = NULL;
-IParticleMan *g_pParticleMan = NULL;
-
-void CL_LoadParticleMan(void);
-void CL_UnloadParticleMan(void);
-
 void InitInput(void);
+void ShutdownInput();
 void EV_HookEvents(void);
 void IN_Commands(void);
 
@@ -317,9 +299,6 @@ void CL_DLLEXPORT HUD_ChatInputPosition(int *x, int *y)
 //---------------------------------------------------
 // Client shutdown
 //---------------------------------------------------
-void CL_UnloadParticleMan(void);
-void ShutdownInput();
-
 void CL_DLLEXPORT HUD_Shutdown(void)
 {
 	//	RecClShutdown();
@@ -328,49 +307,6 @@ void CL_DLLEXPORT HUD_Shutdown(void)
 	ShutdownInput();
 	CL_UnloadParticleMan();
 	console::HudShutdown();
-}
-
-//---------------------------------------------------
-// Particle Manager
-//---------------------------------------------------
-void CL_UnloadParticleMan(void)
-{
-	Sys_UnloadModule(g_hParticleManModule);
-
-	g_pParticleMan = NULL;
-	g_hParticleManModule = NULL;
-}
-
-void CL_LoadParticleMan(void)
-{
-	char szPDir[512];
-
-	if (gEngfuncs.COM_ExpandFilename(PARTICLEMAN_DLLNAME, szPDir, sizeof(szPDir)) == FALSE)
-	{
-		g_pParticleMan = NULL;
-		g_hParticleManModule = NULL;
-		return;
-	}
-
-	g_hParticleManModule = Sys_LoadModule(szPDir);
-	CreateInterfaceFn particleManFactory = Sys_GetFactory(g_hParticleManModule);
-
-	if (particleManFactory == NULL)
-	{
-		g_pParticleMan = NULL;
-		g_hParticleManModule = NULL;
-		return;
-	}
-
-	g_pParticleMan = (IParticleMan *)particleManFactory(PARTICLEMAN_INTERFACE, NULL);
-
-	if (g_pParticleMan)
-	{
-		g_pParticleMan->SetUp(&gEngfuncs);
-
-		// Add custom particle classes here BEFORE calling anything else or you will die.
-		g_pParticleMan->AddCustomParticleClassSize(sizeof(CBaseParticle));
-	}
 }
 
 extern "C" CL_DLLEXPORT void *ClientFactory()
@@ -430,8 +366,6 @@ extern "C" void CL_DLLEXPORT F(void *pv)
 
 	*pcldll_func = cldll_func;
 }
-
-#include "cl_dll/IGameClientExports.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: Exports functions that are used by the gameUI for UI dialogs

@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+#define S_CALLTYPE __cdecl
+
 // Steam-specific types. Defined here so this header file can be included in other code bases.
 #if defined(__GNUC__) && !defined(POSIX)
 #if __GNUC__ < 4
@@ -64,6 +66,24 @@ typedef unsigned int uintp;
 #endif
 
 #endif // else _WIN32
+
+#ifdef __clang__
+# define CLANG_ATTR(ATTR) __attribute__((annotate( ATTR )))
+#else
+# define CLANG_ATTR(ATTR)
+#endif
+
+#define METHOD_DESC(DESC) CLANG_ATTR( "desc:" #DESC ";" )
+#define IGNOREATTR() CLANG_ATTR( "ignore" )
+#define OUT_STRUCT() CLANG_ATTR( "out_struct: ;" )
+#define OUT_ARRAY_CALL(COUNTER,FUNCTION,PARAMS) CLANG_ATTR( "out_array_call:" #COUNTER "," #FUNCTION "," #PARAMS ";" )
+#define OUT_ARRAY_COUNT(COUNTER, DESC) CLANG_ATTR( "out_array_count:" #COUNTER  ";desc:" #DESC )
+#define ARRAY_COUNT(COUNTER) CLANG_ATTR( "array_count:" #COUNTER ";" )
+#define ARRAY_COUNT_D(COUNTER, DESC) CLANG_ATTR( "array_count:" #COUNTER ";desc:" #DESC )
+#define BUFFER_COUNT(COUNTER) CLANG_ATTR( "buffer_count:" #COUNTER ";" )
+#define OUT_BUFFER_COUNT(COUNTER) CLANG_ATTR( "out_buffer_count:" #COUNTER ";" )
+#define OUT_STRING_COUNT(COUNTER) CLANG_ATTR( "out_string_count:" #COUNTER ";" )
+#define DESC(DESC) CLANG_ATTR("desc:" #DESC ";")
 
 #ifdef __cplusplus
 const int k_cubSaltSize = 8;

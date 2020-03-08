@@ -343,6 +343,7 @@ target_include_directories( client PRIVATE
 target_compile_definitions( client PRIVATE
 	${GAME_COMMON_DEFINES}
 	${SOURCE_SDK_DEFINES}
+	VERSION_SAFE_STEAM_API_INTERFACES
 	CLIENT_DLL
 )
 

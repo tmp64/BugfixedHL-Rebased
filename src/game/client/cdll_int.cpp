@@ -32,6 +32,7 @@ extern "C"
 #include "voice_status.h"
 #include "hud/spectator.h"
 #include "vgui/client_viewport.h"
+#include "client_steam_context.h"
 #include "Exports.h"
 
 cl_enginefunc_t gEngfuncs;
@@ -178,6 +179,7 @@ void CL_DLLEXPORT HUD_Init(void)
 	//	RecClHudInit();
 	console::HudInit();
 	InitInput();
+	ClientSteamContext().Activate();
 	gHUD.Init();
 	console::HudPostInit();
 }
@@ -306,6 +308,7 @@ void CL_DLLEXPORT HUD_Shutdown(void)
 	gHUD.Shutdown();
 	ShutdownInput();
 	CL_UnloadParticleMan();
+	ClientSteamContext().Shutdown();
 	console::HudShutdown();
 }
 

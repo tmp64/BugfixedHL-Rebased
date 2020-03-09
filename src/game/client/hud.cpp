@@ -20,6 +20,8 @@
 
 #include <cstring>
 #include <cstdio>
+#include <vgui_controls/AnimationController.h>
+#include <vgui_controls/Controls.h>
 
 #include <appversion.h>
 #include <bhl_urls.h>
@@ -361,6 +363,8 @@ void CHud::VidInit(void)
 
 void CHud::Frame(double time)
 {
+	vgui2::GetAnimationController()->UpdateAnimations(gEngfuncs.GetClientTime());
+
 	while (m_NextFrameQueue.size())
 	{
 		auto &i = m_NextFrameQueue.front();

@@ -1,7 +1,7 @@
 #include <vgui/ISurface.h>
 #include "avatar_image.h"
 #include "png_image.h"
-#include "lodepng/lodepng.h"
+#include "lodepng.h"
 #include "hud.h"
 #include "cl_dll.h"
 
@@ -15,7 +15,7 @@ CPngImage::CPngImage(const char *filename)
 	unsigned width, height;
 	unsigned error = lodepng_decode32_file(&out, &width, &height, fullPath);
 	if (error)
-		gEngfuncs.Con_Printf("CPngImage: Failed to load '%s': %s\n", fullPath, lodepng_error_text(error));
+		Error("CPngImage: Failed to load '%s': %s\n", fullPath, lodepng_error_text(error));
 	else
 	{
 		m_iTextureID = vgui2::surface()->CreateNewTextureID(true);

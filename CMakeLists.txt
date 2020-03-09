@@ -363,6 +363,7 @@ endif()
 # Link with dependencies
 target_link_libraries( client 
 	${SOURCE_SDK_LIBS}
+	lodepng
 	vgui
 	SDL2
 	${CLIENT_PLAT_LIBS}

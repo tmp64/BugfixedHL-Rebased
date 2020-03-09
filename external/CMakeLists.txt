@@ -1,3 +1,4 @@
+add_subdirectory( lodepng )
 add_subdirectory( SDL2 )
 add_subdirectory( vgui )
 

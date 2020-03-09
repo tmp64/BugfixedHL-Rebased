@@ -314,7 +314,6 @@ add_sources( "${GAME_COMMON_SRCS}" )
 
 # Add in the library headers
 add_sources( "${SDL2_INCLUDE_FILES}" )
-add_sources( "${VGUI_INCLUDE_FILES}" )
 
 # Add in the client sources
 add_subdirectory( src/game/client )
@@ -324,7 +323,7 @@ add_library( client SHARED ${PREP_SRCS} )
 check_winxp_support( client )
 
 if( PLATFORM_LINUX )
-	# Fix vgui.so path in client.so
+	# Fix vgui.so (and others) path in client.so
 	# " The best kostil' is not kostil' " (c) EzicMan
 	add_custom_command( TARGET client
 		POST_BUILD
@@ -348,7 +347,6 @@ target_compile_definitions( client PRIVATE
 )
 
 # Dependencies
-find_package( vgui MODULE REQUIRED )
 find_package( SDL2 MODULE REQUIRED )
 
 if( WIN32 )
@@ -364,7 +362,6 @@ endif()
 target_link_libraries( client 
 	${SOURCE_SDK_LIBS}
 	lodepng
-	vgui
 	SDL2
 	${CLIENT_PLAT_LIBS}
 )

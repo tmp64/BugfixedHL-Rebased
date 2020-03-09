@@ -11,6 +11,8 @@
 #include "hud/text_message.h"
 #include "cl_util.h"
 
+#include "score_panel.h"
+
 // FIXME: Move it to hud.cpp
 int g_iPlayerClass;
 int g_iTeamNumber;
@@ -42,6 +44,11 @@ CClientViewport::CClientViewport()
 
 	// Hide viewport
 	HideClientUI();
+}
+
+void CClientViewport::Start()
+{
+	CreateDefaultPanels();
 }
 
 bool CClientViewport::LoadHudAnimations()
@@ -107,6 +114,17 @@ void CClientViewport::ReloadScheme(const char *fromFile)
 	InvalidateLayout(true, true);
 }
 
+void CClientViewport::CreateDefaultPanels()
+{
+	AddNewPanel(m_pScorePanel = new CScorePanel());
+}
+
+void CClientViewport::AddNewPanel(IViewportPanel *panel)
+{
+	m_Panels.push_back(panel);
+	panel->SetParent(GetVPanel());
+}
+
 void CClientViewport::ActivateClientUI()
 {
 	SetVisible(true);
@@ -150,14 +168,42 @@ void CClientViewport::ShowVGUIMenu(int iMenu)
 	}
 }
 
+void CClientViewport::HideAllVGUIMenu()
+{
+	for (IViewportPanel *pPanel : m_Panels)
+	{
+		if (pPanel->IsVisible())
+			pPanel->ShowPanel(false);
+	}
+}
+
+bool CClientViewport::IsScoreBoardVisible()
+{
+	return m_pScorePanel->IsVisible();
+}
+
+void CClientViewport::ShowScoreBoard()
+{
+	if (gEngfuncs.GetMaxClients() > 1)
+	{
+		m_pScorePanel->ShowPanel(true);
+		m_pScorePanel->FullUpdate();
+	}
+}
+
+void CClientViewport::HideScoreBoard()
+{
+	m_pScorePanel->ShowPanel(false);
+}
+
 const char *CClientViewport::GetServerName()
 {
 	return m_szServerName;
 }
 
-void CClientViewport::UpdateOnPlayerInfo()
+void CClientViewport::UpdateOnPlayerInfo(int client)
 {
-	// TODO:
+	m_pScorePanel->UpdateClientInfo(client);
 }
 
 //-------------------------------------------------------
@@ -272,8 +318,7 @@ void CClientViewport::MsgFunc_ServerName(const char *pszName, int iSize, void *p
 	strncpy(m_szServerName, READ_STRING(), MAX_SERVERNAME_LENGTH);
 	m_szServerName[MAX_SERVERNAME_LENGTH - 1] = 0;
 
-	// TODO:
-	//m_pScoreBoard->UpdateServerName();
+	m_pScorePanel->UpdateServerName();
 }
 
 void CClientViewport::MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pbuf)
@@ -297,7 +342,7 @@ void CClientViewport::MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pb
 		if (info->m_ExtraInfo.teamnumber < 0)
 			info->m_ExtraInfo.teamnumber = 0;
 
-		UpdateOnPlayerInfo();
+		UpdateOnPlayerInfo(cl);
 	}
 }
 
@@ -307,8 +352,8 @@ void CClientViewport::MsgFunc_TeamScore(const char *pszName, int iSize, void *pb
 	char *TeamName = READ_STRING();
 	int frags = READ_SHORT();
 	int deaths = READ_SHORT();
-	// TODO:
-	//m_pScorePanel->MsgFunc_TeamScore(TeamName, frags, deaths);
+
+	m_pScorePanel->MsgFunc_TeamScore(TeamName, frags, deaths);
 }
 
 void CClientViewport::MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf)
@@ -320,7 +365,7 @@ void CClientViewport::MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbu
 	{
 		// set the players team
 		strncpy(GetPlayerInfo(cl)->m_ExtraInfo.teamname, READ_STRING(), MAX_TEAM_NAME);
-		UpdateOnPlayerInfo();
+		UpdateOnPlayerInfo(cl);
 	}
 }
 
@@ -385,19 +430,6 @@ void CClientViewport::GetAllPlayersInfo(void)
 	{
 		GetPlayerInfo(i)->Update();
 	}
-}
-
-bool CClientViewport::IsScoreBoardVisible(void)
-{
-	return false;
-}
-
-void CClientViewport::ShowScoreBoard(void)
-{
-}
-
-void CClientViewport::HideScoreBoard(void)
-{
 }
 
 void CClientViewport::UpdateSpectatorPanel()

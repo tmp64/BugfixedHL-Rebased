@@ -30,6 +30,7 @@ void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 
 void CClientVGUI::Start()
 {
+	g_pViewport->Start();
 }
 
 void CClientVGUI::SetParent(vgui2::VPANEL parent)
@@ -43,10 +44,12 @@ int CClientVGUI::UseVGUI1()
 
 void CClientVGUI::HideScoreBoard()
 {
+	g_pViewport->HideScoreBoard();
 }
 
 void CClientVGUI::HideAllVGUIMenu()
 {
+	g_pViewport->HideAllVGUIMenu();
 }
 
 void CClientVGUI::ActivateClientUI()

@@ -1,0 +1,6 @@
+#ifndef VGUI_VIEWPORT_PANEL_NAME_H
+#define VGUI_VIEWPORT_PANEL_NAME_H
+
+#define VIEWPORT_PANEL_SCORE "ScorePanel"
+
+#endif

@@ -1,7 +1,9 @@
 #ifndef VGUI_CLIENT_VIEWPORT_H
 #define VGUI_CLIENT_VIEWPORT_H
+#include <vector>
 #include <vgui_controls/Frame.h>
 #include <global_consts.h>
+#include "IViewportPanel.h"
 
 enum
 {
@@ -32,20 +34,34 @@ enum
 	MENU_VOICETWEAK = 50
 };
 
+class CScorePanel;
+
 class CClientViewport : public vgui2::EditablePanel
 {
 	DECLARE_CLASS_SIMPLE(CClientViewport, vgui2::EditablePanel);
 
 public:
 	CClientViewport();
+	void Start();
 	bool LoadHudAnimations();
 	void ReloadScheme(const char *fromFile);
 	void ActivateClientUI();
 	void HideClientUI();
 
 	void ShowVGUIMenu(int iMenu);
+	void HideAllVGUIMenu();
+	bool IsScoreBoardVisible();
+	void ShowScoreBoard();
+	void HideScoreBoard();
 
 	const char *GetServerName();
+	Color GetTeamColor(int team);
+
+	// Panel accessors
+	inline CScorePanel *GetScoreBoard()
+	{
+		return m_pScorePanel;
+	}
 
 	// TeamFortressViewport stubs
 	void UpdateCursorState();
@@ -57,14 +73,14 @@ public:
 	bool AllowedToPrintText(void);
 	void DeathMsg(int killer, int victim);
 	void GetAllPlayersInfo(void);
-	bool IsScoreBoardVisible(void);
-	void ShowScoreBoard(void);
-	void HideScoreBoard(void);
 	void UpdateSpectatorPanel();
 	int KeyInput(int down, int keynum, const char *pszCurrentBinding);
 
 private:
+	std::vector<IViewportPanel *> m_Panels;
+
 	vgui2::AnimationController *m_pAnimController = nullptr;
+	CScorePanel *m_pScorePanel = nullptr;
 
 	int m_iNumberOfTeams = 0;
 	int m_iAllowSpectators = 0;
@@ -73,7 +89,19 @@ private:
 	int m_iGotAllMOTD = 0;
 	char m_szMOTD[MAX_UNICODE_MOTD_LENGTH];
 
-	void UpdateOnPlayerInfo();
+	Color m_pTeamColors[5] = {
+		Color(216, 216, 216, 255), // "Off" white (default)
+		Color(125, 165, 210, 255), // Blue
+		Color(200, 90, 70, 255), // Red
+		Color(225, 205, 45, 255), // Yellow
+		Color(145, 215, 140, 255) // Green
+	};
+
+	// Panel handling
+	void CreateDefaultPanels();
+	void AddNewPanel(IViewportPanel *panel);
+
+	void UpdateOnPlayerInfo(int client);
 
 public:
 	// Messages
@@ -92,6 +120,11 @@ public:
 	void MsgFunc_Spectator(const char *pszName, int iSize, void *pbuf);
 	void MsgFunc_AllowSpec(const char *pszName, int iSize, void *pbuf);
 };
+
+inline Color CClientViewport::GetTeamColor(int team)
+{
+	return m_pTeamColors[team % ARRAYSIZE(m_pTeamColors)];
+}
 
 extern CClientViewport *g_pViewport;
 

@@ -75,5 +75,6 @@ add_sources(
 )
 
 add_subdirectory( hl )
-add_subdirectory( vgui )
 add_subdirectory( hud )
+add_subdirectory( lodepng )
+add_subdirectory( vgui )

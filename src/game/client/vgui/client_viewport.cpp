@@ -135,6 +135,13 @@ void CClientViewport::HideClientUI()
 	SetVisible(false);
 }
 
+void CClientViewport::OnThink()
+{
+	m_pAnimController->UpdateAnimations(gEngfuncs.GetClientTime());
+
+	BaseClass::OnThink();
+}
+
 void CClientViewport::ShowVGUIMenu(int iMenu)
 {
 	// Don't open menus in demo playback

@@ -48,6 +48,8 @@ public:
 	void ActivateClientUI();
 	void HideClientUI();
 
+	virtual void OnThink();
+
 	void ShowVGUIMenu(int iMenu);
 	void HideAllVGUIMenu();
 	bool IsScoreBoardVisible();

@@ -151,6 +151,17 @@ void CScorePanel::ApplySchemeSettings(vgui2::IScheme *pScheme)
 	EnableMousePointer(false);
 }
 
+void CScorePanel::OnThink()
+{
+	if (IsVisible() && m_flLastUpdate < gHUD.m_flTime)
+	{
+		UpdateAllClients();
+		m_flLastUpdate = gHUD.m_flTime + 0.5;
+	}
+
+	BaseClass::OnThink();
+}
+
 void CScorePanel::ShowPanel(bool state)
 {
 	if (m_pImageList == NULL)

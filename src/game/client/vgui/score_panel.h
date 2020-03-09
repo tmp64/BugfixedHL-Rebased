@@ -46,6 +46,7 @@ public:
 	virtual ~CScorePanel();
 
 	virtual void ApplySchemeSettings(vgui2::IScheme *pScheme);
+	virtual void OnThink();
 
 	void FullUpdate();
 	void UpdateClientInfo(int client, bool autoUpdate = true); // autoUpdate - whether to update player count and resize at the end of client update
@@ -134,6 +135,8 @@ private:
 	int m_iMinHeight = 320;
 	int m_iMutedIconIndex = 0;
 	int m_iSpectatorSection = -1;
+
+	float m_flLastUpdate = 0;
 
 	vgui2::ImageList *m_pImageList;
 	CUtlMap<CSteamID, int> m_mapAvatarsToImageList;

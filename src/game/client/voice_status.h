@@ -9,10 +9,6 @@
 #define VOICE_STATUS_H
 #pragma once
 
-#if 1
-#include "voice_status_stub.h"
-#else
-
 #include "VGUI_Label.h"
 #include "VGUI_LineBorder.h"
 #include "VGUI_ImagePanel.h"
@@ -215,5 +211,4 @@ public:
 // Get the (global) voice manager.
 CVoiceStatus *GetClientVoiceMgr();
 
-#endif
 #endif // VOICE_STATUS_H

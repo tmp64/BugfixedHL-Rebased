@@ -51,10 +51,8 @@ add_sources(
 	view.h
 	voice_banmgr.cpp
 	voice_banmgr.h
-	#voice_status.cpp
+	voice_status.cpp
 	voice_status.h
-	voice_status_stub.cpp
-	voice_status_stub.h
 	wrect.h
 	
 	# Weapons

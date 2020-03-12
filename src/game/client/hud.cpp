@@ -52,55 +52,6 @@
 #include "hud/status_icons.h"
 #include "hud/menu.h"
 
-class CHLVoiceStatusHelper : public IVoiceStatusHelper
-{
-public:
-	virtual void GetPlayerTextColor(int entindex, int color[3])
-	{
-		color[0] = color[1] = color[2] = 255;
-
-		int iTeam = 0;
-
-		if (entindex >= 1 && entindex <= MAX_PLAYERS)
-		{
-			iTeam = GetPlayerInfo(entindex)->Update()->GetTeamNumber();
-
-			if (iTeam < 0)
-			{
-				iTeam = 0;
-			}
-		}
-
-		// FIXME:
-		/*iTeam = iTeam % iNumberOfTeamColors;
-
-		color[0] = iTeamColors[iTeam][0];
-		color[1] = iTeamColors[iTeam][1];
-		color[2] = iTeamColors[iTeam][2];*/
-	}
-
-	virtual void UpdateCursorState()
-	{
-		g_pViewport->UpdateCursorState();
-	}
-
-	virtual int GetAckIconHeight()
-	{
-		return ScreenHeight - gHUD.m_iFontHeight * 3 - 6;
-	}
-
-	virtual bool CanShowSpeakerLabels()
-	{
-		// FIXME:
-		/*if (g_pViewport && g_pViewport->m_pScoreBoard)
-			return !g_pViewport->m_pScoreBoard->isVisible();
-		else
-			return false;*/
-		return true;
-	}
-};
-static CHLVoiceStatusHelper g_VoiceStatusHelper;
-
 extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
 
 extern cvar_t *sensitivity;
@@ -229,9 +180,7 @@ void CHud::Init(void)
 	RegisterHudElem<CHudStatusIcons>();
 	RegisterHudElem<CHudMenu>();
 
-	RegisterHudElem<CVoiceStatus>();
-	CVoiceStatus::Get()->SetVoiceStatusHelper(&g_VoiceStatusHelper);
-	CVoiceStatus::Get()->SetParentPanel((vgui::Panel **)&g_pViewport);
+	ClientVoiceMgr_Init();
 
 	// Init HUD elements
 	for (CHudElem *i : m_HudList)
@@ -375,6 +324,7 @@ void CHud::Frame(double time)
 
 void CHud::Shutdown()
 {
+	ClientVoiceMgr_Shutdown();
 }
 
 int CHud::MsgFunc_Logo(const char *pszName, int iSize, void *pbuf)

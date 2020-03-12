@@ -728,10 +728,6 @@ void CL_DLLEXPORT CL_CreateMove(float frametime, struct usercmd_s *cmd, int acti
 	//
 	cmd->buttons = CL_ButtonBits(1);
 
-	// If they're in a modal dialog, ignore the attack button.
-	if (GetClientVoiceMgr()->IsInSquelchMode())
-		cmd->buttons &= ~IN_ATTACK;
-
 	// Using joystick?
 	if (in_joystick->value)
 	{

@@ -1,5 +1,6 @@
 #include "hud.h"
 #include "player_info.h"
+#include "com_model.h"
 
 team_info_t g_TeamInfo[MAX_TEAMS + 1];
 
@@ -52,6 +53,15 @@ int CPlayerInfo::GetBottomColor()
 	return m_EngineInfo.bottomcolor;
 }
 
+uint64 CPlayerInfo::GetSteamID64()
+{
+	Assert(m_bIsConnected);
+	player_info_t *info = GetEnginePlayerInfo();
+	if (info->m_nSteamID / 10000000000000000LL == 7)	// Check whether first digit is 7
+		return info->m_nSteamID;
+	return 0;
+}
+
 int CPlayerInfo::GetFrags()
 {
 	Assert(m_bIsConnected);
@@ -93,4 +103,13 @@ CPlayerInfo *CPlayerInfo::Update()
 	m_bIsConnected = m_EngineInfo.name != nullptr;
 
 	return this;
+}
+
+player_info_t *CPlayerInfo::GetEnginePlayerInfo()
+{
+	Assert(m_bIsConnected);
+	if (!m_EngineInfo.name)
+		return nullptr;
+	player_info_t *ptr = reinterpret_cast<player_info_t *>(m_EngineInfo.name - offsetof(player_info_t, name));
+	return ptr;
 }

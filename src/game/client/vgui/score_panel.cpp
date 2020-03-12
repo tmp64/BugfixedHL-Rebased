@@ -654,9 +654,8 @@ void CScorePanel::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
 		return;
 
 	// Update their avatar
-	// TODO: SteamID
-	//uint64 steamID64 = GetPlayerSteamID64(playerIndex);
-	uint64 steamID64 = 0;
+	uint64 steamID64 = GetPlayerInfo(playerIndex)->GetSteamID64();
+
 	if (hud_scoreboard_showavatars.GetBool() && ClientSteamContext().SteamFriends() && ClientSteamContext().SteamUtils() && steamID64)
 	{
 		CSteamID steamIDForPlayer(steamID64);
@@ -815,9 +814,8 @@ void CScorePanel::OpenPlayerMenu(int itemID)
 		return;
 
 	// SteamID64
-	// TODO: SteamID
-	//m_pMenuInfo.steamID64 = GetPlayerSteamID64(m_pMenuInfo.client);
-	m_pMenuInfo.steamID64 = 0;
+	m_pMenuInfo.steamID64 = GetPlayerInfo(m_pMenuInfo.client)->GetSteamID64();
+
 	if (m_pMenuInfo.steamID64 != 0)
 	{
 		m_pMenu->SetItemEnabled(m_pMenuInfo.profilePageItemID, true);

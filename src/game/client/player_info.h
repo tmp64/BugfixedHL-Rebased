@@ -16,6 +16,8 @@
 #define PLAYER_INFO_H
 #include <tier0/dbg.h>
 
+typedef struct player_info_s player_info_t;
+
 struct extra_player_info_t
 {
 	short frags;
@@ -59,6 +61,7 @@ public:
 	const char *GetModel();
 	int GetTopColor();
 	int GetBottomColor();
+	uint64 GetSteamID64();
 
 	// Extra info (from HUD messages)
 	int GetFrags();
@@ -78,6 +81,8 @@ private:
 	extra_player_info_t m_ExtraInfo;
 	bool m_bIsConnected;
 	bool m_bIsSpectator;
+
+	player_info_t *GetEnginePlayerInfo();
 
 	static CPlayerInfo m_sPlayerInfo[MAX_PLAYERS + 1];
 	friend CPlayerInfo *GetPlayerInfo(int idx);

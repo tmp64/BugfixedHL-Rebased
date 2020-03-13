@@ -76,8 +76,9 @@ static void DumpPanel(vgui2::VPANEL panel, int offset, bool bParentVisible)
 		offset = sizeof(buf) - 1;
 	buf[offset] = '\0';
 
-	int wide, tall;
+	int wide, tall, x, y;
 	g_pVGuiPanel->GetSize(panel, wide, tall);
+	g_pVGuiPanel->GetPos(panel, x, y);
 
 	bool bIsVisible = g_pVGuiPanel->IsVisible(panel) && bParentVisible;
 	Color color = console::GetColor();
@@ -89,10 +90,10 @@ static void DumpPanel(vgui2::VPANEL panel, int offset, bool bParentVisible)
 			color = ConColor::Red;
 	}
 
-	ConPrintf(color, "%s%s [%s %d x %d]\n", buf,
+	ConPrintf(color, "%s%s [%s %d x %d] @ (%d; %d)\n", buf,
 	    g_pVGuiPanel->GetName(panel),
 	    g_pVGuiPanel->GetClassName(panel),
-	    wide, tall);
+	    wide, tall, x, y);
 
 	int count = g_pVGuiPanel->GetChildCount(panel);
 	for (int i = 0; i < count; i++)

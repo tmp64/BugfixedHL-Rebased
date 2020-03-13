@@ -188,6 +188,8 @@ void CHud::Init(void)
 
 	m_HudList.shrink_to_fit();
 	MsgFunc_ResetHUD(0, 0, NULL);
+
+	g_pViewport->ReloadLayout();
 }
 
 CHud::CHud()

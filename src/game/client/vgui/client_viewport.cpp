@@ -108,6 +108,11 @@ void CClientViewport::ReloadScheme(const char *fromFile)
 
 	SetProportional(true);
 
+	InvalidateLayout(true, true);
+}
+
+void CClientViewport::ReloadLayout()
+{
 	// reload the .res file from disk
 	LoadControlSettings(VGUI2_ROOT_DIR "scripts/HudLayout.res");
 
@@ -138,6 +143,18 @@ void CClientViewport::HideClientUI()
 void CClientViewport::OnThink()
 {
 	m_pAnimController->UpdateAnimations(gEngfuncs.GetClientTime());
+
+	int wide, tall;
+	int rootWide, rootTall;
+	GetSize(wide, tall);
+	g_pVGuiPanel->GetSize(GetVParent(), rootWide, rootTall);
+
+	if (wide != rootWide || tall != rootTall)
+	{
+		SetBounds(0, 0, rootWide, rootTall);
+		ReloadScheme(nullptr);
+		ReloadLayout();
+	}
 
 	BaseClass::OnThink();
 }

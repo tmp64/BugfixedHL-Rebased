@@ -45,6 +45,7 @@ public:
 	void Start();
 	bool LoadHudAnimations();
 	void ReloadScheme(const char *fromFile);
+	void ReloadLayout();
 	void ActivateClientUI();
 	void HideClientUI();
 

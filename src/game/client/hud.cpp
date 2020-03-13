@@ -51,6 +51,8 @@
 #include "hud/text_message.h"
 #include "hud/status_icons.h"
 #include "hud/menu.h"
+#include "hud/voice_status.h"
+#include "hud/voice_status_self.h"
 
 extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
 
@@ -179,6 +181,8 @@ void CHud::Init(void)
 	RegisterHudElem<CHudTextMessage>();
 	RegisterHudElem<CHudStatusIcons>();
 	RegisterHudElem<CHudMenu>();
+	RegisterHudElem<CHudVoiceStatus>();
+	RegisterHudElem<CHudVoiceStatusSelf>();
 
 	ClientVoiceMgr_Init();
 
@@ -315,6 +319,8 @@ void CHud::VidInit(void)
 void CHud::Frame(double time)
 {
 	vgui2::GetAnimationController()->UpdateAnimations(gEngfuncs.GetClientTime());
+
+	CHudVoiceStatus::Get()->RunFrame(time);
 
 	while (m_NextFrameQueue.size())
 	{

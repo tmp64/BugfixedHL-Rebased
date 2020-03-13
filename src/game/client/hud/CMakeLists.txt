@@ -34,4 +34,8 @@ add_sources(
 	text_message.h
 	train.cpp
 	train.h
+	voice_status.cpp
+	voice_status.h
+	voice_status_self.cpp
+	voice_status_self.h
 )

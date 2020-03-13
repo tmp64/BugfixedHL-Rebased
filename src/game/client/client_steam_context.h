@@ -7,6 +7,7 @@
 
 #include <steam/steamtypes.h>
 #include <steam/steam_api.h>
+#include <steam/steamclientpublic.h>
 #include <utldelegate.h>
 #include <utlvector.h>
 

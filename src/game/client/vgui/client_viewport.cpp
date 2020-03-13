@@ -22,6 +22,12 @@ int g_iUser3 = 0;
 
 CClientViewport *g_pViewport = nullptr;
 
+CON_COMMAND(hud_reloadscheme, "Reloads hud layout and animation scripts.")
+{
+	g_pViewport->ReloadScheme(nullptr);
+	g_pViewport->ReloadLayout();
+}
+
 CClientViewport::CClientViewport()
     : BaseClass(nullptr, "CClientViewport")
 {

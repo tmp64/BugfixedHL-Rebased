@@ -52,6 +52,8 @@ public:
 	// returns false if the player can't hear the other client due to game rules (eg. the other team)
 	bool IsPlayerAudible(int iPlayerIndex);
 
+	bool IsPlayerSpeaking(int iPlayerIndex);
+
 	// blocks the target client from being heard
 	void SetPlayerBlockedState(int iPlayerIndex, bool blocked);
 

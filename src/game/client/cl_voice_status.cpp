@@ -430,6 +430,12 @@ bool CVoiceStatus::IsPlayerAudible(int iPlayer)
 	return !!m_AudiblePlayers[iPlayer - 1];
 }
 
+bool CVoiceStatus::IsPlayerSpeaking(int iPlayerIndex)
+{
+	Assert(iPlayerIndex >= 1 && iPlayerIndex <= MAX_PLAYERS);
+	return m_VoicePlayers[iPlayerIndex - 1];
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: blocks/unblocks the target client from being heard
 // Input  : playerID -

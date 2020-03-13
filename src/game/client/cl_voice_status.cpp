@@ -23,7 +23,7 @@
 #include "parsemsg.h"
 #include "demo.h"
 #include "demo_api.h"
-#include "voice_status.h"
+#include "cl_voice_status.h"
 #include "r_efx.h"
 #include "entity_types.h"
 

@@ -4,6 +4,8 @@ add_sources(
 	cdll_int.cpp
 	cl_dll.h
 	cl_util.h
+	cl_voice_status.cpp
+	cl_voice_status.h
 	client_steam_context.cpp
 	client_steam_context.h
 	client_vgui.cpp
@@ -51,8 +53,6 @@ add_sources(
 	view.h
 	voice_banmgr.cpp
 	voice_banmgr.h
-	voice_status.cpp
-	voice_status.h
 	wrect.h
 	
 	# Weapons

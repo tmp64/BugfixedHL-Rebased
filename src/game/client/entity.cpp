@@ -14,7 +14,7 @@
 #include "pm_shared.h"
 #include "Exports.h"
 #include "hud/spectator.h"
-#include "voice_status.h"
+#include "cl_voice_status.h"
 
 #include "particleman.h"
 extern IParticleMan *g_pParticleMan;

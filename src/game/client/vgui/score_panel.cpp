@@ -17,7 +17,7 @@
 #include "hud.h"
 #include "hud/text_message.h"
 #include "cl_util.h"
-#include "voice_status.h"
+#include "cl_voice_status.h"
 #include "client_steam_context.h"
 
 #include "client_vgui.h"

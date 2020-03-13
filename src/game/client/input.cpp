@@ -20,7 +20,7 @@ extern "C"
 #include <string.h>
 #include <ctype.h>
 #include "Exports.h"
-#include "voice_status.h"
+#include "cl_voice_status.h"
 #include "hud/health.h"
 #include "hud/spectator.h"
 

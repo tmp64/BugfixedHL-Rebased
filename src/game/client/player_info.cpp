@@ -57,7 +57,7 @@ uint64 CPlayerInfo::GetSteamID64()
 {
 	Assert(m_bIsConnected);
 	player_info_t *info = GetEnginePlayerInfo();
-	if (info->m_nSteamID / 10000000000000000LL == 7)	// Check whether first digit is 7
+	if (info->m_nSteamID / 10000000000000000LL == 7) // Check whether first digit is 7
 		return info->m_nSteamID;
 	return 0;
 }

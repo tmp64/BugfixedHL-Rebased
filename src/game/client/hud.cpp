@@ -200,14 +200,8 @@ CHud::CHud()
 {
 }
 
-// CHud destructor
-// cleans up memory allocated for m_rg* arrays
 CHud::~CHud()
 {
-	for (CHudElem *i : m_HudList)
-	{
-		delete i;
-	}
 }
 
 // GetSpriteIndex()
@@ -333,6 +327,14 @@ void CHud::Frame(double time)
 void CHud::Shutdown()
 {
 	ClientVoiceMgr_Shutdown();
+
+	for (CHudElem *i : m_HudList)
+	{
+		// VGUI2 is shut down before HUD_Shutdown is called.
+		// vgui2::~Panel calls VGUI2 interfaces which are not available.
+		if (!dynamic_cast<vgui2::Panel *>(i))
+			delete i;
+	}
 }
 
 int CHud::MsgFunc_Logo(const char *pszName, int iSize, void *pbuf)

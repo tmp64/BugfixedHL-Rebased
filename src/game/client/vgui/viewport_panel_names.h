@@ -2,5 +2,6 @@
 #define VGUI_VIEWPORT_PANEL_NAME_H
 
 #define VIEWPORT_PANEL_SCORE "ScorePanel"
+#define VIEWPORT_PANEL_MOTD  "ClientMOTD"
 
 #endif

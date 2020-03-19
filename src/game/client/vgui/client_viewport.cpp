@@ -12,6 +12,7 @@
 #include "cl_util.h"
 
 #include "score_panel.h"
+#include "client_motd.h"
 
 // FIXME: Move it to hud.cpp
 int g_iPlayerClass;
@@ -128,6 +129,7 @@ void CClientViewport::ReloadLayout()
 void CClientViewport::CreateDefaultPanels()
 {
 	AddNewPanel(m_pScorePanel = new CScorePanel());
+	AddNewPanel(m_pMOTD = new CClientMOTD());
 }
 
 void CClientViewport::AddNewPanel(IViewportPanel *panel)
@@ -183,7 +185,7 @@ void CClientViewport::ShowVGUIMenu(int iMenu)
 		// TODO: Team menu
 		break;
 	case MENU_MOTD:
-		// TODO: MOTD dialog
+		m_pMOTD->Activate(m_szServerName, m_szMOTD);
 		break;
 
 	case MENU_CLASSHELP:

@@ -35,6 +35,7 @@ enum
 };
 
 class CScorePanel;
+class CClientMOTD;
 
 class CClientViewport : public vgui2::EditablePanel
 {
@@ -84,12 +85,13 @@ private:
 
 	vgui2::AnimationController *m_pAnimController = nullptr;
 	CScorePanel *m_pScorePanel = nullptr;
+	CClientMOTD *m_pMOTD = nullptr;
 
 	int m_iNumberOfTeams = 0;
 	int m_iAllowSpectators = 0;
 	char m_szServerName[MAX_SERVERNAME_LENGTH] = "<ERROR>";
 
-	int m_iGotAllMOTD = 0;
+	int m_iGotAllMOTD = 1;
 	char m_szMOTD[MAX_UNICODE_MOTD_LENGTH];
 
 	Color m_pTeamColors[5] = {

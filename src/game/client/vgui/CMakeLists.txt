@@ -2,6 +2,8 @@ add_sources(
 	CMakeLists.txt
 	avatar_image.cpp
 	avatar_image.h
+	client_motd.cpp
+	client_motd.h
 	client_viewport.cpp
 	client_viewport.h
 	player_list_panel.cpp

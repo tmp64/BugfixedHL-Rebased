@@ -24,7 +24,7 @@ add_sources(
 	message.h
 	saytext.cpp
 	saytext.h
-	spectator_stub.cpp
+	spectator.cpp
 	spectator.h
 	status_icons.cpp
 	status_icons.h

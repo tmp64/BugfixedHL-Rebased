@@ -9,10 +9,9 @@
 #include <vgui_controls/MessageMap.h>
 #include <vgui/ISurface.h>
 #include "avatar_image.h"
-#if defined(_X360)
-#include "xbox/xbox_win32stubs.h"
-#endif
+#include "tga_image.h"
 #include "client_steam_context.h"
+#include "client_vgui.h"
 #include "KeyValues.h"
 #include "hud.h"
 #include "cl_util.h"
@@ -23,6 +22,8 @@ DECLARE_BUILD_FACTORY(CAvatarImagePanel);
 
 CUtlMap<AvatarImagePair_t, int> CAvatarImage::s_AvatarImageCache; // cache of steam id's to textureids to use for images
 bool CAvatarImage::m_sbInitializedAvatarCache = false;
+
+static CTGAImage *s_DefaultAvatarImage = nullptr;
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -51,7 +52,12 @@ CAvatarImage::CAvatarImage(void)
 	// [menglish] Default icon for avatar icons if there is no avatar icon for the player
 	m_iTextureID = -1;
 
-	m_pDefaultImage = NULL;
+	if (!s_DefaultAvatarImage)
+	{
+		s_DefaultAvatarImage = new CTGAImage(VGUI2_ROOT_DIR "gfx/default_avatar");
+	}
+
+	m_pDefaultImage = s_DefaultAvatarImage;
 
 	SetAvatarSize(DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE);
 

@@ -10,7 +10,7 @@
 #include "cl_entity.h"
 #include "triangleapi.h"
 #include "vgui/client_viewport.h"
-#include "vgui/SpectatorPanel.h"
+#include "vgui/spectator_panel.h"
 #include "hltv.h"
 
 #include "pm_shared.h"
@@ -26,6 +26,7 @@
 #include "studio_util.h"
 #include "screenfade.h"
 
+#include "spectator.h"
 #include "saytext.h"
 #include "text_message.h"
 #include "message.h"
@@ -47,37 +48,6 @@ extern vec3_t v_cl_angles; // last client/mouse angle
 extern vec3_t v_sim_org; // last sim origin
 
 DEFINE_HUD_ELEM(CHudSpectator);
-
-#if 0 
-const char *GetSpectatorLabel ( int iMode )
-{
-	switch ( iMode )
-	{
-		case OBS_CHASE_LOCKED:
-			return "#OBS_CHASE_LOCKED";
-
-		case OBS_CHASE_FREE:
-			return "#OBS_CHASE_FREE";
-
-		case OBS_ROAMING:
-			return "#OBS_ROAMING";
-		
-		case OBS_IN_EYE:
-			return "#OBS_IN_EYE";
-
-		case OBS_MAP_FREE:
-			return "#OBS_MAP_FREE";
-
-		case OBS_MAP_CHASE:
-			return "#OBS_MAP_CHASE";
-
-		case OBS_NONE:
-		default:
-			return "#OBS_NONE";
-	}
-}
-
-#endif
 
 void SpectatorMode(void)
 {
@@ -116,48 +86,30 @@ void SpectatorSpray(void)
 }
 void SpectatorHelp(void)
 {
-	if (gViewPort)
-	{
-		gViewPort->ShowVGUIMenu(MENU_SPECHELP);
-	}
-	else
-	{
-		char *text = CHudTextMessage::BufferedLocaliseTextString("#Spec_Help_Text");
+	char *text = CHudTextMessage::BufferedLocaliseTextString("#Spec_Help_Text");
 
-		if (text)
+	if (text)
+	{
+		while (*text)
 		{
-			while (*text)
-			{
-				if (*text != 13)
-					gEngfuncs.Con_Printf("%c", *text);
-				text++;
-			}
+			if (*text != 13)
+				gEngfuncs.Con_Printf("%c", *text);
+			text++;
 		}
 	}
-}
-
-void SpectatorMenu(void)
-{
-	if (gEngfuncs.Cmd_Argc() <= 1)
-	{
-		gEngfuncs.Con_Printf("usage:  spec_menu <0|1>\n");
-		return;
-	}
-
-	gViewPort->m_pSpectatorPanel->ShowMenu(atoi(gEngfuncs.Cmd_Argv(1)) != 0);
 }
 
 void ToggleScores(void)
 {
-	if (gViewPort)
+	if (g_pViewport)
 	{
-		if (gViewPort->IsScoreBoardVisible())
+		if (g_pViewport->IsScoreBoardVisible())
 		{
-			gViewPort->HideScoreBoard();
+			g_pViewport->HideScoreBoard();
 		}
 		else
 		{
-			gViewPort->ShowScoreBoard();
+			g_pViewport->ShowScoreBoard();
 		}
 	}
 }
@@ -184,7 +136,6 @@ void CHudSpectator::Init()
 	gEngfuncs.pfnAddCommand("spec_mode", SpectatorMode);
 	gEngfuncs.pfnAddCommand("spec_decal", SpectatorSpray);
 	gEngfuncs.pfnAddCommand("spec_help", SpectatorHelp);
-	gEngfuncs.pfnAddCommand("spec_menu", SpectatorMenu);
 	gEngfuncs.pfnAddCommand("togglescores", ToggleScores);
 
 	m_drawnames = gEngfuncs.pfnRegisterVariable("spec_drawnames", "1", 0);
@@ -634,13 +585,14 @@ void CHudSpectator::Draw(float flTime)
 		return;
 
 	// make sure we have player info
-	gViewPort->GetAllPlayersInfo();
+	g_pViewport->GetAllPlayersInfo();
 
 	// loop through all the players and draw additional infos to their sprites on the map
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
+		CPlayerInfo *pi = GetPlayerInfo(i + 1);
 
-		if (m_vPlayerPos[i][2] < 0) // marked as invisible ?
+		if (!pi->IsConnected() || m_vPlayerPos[i][2] < 0) // marked as invisible ?
 			continue;
 
 		// check if name would be in inset window
@@ -653,7 +605,7 @@ void CHudSpectator::Draw(float flTime)
 		color = GetClientColor(i + 1);
 
 		// draw the players name and health underneath
-		sprintf(string, "%s", g_PlayerInfoList[i + 1].name);
+		sprintf(string, "%s", pi->GetName());
 
 		lx = strlen(string) * 3; // 3 is avg. character length :)
 
@@ -784,13 +736,14 @@ void CHudSpectator::DirectorMessage(int iSize, void *pbuf)
 		m_iSpectatorNumber = READ_LONG(); // total number of spectator
 		READ_WORD(); // total number of relay proxies
 
-		gViewPort->UpdateSpectatorPanel();
+		g_pViewport->UpdateSpectatorPanel();
 		break;
 
 	case DRC_CMD_BANNER:
 		// gEngfuncs.Con_DPrintf("GUI: Banner %s\n",READ_STRING() ); // name of banner tga eg gfx/temp/7454562234563475.tga
-		gViewPort->m_pSpectatorPanel->m_TopBanner->LoadImage(READ_STRING());
-		gViewPort->UpdateSpectatorPanel();
+		// FIXME: Is this even used?
+		//g_pViewport->GetSpectator()->m_TopBanner->LoadImage(READ_STRING());
+		//g_pViewport->UpdateSpectatorPanel();
 		break;
 
 	case DRC_CMD_STUFFTEXT:
@@ -893,7 +846,7 @@ void CHudSpectator::FindNextPlayer(bool bReverse)
 	int iDir = bReverse ? -1 : 1;
 
 	// make sure we have player info
-	gViewPort->GetAllPlayersInfo();
+	g_pViewport->GetAllPlayersInfo();
 
 	do
 	{
@@ -933,7 +886,6 @@ void CHudSpectator::FindNextPlayer(bool bReverse)
 	}
 
 	iJumpSpectator = 1;
-	gViewPort->MsgFunc_ResetFade(NULL, 0, NULL);
 }
 
 void CHudSpectator::FindPlayer(const char *name)
@@ -954,19 +906,18 @@ void CHudSpectator::FindPlayer(const char *name)
 	g_iUser2 = 0;
 
 	// make sure we have player info
-	gViewPort->GetAllPlayersInfo();
+	g_pViewport->GetAllPlayersInfo();
 
 	cl_entity_t *pEnt = NULL;
 
-	for (int i = 1; i < MAX_PLAYERS; i++)
+	for (int i = 1; i <= MAX_PLAYERS; i++)
 	{
-
 		pEnt = gEngfuncs.GetEntityByIndex(i);
 
 		if (!IsActivePlayer(pEnt))
 			continue;
 
-		if (!_stricmp(g_PlayerInfoList[pEnt->index].name, name))
+		if (!_stricmp(GetPlayerInfo(i)->GetName(), name))
 		{
 			g_iUser2 = i;
 			break;
@@ -989,7 +940,6 @@ void CHudSpectator::FindPlayer(const char *name)
 	}
 
 	iJumpSpectator = 1;
-	gViewPort->MsgFunc_ResetFade(NULL, 0, NULL);
 }
 
 void CHudSpectator::HandleButtonsDown(int ButtonPressed)
@@ -1001,7 +951,7 @@ void CHudSpectator::HandleButtonsDown(int ButtonPressed)
 
 	// gEngfuncs.Con_Printf(" HandleButtons:%i\n", ButtonPressed );
 
-	if (!gViewPort)
+	if (!g_pViewport)
 		return;
 
 	//Not in intermission.
@@ -1017,10 +967,6 @@ void CHudSpectator::HandleButtonsDown(int ButtonPressed)
 	// Slow down mouse clicks.
 	if (m_flNextObserverInput > time)
 		return;
-
-	// enable spectator screen
-	if (ButtonPressed & IN_DUCK)
-		gViewPort->m_pSpectatorPanel->ShowMenu(!gViewPort->m_pSpectatorPanel->m_menuVisible);
 
 	//  'Use' changes inset window mode
 	if (ButtonPressed & IN_USE)
@@ -1092,10 +1038,10 @@ void CHudSpectator::HandleButtonsDown(int ButtonPressed)
 
 void CHudSpectator::HandleButtonsUp(int ButtonPressed)
 {
-	if (!gViewPort)
+	if (!g_pViewport)
 		return;
 
-	if (!gViewPort->m_pSpectatorPanel->isVisible())
+	if (!g_pViewport->GetSpectator()->IsVisible())
 		return; // dont do anything if not in spectator mode
 
 	if (ButtonPressed & (IN_FORWARD | IN_BACK))
@@ -1205,20 +1151,18 @@ void CHudSpectator::SetModes(int iNewMainMode, int iNewInsetMode)
 			SetCrosshair(0, m_crosshairRect, 0, 0, 0);
 		}
 
-		gViewPort->MsgFunc_ResetFade(NULL, 0, NULL);
-
 		char string[128];
 		sprintf(string, "#Spec_Mode%d", g_iUser1);
 		sprintf(string, "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString(string));
 		CHudTextMessage::Get()->MsgFunc_TextMsg(NULL, strlen(string) + 1, string);
 	}
 
-	gViewPort->UpdateSpectatorPanel();
+	g_pViewport->UpdateSpectatorPanel();
 }
 
 bool CHudSpectator::IsActivePlayer(cl_entity_t *ent)
 {
-	return (ent && ent->player && ent->curstate.solid != SOLID_NOT && ent != gEngfuncs.GetLocalPlayer() && g_PlayerInfoList[ent->index].name != NULL);
+	return (ent && ent->player && ent->curstate.solid != SOLID_NOT && ent != gEngfuncs.GetLocalPlayer() && GetPlayerInfo(ent->index)->IsConnected());
 }
 
 bool CHudSpectator::ParseOverviewFile()
@@ -1744,7 +1688,7 @@ bool CHudSpectator::AddOverviewEntity(int type, struct cl_entity_s *ent, const c
 	{
 		if (ent->curstate.solid != SOLID_NOT)
 		{
-			switch (g_PlayerExtraInfo[ent->index].teamnumber)
+			switch (GetPlayerInfo(ent->index)->GetTeamNumber())
 			{
 			// blue and red teams are swapped in CS and TFC
 			case 1:
@@ -1857,7 +1801,7 @@ void CHudSpectator::CheckSettings()
 		m_pip->value = INSET_OFF;
 
 	// draw small border around inset view, adjust upper black bar
-	gViewPort->m_pSpectatorPanel->EnableInsetView(m_pip->value != INSET_OFF);
+	g_pViewport->GetSpectator()->EnableInsetView(m_pip->value != INSET_OFF);
 }
 
 int CHudSpectator::ToggleInset(bool allowOff)

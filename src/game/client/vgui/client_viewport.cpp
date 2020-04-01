@@ -6,13 +6,16 @@
 #include "client_vgui.h"
 
 #include <demo_api.h>
+#include <pm_shared.h>
 #include "parsemsg.h"
 #include "hud.h"
 #include "hud/text_message.h"
+#include "hud/spectator.h"
 #include "cl_util.h"
 
 #include "score_panel.h"
 #include "client_motd.h"
+#include "spectator_panel.h"
 
 // FIXME: Move it to hud.cpp
 int g_iPlayerClass;
@@ -130,6 +133,7 @@ void CClientViewport::CreateDefaultPanels()
 {
 	AddNewPanel(m_pScorePanel = new CScorePanel());
 	AddNewPanel(m_pMOTD = new CClientMOTD());
+	AddNewPanel(m_pSpectatorPanel = new CSpectatorPanel());
 }
 
 void CClientViewport::AddNewPanel(IViewportPanel *panel)
@@ -151,6 +155,12 @@ void CClientViewport::HideClientUI()
 void CClientViewport::OnThink()
 {
 	m_pAnimController->UpdateAnimations(gEngfuncs.GetClientTime());
+
+	// See if the Spectator Menu needs to be update
+	if ((g_iUser1 != m_iUser1 || g_iUser2 != m_iUser2) || (m_flSpectatorPanelLastUpdated < gHUD.m_flTime))
+	{
+		UpdateSpectatorPanel();
+	}
 
 	int wide, tall;
 	int rootWide, rootTall;
@@ -226,6 +236,52 @@ void CClientViewport::ShowScoreBoard()
 void CClientViewport::HideScoreBoard()
 {
 	m_pScorePanel->ShowPanel(false);
+}
+
+void CClientViewport::UpdateSpectatorPanel()
+{
+	m_iUser1 = g_iUser1;
+	m_iUser2 = g_iUser2;
+	m_iUser3 = g_iUser3;
+
+	if (g_iUser1 && gHUD.m_pCvarDraw->value && !gHUD.m_iIntermission)
+	{
+		// check if spectator combinations are still valid
+		CHudSpectator::Get()->CheckSettings();
+
+		if (!m_pSpectatorPanel->IsVisible())
+		{
+			m_pSpectatorPanel->ShowPanel(true); // show spectator panel, but
+		}
+
+		int player = 0;
+
+		// check if we're locked onto a target, show the player's name
+		if ((g_iUser2 > 0) && (g_iUser2 <= gEngfuncs.GetMaxClients()) && (g_iUser1 != OBS_ROAMING))
+		{
+			player = g_iUser2;
+		}
+
+		// special case in free map and inset off, don't show names
+		if ((g_iUser1 != OBS_MAP_FREE && g_iUser1 != OBS_ROAMING || CHudSpectator::Get()->m_pip->value) && player && GetPlayerInfo(player)->Update()->IsConnected())
+		{
+			m_pSpectatorPanel->UpdateSpectatingPlayer(player);
+		}
+		else
+		{
+			// Hide player info panel
+			m_pSpectatorPanel->UpdateSpectatingPlayer(0);
+		}
+	}
+	else
+	{
+		if (m_pSpectatorPanel->IsVisible())
+		{
+			m_pSpectatorPanel->SetVisible(false);
+		}
+	}
+
+	m_flSpectatorPanelLastUpdated = gHUD.m_flTime + 0.5; // next update interval
 }
 
 const char *CClientViewport::GetServerName()
@@ -462,10 +518,6 @@ void CClientViewport::GetAllPlayersInfo(void)
 	{
 		GetPlayerInfo(i)->Update();
 	}
-}
-
-void CClientViewport::UpdateSpectatorPanel()
-{
 }
 
 int CClientViewport::KeyInput(int down, int keynum, const char *pszCurrentBinding)

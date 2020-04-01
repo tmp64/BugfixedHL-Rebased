@@ -36,6 +36,7 @@ enum
 
 class CScorePanel;
 class CClientMOTD;
+class CSpectatorPanel;
 
 class CClientViewport : public vgui2::EditablePanel
 {
@@ -57,7 +58,9 @@ public:
 	bool IsScoreBoardVisible();
 	void ShowScoreBoard();
 	void HideScoreBoard();
+	void UpdateSpectatorPanel();
 
+	void GetAllPlayersInfo(void);
 	const char *GetServerName();
 	Color GetTeamColor(int team);
 
@@ -65,6 +68,11 @@ public:
 	inline CScorePanel *GetScoreBoard()
 	{
 		return m_pScorePanel;
+	}
+
+	inline CSpectatorPanel *GetSpectator()
+	{
+		return m_pSpectatorPanel;
 	}
 
 	// TeamFortressViewport stubs
@@ -76,8 +84,6 @@ public:
 	bool SlotInput(int iSlot);
 	bool AllowedToPrintText(void);
 	void DeathMsg(int killer, int victim);
-	void GetAllPlayersInfo(void);
-	void UpdateSpectatorPanel();
 	int KeyInput(int down, int keynum, const char *pszCurrentBinding);
 
 private:
@@ -86,6 +92,7 @@ private:
 	vgui2::AnimationController *m_pAnimController = nullptr;
 	CScorePanel *m_pScorePanel = nullptr;
 	CClientMOTD *m_pMOTD = nullptr;
+	CSpectatorPanel *m_pSpectatorPanel = nullptr;
 
 	int m_iNumberOfTeams = 0;
 	int m_iAllowSpectators = 0;
@@ -93,6 +100,12 @@ private:
 
 	int m_iGotAllMOTD = 1;
 	char m_szMOTD[MAX_UNICODE_MOTD_LENGTH];
+
+	// Spectator panel updating
+	int m_iUser1;
+	int m_iUser2;
+	int m_iUser3;
+	float m_flSpectatorPanelLastUpdated;
 
 	Color m_pTeamColors[5] = {
 		Color(216, 216, 216, 255), // "Off" white (default)

@@ -15,14 +15,14 @@ Features
 The following features are being ported:
 
 - [ ] VGUI2
-  - [ ] Scoreboard
-  - [ ] MOTD
+  - [*] Scoreboard
+  - [*] MOTD
   - [ ] Chatbox
-  - [ ] Spectator UI
+  - [*] Spectator UI
   - [ ] Team and class selection
   - [ ] Advanced options
   - [ ] Command menu
-  - [ ] VGUI1 completely removed from the SDK
+  - [*] VGUI1 completely removed from the SDK
 - [ ] Bunnyhopping
 - [ ] Automatic demo recording
 - [ ] DirectInput

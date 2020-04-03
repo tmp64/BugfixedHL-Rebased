@@ -14,6 +14,8 @@ add_sources(
 	score_panel.h
 	spectator_panel.cpp
 	spectator_panel.h
+	team_menu.cpp
+	team_menu.h
 	tga_image.cpp
 	tga_image.h
 	viewport_panel_names.h

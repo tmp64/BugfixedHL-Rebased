@@ -5,8 +5,9 @@
 #include <IEngineVGui.h>
 #include <FileSystem.h>
 #include <KeyValues.h>
-#include <vgui_controls/Controls.h>
 #include <vgui/IPanel.h>
+#include <vgui/ILocalize.h>
+#include <vgui_controls/Controls.h>
 #include <convar.h>
 #include "console.h"
 #include "client_vgui.h"
@@ -24,6 +25,9 @@ void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 		Error("Failed to intialize VGUI2\n");
 		Assert(false);
 	}
+
+	// Add language files
+	g_pVGuiLocalize->AddFile(g_pFullFileSystem, VGUI2_ROOT_DIR "resource/language/bugfixedhl_%language%.txt");
 
 	new CClientViewport();
 }

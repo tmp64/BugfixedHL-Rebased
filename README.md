@@ -19,7 +19,7 @@ The following features are being ported:
   - [*] MOTD
   - [ ] Chatbox
   - [*] Spectator UI
-  - [ ] Team and class selection
+  - [*] Team selection
   - [ ] Advanced options
   - [ ] Command menu
   - [*] VGUI1 completely removed from the SDK

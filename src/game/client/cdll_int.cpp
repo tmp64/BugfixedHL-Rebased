@@ -33,6 +33,7 @@ extern "C"
 #include "hud/spectator.h"
 #include "vgui/client_viewport.h"
 #include "client_steam_context.h"
+#include "vgui/client_viewport.h"
 #include "Exports.h"
 
 cl_enginefunc_t gEngfuncs;
@@ -159,6 +160,7 @@ so the HUD can reinitialize itself.
 int CL_DLLEXPORT HUD_VidInit(void)
 {
 	//	RecClHudVidInit();
+	g_pViewport->VidInit();
 	gHUD.VidInit();
 
 	return 1;

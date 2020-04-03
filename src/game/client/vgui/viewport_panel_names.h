@@ -4,5 +4,6 @@
 #define VIEWPORT_PANEL_SCORE     "ScorePanel"
 #define VIEWPORT_PANEL_MOTD      "ClientMOTD"
 #define VIEWPORT_PANEL_SPECTATOR "SpectatorPanel"
+#define VIEWPORT_PANEL_TEAM_MENU "TeamMenu"
 
 #endif

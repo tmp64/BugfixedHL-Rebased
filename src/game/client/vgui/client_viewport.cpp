@@ -16,6 +16,7 @@
 #include "score_panel.h"
 #include "client_motd.h"
 #include "spectator_panel.h"
+#include "team_menu.h"
 
 // FIXME: Move it to hud.cpp
 int g_iPlayerClass;
@@ -134,6 +135,7 @@ void CClientViewport::CreateDefaultPanels()
 	AddNewPanel(m_pScorePanel = new CScorePanel());
 	AddNewPanel(m_pMOTD = new CClientMOTD());
 	AddNewPanel(m_pSpectatorPanel = new CSpectatorPanel());
+	AddNewPanel(m_pTeamMenu = new CTeamMenu());
 }
 
 void CClientViewport::AddNewPanel(IViewportPanel *panel)
@@ -150,6 +152,13 @@ void CClientViewport::ActivateClientUI()
 void CClientViewport::HideClientUI()
 {
 	SetVisible(false);
+}
+
+void CClientViewport::VidInit()
+{
+	// Reset all panels when connecting to a server
+	for (IViewportPanel *pPanel : m_Panels)
+		pPanel->Reset();
 }
 
 void CClientViewport::OnThink()
@@ -192,7 +201,7 @@ void CClientViewport::ShowVGUIMenu(int iMenu)
 	switch (iMenu)
 	{
 	case MENU_TEAM:
-		// TODO: Team menu
+		m_pTeamMenu->Activate();
 		break;
 	case MENU_MOTD:
 		m_pMOTD->Activate(m_szServerName, m_szMOTD);
@@ -328,25 +337,11 @@ void CClientViewport::MsgFunc_TeamNames(const char *pszName, int iSize, void *pb
 			if (*c == '%')
 				*c = ' ';
 		}
-
-		// TODO: Team menu
-#if 0
-		if (i < MAX_TEAMS_IN_MENU)
-		{
-			// Set the team name buttons
-			if (m_pTeamButtons[i])
-				m_pTeamButtons[i]->setText(m_sTeamNames[teamNum]);
-
-			// Set the disguise buttons
-			if (m_pDisguiseButtons[teamNum])
-				m_pDisguiseButtons[teamNum]->setText(m_sTeamNames[teamNum]);
-		}
-#endif
 	}
 
-	// TODO: Update the Team Menu
-	//if (m_pTeamMenu)
-	//	m_pTeamMenu->Update();
+	// Update the Team Menu
+	if (m_pTeamMenu)
+		m_pTeamMenu->Update();
 }
 
 void CClientViewport::MsgFunc_Feign(const char *pszName, int iSize, void *pbuf)

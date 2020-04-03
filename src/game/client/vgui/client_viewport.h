@@ -37,6 +37,7 @@ enum
 class CScorePanel;
 class CClientMOTD;
 class CSpectatorPanel;
+class CTeamMenu;
 
 class CClientViewport : public vgui2::EditablePanel
 {
@@ -50,6 +51,7 @@ public:
 	void ReloadLayout();
 	void ActivateClientUI();
 	void HideClientUI();
+	void VidInit();
 
 	virtual void OnThink();
 
@@ -63,6 +65,7 @@ public:
 	void GetAllPlayersInfo(void);
 	const char *GetServerName();
 	Color GetTeamColor(int team);
+	int GetNumberOfTeams();
 
 	// Panel accessors
 	inline CScorePanel *GetScoreBoard()
@@ -93,6 +96,7 @@ private:
 	CScorePanel *m_pScorePanel = nullptr;
 	CClientMOTD *m_pMOTD = nullptr;
 	CSpectatorPanel *m_pSpectatorPanel = nullptr;
+	CTeamMenu *m_pTeamMenu = nullptr;
 
 	int m_iNumberOfTeams = 0;
 	int m_iAllowSpectators = 0;
@@ -142,6 +146,11 @@ public:
 inline Color CClientViewport::GetTeamColor(int team)
 {
 	return m_pTeamColors[team % ARRAYSIZE(m_pTeamColors)];
+}
+
+inline int CClientViewport::GetNumberOfTeams()
+{
+	return m_iNumberOfTeams;
 }
 
 extern CClientViewport *g_pViewport;

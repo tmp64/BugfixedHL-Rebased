@@ -131,7 +131,7 @@ void CAvatarImage::LoadAvatarImage()
 	return;
 #endif
 	// attempt to retrieve the avatar image from Steam
-	if (m_bLoadPending && ClientSteamContext().SteamFriends() && ClientSteamContext().SteamUtils() && gHUD.m_flTime >= m_fNextLoadTime)
+	if (m_bLoadPending && ClientSteamContext().SteamFriends() && ClientSteamContext().SteamUtils() && gEngfuncs.GetClientTime() >= m_fNextLoadTime)
 	{
 		if (!ClientSteamContext().SteamFriends()->RequestUserInformation(m_SteamID, false))
 		{
@@ -174,7 +174,7 @@ void CAvatarImage::LoadAvatarImage()
 		else
 		{
 			// otherwise schedule another attempt to retrieve the image
-			m_fNextLoadTime = gHUD.m_flTime + 1.0f;
+			m_fNextLoadTime = gEngfuncs.GetClientTime() + 1.0f;
 		}
 	}
 }

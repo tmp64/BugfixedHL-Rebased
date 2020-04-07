@@ -20,6 +20,7 @@ public:
 	virtual ~CTeamMenu();
 
 	virtual void OnCommand(const char *pCommand) override;
+	virtual void OnKeyCodeTyped(vgui2::KeyCode code) override;
 
 	void Update();
 	void Activate();

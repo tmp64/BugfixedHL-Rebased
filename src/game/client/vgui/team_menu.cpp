@@ -65,6 +65,30 @@ void CTeamMenu::OnCommand(const char *pCommand)
 	}
 }
 
+void CTeamMenu::OnKeyCodeTyped(vgui2::KeyCode code)
+{
+	if (code >= vgui2::KEY_1 && code <= vgui2::KEY_9)
+	{
+		int num = code - vgui2::KEY_0;
+		if (num >= 1 && num <= MAX_TEAMS_IN_MENU)
+		{
+			char cmd[] = "TeamButton_#";
+			cmd[11] = '0' + num;
+			OnCommand(cmd);
+		}
+		else if (num == 5)
+			m_pAutoAssignButton->FireActionSignal();
+		else if (num == 6)
+			m_pSpectateButton->FireActionSignal();
+		else if (num == 7 && m_pCancelButton->IsVisible())
+			m_pCancelButton->FireActionSignal();
+	}
+	else
+	{
+		BaseClass::OnKeyCodeTyped(code);
+	}
+}
+
 void CTeamMenu::Update()
 {
 	char buf[128];

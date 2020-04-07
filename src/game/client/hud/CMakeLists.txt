@@ -10,6 +10,8 @@ add_sources(
 	base.cpp
 	battery.cpp
 	battery.h
+	chat.cpp
+	chat.h
 	death_notice.cpp
 	death_notice.h
 	flashlight.cpp
@@ -22,8 +24,6 @@ add_sources(
 	menu.h
 	message.cpp
 	message.h
-	saytext.cpp
-	saytext.h
 	spectator.cpp
 	spectator.h
 	status_icons.cpp

@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include "parsemsg.h"
 #include "text_message.h"
-#include "saytext.h"
+#include "chat.h"
 
 #include "vgui/client_viewport.h"
 
@@ -132,8 +132,11 @@ char *CHudTextMessage::LookupString(const char *msg, int *msg_dest)
 void StripEndNewlineFromString(char *str)
 {
 	int s = strlen(str) - 1;
-	if (str[s] == '\n' || str[s] == '\r')
-		str[s] = 0;
+	if (s >= 0)
+	{
+		if (str[s] == '\n' || str[s] == '\r')
+			str[s] = 0;
+	}
 }
 
 // converts all '\r' characters to '\n', so that the engine can deal with the properly
@@ -207,7 +210,7 @@ int CHudTextMessage::MsgFunc_TextMsg(const char *pszName, int iSize, void *pbuf)
 
 	case HUD_PRINTTALK:
 		snprintf(psz, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4);
-		CHudSayText::Get()->SayTextPrint(ConvertCRtoNL(psz), 128);
+		CHudChat::Get()->Printf(0, "%s", ConvertCRtoNL(psz));
 		break;
 
 	case HUD_PRINTCONSOLE:

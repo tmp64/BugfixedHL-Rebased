@@ -37,8 +37,8 @@
 
 // HUD Elements
 #include "hud/ammo.h"
+#include "hud/chat.h"
 #include "hud/health.h"
-#include "hud/saytext.h"
 #include "hud/spectator.h"
 #include "hud/geiger.h"
 #include "hud/train.h"
@@ -53,6 +53,8 @@
 #include "hud/menu.h"
 #include "hud/voice_status.h"
 #include "hud/voice_status_self.h"
+
+#include <vgui/ISurface.h>
 
 extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
 
@@ -168,7 +170,7 @@ void CHud::Init(void)
 	// Create HUD elements
 	RegisterHudElem<CHudAmmo>();
 	RegisterHudElem<CHudHealth>();
-	RegisterHudElem<CHudSayText>();
+	RegisterHudElem<CHudChat>();
 	RegisterHudElem<CHudSpectator>();
 	RegisterHudElem<CHudGeiger>();
 	RegisterHudElem<CHudTrain>();

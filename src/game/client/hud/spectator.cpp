@@ -27,7 +27,7 @@
 #include "screenfade.h"
 
 #include "spectator.h"
-#include "saytext.h"
+#include "chat.h"
 #include "text_message.h"
 #include "message.h"
 
@@ -126,7 +126,7 @@ void CHudSpectator::Init()
 	m_zoomDelta = 0.0f;
 	m_moveDelta = 0.0f;
 	m_FOV = 90.0f;
-	m_chatEnabled = (CHudSayText::Get()->m_HUD_saytext->value != 0);
+	m_chatEnabled = true;
 	iJumpSpectator = 0;
 
 	memset(&m_OverviewData, 0, sizeof(m_OverviewData));
@@ -1761,21 +1761,6 @@ void CHudSpectator::CheckSettings()
 	// disble in intermission screen
 	if (gHUD.m_iIntermission)
 		m_pip->value = INSET_OFF;
-
-	// check chat mode
-	if (m_chatEnabled != (CHudSayText::Get()->m_HUD_saytext->value != 0))
-	{
-		// hud_saytext changed
-		m_chatEnabled = (CHudSayText::Get()->m_HUD_saytext->value != 0);
-
-		if (gEngfuncs.IsSpectateOnly())
-		{
-			// tell proxy our new chat mode
-			char chatcmd[32];
-			sprintf(chatcmd, "ignoremsg %i", m_chatEnabled ? 0 : 1);
-			gEngfuncs.pfnServerCmd(chatcmd);
-		}
-	}
 
 	// HL/TFC has no oberserver corsshair, so set it client side
 	if ((g_iUser1 == OBS_IN_EYE) || (g_iUser1 == OBS_ROAMING))

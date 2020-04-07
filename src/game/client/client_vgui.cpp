@@ -74,11 +74,13 @@ void CClientVGUI::Shutdown()
 
 static void DumpPanel(vgui2::VPANEL panel, int offset, bool bParentVisible)
 {
-	char buf[256];
-	memset(buf, ' ', sizeof(buf));
-	if (offset * 10 >= sizeof(buf))
-		offset = sizeof(buf) - 1;
-	buf[offset] = '\0';
+	constexpr int INDENT_WIDTH = 4;
+	char indent[256];
+
+	memset(indent, ' ', sizeof(indent));
+	if (offset * INDENT_WIDTH >= sizeof(indent))
+		offset = (sizeof(indent) - 1) / INDENT_WIDTH;
+	indent[offset * INDENT_WIDTH] = '\0';
 
 	int wide, tall, x, y;
 	g_pVGuiPanel->GetSize(panel, wide, tall);
@@ -94,10 +96,16 @@ static void DumpPanel(vgui2::VPANEL panel, int offset, bool bParentVisible)
 			color = ConColor::Red;
 	}
 
-	ConPrintf(color, "%s%s [%s %d x %d] @ (%d; %d)\n", buf,
+	char flags[32];
+	snprintf(flags, sizeof(flags), "%s%s%s",
+	    g_pVGuiPanel->IsKeyBoardInputEnabled(panel) ? "K" : "",
+	    g_pVGuiPanel->IsMouseInputEnabled(panel) ? "M" : "",
+	    g_pVGuiPanel->IsPopup(panel) ? "P" : "");
+
+	ConPrintf(color, "%s%s [%s %d x %d] @ (%d; %d) [%s]\n", indent,
 	    g_pVGuiPanel->GetName(panel),
 	    g_pVGuiPanel->GetClassName(panel),
-	    wide, tall, x, y);
+	    wide, tall, x, y, flags);
 
 	int count = g_pVGuiPanel->GetChildCount(panel);
 	for (int i = 0; i < count; i++)

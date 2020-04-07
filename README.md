@@ -17,7 +17,7 @@ The following features are being ported:
 - [ ] VGUI2
   - [x] Scoreboard
   - [x] MOTD
-  - [ ] Chatbox
+  - [x] Chatbox
   - [x] Spectator UI
   - [x] Team selection
   - [ ] Advanced options

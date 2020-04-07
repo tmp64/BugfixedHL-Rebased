@@ -7,6 +7,7 @@
 
 #include <demo_api.h>
 #include <pm_shared.h>
+#include <keydefs.h>
 #include "parsemsg.h"
 #include "hud.h"
 #include "hud/text_message.h"
@@ -24,6 +25,8 @@ int g_iTeamNumber;
 int g_iUser1 = 0;
 int g_iUser2 = 0;
 int g_iUser3 = 0;
+
+extern ConVar hud_scoreboard_mousebtn;
 
 CClientViewport *g_pViewport = nullptr;
 
@@ -159,6 +162,38 @@ void CClientViewport::VidInit()
 	// Reset all panels when connecting to a server
 	for (IViewportPanel *pPanel : m_Panels)
 		pPanel->Reset();
+}
+
+bool CClientViewport::KeyInput(int down, int keynum, const char *pszCurrentBinding)
+{
+	if (down)
+	{
+		if (IsScoreBoardVisible())
+		{
+			int constexpr WHEEL_DELTA = 20;
+
+			if ((keynum == K_MOUSE1 && hud_scoreboard_mousebtn.GetInt() == 1) || (keynum == K_MOUSE2 && hud_scoreboard_mousebtn.GetInt() == 2))
+			{
+				m_pScorePanel->EnableMousePointer(true);
+				return 0;
+			}
+			else if (keynum == K_MWHEELDOWN)
+			{
+				m_pScorePanel->OnMouseWheeled(WHEEL_DELTA);
+				return 0;
+			}
+			else if (keynum == K_MWHEELUP)
+			{
+				m_pScorePanel->OnMouseWheeled(-WHEEL_DELTA);
+				return 0;
+			}
+		}
+	}
+	else
+	{
+	}
+
+	return 1;
 }
 
 void CClientViewport::OnThink()
@@ -513,9 +548,4 @@ void CClientViewport::GetAllPlayersInfo(void)
 	{
 		GetPlayerInfo(i)->Update();
 	}
-}
-
-int CClientViewport::KeyInput(int down, int keynum, const char *pszCurrentBinding)
-{
-	return 1;
 }

@@ -378,7 +378,18 @@ void CL_DLLEXPORT IN_MouseEvent(int mstate)
 	int i;
 
 	if (iMouseInUse || g_iVisibleMouse || g_pVGuiSurface->IsCursorVisible())
+	{
+		// Allow to release keys if they were pressed before mouse became used
+		for (int i = 0; i < mouse_buttons; i++)
+		{
+			if (!(mstate & (1 << i)) && (mouse_oldbuttonstate & (1 << i)))
+			{
+				gEngfuncs.Key_Event(K_MOUSE1 + i, 0);
+				mouse_oldbuttonstate &= ~(1 << i);
+			}
+		}
 		return;
+	}
 
 	// perform button actions
 	for (i = 0; i < mouse_buttons; i++)

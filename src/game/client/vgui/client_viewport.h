@@ -52,6 +52,7 @@ public:
 	void ActivateClientUI();
 	void HideClientUI();
 	void VidInit();
+	bool KeyInput(int down, int keynum, const char *pszCurrentBinding);
 
 	virtual void OnThink();
 
@@ -87,7 +88,6 @@ public:
 	bool SlotInput(int iSlot);
 	bool AllowedToPrintText(void);
 	void DeathMsg(int killer, int victim);
-	int KeyInput(int down, int keynum, const char *pszCurrentBinding);
 
 private:
 	std::vector<IViewportPanel *> m_Panels;

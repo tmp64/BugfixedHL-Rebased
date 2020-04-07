@@ -210,7 +210,7 @@ int CHudTextMessage::MsgFunc_TextMsg(const char *pszName, int iSize, void *pbuf)
 
 	case HUD_PRINTTALK:
 		snprintf(psz, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4);
-		CHudChat::Get()->Printf(0, "%s", ConvertCRtoNL(psz));
+		CHudChat::Get()->Printf("%s", ConvertCRtoNL(psz));
 		break;
 
 	case HUD_PRINTCONSOLE:

@@ -784,7 +784,7 @@ struct cl_enginefunc_t
 	cl_entity_t *(*GetEntityByIndex)(int idx);
 
 	/**
-	*	@return Current client time.
+	*	@return Current client time. Resets when switching servers.
 	*/
 	float (*GetClientTime)(void);
 
@@ -1299,7 +1299,7 @@ struct cl_enginefunc_t
 	void (*pfnPrimeMusicStream)(const char *const pszFileName, const int bLooping);
 
 	/**
-	*	@return The absolute time since the last call to GetAbsoluteTime.
+	*	@return The absolute time in seconds since the engine start up. Can only go up.
 	*/
 	double (*GetAbsoluteTime)(void);
 

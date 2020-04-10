@@ -139,7 +139,7 @@ void CHudChatLine::ApplySchemeSettings(vgui2::IScheme *pScheme)
 void CHudChatLine::PerformFadeout(void)
 {
 	// Flash + Extra bright when new
-	float curtime = gEngfuncs.GetClientTime();
+	float curtime = gEngfuncs.GetAbsoluteTime();
 
 	int lr = m_clrText[0];
 	int lg = m_clrText[1];
@@ -212,7 +212,7 @@ void CHudChatLine::PerformFadeout(void)
 //-----------------------------------------------------------------------------
 void CHudChatLine::SetExpireTime(void)
 {
-	m_flStartTime = gEngfuncs.GetClientTime();
+	m_flStartTime = gEngfuncs.GetAbsoluteTime();
 	m_flExpireTime = m_flStartTime + hud_saytext_time.GetFloat();
 	m_nCount = CHudChat::m_nLineCounter++;
 }
@@ -231,7 +231,7 @@ int CHudChatLine::GetCount(void)
 //-----------------------------------------------------------------------------
 bool CHudChatLine::IsReadyToExpire(void)
 {
-	if (gEngfuncs.GetClientTime() >= m_flExpireTime)
+	if (gEngfuncs.GetAbsoluteTime() >= m_flExpireTime)
 		return true;
 	return false;
 }
@@ -697,7 +697,7 @@ void CHudChat::StartMessageMode(int iMessageModeType)
 	GetChatHistory()->GetBounds(x, y, w, h);
 	vgui2::input()->SetCursorPos(chatx + x + (w / 2), chaty + y + (h / 2));
 
-	m_flHistoryFadeTime = gEngfuncs.GetClientTime() + CHAT_HISTORY_FADE_TIME;
+	m_flHistoryFadeTime = gEngfuncs.GetAbsoluteTime() + CHAT_HISTORY_FADE_TIME;
 }
 
 //-----------------------------------------------------------------------------
@@ -724,7 +724,7 @@ void CHudChat::StopMessageMode(void)
 	m_pChatInput->SetKeyBoardInputEnabled(false);
 	m_pChatInput->SetMouseInputEnabled(false);
 
-	m_flHistoryFadeTime = gEngfuncs.GetClientTime() + CHAT_HISTORY_FADE_TIME;
+	m_flHistoryFadeTime = gEngfuncs.GetAbsoluteTime() + CHAT_HISTORY_FADE_TIME;
 
 	m_nMessageMode = MM_NONE;
 }
@@ -747,7 +747,7 @@ void CHudChat::OnChatEntryStopMessageMode(void)
 
 void CHudChat::FadeChatHistory(void)
 {
-	float frac = (m_flHistoryFadeTime - gEngfuncs.GetClientTime()) / CHAT_HISTORY_FADE_TIME;
+	float frac = (m_flHistoryFadeTime - gEngfuncs.GetAbsoluteTime()) / CHAT_HISTORY_FADE_TIME;
 
 	int alpha = frac * CHAT_HISTORY_ALPHA;
 	alpha = clamp(alpha, 0, CHAT_HISTORY_ALPHA);

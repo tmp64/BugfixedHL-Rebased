@@ -1688,7 +1688,7 @@ bool CHudSpectator::AddOverviewEntity(int type, struct cl_entity_s *ent, const c
 	{
 		if (ent->curstate.solid != SOLID_NOT)
 		{
-			switch (GetPlayerInfo(ent->index)->GetTeamNumber())
+			switch (GetPlayerInfo(ent->index)->Update()->GetTeamNumber())
 			{
 			// blue and red teams are swapped in CS and TFC
 			case 1:

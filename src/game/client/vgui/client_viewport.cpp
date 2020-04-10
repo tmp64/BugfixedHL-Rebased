@@ -328,6 +328,14 @@ void CClientViewport::UpdateSpectatorPanel()
 	m_flSpectatorPanelLastUpdated = gHUD.m_flTime + 0.5; // next update interval
 }
 
+void CClientViewport::GetAllPlayersInfo(void)
+{
+	for (int i = 1; i < MAX_PLAYERS; i++)
+	{
+		GetPlayerInfo(i)->Update();
+	}
+}
+
 const char *CClientViewport::GetServerName()
 {
 	return m_szServerName;
@@ -508,10 +516,6 @@ void CClientViewport::MsgFunc_AllowSpec(const char *pszName, int iSize, void *pb
 //-------------------------------------------------------
 // TeamFortressViewport stubs
 //-------------------------------------------------------
-void CClientViewport::UpdateCursorState()
-{
-}
-
 void CClientViewport::ShowCommandMenu(int menuIndex)
 {
 }
@@ -540,12 +544,4 @@ bool CClientViewport::AllowedToPrintText(void)
 
 void CClientViewport::DeathMsg(int killer, int victim)
 {
-}
-
-void CClientViewport::GetAllPlayersInfo(void)
-{
-	for (int i = 1; i < MAX_PLAYERS; i++)
-	{
-		GetPlayerInfo(i)->Update();
-	}
 }

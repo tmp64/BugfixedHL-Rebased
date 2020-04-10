@@ -114,7 +114,7 @@ int CHud::Redraw(float flTime, int intermission)
 		{
 			m_iIntermission = intermission;
 			g_pViewport->HideCommandMenu();
-			//g_pViewport->HideVGUIMenu();	// FIXME:
+			g_pViewport->HideAllVGUIMenu();
 			g_pViewport->ShowScoreBoard();
 			g_pViewport->UpdateSpectatorPanel();
 

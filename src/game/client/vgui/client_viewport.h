@@ -80,7 +80,6 @@ public:
 	}
 
 	// TeamFortressViewport stubs
-	void UpdateCursorState();
 	void ShowCommandMenu(int menuIndex);
 	void HideCommandMenu();
 	void InputSignalHideCommandMenu();

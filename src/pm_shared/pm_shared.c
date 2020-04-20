@@ -160,6 +160,18 @@ static char grgszTextureName[CTEXTURESMAX][CBTEXTURENAMEMAX];
 static char grgchTextureType[CTEXTURESMAX];
 
 int g_onladder = 0;
+static int s_iOnGround;
+static int s_iWaterlevel;
+
+int PM_GetOnGround()
+{
+	return s_iOnGround;
+}
+
+int PM_GetWaterLevel()
+{
+	return s_iWaterlevel;
+}
 
 void PM_SwapTextures(int i, int j)
 {
@@ -1612,6 +1624,8 @@ qboolean PM_CheckWater()
 		}
 	}
 
+	s_iWaterlevel = pmove->waterlevel;
+
 	return pmove->waterlevel > 1;
 }
 
@@ -2802,6 +2816,11 @@ void PM_CheckFalling(void)
 	if (pmove->onground != -1)
 	{
 		pmove->flFallVelocity = 0;
+		s_iOnGround = 1; // Set flag for bunnyhop, to jump when touch the ground
+	}
+	else
+	{
+		s_iOnGround = 0;
 	}
 }
 

@@ -4,13 +4,18 @@
 
 // Quake is a trademark of Id Software, Inc., (c) 1996 Id Software, Inc. All
 // rights reserved.
+#include <algorithm>
+
 #include "hud.h"
 #include "cl_util.h"
 #include "camera.h"
+
 extern "C"
 {
+#include <pm_shared.h>
 #include "kbutton.h"
 }
+
 #include "cvardef.h"
 #include "usercmd.h"
 #include "const.h"
@@ -30,6 +35,10 @@ extern int g_iAlive;
 
 extern int g_weaponselect;
 extern cl_enginefunc_t gEngfuncs;
+
+bool g_bDecentJumped = false;
+bool g_bLongJumped = false;
+bool g_bBunnyhopJumped = false;
 
 void IN_Init(void);
 void IN_Move(float frametime, usercmd_t *cmd);
@@ -62,6 +71,8 @@ cvar_t *cl_yawspeed;
 cvar_t *cl_pitchspeed;
 cvar_t *cl_anglespeedkey;
 cvar_t *cl_vsmoothing;
+cvar_t *cl_jumptype;
+
 /*
 ===============================================================================
 
@@ -98,6 +109,8 @@ kbutton_t in_strafe;
 kbutton_t in_speed;
 kbutton_t in_use;
 kbutton_t in_jump;
+kbutton_t in_longjump;
+kbutton_t in_bunnyhop;
 kbutton_t in_attack;
 kbutton_t in_attack2;
 kbutton_t in_up;
@@ -470,6 +483,10 @@ void IN_JumpDown(void)
 	CHudSpectator::Get()->HandleButtonsDown(IN_JUMP);
 }
 void IN_JumpUp(void) { KeyUp(&in_jump); }
+void IN_LongJumpDown(void) { KeyDown(&in_longjump); }
+void IN_LongJumpUp(void) { KeyUp(&in_longjump); }
+void IN_BunnyHopDown(void) { KeyDown(&in_bunnyhop); }
+void IN_BunnyHopUp(void) { KeyUp(&in_bunnyhop); }
 void IN_DuckDown(void)
 {
 	KeyDown(&in_duck);
@@ -681,7 +698,8 @@ void CL_DLLEXPORT CL_CreateMove(float frametime, struct usercmd_s *cmd, int acti
 		cmd->sidemove += cl_sidespeed->value * CL_KeyState(&in_moveright);
 		cmd->sidemove -= cl_sidespeed->value * CL_KeyState(&in_moveleft);
 
-		cmd->upmove += cl_upspeed->value * CL_KeyState(&in_up);
+		// simulate moveup underwater for +bhop, +ljump and +jump actions
+		cmd->upmove += cl_upspeed->value * std::max(CL_KeyState(&in_up), PM_GetWaterLevel() >= 2 ? max(max(CL_KeyState(&in_bunnyhop), CL_KeyState(&in_jump)), CL_KeyState(&in_longjump)) : 0);
 		cmd->upmove -= cl_upspeed->value * CL_KeyState(&in_down);
 
 		if (!(in_klook.state & 1))
@@ -791,7 +809,96 @@ int CL_ButtonBits(int bResetState)
 
 	if (in_jump.state & 3)
 	{
-		bits |= IN_JUMP;
+		if (cl_jumptype->value == 0.0 || g_iUser1) // Simple jump in spectator
+		{
+			bits |= IN_JUMP;
+		}
+		else
+		{
+			if (PM_GetOnGround())
+			{
+				if (!g_bDecentJumped)
+				{
+					bits |= IN_JUMP;
+				}
+				if (bResetState)
+				{
+					g_bDecentJumped = true;
+				}
+			}
+			else
+			{
+				if (PM_GetWaterLevel() == 2)
+				{
+					// Over the water, glide on the surface, but only if we are over deep water
+					bits |= IN_JUMP;
+				}
+			}
+		}
+	}
+	else
+	{
+		g_bDecentJumped = false;
+	}
+
+	if (in_longjump.state & 3)
+	{
+		if (PM_GetOnGround() && !g_bLongJumped)
+		{
+			bits |= IN_DUCK | IN_JUMP;
+			if (bResetState)
+			{
+				g_bLongJumped = true;
+			}
+		}
+		else
+		{
+			if (PM_GetWaterLevel() == 2)
+			{
+				// Over the water, glide on the surface, but only if we are over deep water
+				bits |= IN_JUMP;
+			}
+			else if (PM_GetWaterLevel() < 2)
+			{
+				bits |= IN_DUCK;
+			}
+		}
+	}
+	else
+	{
+		if (bResetState)
+		{
+			g_bLongJumped = false;
+		}
+	}
+
+	if (in_bunnyhop.state & 3)
+	{
+		if (g_iUser1) // Simple jump in spectator
+		{
+			bits |= IN_JUMP;
+		}
+		else if (PM_GetOnGround())
+		{
+			if (!g_bBunnyhopJumped)
+			{
+				bits |= IN_JUMP;
+			}
+			if (bResetState)
+			{
+				g_bBunnyhopJumped = !g_bBunnyhopJumped;
+			}
+		}
+		else
+		{
+			g_bBunnyhopJumped = false;
+
+			if (PM_GetWaterLevel() == 2)
+			{
+				// Over the water, glide on the surface, but only if we are over deep water
+				bits |= IN_JUMP;
+			}
+		}
 	}
 
 	if (in_forward.state & 3)
@@ -865,6 +972,8 @@ int CL_ButtonBits(int bResetState)
 		in_attack.state &= ~2;
 		in_duck.state &= ~2;
 		in_jump.state &= ~2;
+		in_longjump.state &= ~2;
+		in_bunnyhop.state &= ~2;
 		in_forward.state &= ~2;
 		in_back.state &= ~2;
 		in_use.state &= ~2;
@@ -946,6 +1055,10 @@ void InitInput(void)
 	gEngfuncs.pfnAddCommand("-use", IN_UseUp);
 	gEngfuncs.pfnAddCommand("+jump", IN_JumpDown);
 	gEngfuncs.pfnAddCommand("-jump", IN_JumpUp);
+	gEngfuncs.pfnAddCommand("+ljump", IN_LongJumpDown);
+	gEngfuncs.pfnAddCommand("-ljump", IN_LongJumpUp);
+	gEngfuncs.pfnAddCommand("+bhop", IN_BunnyHopDown);
+	gEngfuncs.pfnAddCommand("-bhop", IN_BunnyHopUp);
 	gEngfuncs.pfnAddCommand("impulse", IN_Impulse);
 	gEngfuncs.pfnAddCommand("+klook", IN_KLookDown);
 	gEngfuncs.pfnAddCommand("-klook", IN_KLookUp);
@@ -982,6 +1095,7 @@ void InitInput(void)
 	cl_pitchdown = gEngfuncs.pfnRegisterVariable("cl_pitchdown", "89", 0);
 
 	cl_vsmoothing = gEngfuncs.pfnRegisterVariable("cl_vsmoothing", "0.05", FCVAR_ARCHIVE);
+	cl_jumptype = gEngfuncs.pfnRegisterVariable("cl_jumptype", "1", FCVAR_ARCHIVE);
 
 	m_pitch = gEngfuncs.pfnRegisterVariable("m_pitch", "0.022", FCVAR_ARCHIVE);
 	m_yaw = gEngfuncs.pfnRegisterVariable("m_yaw", "0.022", FCVAR_ARCHIVE);

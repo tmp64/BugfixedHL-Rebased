@@ -162,6 +162,7 @@ static char grgchTextureType[CTEXTURESMAX];
 int g_onladder = 0;
 static int s_iOnGround;
 static int s_iWaterlevel;
+static int s_bBHopCap = true;
 
 int PM_GetOnGround()
 {
@@ -172,6 +173,48 @@ int PM_GetWaterLevel()
 {
 	return s_iWaterlevel;
 }
+
+#ifdef CLIENT_DLL
+
+#define BHOP_DETECT_DELAY 0.3f
+
+static int s_iBHopState = 1;
+static float s_flBHopCheckTime = 0.0f;
+
+int PM_GetBHopCapState()
+{
+	return s_iBHopState;
+}
+
+void PM_SetBHopCapState(int state)
+{
+	s_iBHopState = state;
+	PM_ResetBHopDetection();
+}
+
+void PM_ResetBHopDetection()
+{
+	if (s_iBHopState == 2)
+	{
+		// Autodetect
+		s_bBHopCap = false;
+		s_flBHopCheckTime = 0.0f;
+	}
+}
+
+#else
+
+int PM_GetBHopCapEnabled()
+{
+	return s_bBHopCap;
+}
+
+void PM_SetBHopCapEnabled(int state)
+{
+	s_bBHopCap = state;
+}
+
+#endif
 
 void PM_SwapTextures(int i, int j)
 {
@@ -2634,7 +2677,8 @@ void PM_Jump(void)
 	// In the air now.
 	pmove->onground = -1;
 
-	PM_PreventMegaBunnyJumping();
+	if (s_bBHopCap)
+		PM_PreventMegaBunnyJumping();
 
 	if (tfc)
 	{
@@ -2680,6 +2724,17 @@ void PM_Jump(void)
 
 	// Flag that we jumped.
 	pmove->oldbuttons |= IN_JUMP; // don't jump again until released
+
+	// BHop autodetection
+#ifdef CLIENT_DLL
+	float speed = sqrt(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
+	int isLongJumping = cansuperjump && (pmove->oldbuttons & IN_DUCK);
+
+	if (s_iBHopState == 2 && s_flBHopCheckTime == 0 && speed >= pmove->maxspeed * BUNNYJUMP_MAX_SPEED_FACTOR && !isLongJumping)
+	{
+		s_flBHopCheckTime = pmove->time + (BHOP_DETECT_DELAY * 1000);
+	}
+#endif
 }
 
 /*
@@ -3402,6 +3457,39 @@ void PM_Move(struct playermove_s *ppmove, int server)
 	{
 		pmove->friction = 1.0f;
 	}
+
+	// BHop autodetection
+#ifdef CLIENT_DLL
+	if (s_iBHopState == 2 && s_flBHopCheckTime > 0)
+	{
+		float speed = sqrt(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
+
+		if (pmove->time >= s_flBHopCheckTime)
+		{
+			if (pmove->dead || speed < pmove->maxspeed * BUNNYJUMP_MAX_SPEED_FACTOR)
+			{
+				s_flBHopCheckTime = 0.0f;
+			}
+			else
+			{
+				if (pmove->multiplayer == 1)
+					pmove->Con_Printf("BHop speed limit disabled to match the server.\n");
+				s_bBHopCap = false;
+				s_flBHopCheckTime = -1;
+			}
+		}
+		else
+		{
+			if (speed >= pmove->maxspeed * 1.105 && speed <= pmove->maxspeed * 1.2)
+			{
+				if (pmove->multiplayer == 1)
+					pmove->Con_Printf("BHop speed limit enabled to match the server.\n");
+				s_bBHopCap = true;
+				s_flBHopCheckTime = 0;
+			}
+		}
+	}
+#endif
 }
 
 int PM_GetVisEntInfo(int ent)

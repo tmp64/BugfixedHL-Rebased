@@ -61,6 +61,8 @@ extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, i
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
 
+ConVar cl_bhopcap("cl_bhopcap", "2", FCVAR_ARCHIVE, "Enables/disables bhop speed cap, '2' - detect automatically");
+
 template <void (CClientViewport::*FUNC)(const char *, int, void *)>
 void HookViewportMessage(const char *name)
 {
@@ -484,6 +486,11 @@ int CHud::MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
 float CHud::GetSensitivity(void)
 {
 	return m_flMouseSensitivity;
+}
+
+BHopCap CHud::GetBHopCapState()
+{
+	return (BHopCap)clamp(cl_bhopcap.GetInt(), (int)BHopCap::Disabled, (int)BHopCap::Auto);
 }
 
 void CHud::CallOnNextFrame(std::function<void()> f)

@@ -162,6 +162,7 @@ int CL_DLLEXPORT HUD_VidInit(void)
 	//	RecClHudVidInit();
 	g_pViewport->VidInit();
 	gHUD.VidInit();
+	PM_ResetBHopDetection();
 
 	return 1;
 }

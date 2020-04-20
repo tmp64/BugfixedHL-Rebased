@@ -15,6 +15,12 @@
 //
 // hud_redraw.cpp
 //
+
+extern "C"
+{
+#include <pm_shared.h>
+}
+
 #include <math.h>
 #include "hud.h"
 #include "cl_util.h"
@@ -83,6 +89,11 @@ void CHud::Think(void)
 	{
 		m_iFOV = CHudSpectator::Get()->GetFOV(); // default_fov->value;
 	}
+
+	// Update BHop state
+	int bhopCapState = (int)GetBHopCapState();
+	if (PM_GetBHopCapState() != bhopCapState)
+		PM_SetBHopCapState(bhopCapState);
 }
 
 // Redraw

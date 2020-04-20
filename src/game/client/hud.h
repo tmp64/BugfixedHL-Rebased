@@ -41,6 +41,13 @@
 #define HUD_ACTIVE       1
 #define HUD_INTERMISSION 2
 
+enum class BHopCap
+{
+	Disabled = 0,
+	Enabled = 1,
+	Auto = 2
+};
+
 class CHud
 {
 public:
@@ -105,6 +112,7 @@ public:
 	int MsgFunc_Concuss(const char *pszName, int iSize, void *pbuf);
 
 	float GetSensitivity();
+	BHopCap GetBHopCapState();
 
 	void CallOnNextFrame(std::function<void()> f);
 

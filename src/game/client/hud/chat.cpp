@@ -347,7 +347,7 @@ vgui2::Panel *CHudChatInputLine::GetInputPanel(void)
 CHudChatHistory::CHudChatHistory(vgui2::Panel *pParent, const char *panelName)
     : BaseClass(pParent, "HudChatHistory")
 {
-	vgui2::HScheme scheme = LoadSchemeFromFile(VGUI2_ROOT_DIR "resource/ChatScheme.res", "ChatScheme");
+	vgui2::HScheme scheme = vgui2::scheme()->LoadSchemeFromFile(VGUI2_ROOT_DIR "resource/ChatScheme.res", "ChatScheme");
 	SetScheme(scheme);
 
 	InsertFade(-1, -1);
@@ -373,7 +373,7 @@ CHudChat::CHudChat()
 	SetParent(g_pViewport);
 	SetProportional(true);
 
-	vgui2::HScheme scheme = LoadSchemeFromFile(VGUI2_ROOT_DIR "resource/ChatScheme.res", "ChatScheme");
+	vgui2::HScheme scheme = vgui2::scheme()->LoadSchemeFromFile(VGUI2_ROOT_DIR "resource/ChatScheme.res", "ChatScheme");
 	SetScheme(scheme);
 	SetPaintBackgroundEnabled(true);
 

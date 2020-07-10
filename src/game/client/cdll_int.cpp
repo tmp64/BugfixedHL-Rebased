@@ -141,7 +141,16 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 	console::Initialize();
 	CvarSystem::RegisterCvars();
 	EV_HookEvents();
-	CL_LoadParticleMan();
+
+	// Note 10.07.2020
+	// There is something odd with IParticleMan on Linux.
+	// SetVariables in the interface takes `Vector vViewAngles` (as a copy).
+	// Reversing Linux binary shows that it takes a pointer (and it crashes there on Linux).
+	//
+	// Changing `Vector vViewAngles` to `Vector &vViewAngles` fixes the crash on Linux but causes a crash on Windows.
+	// So I just disabled it completely since it isn't used in vanilla HL.
+	//
+	// CL_LoadParticleMan();
 
 	// get tracker interface, if any
 	return 1;

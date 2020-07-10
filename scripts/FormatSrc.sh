@@ -5,4 +5,4 @@
 REPO_ROOT=$(git rev-parse --show-toplevel);
 
 # Format *.c, *.cpp, *.h
-find "${REPO_ROOT}/src" -iname *.h -o -iname *.cpp -o -iname *.c | xargs clang-format.exe --style=file -i
+find "${REPO_ROOT}/src" -iname *.h -o -iname *.cpp -o -iname *.c | xargs clang-format --style=file -i

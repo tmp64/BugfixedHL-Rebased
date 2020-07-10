@@ -27,7 +27,7 @@ protected:
 public:
 	virtual void SetUp(cl_enginefunc_t *pEnginefuncs) = 0;
 	virtual void Update(void) = 0;
-	virtual void SetVariables(float flGravity, Vector &vViewAngles) = 0;
+	virtual void SetVariables(float flGravity, Vector vViewAngles) = 0;
 	virtual void ResetParticles(void) = 0;
 	virtual void ApplyForce(Vector vOrigin, Vector vDirection, float flRadius, float flStrength, float flDuration) = 0;
 	virtual void AddCustomParticleClassSize(unsigned long lSize) = 0;

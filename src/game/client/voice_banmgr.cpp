@@ -38,7 +38,7 @@ bool CVoiceBanMgr::Init(char const *pGameDir)
 	Term();
 
 	char filename[512];
-	_snprintf(filename, sizeof(filename), "%s/%s", pGameDir, g_pBanMgrFilename);
+	snprintf(filename, sizeof(filename), "%s/%s", pGameDir, g_pBanMgrFilename);
 
 	// Load in the squelch file.
 	FILE *fp = fopen(filename, "rb");
@@ -87,7 +87,7 @@ void CVoiceBanMgr::SaveState(char const *pGameDir)
 {
 	// Save the file out.
 	char filename[512];
-	_snprintf(filename, sizeof(filename), "%s/%s", pGameDir, g_pBanMgrFilename);
+	snprintf(filename, sizeof(filename), "%s/%s", pGameDir, g_pBanMgrFilename);
 
 	FILE *fp = fopen(filename, "wb");
 	if (fp)

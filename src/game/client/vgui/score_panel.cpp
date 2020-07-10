@@ -934,7 +934,7 @@ void CScorePanel::OnCommand(const char *command)
 	DebugPrintf("CScorePanel::OnCommand(command = '%s')\n", command);
 
 	//-----------------------------------------------------------------------
-	if (!stricmp(command, "MenuMute"))
+	if (!Q_stricmp(command, "MenuMute"))
 	{
 		int client = m_pMenuInfo.client;
 		CPlayerInfo *playerInfo = GetPlayerInfo(client)->Update();
@@ -970,7 +970,7 @@ void CScorePanel::OnCommand(const char *command)
 		UpdateClientInfo(client); // Update mute icon
 	}
 	//-----------------------------------------------------------------------
-	else if (!stricmp(command, "MenuSteamProfile"))
+	else if (!Q_stricmp(command, "MenuSteamProfile"))
 	{
 		if (m_pMenuInfo.steamID64 > 0)
 		{
@@ -983,7 +983,7 @@ void CScorePanel::OnCommand(const char *command)
 #endif
 		}
 	}
-	else if (!stricmp(command, "MenuSteamURL"))
+	else if (!Q_stricmp(command, "MenuSteamURL"))
 	{
 		CPlayerInfo *playerInfo = GetPlayerInfo(m_pMenuInfo.client)->Update();
 		if (!playerInfo->IsConnected())
@@ -992,7 +992,7 @@ void CScorePanel::OnCommand(const char *command)
 		vgui2::system()->SetClipboardText(url.c_str(), url.size());
 	}
 	//-----------------------------------------------------------------------
-	else if (!stricmp(command, "MenuCopyName"))
+	else if (!Q_stricmp(command, "MenuCopyName"))
 	{
 		CPlayerInfo *playerInfo = GetPlayerInfo(m_pMenuInfo.client)->Update();
 		if (!playerInfo->IsConnected())
@@ -1003,7 +1003,7 @@ void CScorePanel::OnCommand(const char *command)
 		//vgui2::localize()->ConvertANSIToUnicode(RemoveColorCodes(g_PlayerInfoList[m_pMenuInfo.client].name), name, sizeof(name));
 		//vgui2::system()->SetClipboardText(name, wcslen(name));
 	}
-	else if (!stricmp(command, "MenuCopyNameRaw"))
+	else if (!Q_stricmp(command, "MenuCopyNameRaw"))
 	{
 		CPlayerInfo *playerInfo = GetPlayerInfo(m_pMenuInfo.client)->Update();
 		if (!playerInfo->IsConnected())
@@ -1014,7 +1014,7 @@ void CScorePanel::OnCommand(const char *command)
 		//vgui2::localize()->ConvertANSIToUnicode(g_PlayerInfoList[m_pMenuInfo.client].name, name, sizeof(name));
 		//vgui2::system()->SetClipboardText(name, wcslen(name));
 	}
-	else if (!stricmp(command, "MenuCopySteamID"))
+	else if (!Q_stricmp(command, "MenuCopySteamID"))
 	{
 		CPlayerInfo *playerInfo = GetPlayerInfo(m_pMenuInfo.client)->Update();
 		if (!playerInfo->IsConnected())
@@ -1024,7 +1024,7 @@ void CScorePanel::OnCommand(const char *command)
 		//std::string steamid = "STEAM_" + std::string(g_PlayerSteamId[m_pMenuInfo.client]);
 		//vgui2::system()->SetClipboardText(steamid.c_str(), steamid.size());
 	}
-	else if (!stricmp(command, "MenuCopySteamID64"))
+	else if (!Q_stricmp(command, "MenuCopySteamID64"))
 	{
 		CPlayerInfo *playerInfo = GetPlayerInfo(m_pMenuInfo.client)->Update();
 		if (!playerInfo->IsConnected())

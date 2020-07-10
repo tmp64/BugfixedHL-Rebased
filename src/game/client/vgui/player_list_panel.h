@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: player list for scoreboard
 //
@@ -11,8 +11,8 @@
 #pragma once
 #endif
 
-#include <UtlVector.h>
-#include <UtlLinkedList.h>
+#include <utlvector.h>
+#include <utllinkedlist.h>
 #include <vgui/VGUI2.h>
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/PHandle.h>

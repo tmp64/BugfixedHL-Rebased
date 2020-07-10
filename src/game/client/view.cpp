@@ -38,8 +38,9 @@ void NormalizeAngles(float *angles);
 extern "C" float Distance(const float *v1, const float *v2);
 float AngleBetweenVectors(const float *v1, const float *v2);
 
-float vJumpOrigin[3];
-float vJumpAngles[3];
+extern "C" float vJumpOrigin[3];
+extern "C" float vJumpAngles[3];
+
 
 void V_DropPunchAngle(float frametime, float *ev_punchangle);
 void VectorAngles(const float *forward, float *angles);

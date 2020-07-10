@@ -7,6 +7,9 @@ cmake_minimum_required( VERSION 3.15.0 )
 # Use static MSVC runtime
 set( CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" )
 
+# Disable RPATH
+set( CMAKE_SKIP_BUILD_RPATH TRUE )
+
 #-----------------------------------------------------------------
 # CMake modules
 #-----------------------------------------------------------------
@@ -127,6 +130,16 @@ if( COMPILER_GNU )
 	if( GNU_STATIC_LIBCPP )
 		set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -static-libstdc++" )
 	endif()
+
+	# Colored output
+	option( GNU_FORCE_COLORED_OUTPUT "Always produce ANSI-colored output" )
+	if ( GNU_FORCE_COLORED_OUTPUT )
+		if ( COMPILER_GCC )
+			add_compile_options (-fdiagnostics-color=always)
+		elseif ( COMPILER_CLANG )
+			add_compile_options (-fcolor-diagnostics)
+		endif ()
+	endif ()
 	
 elseif( COMPILER_MSVC )
 

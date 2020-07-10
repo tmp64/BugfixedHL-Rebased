@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: player list for scoreboard
 //
@@ -22,7 +22,7 @@
 #include <vgui_controls/TextImage.h>
 #include <vgui_controls/ImageList.h>
 
-#include "UtlVector.h"
+#include "utlvector.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -1035,7 +1035,7 @@ bool CPlayerListPanel::ModifyColumn(int sectionID, const char *columnName, const
 	int columnIndex;
 	for (columnIndex = 0; columnIndex < section.m_Columns.Count(); columnIndex++)
 	{
-		if (!stricmp(section.m_Columns[columnIndex].m_szColumnName, columnName))
+		if (!Q_stricmp(section.m_Columns[columnIndex].m_szColumnName, columnName))
 			break;
 	}
 	if (!section.m_Columns.IsValidIndex(columnIndex))

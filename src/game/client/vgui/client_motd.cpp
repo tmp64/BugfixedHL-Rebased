@@ -100,7 +100,7 @@ void CClientMOTD::OnKeyCodeTyped(vgui2::KeyCode key)
 
 void CClientMOTD::OnCommand(const char *command)
 {
-	if (!stricmp(command, "okay"))
+	if (!Q_stricmp(command, "okay"))
 	{
 		RemoveTempFile();
 

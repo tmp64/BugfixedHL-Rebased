@@ -38,6 +38,8 @@
 
 #include "usercmd.h"
 
+typedef struct hull_s hull_t;
+
 // physent_t
 typedef struct physent_s
 {
@@ -189,7 +191,7 @@ typedef struct playermove_s
 	void (*PM_StuckTouch)(int hitent, pmtrace_t *ptraceresult);
 	int (*PM_PointContents)(float *p, int *truecontents /*filled in if this is non-null*/);
 	int (*PM_TruePointContents)(float *p);
-	int (*PM_HullPointContents)(struct hull_s *hull, int num, float *p);
+	int (*PM_HullPointContents)(hull_t *hull, int num, float *p);
 	pmtrace_t (*PM_PlayerTrace)(float *start, float *end, int traceFlags, int ignore_pe);
 	struct pmtrace_s *(*PM_TraceLine)(float *start, float *end, int flags, int usehulll, int ignore_pe);
 	int32 (*RandomLong)(int32 lLow, int32 lHigh);

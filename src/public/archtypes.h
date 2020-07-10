@@ -8,7 +8,9 @@
 #include "steam/steamtypes.h"
 
 #ifndef _WIN32
+#ifndef MAX_PATH
 #define MAX_PATH PATH_MAX
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <limits.h>

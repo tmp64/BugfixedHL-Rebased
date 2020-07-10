@@ -6,7 +6,7 @@
 #include <functional>
 #include <cdll_dll.h>
 #include <vgui_controls/Frame.h>
-#include <tier1/UtlMap.h>
+#include <tier1/utlmap.h>
 #include <steam/steam_api.h>
 #include "IViewportPanel.h"
 #include "viewport_panel_names.h"

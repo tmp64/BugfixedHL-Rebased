@@ -37,23 +37,21 @@
 #include <sys/ioctl.h>
 
 typedef unsigned char BYTE;
-typedef short int WORD;
+typedef unsigned short WORD;
 typedef unsigned int DWORD;
 typedef int32 LONG;
 //typedef uint32 ULONG;
 #ifndef ARCHTYPES_H
 typedef uint32 ULONG;
 #endif
-typedef void *HANDLE;
-#ifndef HMODULE
-typedef void *HMODULE;
-#endif
 typedef char *LPSTR;
 
 #define __cdecl
 
 //const int MAX_PATH = PATH_MAX;
-#define MAX_PATH PATH_MAX
+#ifndef MAX_PATH
+#define MAX_PATH  PATH_MAX
+#endif
 
 #ifdef PLATFORM_LINUX
 typedef struct POINT_s

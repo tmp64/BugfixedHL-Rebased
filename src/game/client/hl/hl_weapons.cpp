@@ -278,6 +278,13 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 	HUD_SendWeaponAnim(iAnim, body, 0);
 }
 
+void CBasePlayerWeapon::SendWeaponPickup(CBasePlayer *pPlayer)
+{
+	MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
+	WRITE_BYTE(m_iId);
+	MESSAGE_END();
+}
+
 /*
 =====================
 CBaseEntity::FireBulletsPlayer

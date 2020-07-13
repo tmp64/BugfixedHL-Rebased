@@ -376,6 +376,7 @@ target_link_libraries( client
 	${SOURCE_SDK_LIBS}
 	lodepng
 	SDL2
+	semver
 	${CLIENT_PLAT_LIBS}
 )
 

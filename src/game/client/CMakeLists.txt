@@ -1,5 +1,7 @@
 add_sources(
 	CMakeLists.txt
+	bhlcfg.cpp
+	bhlcfg.h
 	camera.h
 	cdll_int.cpp
 	cl_dll.h

@@ -34,6 +34,7 @@
 #include "demo.h"
 #include "demo_api.h"
 #include "cl_voice_status.h"
+#include "bhlcfg.h"
 
 // HUD Elements
 #include "hud/ammo.h"
@@ -53,8 +54,6 @@
 #include "hud/menu.h"
 #include "hud/voice_status.h"
 #include "hud/voice_status_self.h"
-
-#include <vgui/ISurface.h>
 
 extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
 
@@ -198,6 +197,8 @@ void CHud::Init(void)
 	MsgFunc_ResetHUD(0, 0, NULL);
 
 	g_pViewport->ReloadLayout();
+
+	bhlcfg::Init();
 }
 
 CHud::CHud()
@@ -330,6 +331,7 @@ void CHud::Frame(double time)
 
 void CHud::Shutdown()
 {
+	bhlcfg::Shutdown();
 	ClientVoiceMgr_Shutdown();
 
 	for (CHudElem *i : m_HudList)

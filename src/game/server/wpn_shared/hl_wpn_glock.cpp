@@ -86,6 +86,16 @@ int CGlock::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
+int CGlock::AddToPlayer(CBasePlayer *pPlayer)
+{
+	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
+	{
+		CBasePlayerWeapon::SendWeaponPickup(pPlayer);
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL CGlock::Deploy()
 {
 	// pev->body = 1;
@@ -109,7 +119,7 @@ void CGlock::GlockFire(float flSpread, float flCycleTime, BOOL fUseAutoAim)
 		if (m_fFireOnEmpty)
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = GetNextAttackDelay(0.2);
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
 		}
 
 		return;
@@ -160,7 +170,7 @@ void CGlock::GlockFire(float flSpread, float flCycleTime, BOOL fUseAutoAim)
 
 	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireGlock1 : m_usFireGlock2, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, (m_iClip == 0) ? 1 : 0, 0);
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay(flCycleTime);
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		// HEV suit - indicate out of ammo condition

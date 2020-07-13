@@ -1,5 +1,7 @@
 add_sources(
 	CMakeLists.txt
+	../../public/vinterface/interface.cpp
+	../../public/vinterface/interface.h
 	activity.h
 	activitymap.h
 	aflock.cpp
@@ -19,9 +21,13 @@ add_sources(
 	buttons.cpp
 	cbase.cpp
 	cbase.h
+	CBugfixedServer.cpp
+	CBugfixedServer.h
 	cdll_dll.h
 	client.cpp
 	client.h
+	com_utils.cpp
+	com_utils.h
 	combat.cpp
 	controller.cpp
 	crossbow.cpp
@@ -86,6 +92,8 @@ add_sources(
 	nodes.h
 	observer.cpp
 	osprey.cpp
+	path.cpp
+	path.h
 	pathcorner.cpp
 	plane.cpp
 	plane.h
@@ -145,5 +153,7 @@ if( PLATFORM_WINDOWS )
 		wxdebug.h
 		Wxdebug.cpp
 		hl.def
+		hl.rc
+		resource.h
 	)
 endif()

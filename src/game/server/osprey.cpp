@@ -298,7 +298,7 @@ CBaseMonster *COsprey ::MakeGrunt(Vector vecSrc)
 			pBeam->PointEntInit(vecSrc + Vector(0, 0, 112), pGrunt->entindex());
 			pBeam->SetFlags(BEAM_FSOLID);
 			pBeam->SetColor(255, 255, 255);
-			pBeam->SetThink(&CBeam::SUB_Remove);
+			pBeam->SetThink(&COsprey::SUB_Remove);
 			pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
 
 			// ALERT( at_console, "%d at %.0f %.0f %.0f\n", i, m_vecOrigin[i].x, m_vecOrigin[i].y, m_vecOrigin[i].z );

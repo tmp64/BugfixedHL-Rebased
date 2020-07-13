@@ -20,10 +20,12 @@
 #ifndef CDLL_DLL_H
 #define CDLL_DLL_H
 
-#define MAX_WEAPONS 32 // ???
+#define MAX_WEAPONS     32 // ???
+#define MAX_WEAPON_NAME 128
 
-#define MAX_WEAPON_SLOTS 5 // hud item selection slots
-#define MAX_ITEM_TYPES   6 // hud item selection slots
+#define MAX_WEAPON_POSITIONS 10 // this is the max number of weapon items in each bucket on a client
+#define MAX_WEAPON_SLOTS     6 // hud item selection slots on a client
+#define MAX_ITEM_TYPES       6 // weapont item slots on a server
 
 #define MAX_ITEMS 5 // hard coded item types
 
@@ -41,5 +43,13 @@
 #define HUD_PRINTCENTER  4
 
 #define WEAPON_SUIT 31
+
+enum
+{
+	MAX_PLAYERS = 64,
+	MAX_PLAYER_NAME = 32,
+	MAX_TEAMS = 64,
+	MAX_TEAM_NAME = 16,
+};
 
 #endif

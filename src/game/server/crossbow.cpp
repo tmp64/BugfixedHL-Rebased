@@ -118,7 +118,6 @@ void CCrossbowBolt::BoltTouch(CBaseEntity *pOther)
 
 		ApplyMultiDamage(pev, pevOwner);
 
-		pev->velocity = Vector(0, 0, 0);
 		// play body "thwack" sound
 		switch (RANDOM_LONG(0, 1))
 		{
@@ -148,9 +147,6 @@ void CCrossbowBolt::BoltTouch(CBaseEntity *pOther)
 			Vector vecDir = pev->velocity.Normalize();
 			UTIL_SetOrigin(pev, pev->origin - vecDir * 12);
 			pev->angles = UTIL_VecToAngles(vecDir);
-			pev->solid = SOLID_NOT;
-			pev->movetype = MOVETYPE_FLY;
-			pev->velocity = Vector(0, 0, 0);
 			pev->avelocity.z = 0;
 			pev->angles.z = RANDOM_LONG(0, 360);
 			pev->nextthink = gpGlobals->time + 10.0;
@@ -161,6 +157,9 @@ void CCrossbowBolt::BoltTouch(CBaseEntity *pOther)
 			UTIL_Sparks(pev->origin);
 		}
 	}
+
+	pev->solid = SOLID_NOT;
+	pev->velocity = Vector(0, 0, 0);
 
 	if (g_pGameRules->IsMultiplayer())
 	{
@@ -184,7 +183,7 @@ void CCrossbowBolt::ExplodeThink(void)
 	int iContents = UTIL_PointContents(pev->origin);
 	int iScale;
 
-	pev->dmg = 40;
+	pev->dmg = gSkillData.plrDmgCrossbowNoScope;
 	iScale = 10;
 
 	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
@@ -253,9 +252,7 @@ int CCrossbow::AddToPlayer(CBasePlayer *pPlayer)
 {
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
 	{
-		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
-		WRITE_BYTE(m_iId);
-		MESSAGE_END();
+		CBasePlayerWeapon::SendWeaponPickup(pPlayer);
 		return TRUE;
 	}
 	return FALSE;
@@ -334,7 +331,7 @@ void CCrossbow::PrimaryAttack(void)
 // this function only gets called in multiplayer
 void CCrossbow::FireSniperBolt()
 {
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.75);
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
 
 	if (m_iClip == 0)
 	{
@@ -370,7 +367,7 @@ void CCrossbow::FireSniperBolt()
 	if (tr.pHit->v.takedamage)
 	{
 		ClearMultiDamage();
-		CBaseEntity::Instance(tr.pHit)->TraceAttack(m_pPlayer->pev, 120, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB);
+		CBaseEntity::Instance(tr.pHit)->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgCrossbowScope, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB);
 		ApplyMultiDamage(pev, m_pPlayer->pev);
 	}
 #endif
@@ -432,7 +429,7 @@ void CCrossbow::FireBolt()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.75);
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
 
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
 

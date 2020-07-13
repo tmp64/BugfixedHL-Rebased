@@ -353,7 +353,30 @@ protected:
 	virtual void GoToIntermission(void);
 	float m_flIntermissionEndTime;
 	BOOL m_iEndIntermissionButtonHit;
-	void SendMOTDToClient(edict_t *client);
+
+	void SendServerNameToClient(edict_t *client);
+
+public:
+	/**
+	 * Returns false on error (file not found)
+	 * @param file path to the file or nullptr for default
+	 */
+	bool SendMOTDFileToClient(edict_t *client, const char *file = nullptr);
+	void SendMOTDToClient(edict_t *client, char *string);
+
+	/**
+	 * Returns false on error (file not found)
+	 * @param file path to the file or nullptr for default
+	 */
+	bool SendUnicodeMOTDFileToClient(edict_t *client, const char *file = nullptr);
+	void SendUnicodeMOTDToClient(edict_t *client, char *string);
+
+	/**
+	 * Returns false on error (file not found)
+	 * @param file path to the file or nullptr for default
+	 */
+	bool SendHtmlMOTDFileToClient(edict_t *client, const char *file = nullptr);
+	void SendHtmlMOTDToClient(edict_t *client, char *string);
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;

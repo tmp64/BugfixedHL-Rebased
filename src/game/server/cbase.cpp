@@ -94,34 +94,50 @@ static DLL_FUNCTIONS gFunctionTable = {
 	AllowLagCompensation, //pfnAllowLagCompensation
 };
 
+NEW_DLL_FUNCTIONS gNewDLLFunctions = {
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	CvarValue2
+};
+
 static void SetObjectCollisionBox(entvars_t *pev);
 
-extern "C"
+int GetEntityAPI(DLL_FUNCTIONS *pFunctionTable, int interfaceVersion)
 {
-
-	int GetEntityAPI(DLL_FUNCTIONS *pFunctionTable, int interfaceVersion)
+	if (!pFunctionTable || interfaceVersion != INTERFACE_VERSION)
 	{
-		if (!pFunctionTable || interfaceVersion != INTERFACE_VERSION)
-		{
-			return FALSE;
-		}
-
-		memcpy(pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS));
-		return TRUE;
+		return FALSE;
 	}
 
-	int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
-	{
-		if (!pFunctionTable || *interfaceVersion != INTERFACE_VERSION)
-		{
-			// Tell engine what version we had, so it can figure out who is out of date.
-			*interfaceVersion = INTERFACE_VERSION;
-			return FALSE;
-		}
+	memcpy(pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS));
+	return TRUE;
+}
 
-		memcpy(pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS));
-		return TRUE;
+int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
+{
+	if (!pFunctionTable || *interfaceVersion != INTERFACE_VERSION)
+	{
+		// Tell engine what version we had, so it can figure out who is out of date.
+		*interfaceVersion = INTERFACE_VERSION;
+		return FALSE;
 	}
+
+	memcpy(pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS));
+	return TRUE;
+}
+
+int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
+{
+	if (!pFunctionTable || *interfaceVersion != NEW_DLL_FUNCTIONS_VERSION)
+	{
+		*interfaceVersion = NEW_DLL_FUNCTIONS_VERSION;
+		return 0;
+	}
+
+	memcpy(pFunctionTable, &gNewDLLFunctions, sizeof(NEW_DLL_FUNCTIONS));
+	return 1;
 }
 
 int DispatchSpawn(edict_t *pent)
@@ -436,9 +452,17 @@ edict_t *EHANDLE::Get(void)
 
 edict_t *EHANDLE::Set(edict_t *pent)
 {
-	m_pent = pent;
 	if (pent)
-		m_serialnumber = m_pent->serialnumber;
+	{
+		m_pent = pent;
+		if (pent)
+			m_serialnumber = m_pent->serialnumber;
+	}
+	else
+	{
+		m_pent = NULL;
+		m_serialnumber = 0;
+	}
 	return pent;
 };
 

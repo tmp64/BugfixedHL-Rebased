@@ -251,6 +251,7 @@ void CGameRules::RefreshSkillData(void)
 
 	// Gauss gun
 	gSkillData.plrDmgGauss = GetSkillCvar("sk_plr_gauss");
+	gSkillData.plrDmgGaussSecondary = 200;
 
 	// Egon Gun
 	gSkillData.plrDmgEgonNarrow = GetSkillCvar("sk_plr_egon_narrow");

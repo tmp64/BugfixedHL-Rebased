@@ -446,14 +446,13 @@ void CBreakable::BreakTouch(CBaseEntity *pOther)
 		// play creaking sound here.
 		DamageSound();
 
-		SetThink(&CBreakable::Die);
+		SetThink((void (CBreakable::*)(void)) & CBreakable::Die);
 		SetTouch(NULL);
 
 		if (m_flDelay == 0)
 		{ // !!!BUGBUG - why doesn't zero delay work?
 			m_flDelay = 0.1;
 		}
-
 		pev->nextthink = pev->ltime + m_flDelay;
 	}
 }
@@ -517,6 +516,9 @@ int CBreakable ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 {
 	Vector vecTemp;
 
+	if (!IsBreakable())
+		return 0;
+
 	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
 	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin).
 	if (pevAttacker == pevInflictor)
@@ -532,9 +534,6 @@ int CBreakable ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	{
 		vecTemp = pevInflictor->origin - (pev->absmin + (pev->size * 0.5));
 	}
-
-	if (!IsBreakable())
-		return 0;
 
 	// Breakables take double damage from the crowbar
 	if (bitsDamageType & DMG_CLUB)
@@ -552,7 +551,7 @@ int CBreakable ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	if (pev->health <= 0)
 	{
 		Killed(pevAttacker, GIB_NORMAL);
-		Die();
+		Die(pevAttacker ? CBaseEntity::Instance(pevAttacker) : NULL);
 		return 0;
 	}
 
@@ -565,6 +564,11 @@ int CBreakable ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 }
 
 void CBreakable::Die(void)
+{
+	CBreakable::Die(NULL);
+}
+
+void CBreakable::Die(CBaseEntity *pActivator)
 {
 	Vector vecSpot; // shard origin
 	Vector vecVelocity; // shard velocity
@@ -581,7 +585,7 @@ void CBreakable::Die(void)
 	// The more negative pev->health, the louder
 	// the sound should be.
 
-	fvol = RANDOM_FLOAT(0.85, 1.0) + (abs(pev->health) / 100.0);
+	fvol = RANDOM_FLOAT(0.85, 1.0) + (fabs(pev->health) / 100.0);
 
 	if (fvol > 1.0)
 		fvol = 1.0;
@@ -734,7 +738,7 @@ void CBreakable::Die(void)
 
 	pev->solid = SOLID_NOT;
 	// Fire targets on break
-	SUB_UseTargets(NULL, USE_TOGGLE, 0);
+	SUB_UseTargets(pActivator, USE_TOGGLE, 0);
 
 	SetThink(&CBreakable::SUB_Remove);
 	pev->nextthink = pev->ltime + 0.1;
@@ -743,7 +747,7 @@ void CBreakable::Die(void)
 
 	if (Explodable())
 	{
-		ExplosionCreate(Center(), pev->angles, edict(), ExplosionMagnitude(), TRUE);
+		ExplosionCreate(Center(), pev->angles, edict(), pActivator ? pActivator->edict() : NULL, ExplosionMagnitude(), TRUE);
 	}
 }
 

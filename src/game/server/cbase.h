@@ -42,7 +42,6 @@ CBaseEntity
 // UNDONE: This will ignore transition volumes (trigger_transition), but not the PVS!!!
 #define FCAP_FORCE_TRANSITION 0x00000080 // ALWAYS goes across transitions
 
-#include "archtypes.h" // DAL
 #include "saverestore.h"
 #include "schedule.h"
 
@@ -64,6 +63,7 @@ CBaseEntity
 
 extern "C" CBASE_DLLEXPORT int GetEntityAPI(DLL_FUNCTIONS *pFunctionTable, int interfaceVersion);
 extern "C" CBASE_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion);
+extern "C" CBASE_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion);
 
 extern int DispatchSpawn(edict_t *pent);
 extern void DispatchKeyValue(edict_t *pentKeyvalue, KeyValueData *pkvd);
@@ -195,7 +195,7 @@ public:
 	virtual void SetToggleState(int state) { }
 	virtual void StartSneaking(void) { }
 	virtual void StopSneaking(void) { }
-	virtual BOOL OnControls(entvars_t *pev) { return FALSE; }
+	virtual BOOL OnControls(entvars_t *onpev) { return FALSE; }
 	virtual BOOL IsSneaking(void) { return FALSE; }
 	virtual BOOL IsAlive(void) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual BOOL IsBSPModel(void) { return pev->solid == SOLID_BSP || pev->movetype == MOVETYPE_PUSHSTEP; }
@@ -237,13 +237,13 @@ public:
 	};
 
 	// allow engine to allocate instance data
-	void *operator new(size_t stAllocateBlock, entvars_t *pev)
+	void *operator new(size_t stAllocateBlock, entvars_t *newpev)
 	{
-		return (void *)ALLOC_PRIVATE(ENT(pev), stAllocateBlock);
+		return (void *)ALLOC_PRIVATE(ENT(newpev), stAllocateBlock);
 	};
 
 		// don't use this.
-#if _MSC_VER >= 1200 // only build this code if MSVC++ 6.0 or higher
+#if defined(_MSC_VER) && _MSC_VER >= 1200 // only build this code if MSVC++ 6.0 or higher
 	void operator delete(void *pMem, entvars_t *pev)
 	{
 		pev->flags |= FL_KILLME;
@@ -279,8 +279,8 @@ public:
 		return pEnt;
 	}
 
-	static CBaseEntity *Instance(entvars_t *pev) { return Instance(ENT(pev)); }
-	static CBaseEntity *Instance(int eoffset) { return Instance(ENT(eoffset)); }
+	static CBaseEntity *Instance(entvars_t *instpev) { return Instance(ENT(instpev)); }
+	static CBaseEntity *Instance(int inst_eoffset) { return Instance(ENT(inst_eoffset)); }
 
 	CBaseMonster *GetMonsterPointer(entvars_t *pevMonster)
 	{
@@ -298,11 +298,11 @@ public:
 	}
 
 	// Ugly code to lookup all functions to make sure they are exported when set.
-#ifdef _DEBUG
+#ifdef _DEBUG_BLOCK // Disabled export checking
 	void FunctionCheck(void *pFunction, char *name)
 	{
-		if (pFunction && !NAME_FOR_FUNCTION((uint32)pFunction))
-			ALERT(at_error, "No EXPORT: %s:%s (%08lx)\n", STRING(pev->classname), name, (uint32)pFunction);
+		if (pFunction && !NAME_FOR_FUNCTION((unsigned long)(pFunction)))
+			ALERT(at_error, "No EXPORT: %s:%s (%08lx)\n", STRING(pev->classname), name, (unsigned long)pFunction);
 	}
 
 	BASEPTR ThinkSet(BASEPTR func, char *name)
@@ -382,7 +382,7 @@ public:
 // Normally it's illegal to cast a pointer to a member function of a derived class to a pointer to a
 // member function of a base class.  static_cast is a sleezy way around that problem.
 
-#ifdef _DEBUG
+#ifdef _DEBUG_BLOCK // Disabled export checking
 
 #define SetThink(a)   ThinkSet(static_cast<void (CBaseEntity::*)(void)>(a), #a)
 #define SetTouch(a)   TouchSet(static_cast<void (CBaseEntity::*)(CBaseEntity *)>(a), #a)

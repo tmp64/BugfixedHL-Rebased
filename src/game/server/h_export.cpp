@@ -22,19 +22,11 @@
 
 #include "extdll.h"
 #include "util.h"
-
 #include "cbase.h"
 
 // Holds engine functionality callbacks
 enginefuncs_t g_engfuncs;
 globalvars_t *gpGlobals;
-
-#undef DLLEXPORT
-#ifdef _WIN32
-#define DLLEXPORT __stdcall
-#else
-#define DLLEXPORT __attribute__((visibility("default")))
-#endif
 
 #ifdef _WIN32
 
@@ -52,10 +44,21 @@ BOOL WINAPI DllMain(
 	}
 	return TRUE;
 }
+
 #endif
 
-extern "C" void DLLEXPORT GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, globalvars_t *pGlobals)
+#ifdef _WIN32
+#define SERVER_DLLEXPORT __stdcall
+#else
+#define SERVER_DLLEXPORT __attribute__((visibility("default")))
+#endif
+
+extern "C" void SERVER_DLLEXPORT GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, globalvars_t *pGlobals)
 {
 	memcpy(&g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t));
 	gpGlobals = pGlobals;
+
+	char gd[MAX_PATH];
+	GET_GAME_DIR(gd);
+	g_iIsAg = strcmp(gd, "ag") == 0 ? 1 : 0;
 }

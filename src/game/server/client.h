@@ -15,7 +15,6 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-extern void respawn(entvars_t *pev, BOOL fCopyCorpse);
 extern BOOL ClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128]);
 extern void ClientDisconnect(edict_t *pEntity);
 extern void ClientKill(edict_t *pEntity);
@@ -61,5 +60,7 @@ extern void CreateInstancedBaselines(void);
 extern int InconsistentFile(const edict_t *player, const char *filename, char *disconnect_message);
 
 extern int AllowLagCompensation(void);
+
+extern void CvarValue2(const edict_t *pEnt, int requestID, const char *cvarName, const char *value);
 
 #endif // CLIENT_H

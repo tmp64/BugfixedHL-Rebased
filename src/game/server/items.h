@@ -23,6 +23,9 @@ public:
 	void EXPORT ItemTouch(CBaseEntity *pOther);
 	void EXPORT Materialize(void);
 	virtual BOOL MyTouch(CBasePlayer *pPlayer) { return FALSE; };
+
+protected:
+	void SendItemPickup(CBasePlayer *pPlayer);
 };
 
 #endif // ITEMS_H

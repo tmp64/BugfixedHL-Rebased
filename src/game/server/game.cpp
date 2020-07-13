@@ -16,8 +16,22 @@
 #include "eiface.h"
 #include "util.h"
 #include "game.h"
+#include "convar.h"
+
+#include "appversion.h"
+#include "CBugfixedServer.h"
+
+// Version cvar
+// You can remove it, but remember that this will lower amount of people getting knowing about that HLSDK release.
+// And thus reducing good comments, suggestion and bugfixes.
+char *ver = APP_VERSION;
+cvar_t hlds_version = { "aghl.ru", ver, FCVAR_SERVER };
 
 cvar_t displaysoundlist = { "displaysoundlist", "0" };
+
+// Spectator settings
+cvar_t allow_spectators = { "allow_spectators", "1", FCVAR_SERVER };
+cvar_t spectator_cmd_delay = { "spectator_cmd_delay", "5" };
 
 // multiplayer server rules
 cvar_t fragsleft = { "mp_fragsleft", "0", FCVAR_SERVER | FCVAR_UNLOGGED }; // Don't spam console/log files/users with this changing
@@ -28,25 +42,52 @@ cvar_t teamplay = { "mp_teamplay", "0", FCVAR_SERVER };
 cvar_t fraglimit = { "mp_fraglimit", "0", FCVAR_SERVER };
 cvar_t timelimit = { "mp_timelimit", "0", FCVAR_SERVER };
 cvar_t friendlyfire = { "mp_friendlyfire", "0", FCVAR_SERVER };
+cvar_t bunnyhop = { "mp_bunnyhop", "1", FCVAR_SERVER };
 cvar_t falldamage = { "mp_falldamage", "0", FCVAR_SERVER };
 cvar_t weaponstay = { "mp_weaponstay", "0", FCVAR_SERVER };
+cvar_t selfgauss = { "mp_selfgauss", "1", FCVAR_SERVER };
 cvar_t forcerespawn = { "mp_forcerespawn", "1", FCVAR_SERVER };
 cvar_t flashlight = { "mp_flashlight", "0", FCVAR_SERVER };
 cvar_t aimcrosshair = { "mp_autocrosshair", "1", FCVAR_SERVER };
 cvar_t decalfrequency = { "decalfrequency", "30", FCVAR_SERVER };
 cvar_t teamlist = { "mp_teamlist", "hgrunt;scientist", FCVAR_SERVER };
-cvar_t teamoverride = { "mp_teamoverride", "1" };
-cvar_t defaultteam = { "mp_defaultteam", "0" };
+cvar_t teamoverride = { "mp_teamoverride", "1" }; // Could or not a map override team list
+cvar_t defaultteam = { "mp_defaultteam", "0" }; // Players are forced to first team in the team list
 cvar_t allowmonsters = { "mp_allowmonsters", "0", FCVAR_SERVER };
 
-cvar_t allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER }; // 0 prevents players from being spectators
-
 cvar_t mp_chattime = { "mp_chattime", "10", FCVAR_SERVER };
+cvar_t mp_notify_player_status = { "mp_notify_player_status", "7" }; // Notifications about join/leave/spectate
+
+cvar_t mp_welcomecam = { "mp_welcomecam", "1", FCVAR_SERVER };
+cvar_t mp_respawn_fix = { "mp_respawn_fix", "1", FCVAR_SERVER };
+
+cvar_t motdfile_unicode = { "motdfile_unicode", "motd_unicode.txt", FCVAR_SERVER };
+cvar_t motdfile_html = { "motdfile_html", "motd.html", FCVAR_SERVER };
+
+cvar_t mp_dmg_crowbar = { "mp_dmg_crowbar", "25", FCVAR_SERVER };
+cvar_t mp_dmg_glock = { "mp_dmg_glock", "12", FCVAR_SERVER };
+cvar_t mp_dmg_357 = { "mp_dmg_357", "40", FCVAR_SERVER };
+cvar_t mp_dmg_mp5 = { "mp_dmg_mp5", "12", FCVAR_SERVER };
+cvar_t mp_dmg_shotgun = { "mp_dmg_shotgun", "20", FCVAR_SERVER };
+cvar_t mp_dmg_xbow_scope = { "mp_dmg_xbow_scope", "120", FCVAR_SERVER };
+cvar_t mp_dmg_xbow_noscope = { "mp_dmg_xbow_noscope", "40", FCVAR_SERVER };
+cvar_t mp_dmg_rpg = { "mp_dmg_rpg", "120", FCVAR_SERVER };
+cvar_t mp_dmg_gauss_primary = { "mp_dmg_gauss_primary", "20", FCVAR_SERVER };
+cvar_t mp_dmg_gauss_secondary = { "mp_dmg_gauss_secondary", "200", FCVAR_SERVER };
+cvar_t mp_dmg_egon = { "mp_dmg_egon", "20", FCVAR_SERVER };
+cvar_t mp_dmg_hornet = { "mp_dmg_hornet", "10", FCVAR_SERVER };
+cvar_t mp_dmg_hgrenade = { "mp_dmg_hgrenade", "100", FCVAR_SERVER };
+cvar_t mp_dmg_satchel = { "mp_dmg_satchel", "120", FCVAR_SERVER };
+cvar_t mp_dmg_tripmine = { "mp_dmg_tripmine", "150", FCVAR_SERVER };
+cvar_t mp_dmg_m203 = { "mp_dmg_m203", "100", FCVAR_SERVER };
 
 // Engine Cvars
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
 cvar_t *g_footsteps = NULL;
+
+// AMXX cvar
+cvar_t *g_amxmodx_version = NULL;
 
 //CVARS FOR SKILL LEVEL SETTINGS
 // Agrunt
@@ -428,14 +469,21 @@ cvar_t sk_player_leg3 = { "sk_player_leg3", "1" };
 // This gets called one time when the game is initialied
 void GameDLLInit(void)
 {
-	// Register cvars here:
+	// Get cvars here:
 
 	g_psv_gravity = CVAR_GET_POINTER("sv_gravity");
 	g_psv_aim = CVAR_GET_POINTER("sv_aim");
 	g_footsteps = CVAR_GET_POINTER("mp_footsteps");
 
+	g_amxmodx_version = CVAR_GET_POINTER("amxmodx_version");
+
+	// Register cvars here:
+	CVAR_REGISTER(&hlds_version);
+
 	CVAR_REGISTER(&displaysoundlist);
+
 	CVAR_REGISTER(&allow_spectators);
+	CVAR_REGISTER(&spectator_cmd_delay);
 
 	CVAR_REGISTER(&teamplay);
 	CVAR_REGISTER(&fraglimit);
@@ -445,8 +493,10 @@ void GameDLLInit(void)
 	CVAR_REGISTER(&timeleft);
 
 	CVAR_REGISTER(&friendlyfire);
+	CVAR_REGISTER(&bunnyhop);
 	CVAR_REGISTER(&falldamage);
 	CVAR_REGISTER(&weaponstay);
+	CVAR_REGISTER(&selfgauss);
 	CVAR_REGISTER(&forcerespawn);
 	CVAR_REGISTER(&flashlight);
 	CVAR_REGISTER(&aimcrosshair);
@@ -457,8 +507,33 @@ void GameDLLInit(void)
 	CVAR_REGISTER(&allowmonsters);
 
 	CVAR_REGISTER(&mp_chattime);
+	CVAR_REGISTER(&mp_notify_player_status);
+
+	CVAR_REGISTER(&mp_welcomecam);
+	CVAR_REGISTER(&mp_respawn_fix);
+
+	CVAR_REGISTER(&motdfile_unicode);
+	CVAR_REGISTER(&motdfile_html);
+
+	CVAR_REGISTER(&mp_dmg_crowbar);
+	CVAR_REGISTER(&mp_dmg_glock);
+	CVAR_REGISTER(&mp_dmg_357);
+	CVAR_REGISTER(&mp_dmg_mp5);
+	CVAR_REGISTER(&mp_dmg_shotgun);
+	CVAR_REGISTER(&mp_dmg_xbow_scope);
+	CVAR_REGISTER(&mp_dmg_xbow_noscope);
+	CVAR_REGISTER(&mp_dmg_rpg);
+	CVAR_REGISTER(&mp_dmg_gauss_primary);
+	CVAR_REGISTER(&mp_dmg_gauss_secondary);
+	CVAR_REGISTER(&mp_dmg_egon);
+	CVAR_REGISTER(&mp_dmg_hornet);
+	CVAR_REGISTER(&mp_dmg_hgrenade);
+	CVAR_REGISTER(&mp_dmg_satchel);
+	CVAR_REGISTER(&mp_dmg_tripmine);
+	CVAR_REGISTER(&mp_dmg_m203);
 
 	// REGISTER CVARS FOR SKILL LEVEL STUFF
+
 	// Agrunt
 	CVAR_REGISTER(&sk_agrunt_health1); // {"sk_agrunt_health1","0"};
 	CVAR_REGISTER(&sk_agrunt_health2); // {"sk_agrunt_health2","0"};
@@ -832,5 +907,77 @@ void GameDLLInit(void)
 	CVAR_REGISTER(&sk_player_leg3);
 	// END REGISTER CVARS FOR SKILL LEVEL STUFF
 
+	// Register cvars from ConVar class
+	CvarSystem::RegisterCvars();
+
 	SERVER_COMMAND("exec skill.cfg\n");
+
+	serverapi()->Init();
+
+	int dedicated = IS_DEDICATED_SERVER();
+	cvar_t *deathmatch = CVAR_GET_POINTER("deathmatch");
+	cvar_t *coop = CVAR_GET_POINTER("coop");
+	if (!dedicated && deathmatch->value == 0.0 && coop->value == 0.0)
+	{
+		// Set bunnyhop and clock_window initially off for singleplayer
+		CVAR_SET_FLOAT(bunnyhop.name, 0.0);
+		CVAR_SET_FLOAT("clockwindow", 0.0);
+	}
+	else
+	{
+		// Set bunnyhop and clock_window to default values for multiplayer
+		CVAR_SET_FLOAT(bunnyhop.name, 1.0);
+		CVAR_SET_FLOAT("clockwindow", 0.5);
+
+		// Execute server startup config file for multiplayer only.
+		char szCommand[256], buffer[256], *startupCfgFile, *serverType;
+		if (dedicated)
+		{
+			// dedicated server
+			startupCfgFile = (char *)CVAR_GET_STRING("servercfgfile");
+			serverType = "dedicated";
+		}
+		else
+		{
+			// listen server
+			startupCfgFile = (char *)CVAR_GET_STRING("lservercfgfile");
+			serverType = "listen";
+		}
+
+		if (startupCfgFile && startupCfgFile[0])
+		{
+			// Check length
+			int len = strlen(startupCfgFile);
+			if (len > sizeof(szCommand) - 14)
+			{
+				ALERT(at_console, "Too long path to server config file!\n");
+			}
+			else
+			{
+				// Construct path
+				int i;
+				for (i = len - 1; i >= 0; i--)
+				{
+					if (startupCfgFile[i] == '/' || startupCfgFile[i] == '\\')
+						break;
+				}
+				if (i >= 0)
+				{
+					for (int j = 0; j <= i; j++)
+					{
+						buffer[j] = startupCfgFile[j];
+					}
+					buffer[i + 1] = 0;
+					sprintf(szCommand, "exec %sstartup_%s\n", buffer, startupCfgFile + i + 1);
+				}
+				else
+				{
+					sprintf(szCommand, "exec startup_%s\n", startupCfgFile);
+				}
+				// Execute
+				ALERT(at_console, "Executing %s server startup config file\n", serverType);
+				SERVER_COMMAND(szCommand);
+			}
+		}
+	}
 }

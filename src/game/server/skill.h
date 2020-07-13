@@ -107,6 +107,9 @@ struct skilldata_t
 	float plrDmgHandGrenade;
 	float plrDmgSatchel;
 	float plrDmgTripmine;
+	float plrDmgGaussSecondary;
+	float plrDmgCrossbowScope; // normal bolt (used only in multiplayer)
+	float plrDmgCrossbowNoScope; // explosive bolt (used only in multiplayer)
 
 	// weapons shared by monsters
 	float monDmg9MM;

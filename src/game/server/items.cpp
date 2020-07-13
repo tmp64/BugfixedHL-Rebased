@@ -166,6 +166,30 @@ void CItem::Materialize(void)
 	}
 
 	SetTouch(&CItem::ItemTouch);
+	SetThink(NULL);
+}
+
+void CItem::SendItemPickup(CBasePlayer *pPlayer)
+{
+	MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+	WRITE_STRING(STRING(pev->classname));
+	MESSAGE_END();
+
+	if (!pPlayer->m_fInitHUD)
+	{
+		// Send to all spectating players
+		CBasePlayer *plr;
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			plr = (CBasePlayer *)UTIL_PlayerByIndex(i);
+			if (!plr || plr->pev->iuser1 != OBS_IN_EYE || plr->m_hObserverTarget != pPlayer)
+				continue;
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, plr->pev);
+			WRITE_STRING(STRING(pev->classname));
+			MESSAGE_END();
+		}
+	}
 }
 
 #define SF_SUIT_SHORTLOGON 0x0001
@@ -229,9 +253,7 @@ class CItemBattery : public CItem
 
 			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
 
-			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
-			WRITE_STRING(STRING(pev->classname));
-			MESSAGE_END();
+			CItem::SendItemPickup(pPlayer);
 
 			// Suit reports new power level
 			// For some reason this wasn't working in release build -- round it.
@@ -321,9 +343,7 @@ class CItemLongJump : public CItem
 
 			g_engfuncs.pfnSetPhysicsKeyValue(pPlayer->edict(), "slj", "1");
 
-			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
-			WRITE_STRING(STRING(pev->classname));
-			MESSAGE_END();
+			CItem::SendItemPickup(pPlayer);
 
 			EMIT_SOUND_SUIT(pPlayer->edict(), "!HEV_A1"); // Play the longjump sound UNDONE: Kelly? correct sound?
 			return TRUE;

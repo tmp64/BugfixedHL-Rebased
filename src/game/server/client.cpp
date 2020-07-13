@@ -38,26 +38,23 @@
 #include "weaponinfo.h"
 #include "usercmd.h"
 #include "netadr.h"
-#include "pm_shared.h"
-
-#if !defined(_WIN32)
+#include "path.h"
 #include <ctype.h>
-#endif
+#include "CBugfixedServer.h"
 
 extern DLL_GLOBAL ULONG g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL g_fGameOver;
 extern DLL_GLOBAL int g_iSkillLevel;
 extern DLL_GLOBAL ULONG g_ulFrameCount;
 
-extern void CopyToBodyQue(entvars_t *pev);
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
-
-extern cvar_t allow_spectators;
 
 extern int g_teamplay;
 
 void LinkUserMessages(void);
+
+char g_checkedPlayerModels[MAX_PLAYERS][MAX_TEAM_NAME]; // Used to store checked player model name
 
 /*
  * used by kill command and disconnect command
@@ -84,13 +81,14 @@ called when a player connects to a server
 */
 BOOL ClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128])
 {
-	return g_pGameRules->ClientConnected(pEntity, pszName, pszAddress, szRejectReason);
+	bool ret = g_pGameRules->ClientConnected(pEntity, pszName, pszAddress, szRejectReason);
+	serverapi()->ClientConnect(pEntity);
+	return ret;
 
 	// a client connecting during an intermission can cause problems
 	//	if (intermission_running)
 	//		ExitIntermission ();
 }
-
 /*
 ===========
 ClientDisconnect
@@ -105,15 +103,6 @@ void ClientDisconnect(edict_t *pEntity)
 	if (g_fGameOver)
 		return;
 
-	char text[256] = "";
-	if (pEntity->v.netname)
-		_snprintf(text, sizeof(text), "- %s has left the game\n", STRING(pEntity->v.netname));
-	text[sizeof(text) - 1] = 0;
-	MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
-	WRITE_BYTE(ENTINDEX(pEntity));
-	WRITE_STRING(text);
-	MESSAGE_END();
-
 	CSound *pSound;
 	pSound = CSoundEnt::SoundPointerForIndex(CSoundEnt::ClientSoundIndex(pEntity));
 	{
@@ -127,28 +116,63 @@ void ClientDisconnect(edict_t *pEntity)
 	// since the edict doesn't get deleted, fix it so it doesn't interfere.
 	pEntity->v.takedamage = DAMAGE_NO; // don't attract autoaim
 	pEntity->v.solid = SOLID_NOT; // nonsolid
+	pEntity->v.flags = 0; // clear client flags, because engine doesn't clear them before calling ClientConnect, but only before ClientPutInServer, on next connection to this slot
 	UTIL_SetOrigin(&pEntity->v, pEntity->v.origin);
 
 	g_pGameRules->ClientDisconnected(pEntity);
+
+	// Mark player as disconnected
+	entvars_t *pev = &pEntity->v;
+	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance(pev);
+	if (pl)
+		pl->Disconnect();
+	g_checkedPlayerModels[pl->entindex() - 1][0] = 0;
 }
 
-// called by ClientKill and DeadThink
-void respawn(entvars_t *pev, BOOL fCopyCorpse)
+// Checks player model for validity
+void CheckPlayerModel(CBasePlayer *pPlayer, char *infobuffer)
 {
-	if (gpGlobals->coop || gpGlobals->deathmatch)
+	char text[256];
+	int clientIndex = pPlayer->entindex();
+	char *prevModel = g_checkedPlayerModels[clientIndex - 1];
+
+	// Detect model change
+	char *mdls = g_engfuncs.pfnInfoKeyValue(infobuffer, "model");
+	if (prevModel[0] == 0 || _stricmp(mdls, prevModel))
 	{
-		if (fCopyCorpse)
+		// First parse the model and remove any %'s
+		bool changed = false;
+		for (char *c = mdls; *c != 0; c++)
 		{
-			// make a copy of the dead body for appearances sake
-			CopyToBodyQue(pev);
+			if (*c != '%')
+				continue;
+			// Replace it with a space
+			*c = ' ';
+			changed = true;
 		}
 
-		// respawn player
-		GetClassPtr((CBasePlayer *)pev)->Spawn();
-	}
-	else
-	{ // restart the entire server
-		SERVER_COMMAND("reload\n");
+		// Check for incorrect player model
+		if (mdls[0] == 0 || strlen(mdls) > MAX_TEAM_NAME - 1 || !IsValidFilename(mdls))
+		{
+			if (prevModel[0] == 0)
+				strcpy(prevModel, "gordon"); // default model if empty
+
+			// Set previous model back into info buffer
+			g_engfuncs.pfnSetClientKeyValue(clientIndex, infobuffer, "model", prevModel);
+
+			// Inform player
+			sprintf(text, "* Model should be non-empty, less then %d characters and can't contain special characters like: <>:\"/\\|?*\n* Your current model remains: \"%s\"\n", MAX_TEAM_NAME - 1, prevModel);
+			UTIL_SayText(text, pPlayer);
+
+			return;
+		}
+
+		// Set changed model back into info buffer
+		if (changed)
+			g_engfuncs.pfnSetClientKeyValue(clientIndex, infobuffer, "model", mdls);
+
+		// Remember model player has set
+		strcpy(prevModel, mdls);
 	}
 }
 
@@ -165,20 +189,43 @@ void ClientKill(edict_t *pEntity)
 {
 	entvars_t *pev = &pEntity->v;
 
-	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance(pev);
+	// Is the client spawned yet?
+	if (!pEntity->pvPrivateData)
+		return;
+	// PrivateData is never deleted after it was created on first PutInServer so we will check for IsConnected flag too
+	CBasePlayer *pPlayer = (CBasePlayer *)CBasePlayer::Instance(pev);
+	if (!pPlayer || !pPlayer->IsConnected())
+		return;
 
-	if (pl->m_fNextSuicideTime > gpGlobals->time)
-		return; // prevent suiciding too ofter
+	// prevent suiciding too often
+	if (pPlayer->m_fNextSuicideTime > gpGlobals->time)
+		return;
+	pPlayer->m_fNextSuicideTime = gpGlobals->time + 1;
 
-	pl->m_fNextSuicideTime = gpGlobals->time + 1; // don't let them suicide for 5 seconds after suiciding
+	// prevent death in spectator mode
+	if (pev->iuser1 != OBS_NONE)
+	{
+		ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Can't suicide while in spectator mode!\n"));
+		return;
+	}
+
+	// prevent death if already dead
+	if (pev->deadflag != DEAD_NO)
+	{
+		ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Can't suicide -- already dead!\n"));
+		return;
+	}
+
+	// prevent death in welcome cam
+	if (pPlayer->m_bInWelcomeCam)
+	{
+		ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Can't suicide while in welcome cam mode!\n"));
+		return;
+	}
 
 	// have the player kill themself
 	pev->health = 0;
-	pl->Killed(pev, GIB_NEVER);
-
-	//	pev->modelindex = g_ulModelIndexPlayer;
-	//	pev->frags -= 2;		// extra penalty
-	//	respawn( pev );
+	pPlayer->Killed(pev, GIB_NEVER);
 }
 
 /*
@@ -194,131 +241,35 @@ void ClientPutInServer(edict_t *pEntity)
 
 	entvars_t *pev = &pEntity->v;
 
+	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer = GetClassPtr((CBasePlayer *)pev);
 	pPlayer->SetCustomDecalFrames(-1); // Assume none;
 
-	// Allocate a CBasePlayer for pev, and call spawn
+	// Check player model before spawn
+	CheckPlayerModel(pPlayer, g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()));
+
+	// Check if bot
+	const char *auth;
+	if ((pPlayer->pev->flags & FL_FAKECLIENT) == FL_FAKECLIENT || (auth = GETPLAYERAUTHID(pPlayer->edict())) && strcmp(auth, "BOT") == 0)
+	{
+		pPlayer->m_bIsBot = true;
+	}
+
 	pPlayer->Spawn();
+
+	// Setup some fields initially
+	pPlayer->m_fNextSuicideTime = 0;
+	pPlayer->m_iAutoWeaponSwitch = 1;
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
 
-	pPlayer->pev->iuser1 = 0; // disable any spec modes
-	pPlayer->pev->iuser2 = 0;
+	// Mark as PutInServer
+	pPlayer->m_bPutInServer = TRUE;
 }
 
 #include "voice_gamemgr.h"
 extern CVoiceGameMgr g_VoiceGameMgr;
-
-#if defined(_MSC_VER) || defined(WIN32)
-typedef wchar_t uchar16;
-typedef unsigned int uchar32;
-#else
-typedef unsigned short uchar16;
-typedef wchar_t uchar32;
-#endif
-
-//-----------------------------------------------------------------------------
-// Purpose: determine if a uchar32 represents a valid Unicode code point
-//-----------------------------------------------------------------------------
-bool Q_IsValidUChar32(uchar32 uVal)
-{
-	// Values > 0x10FFFF are explicitly invalid; ditto for UTF-16 surrogate halves,
-	// values ending in FFFE or FFFF, or values in the 0x00FDD0-0x00FDEF reserved range
-	return (uVal < 0x110000u) && ((uVal - 0x00D800u) > 0x7FFu) && ((uVal & 0xFFFFu) < 0xFFFEu) && ((uVal - 0x00FDD0u) > 0x1Fu);
-}
-
-// Decode one character from a UTF-8 encoded string. Treats 6-byte CESU-8 sequences
-// as a single character, as if they were a correctly-encoded 4-byte UTF-8 sequence.
-int Q_UTF8ToUChar32(const char *pUTF8_, uchar32 &uValueOut, bool &bErrorOut)
-{
-	const uint8 *pUTF8 = (const uint8 *)pUTF8_;
-
-	int nBytes = 1;
-	uint32 uValue = pUTF8[0];
-	uint32 uMinValue = 0;
-
-	// 0....... single byte
-	if (uValue < 0x80)
-		goto decodeFinishedNoCheck;
-
-	// Expecting at least a two-byte sequence with 0xC0 <= first <= 0xF7 (110...... and 11110...)
-	if ((uValue - 0xC0u) > 0x37u || (pUTF8[1] & 0xC0) != 0x80)
-		goto decodeError;
-
-	uValue = (uValue << 6) - (0xC0 << 6) + pUTF8[1] - 0x80;
-	nBytes = 2;
-	uMinValue = 0x80;
-
-	// 110..... two-byte lead byte
-	if (!(uValue & (0x20 << 6)))
-		goto decodeFinished;
-
-	// Expecting at least a three-byte sequence
-	if ((pUTF8[2] & 0xC0) != 0x80)
-		goto decodeError;
-
-	uValue = (uValue << 6) - (0x20 << 12) + pUTF8[2] - 0x80;
-	nBytes = 3;
-	uMinValue = 0x800;
-
-	// 1110.... three-byte lead byte
-	if (!(uValue & (0x10 << 12)))
-		goto decodeFinishedMaybeCESU8;
-
-	// Expecting a four-byte sequence, longest permissible in UTF-8
-	if ((pUTF8[3] & 0xC0) != 0x80)
-		goto decodeError;
-
-	uValue = (uValue << 6) - (0x10 << 18) + pUTF8[3] - 0x80;
-	nBytes = 4;
-	uMinValue = 0x10000;
-
-	// 11110... four-byte lead byte. fall through to finished.
-
-decodeFinished:
-	if (uValue >= uMinValue && Q_IsValidUChar32(uValue))
-	{
-	decodeFinishedNoCheck:
-		uValueOut = uValue;
-		bErrorOut = false;
-		return nBytes;
-	}
-decodeError:
-	uValueOut = '?';
-	bErrorOut = true;
-	return nBytes;
-
-decodeFinishedMaybeCESU8:
-	// Do we have a full UTF-16 surrogate pair that's been UTF-8 encoded afterwards?
-	// That is, do we have 0xD800-0xDBFF followed by 0xDC00-0xDFFF? If so, decode it all.
-	if ((uValue - 0xD800u) < 0x400u && pUTF8[3] == 0xED && (uint8)(pUTF8[4] - 0xB0) < 0x10 && (pUTF8[5] & 0xC0) == 0x80)
-	{
-		uValue = 0x10000 + ((uValue - 0xD800u) << 10) + ((uint8)(pUTF8[4] - 0xB0) << 6) + pUTF8[5] - 0x80;
-		nBytes = 6;
-		uMinValue = 0x10000;
-	}
-	goto decodeFinished;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns true if UTF-8 string contains invalid sequences.
-//-----------------------------------------------------------------------------
-bool Q_UnicodeValidate(const char *pUTF8)
-{
-	bool bError = false;
-	while (*pUTF8)
-	{
-		uchar32 uVal;
-		// Our UTF-8 decoder silently fixes up 6-byte CESU-8 (improperly re-encoded UTF-16) sequences.
-		// However, these are technically not valid UTF-8. So if we eat 6 bytes at once, it's an error.
-		int nCharSize = Q_UTF8ToUChar32(pUTF8, uVal, bError);
-		if (bError || nCharSize == 6)
-			return false;
-		pUTF8 += nCharSize;
-	}
-	return true;
-}
 
 //// HOST_SAY
 // String comes in as
@@ -331,28 +282,42 @@ void Host_Say(edict_t *pEntity, int teamonly)
 	CBasePlayer *client;
 	int j;
 	char *p;
+	char *pc;
 	char text[128];
 	char szTemp[256];
 	const char *cpSay = "say";
 	const char *cpSayTeam = "say_team";
 	const char *pcmd = CMD_ARGV(0);
+	const int cmdc = CMD_ARGC();
 
-	// We can get a raw string now, without the "say " prepended
-	if (CMD_ARGC() == 0)
+	if (cmdc == 0)
 		return;
 
 	entvars_t *pev = &pEntity->v;
 	CBasePlayer *player = GetClassPtr((CBasePlayer *)pev);
 
-	//Not yet.
+	// Flood check
 	if (player->m_flNextChatTime > gpGlobals->time)
-		return;
+	{
+		if (player->m_iChatFlood >= CHAT_FLOOD)
+		{
+			player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL + CHAT_PENALTY;
+			return;
+		}
+		player->m_iChatFlood++;
+	}
+	else if (player->m_iChatFlood)
+	{
+		player->m_iChatFlood--;
+	}
+	player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL;
 
+	// We can get a raw string now, without the "say " prepended
 	if (!_stricmp(pcmd, cpSay) || !_stricmp(pcmd, cpSayTeam))
 	{
-		if (CMD_ARGC() >= 2)
+		if (cmdc > 1)
 		{
-			p = (char *)CMD_ARGS();
+			_snprintf(szTemp, sizeof(szTemp), "%s", (char *)CMD_ARGS());
 		}
 		else
 		{
@@ -362,47 +327,73 @@ void Host_Say(edict_t *pEntity, int teamonly)
 	}
 	else // Raw text, need to prepend argv[0]
 	{
-		if (CMD_ARGC() >= 2)
+		if (cmdc > 1)
 		{
-			sprintf(szTemp, "%s %s", (char *)pcmd, (char *)CMD_ARGS());
+			_snprintf(szTemp, sizeof(szTemp), "%s %s", (char *)pcmd, (char *)CMD_ARGS());
 		}
 		else
 		{
 			// Just a one word command, use the first word...sigh
-			sprintf(szTemp, "%s", (char *)pcmd);
+			_snprintf(szTemp, sizeof(szTemp), "%s", (char *)pcmd);
 		}
-		p = szTemp;
+	}
+	p = szTemp;
+
+	// remove empty spaces at the end
+	for (pc = p + (int)strlen(p) - 1; pc != p; pc--)
+	{
+		if ((byte)(*pc) >= (byte)0x80 || // UTF-8 symbol
+		    !isspace(*pc))
+		{
+			break;
+		}
+		*pc = 0;
 	}
 
-	// remove quotes if present
-	if (*p == '"')
+	// remove surrounding quotes if present
+	int len = (int)strlen(p);
+	if (*p == '"' && p[len - 1] == '"')
 	{
+		p[len - 1] = 0;
 		p++;
-		p[strlen(p) - 1] = 0;
+	}
+
+	// remove empty spaces at the end
+	for (pc = p + (int)strlen(p) - 1; pc != p; pc--)
+	{
+		if ((byte)(*pc) >= (byte)0x80 || // UTF-8 symbol
+		    !isspace(*pc))
+		{
+			break;
+		}
+		*pc = 0;
 	}
 
 	// make sure the text has content
-
-	if (!p || !p[0] || !Q_UnicodeValidate(p))
+	for (pc = p; pc != NULL && *pc != 0; pc++)
+	{
+		if ((byte)(*pc) >= (byte)0x80 || // UTF-8 symbol
+		    isprint(*pc) && !isspace(*pc))
+		{
+			pc = NULL; // we've found an alphanumeric character,  so text is valid
+			break;
+		}
+	}
+	if (pc != NULL)
 		return; // no character found, so say nothing
 
 	// turn on color set 2  (color on,  no sound)
-	// turn on color set 2  (color on,  no sound)
-	if (player->IsObserver() && (teamonly))
-		sprintf(text, "%c(SPEC) %s: ", 2, STRING(pEntity->v.netname));
-	else if (teamonly)
-		sprintf(text, "%c(TEAM) %s: ", 2, STRING(pEntity->v.netname));
+	if (teamonly)
+		_snprintf(text, sizeof(text), "%c(TEAM) %s: ", 2, STRING(pEntity->v.netname));
 	else
-		sprintf(text, "%c%s: ", 2, STRING(pEntity->v.netname));
+		_snprintf(text, sizeof(text), "%c%s: ", 2, STRING(pEntity->v.netname));
 
-	j = sizeof(text) - 2 - strlen(text); // -2 for /n and null terminator
+	j = sizeof(text) - 2 - strlen(text); // -2 for \n and null terminator
 	if ((int)strlen(p) > j)
 		p[j] = 0;
 
 	strcat(text, p);
 	strcat(text, "\n");
-
-	player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL;
 
 	// loop through all players
 	// Start with the first player.
@@ -425,13 +416,8 @@ void Host_Say(edict_t *pEntity, int teamonly)
 		if (g_VoiceGameMgr.PlayerHasBlockedPlayer(client, player))
 			continue;
 
-		if (!player->IsObserver() && teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::Instance(pEntity)) != GR_TEAMMATE)
+		if (teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::Instance(pEntity)) != GR_TEAMMATE)
 			continue;
-
-		// Spectators can only talk to other specs
-		if (player->IsObserver() && teamonly)
-			if (!client->IsObserver())
-				continue;
 
 		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client->pev);
 		WRITE_BYTE(ENTINDEX(pEntity));
@@ -491,11 +477,15 @@ void ClientCommand(edict_t *pEntity)
 	const char *pcmd = CMD_ARGV(0);
 	const char *pstr;
 
+	entvars_t *pev = &pEntity->v;
+
 	// Is the client spawned yet?
 	if (!pEntity->pvPrivateData)
 		return;
-
-	entvars_t *pev = &pEntity->v;
+	// PrivateData is never deleted after it was created on first PutInServer so we will check for IsConnected flag too
+	CBasePlayer *pPlayer = (CBasePlayer *)CBasePlayer::Instance(pev);
+	if (!pPlayer || !pPlayer->IsConnected())
+		return;
 
 	if (FStrEq(pcmd, "say"))
 	{
@@ -507,80 +497,141 @@ void ClientCommand(edict_t *pEntity)
 	}
 	else if (FStrEq(pcmd, "fullupdate"))
 	{
-		GetClassPtr((CBasePlayer *)pev)->ForceClientDllUpdate();
+		if (pPlayer->m_flNextFullupdate[0] < gpGlobals->time)
+		{
+			pPlayer->ForceClientDllUpdate();
+		}
+		pPlayer->m_flNextFullupdate[0] = pPlayer->m_flNextFullupdate[1];
+		pPlayer->m_flNextFullupdate[1] = gpGlobals->time + FULLUPDATE_INTERVAL;
 	}
 	else if (FStrEq(pcmd, "give"))
 	{
 		if (g_flWeaponCheat != 0.0)
 		{
 			int iszItem = ALLOC_STRING(CMD_ARGV(1)); // Make a copy of the classname
-			GetClassPtr((CBasePlayer *)pev)->GiveNamedItem(STRING(iszItem));
+			pPlayer->GiveNamedItem(STRING(iszItem));
 		}
 	}
-
 	else if (FStrEq(pcmd, "drop"))
 	{
 		// player is dropping an item.
-		GetClassPtr((CBasePlayer *)pev)->DropPlayerItem((char *)CMD_ARGV(1));
+		pPlayer->DropPlayerItem((char *)CMD_ARGV(1));
 	}
 	else if (FStrEq(pcmd, "fov"))
 	{
 		if (g_flWeaponCheat && CMD_ARGC() > 1)
 		{
-			GetClassPtr((CBasePlayer *)pev)->m_iFOV = atoi(CMD_ARGV(1));
+			pPlayer->m_iFOV = atoi(CMD_ARGV(1));
 		}
 		else
 		{
-			CLIENT_PRINTF(pEntity, print_console, UTIL_VarArgs("\"fov\" is \"%d\"\n", (int)GetClassPtr((CBasePlayer *)pev)->m_iFOV));
+			CLIENT_PRINTF(pEntity, print_console, UTIL_VarArgs("\"fov\" is \"%d\"\n", (int)pPlayer->m_iFOV));
 		}
 	}
 	else if (FStrEq(pcmd, "use"))
 	{
-		GetClassPtr((CBasePlayer *)pev)->SelectItem((char *)CMD_ARGV(1));
+		pPlayer->SelectItem((char *)CMD_ARGV(1));
 	}
 	else if (((pstr = strstr(pcmd, "weapon_")) != NULL) && (pstr == pcmd))
 	{
-		GetClassPtr((CBasePlayer *)pev)->SelectItem(pcmd);
+		pPlayer->SelectItem(pcmd);
 	}
 	else if (FStrEq(pcmd, "lastinv"))
 	{
-		GetClassPtr((CBasePlayer *)pev)->SelectLastItem();
+		pPlayer->SelectLastItem();
 	}
-	else if (FStrEq(pcmd, "spectate")) // clients wants to become a spectator
+	else if (FStrEq(pcmd, "spectate"))
 	{
-		// always allow proxies to become a spectator
-		if ((pev->flags & FL_PROXY) || allow_spectators.value)
+		// Block too offten spectator command usage
+		if (pPlayer->m_flNextSpectatorCommand < gpGlobals->time)
 		{
-			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pev);
+			pPlayer->m_flNextSpectatorCommand = gpGlobals->time + (spectator_cmd_delay.value < 1.0 ? 1.0 : spectator_cmd_delay.value);
+			if (!pPlayer->IsObserver())
+			{
+				if ((pev->flags & FL_PROXY) || allow_spectators.value != 0.0)
+				{
+					pPlayer->StartObserver();
 
-			edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot(pPlayer);
-			pPlayer->StartObserver(pev->origin, VARS(pentSpawnSpot)->angles);
+					if (((int)mp_notify_player_status.value & 4) == 4)
+					{
+						// notify other clients of player switched to spectators
+						UTIL_ClientPrintAll(HUD_PRINTTALK, UTIL_VarArgs("* %s switched to spectator mode\n", (pPlayer->pev->netname && STRING(pPlayer->pev->netname)[0] != 0) ? STRING(pPlayer->pev->netname) : "unconnected"));
+					}
 
-			// notify other clients of player switching to spectator mode
-			UTIL_ClientPrintAll(HUD_PRINTNOTIFY, UTIL_VarArgs("%s switched to spectator mode\n", (pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "unconnected"));
+					// team match?
+					if (g_teamplay)
+					{
+						UTIL_LogPrintf("\"%s<%i><%s><%s>\" switched to spectator mode\n",
+						    STRING(pPlayer->pev->netname),
+						    GETPLAYERUSERID(pPlayer->edict()),
+						    GETPLAYERAUTHID(pPlayer->edict()),
+						    g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model"));
+					}
+					else
+					{
+						UTIL_LogPrintf("\"%s<%i><%s><%i>\" switched to spectator mode\n",
+						    STRING(pPlayer->pev->netname),
+						    GETPLAYERUSERID(pPlayer->edict()),
+						    GETPLAYERAUTHID(pPlayer->edict()),
+						    GETPLAYERUSERID(pPlayer->edict()));
+					}
+				}
+				else
+				{
+					ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Spectator mode is disabled.\n"));
+				}
+			}
+			else
+			{
+				pPlayer->StopObserver();
+
+				if (((int)mp_notify_player_status.value & 4) == 4)
+				{
+					// notify other clients of player left spectators
+					UTIL_ClientPrintAll(HUD_PRINTTALK, UTIL_VarArgs("* %s has left spectator mode\n", (pPlayer->pev->netname && STRING(pPlayer->pev->netname)[0] != 0) ? STRING(pPlayer->pev->netname) : "unconnected"));
+				}
+
+				// team match?
+				if (g_teamplay)
+				{
+					UTIL_LogPrintf("\"%s<%i><%s><%s>\" has left spectator mode\n",
+					    STRING(pPlayer->pev->netname),
+					    GETPLAYERUSERID(pPlayer->edict()),
+					    GETPLAYERAUTHID(pPlayer->edict()),
+					    g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model"));
+				}
+				else
+				{
+					UTIL_LogPrintf("\"%s<%i><%s><%i>\" has left spectator mode\n",
+					    STRING(pPlayer->pev->netname),
+					    GETPLAYERUSERID(pPlayer->edict()),
+					    GETPLAYERAUTHID(pPlayer->edict()),
+					    GETPLAYERUSERID(pPlayer->edict()));
+				}
+			}
 		}
-		else
-			ClientPrint(pev, HUD_PRINTCONSOLE, "Spectator mode is disabled.\n");
 	}
-	else if (FStrEq(pcmd, "specmode")) // new spectator mode
+	else if (FStrEq(pcmd, "specmode"))
 	{
-		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pev);
-
 		if (pPlayer->IsObserver())
+		{
 			pPlayer->Observer_SetMode(atoi(CMD_ARGV(1)));
+		}
 	}
-	else if (FStrEq(pcmd, "closemenus"))
+	else if (FStrEq(pcmd, "follownext"))
 	{
-		// just ignore it
-	}
-	else if (FStrEq(pcmd, "follownext")) // follow next player
-	{
-		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pev);
-
+		// No switching of view point in Free Overview
+		if (pev->iuser1 == OBS_MAP_FREE)
+			return;
 		if (pPlayer->IsObserver())
-			pPlayer->Observer_FindNextPlayer(atoi(CMD_ARGV(1)) ? true : false);
+		{
+			if (pev->iuser1 == OBS_ROAMING)
+				pPlayer->Observer_FindNextSpot(atoi(CMD_ARGV(1)) != 0);
+			else
+				pPlayer->Observer_FindNextPlayer(atoi(CMD_ARGV(1)) != 0, false);
+		}
 	}
-	else if (g_pGameRules->ClientCommand(GetClassPtr((CBasePlayer *)pev), pcmd))
+	else if (g_pGameRules->ClientCommand(pPlayer, pcmd))
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
 	}
@@ -595,7 +646,7 @@ void ClientCommand(edict_t *pEntity)
 		command[127] = '\0';
 
 		// tell the user they entered an unknown command
-		ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs("Unknown command: %s\n", command));
+		ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Unknown command: %s\n", command));
 	}
 }
 
@@ -613,14 +664,22 @@ void ClientUserInfoChanged(edict_t *pEntity, char *infobuffer)
 	// Is the client spawned yet?
 	if (!pEntity->pvPrivateData)
 		return;
+	// PrivateData is never deleted after it was created on first PutInServer so we will check for IsConnected flag too
+	CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)&pEntity->v);
+	if (!pPlayer->IsConnected())
+		return;
 
-	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
+	CheckPlayerModel(pPlayer, infobuffer);
+
+	char text[256];
+
+	// msg everyone if someone changes their name, and it isn't the first time (changing no name to current name)
 	if (pEntity->v.netname && STRING(pEntity->v.netname)[0] != 0 && !FStrEq(STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue(infobuffer, "name")))
 	{
 		char sName[256];
 		char *pName = g_engfuncs.pfnInfoKeyValue(infobuffer, "name");
 		strncpy(sName, pName, sizeof(sName) - 1);
-		sName[sizeof(sName) - 1] = '\0';
+		sName[sizeof(sName) - 1] = 0;
 
 		// First parse the name and remove any %'s
 		for (char *pApersand = sName; pApersand != NULL && *pApersand != 0; pApersand++)
@@ -633,15 +692,8 @@ void ClientUserInfoChanged(edict_t *pEntity, char *infobuffer)
 		// Set the name
 		g_engfuncs.pfnSetClientKeyValue(ENTINDEX(pEntity), infobuffer, "name", sName);
 
-		if (gpGlobals->maxClients > 1)
-		{
-			char text[256];
-			sprintf(text, "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue(infobuffer, "name"));
-			MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
-			WRITE_BYTE(ENTINDEX(pEntity));
-			WRITE_STRING(text);
-			MESSAGE_END();
-		}
+		_snprintf(text, sizeof(text), "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue(infobuffer, "name"));
+		UTIL_SayTextAll(text, pPlayer);
 
 		// team match?
 		if (g_teamplay)
@@ -664,7 +716,11 @@ void ClientUserInfoChanged(edict_t *pEntity, char *infobuffer)
 		}
 	}
 
-	g_pGameRules->ClientUserInfoChanged(GetClassPtr((CBasePlayer *)&pEntity->v), infobuffer);
+	// Get weapon switching vars
+	char *autowepswitch = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
+	pPlayer->m_iAutoWeaponSwitch = autowepswitch[0] == 0 ? 1 : atoi(autowepswitch);
+
+	g_pGameRules->ClientUserInfoChanged(pPlayer, infobuffer);
 }
 
 static int g_serveractive = 0;
@@ -690,6 +746,7 @@ void ServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 	CBaseEntity *pClass;
 
 	// Every call to ServerActivate should be matched by a call to ServerDeactivate
+	ASSERT(g_serveractive == 0);
 	g_serveractive = 1;
 
 	// Clients have not been initialized yet
@@ -748,6 +805,8 @@ void PlayerPostThink(edict_t *pEntity)
 
 	if (pPlayer)
 		pPlayer->PostThink();
+
+	serverapi()->PlayerPostThink(pEntity);
 }
 
 void ParmsNewLevel(void)
@@ -1038,6 +1097,14 @@ void SetupVisibility(edict_t *pViewEntity, edict_t *pClient, unsigned char **pvs
 		pView = pViewEntity;
 	}
 
+	// Observers use the visibility of their target
+	CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pClient);
+	if (pPlayer->pev->iuser1 == OBS_IN_EYE && pPlayer->pev->iuser2 != 0 && pPlayer->m_hObserverTarget != NULL)
+	{
+		ASSERT(pPlayer->pev->iuser2 == ENTINDEX(pPlayer->m_hObserverTarget->edict()));
+		pView = pPlayer->m_hObserverTarget->edict();
+	}
+
 	if (pClient->v.flags & FL_PROXY)
 	{
 		*pvs = NULL; // the spectator proxy sees
@@ -1075,7 +1142,7 @@ int AddToFullPack(struct entity_state_s *state, int e, edict_t *ent, edict_t *ho
 	int i;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
-	if ((ent->v.effects & EF_NODRAW) && (ent != host))
+	if ((ent->v.effects == EF_NODRAW) && (ent != host))
 		return 0;
 
 	// Ignore ents without valid / visible models
@@ -1202,6 +1269,12 @@ int AddToFullPack(struct entity_state_s *state, int e, edict_t *ent, edict_t *ho
 	if (ent->v.aiment)
 	{
 		state->aiment = ENTINDEX(ent->v.aiment);
+		// Change ent for egon beam for spectators to look like it goes from the client weapon if in first person mode
+		if (state->entityType == ENTITY_BEAM && host->v.iuser1 == OBS_IN_EYE && host->v.iuser2 == state->aiment)
+		{
+			state->aiment = ENTINDEX(host);
+			state->skin = (state->aiment & 0x0FFF) | (state->skin & 0xF000);
+		}
 	}
 
 	state->owner = 0;
@@ -1234,10 +1307,18 @@ int AddToFullPack(struct entity_state_s *state, int e, edict_t *ent, edict_t *ho
 		state->friction = ent->v.friction;
 
 		state->gravity = ent->v.gravity;
-		//		state->team			= ent->v.team;
-		//
+
+		if (ent->v.iuser1)
+			state->team = -1; // Set team if player is spectator. This will enable "Cancel" button in team menu.
+
 		state->usehull = (ent->v.flags & FL_DUCKING) ? 1 : 0;
 		state->health = ent->v.health;
+	}
+
+	if (ent->v.renderfx == kRenderFxDeadPlayer)
+	{
+		state->movetype = MOVETYPE_NONE;
+		state->solid = SOLID_NOT;
 	}
 
 	return 1;
@@ -1427,22 +1508,22 @@ void Player_Encode(struct delta_s *pFields, const unsigned char *from, const uns
 	localplayer = (t->number - 1) == ENGINE_CURRENT_PLAYER();
 	if (localplayer)
 	{
-		DELTA_UNSETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN0].field);
-		DELTA_UNSETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN1].field);
-		DELTA_UNSETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN2].field);
+		DELTA_UNSETBYINDEX(pFields, player_field_alias[FIELD_ORIGIN0].field);
+		DELTA_UNSETBYINDEX(pFields, player_field_alias[FIELD_ORIGIN1].field);
+		DELTA_UNSETBYINDEX(pFields, player_field_alias[FIELD_ORIGIN2].field);
 	}
 
 	if ((t->movetype == MOVETYPE_FOLLOW) && (t->aiment != 0))
 	{
-		DELTA_UNSETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN0].field);
-		DELTA_UNSETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN1].field);
-		DELTA_UNSETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN2].field);
+		DELTA_UNSETBYINDEX(pFields, player_field_alias[FIELD_ORIGIN0].field);
+		DELTA_UNSETBYINDEX(pFields, player_field_alias[FIELD_ORIGIN1].field);
+		DELTA_UNSETBYINDEX(pFields, player_field_alias[FIELD_ORIGIN2].field);
 	}
 	else if (t->aiment != f->aiment)
 	{
-		DELTA_SETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN0].field);
-		DELTA_SETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN1].field);
-		DELTA_SETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN2].field);
+		DELTA_SETBYINDEX(pFields, player_field_alias[FIELD_ORIGIN0].field);
+		DELTA_SETBYINDEX(pFields, player_field_alias[FIELD_ORIGIN1].field);
+		DELTA_SETBYINDEX(pFields, player_field_alias[FIELD_ORIGIN2].field);
 	}
 }
 
@@ -1554,7 +1635,7 @@ int GetWeaponData(struct edict_s *player, struct weapon_data_s *info)
 	int i;
 	weapon_data_t *item;
 	entvars_t *pev = &player->v;
-	CBasePlayer *pl = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
+	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance(pev);
 	CBasePlayerWeapon *gun;
 
 	ItemInfo II;
@@ -1574,7 +1655,7 @@ int GetWeaponData(struct edict_s *player, struct weapon_data_s *info)
 
 			while (pPlayerItem)
 			{
-				gun = dynamic_cast<CBasePlayerWeapon *>(pPlayerItem->GetWeaponPtr());
+				gun = (CBasePlayerWeapon *)pPlayerItem->GetWeaponPtr();
 				if (gun && gun->UseDecrement())
 				{
 					// Get The ID.
@@ -1621,27 +1702,30 @@ Data sent to current client only
 engine sets cd to 0 before calling.
 =================
 */
-void UpdateClientData(const edict_t *ent, int sendweapons, struct clientdata_s *cd)
+void UpdateClientData(const struct edict_s *ent, int sendweapons, struct clientdata_s *cd)
 {
-	if (!ent || !ent->pvPrivateData)
-		return;
 	entvars_t *pev = (entvars_t *)&ent->v;
-	CBasePlayer *pl = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
-	entvars_t *pevOrg = NULL;
 
-	// if user is spectating different player in First person, override some vars
-	if (pl && pl->pev->iuser1 == OBS_IN_EYE)
+	if (pev->iuser1 == OBS_IN_EYE)
 	{
-		if (pl->m_hObserverTarget)
+		CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance(pev);
+		if (pl && pl->m_hObserverTarget)
 		{
-			pevOrg = pev;
-			pev = pl->m_hObserverTarget->pev;
-			pl = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
+			pev = &(pl->m_hObserverTarget->edict()->v);
 		}
 	}
 
 	cd->flags = pev->flags;
-	cd->health = pev->health;
+
+	// Clamp value for delta compression
+	if (pev->health <= 0.0)
+		cd->health = 0.0;
+	else if (pev->health <= 1.0)
+		cd->health = 1.0;
+	else if ((int)pev->health < 0)
+		cd->health = 0x7FFFFF00; // (int)(float)0x7FFFFF00 == 0x7FFFFF00, (int)(float)0x7FFFFFF0 != 0x7FFFFFF0
+	else
+		cd->health = pev->health;
 
 	cd->viewmodel = MODEL_INDEX(STRING(pev->viewmodel));
 
@@ -1669,22 +1753,16 @@ void UpdateClientData(const edict_t *ent, int sendweapons, struct clientdata_s *
 
 	cd->pushmsec = pev->pushmsec;
 
-	//Spectator mode
-	if (pevOrg != NULL)
-	{
-		// don't use spec vars from chased player
-		cd->iuser1 = pevOrg->iuser1;
-		cd->iuser2 = pevOrg->iuser2;
-	}
-	else
-	{
-		cd->iuser1 = pev->iuser1;
-		cd->iuser2 = pev->iuser2;
-	}
+	// Observer
+	cd->iuser1 = ent->v.iuser1;
+	cd->iuser2 = ent->v.iuser2;
 
 #if defined(CLIENT_WEAPONS)
 	if (sendweapons)
 	{
+		entvars_t *pev = (entvars_t *)&ent->v;
+		CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance(pev);
+
 		if (pl)
 		{
 			cd->m_flNextAttack = pl->m_flNextAttack;
@@ -1739,7 +1817,7 @@ This is the time to examine the usercmd for anything extra.  This call happens e
 void CmdStart(const edict_t *player, const struct usercmd_s *cmd, unsigned int random_seed)
 {
 	entvars_t *pev = (entvars_t *)&player->v;
-	CBasePlayer *pl = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
+	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance(pev);
 
 	if (!pl)
 		return;
@@ -1762,7 +1840,7 @@ Each cmdstart is exactly matched with a cmd end, clean up any group trace flags,
 void CmdEnd(const edict_t *player)
 {
 	entvars_t *pev = (entvars_t *)&player->v;
-	CBasePlayer *pl = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
+	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance(pev);
 
 	if (!pl)
 		return;
@@ -1884,4 +1962,11 @@ AllowLagCompensation
 int AllowLagCompensation(void)
 {
 	return 1;
+}
+
+// When the pfnQueryClientCvarValue2() completes it will call pfnCvarValue2() with the
+// request ID you supplied earlier, the name of the cvar you requested and the value of that cvar.
+void CvarValue2(const edict_t *pEnt, int requestID, const char *cvarName, const char *value)
+{
+	serverapi()->CvarValueCallback(pEnt, requestID, cvarName, value);
 }

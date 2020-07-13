@@ -24,6 +24,7 @@
 #include "soundent.h"
 #include "shake.h"
 #include "gamerules.h"
+#include "game.h"
 
 #define GAUSS_PRIMARY_CHARGE_VOLUME 256 // how loud gauss is while charging
 #define GAUSS_PRIMARY_FIRE_VOLUME   450 // how loud gauss is when discharged
@@ -98,9 +99,7 @@ int CGauss::AddToPlayer(CBasePlayer *pPlayer)
 {
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
 	{
-		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
-		WRITE_BYTE(m_iId);
-		MESSAGE_END();
+		CBasePlayerWeapon::SendWeaponPickup(pPlayer);
 		return TRUE;
 	}
 	return FALSE;
@@ -145,7 +144,7 @@ void CGauss::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		PlayEmptySound();
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay(0.15);
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -183,7 +182,7 @@ void CGauss::SecondaryAttack()
 			PlayEmptySound();
 		}
 
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		return;
 	}
 
@@ -313,11 +312,19 @@ void CGauss::StartFire(void)
 
 	if (gpGlobals->time - m_pPlayer->m_flStartCharge > GetFullChargeTime())
 	{
+#ifdef CLIENT_DLL
 		flDamage = 200;
+#else
+		flDamage = gSkillData.plrDmgGaussSecondary;
+#endif
 	}
 	else
 	{
+#ifdef CLIENT_DLL
 		flDamage = 200 * ((gpGlobals->time - m_pPlayer->m_flStartCharge) / GetFullChargeTime());
+#else
+		flDamage = gSkillData.plrDmgGaussSecondary * ((gpGlobals->time - m_pPlayer->m_flStartCharge) / GetFullChargeTime());
+#endif
 	}
 
 	if (m_fPrimaryFire)
@@ -505,6 +512,10 @@ void CGauss::Fire(Vector vecOrigSrc, Vector vecDir, float flDamage)
 							nTotal += 53;
 
 							vecSrc = beam_tr.vecEndPos + vecDir;
+						}
+						else if (selfgauss.value == 0)
+						{
+							flDamage = 0;
 						}
 					}
 					else

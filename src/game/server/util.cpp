@@ -493,6 +493,7 @@ int UTIL_MonstersInSphere(CBaseEntity **pList, int listMax, const Vector &center
 
 CBaseEntity *UTIL_FindEntityInSphere(CBaseEntity *pStartEntity, const Vector &vecCenter, float flRadius)
 {
+	CBaseEntity *resultEntity = NULL;
 	edict_t *pentEntity;
 
 	if (pStartEntity)
@@ -500,11 +501,20 @@ CBaseEntity *UTIL_FindEntityInSphere(CBaseEntity *pStartEntity, const Vector &ve
 	else
 		pentEntity = NULL;
 
-	pentEntity = FIND_ENTITY_IN_SPHERE(pentEntity, vecCenter, flRadius);
+	while (true)
+	{
+		pentEntity = FIND_ENTITY_IN_SPHERE(pentEntity, vecCenter, flRadius);
+		if (pentEntity == NULL)
+			return NULL;
+		if (FNullEnt(pentEntity))
+			return NULL;
+		resultEntity = CBaseEntity::Instance(pentEntity);
+		// If we will find edict that doesn't have class we will skip it
+		if (resultEntity != NULL)
+			break;
+	}
 
-	if (!FNullEnt(pentEntity))
-		return CBaseEntity::Instance(pentEntity);
-	return NULL;
+	return resultEntity;
 }
 
 CBaseEntity *UTIL_FindEntityByString(CBaseEntity *pStartEntity, const char *szKeyword, const char *szValue)
@@ -556,19 +566,86 @@ CBaseEntity *UTIL_FindEntityGeneric(const char *szWhatever, Vector &vecSrc, floa
 	return pEntity;
 }
 
-// returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
-// otherwise returns NULL
-// Index is 1 based
+// Finds next entity of a given class starting from given entity and looping and
+// the end starting next from zero towards to given entity. Also can search in reverse direction.
+CBaseEntity *UTIL_FindEntityByClassname(CBaseEntity *pStartEntity, const char *szName, bool bLoop, bool bReverse)
+{
+	if (szName == NULL || *szName == 0)
+		return NULL;
+
+	CBaseEntity *pEntity;
+
+	if (!bReverse)
+	{
+		pEntity = UTIL_FindEntityByClassname(pStartEntity, szName);
+		if (pEntity == NULL && pStartEntity != NULL && bLoop)
+		{
+			pEntity = UTIL_FindEntityByClassname(NULL, szName);
+			if (pEntity == pStartEntity)
+				pEntity = NULL;
+		}
+		return pEntity;
+	}
+
+	// Do reverse search logic
+	edict_t *pEdictFound = NULL;
+	edict_t *pEdictStart = g_engfuncs.pfnPEntityOfEntIndex(0);
+	edict_t *pEdictEnd = pEdictStart + gpGlobals->maxEntities - 1;
+	edict_t *pEdictMiddle = pStartEntity == NULL ? pEdictStart : pStartEntity->edict();
+
+	edict_t *pEdict;
+	// Search from the middle to the start
+	for (pEdict = pEdictMiddle - 1; pEdict >= pEdictStart; pEdict--)
+	{
+		if (pEdict->free) // Not in use
+			continue;
+		if (pEdict->v.classname == NULL)
+			continue;
+		const char *name = STRING(pEdict->v.classname);
+		if (strcmp(szName, name))
+			continue;
+		pEdictFound = pEdict;
+		break;
+	}
+	if (!pEdictFound && bLoop)
+	{
+		// Loop: Search from the end to the middle
+		for (pEdict = pEdictEnd; pEdict > pEdictMiddle; pEdict--)
+		{
+			if (pEdict->free) // Not in use
+				continue;
+			if (pEdict->v.classname == NULL)
+				continue;
+			const char *name = STRING(pEdict->v.classname);
+			if (strcmp(szName, name))
+				continue;
+			pEdictFound = pEdict;
+			break;
+		}
+	}
+
+	if (!FNullEnt(pEdictFound))
+		return CBaseEntity::Instance(pEdictFound);
+	return NULL;
+}
+
+// Returns a CBaseEntity pointer to a player by index.
+// Only returns if the player is connected and was spawned, otherwise returns NULL.
+// Index is 1 based.
 CBaseEntity *UTIL_PlayerByIndex(int playerIndex)
 {
-	CBaseEntity *pPlayer = NULL;
+	CBasePlayer *pPlayer = NULL;
 
 	if (playerIndex > 0 && playerIndex <= gpGlobals->maxClients)
 	{
 		edict_t *pPlayerEdict = INDEXENT(playerIndex);
 		if (pPlayerEdict && !pPlayerEdict->free)
 		{
-			pPlayer = CBaseEntity::Instance(pPlayerEdict);
+			pPlayer = (CBasePlayer *)CBaseEntity::Instance(pPlayerEdict);
+			if (pPlayer && !pPlayer->IsConnected())
+			{
+				pPlayer = NULL;
+			}
 		}
 	}
 
@@ -965,9 +1042,7 @@ float UTIL_VecToYaw(const Vector &vec)
 
 void UTIL_SetOrigin(entvars_t *pev, const Vector &vecOrigin)
 {
-	edict_t *ent = ENT(pev);
-	if (ent)
-		SET_ORIGIN(ent, vecOrigin);
+	SET_ORIGIN(ENT(pev), vecOrigin);
 }
 
 void UTIL_ParticleEffect(const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount)
@@ -1598,11 +1673,7 @@ static int gSizes[FIELD_TYPECOUNT] = {
 	sizeof(float) * 3, // FIELD_POSITION_VECTOR
 	sizeof(int *), // FIELD_POINTER
 	sizeof(int), // FIELD_INTEGER
-#ifdef GNUC
-	sizeof(int *) * 2, // FIELD_FUNCTION
-#else
 	sizeof(int *), // FIELD_FUNCTION
-#endif
 	sizeof(int), // FIELD_BOOLEAN
 	sizeof(short), // FIELD_SHORT
 	sizeof(char), // FIELD_CHARACTER
@@ -1703,27 +1774,24 @@ void CSaveRestoreBuffer ::BufferRewind(int size)
 	m_pdata->size -= size;
 }
 
-#ifndef _WIN32
-extern "C"
+#if !defined(_WIN32) && !defined(_rotr)
+extern "C" unsigned _rotr(unsigned val, int shift)
 {
-	unsigned _rotr(unsigned val, int shift)
-	{
-		register unsigned lobit; /* non-zero means lo bit set */
-		register unsigned num = val; /* number to rotate */
+	register unsigned lobit; /* non-zero means lo bit set */
+	register unsigned num = val; /* number to rotate */
 
-		shift &= 0x1f; /* modulo 32 -- this will also make
+	shift &= 0x1f; /* modulo 32 -- this will also make
                                            negative shifts work */
 
-		while (shift--)
-		{
-			lobit = num & 1; /* get high bit */
-			num >>= 1; /* shift right one bit */
-			if (lobit)
-				num |= 0x80000000; /* set hi bit if lo bit was set */
-		}
-
-		return num;
+	while (shift--)
+	{
+		lobit = num & 1; /* get high bit */
+		num >>= 1; /* shift right one bit */
+		if (lobit)
+			num |= 0x80000000; /* set hi bit if lo bit was set */
 	}
+
+	return num;
 }
 #endif
 
@@ -1894,11 +1962,11 @@ void CSave ::WritePositionVector(const char *pname, const float *value, int coun
 	}
 }
 
-void CSave ::WriteFunction(const char *pname, void **data, int count)
+void CSave ::WriteFunction(const char *pname, const int *data, int count)
 {
 	const char *functionName;
 
-	functionName = NAME_FOR_FUNCTION((uint32)*data);
+	functionName = NAME_FOR_FUNCTION(*data);
 	if (functionName)
 		BufferField(pname, strlen(functionName) + 1, functionName);
 	else
@@ -2057,7 +2125,7 @@ int CSave ::WriteFields(const char *pname, void *pBaseData, TYPEDESCRIPTION *pFi
 			break;
 
 		case FIELD_FUNCTION:
-			WriteFunction(pTest->fieldName, (void **)pOutputData, pTest->fieldSize);
+			WriteFunction(pTest->fieldName, (int *)(char *)pOutputData, pTest->fieldSize);
 			break;
 		default:
 			ALERT(at_error, "Bad field type\n");

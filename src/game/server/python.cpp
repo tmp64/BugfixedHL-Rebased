@@ -58,9 +58,7 @@ int CPython::AddToPlayer(CBasePlayer *pPlayer)
 {
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
 	{
-		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
-		WRITE_BYTE(m_iId);
-		MESSAGE_END();
+		CBasePlayerWeapon::SendWeaponPickup(pPlayer);
 		return TRUE;
 	}
 	return FALSE;
@@ -229,7 +227,10 @@ void CPython::Reload(void)
 	bUseScope = g_pGameRules->IsMultiplayer();
 #endif
 
-	DefaultReload(6, PYTHON_RELOAD, 2.0, bUseScope);
+	if (DefaultReload(6, PYTHON_RELOAD, 2.0, bUseScope))
+	{
+		m_flSoundDelay = 1.5;
+	}
 }
 
 void CPython::WeaponIdle(void)
@@ -238,11 +239,18 @@ void CPython::WeaponIdle(void)
 
 	m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 
+	// ALERT( at_console, "%.2f\n", gpGlobals->time - m_flSoundDelay );
+	if (m_flSoundDelay != 0 && m_flSoundDelay <= UTIL_WeaponTimeBase())
+	{
+		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/357_reload1.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
+		m_flSoundDelay = 0;
+	}
+
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
 	int iAnim;
-	float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
+	float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 	if (flRand <= 0.5)
 	{
 		iAnim = PYTHON_IDLE1;

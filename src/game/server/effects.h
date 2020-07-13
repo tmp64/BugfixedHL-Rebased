@@ -167,6 +167,7 @@ public:
 	void DoSparks(const Vector &start, const Vector &end);
 	CBaseEntity *RandomTargetname(const char *szName);
 	void BeamDamage(TraceResult *ptr);
+	void BeamDamage(TraceResult *ptr, entvars_t *pevAttacker);
 	// Init after BeamCreate()
 	void BeamInit(const char *pSpriteName, int width);
 	void PointsInit(const Vector &start, const Vector &end);
@@ -178,7 +179,7 @@ public:
 
 	inline void LiveForTime(float time)
 	{
-		SetThink(&CBeam::SUB_Remove);
+		SetThink(&CSprite::SUB_Remove);
 		pev->nextthink = gpGlobals->time + time;
 	}
 	inline void BeamDamageInstant(TraceResult *ptr, float damage)
@@ -204,6 +205,7 @@ public:
 	int IsOn(void);
 
 	void FireAtPoint(TraceResult &point);
+	void FireAtPoint(TraceResult &point, entvars_t *pevAttacker);
 
 	void EXPORT StrikeThink(void);
 	void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);

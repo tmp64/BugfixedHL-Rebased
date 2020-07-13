@@ -102,6 +102,7 @@ public:
 	BOOL StartControl(CBasePlayer *pController);
 	void StopControl(void);
 	void ControllerPostFrame(void);
+	virtual void StopFire(void) { }
 
 protected:
 	CBasePlayer *m_pController;
@@ -356,6 +357,7 @@ BOOL CFuncTank ::StartControl(CBasePlayer *pController)
 	ALERT(at_console, "using TANK!\n");
 
 	m_pController = pController;
+	m_pController->m_pTank = this;
 	if (m_pController->m_pActiveItem)
 	{
 		m_pController->m_pActiveItem->Holster();
@@ -373,6 +375,8 @@ BOOL CFuncTank ::StartControl(CBasePlayer *pController)
 
 void CFuncTank ::StopControl()
 {
+	StopFire();
+
 	// TODO: bring back the controllers current weapon
 	if (!m_pController)
 		return;
@@ -385,13 +389,15 @@ void CFuncTank ::StopControl()
 	m_pController->m_iHideHUD &= ~HIDEHUD_WEAPONS;
 
 	pev->nextthink = 0;
+
+	m_pController->m_pTank = NULL;
 	m_pController = NULL;
 
 	if (IsActive())
 		pev->nextthink = pev->ltime + 1.0;
 }
 
-// Called each frame by the player's ItemPostFrame
+// Called each frame by the player's PostThink
 void CFuncTank ::ControllerPostFrame(void)
 {
 	ASSERT(m_pController != NULL);
@@ -431,7 +437,6 @@ void CFuncTank ::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 		}
 		else if (!m_pController && useType != USE_OFF)
 		{
-			((CBasePlayer *)pActivator)->m_pTank = this;
 			StartControl((CBasePlayer *)pActivator);
 		}
 		else
@@ -761,6 +766,8 @@ public:
 	virtual int Restore(CRestore &restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
+	virtual void StopFire(void);
+
 private:
 	CLaser *m_pLaser;
 	float m_laserTime;
@@ -850,16 +857,22 @@ void CFuncTankLaser::Fire(const Vector &barrelEnd, const Vector &forward, entvar
 				m_laserTime = gpGlobals->time;
 				m_pLaser->TurnOn();
 				m_pLaser->pev->dmgtime = gpGlobals->time - 1.0;
-				m_pLaser->FireAtPoint(tr);
+				m_pLaser->FireAtPoint(tr, pevAttacker);
 				m_pLaser->pev->nextthink = 0;
 			}
-			CFuncTank::Fire(barrelEnd, forward, pev);
+			CFuncTank::Fire(barrelEnd, forward, pevAttacker);
 		}
 	}
 	else
 	{
-		CFuncTank::Fire(barrelEnd, forward, pev);
+		CFuncTank::Fire(barrelEnd, forward, pevAttacker);
 	}
+}
+
+void CFuncTankLaser::StopFire(void)
+{
+	if (m_pLaser)
+		m_pLaser->TurnOff();
 }
 
 class CFuncTankRocket : public CFuncTank
@@ -887,13 +900,13 @@ void CFuncTankRocket::Fire(const Vector &barrelEnd, const Vector &forward, entva
 		{
 			for (i = 0; i < bulletCount; i++)
 			{
-				CBaseEntity *pRocket = CBaseEntity::Create("rpg_rocket", barrelEnd, pev->angles, edict());
+				CBaseEntity *pRocket = CBaseEntity::Create("rpg_rocket", barrelEnd, pev->angles, ENT(pevAttacker));
 			}
-			CFuncTank::Fire(barrelEnd, forward, pev);
+			CFuncTank::Fire(barrelEnd, forward, pevAttacker);
 		}
 	}
 	else
-		CFuncTank::Fire(barrelEnd, forward, pev);
+		CFuncTank::Fire(barrelEnd, forward, pevAttacker);
 }
 
 class CFuncTankMortar : public CFuncTank
@@ -930,13 +943,13 @@ void CFuncTankMortar::Fire(const Vector &barrelEnd, const Vector &forward, entva
 
 			TankTrace(barrelEnd, forward, gTankSpread[m_spread], tr);
 
-			ExplosionCreate(tr.vecEndPos, pev->angles, edict(), pev->impulse, TRUE);
+			ExplosionCreate(tr.vecEndPos, pev->angles, edict(), ENT(pevAttacker), pev->impulse, TRUE);
 
-			CFuncTank::Fire(barrelEnd, forward, pev);
+			CFuncTank::Fire(barrelEnd, forward, pevAttacker);
 		}
 	}
 	else
-		CFuncTank::Fire(barrelEnd, forward, pev);
+		CFuncTank::Fire(barrelEnd, forward, pevAttacker);
 }
 
 //============================================================================

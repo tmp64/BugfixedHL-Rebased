@@ -12,11 +12,13 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#include "archtypes.h" // DAL
 
+#ifndef HL_UTIL_H
+#define HL_UTIL_H
 //
 // Misc utility code
 //
+#include <string.h>
 #ifndef ACTIVITY_H
 #include "activity.h"
 #endif
@@ -27,6 +29,7 @@
 inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent); // implementation later in this file
 
 extern globalvars_t *gpGlobals;
+extern "C" int g_iIsAg;
 
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)   ((const char *)(gpGlobals->pStringBase + (unsigned int)(offset)))
@@ -79,24 +82,18 @@ typedef int BOOL;
 // In case this ever changes
 #define M_PI 3.14159265358979323846
 
-// Keeps clutter down a bit, when declaring external entity/global method prototypes
-#define DECLARE_GLOBAL_METHOD(MethodName) extern void UTIL_DLLEXPORT MethodName(void)
-#define GLOBAL_METHOD(funcname)           void UTIL_DLLEXPORT funcname(void)
-
-#ifndef UTIL_DLLEXPORT
-#ifdef _WIN32
-#define UTIL_DLLEXPORT _declspec(dllexport)
-#else
-#define UTIL_DLLEXPORT __attribute__((visibility("default")))
-#endif
-#endif
-
 // This is the glue that hooks .MAP entity class names to our CPP classes
 // The _declspec forces them to be exported by name so we can do a lookup with GetProcAddress()
 // The function is used to intialize / allocate the object for the entity
-#define LINK_ENTITY_TO_CLASS(mapClassName, DLLClassName)         \
-	extern "C" UTIL_DLLEXPORT void mapClassName(entvars_t *pev); \
+#ifdef _WIN32
+#define LINK_ENTITY_TO_CLASS(mapClassName, DLLClassName)               \
+	extern "C" _declspec(dllexport) void mapClassName(entvars_t *pev); \
 	void mapClassName(entvars_t *pev) { GetClassPtr((DLLClassName *)pev); }
+#else
+#define LINK_ENTITY_TO_CLASS(mapClassName, DLLClassName) \
+	extern "C" void mapClassName(entvars_t *pev);        \
+	void mapClassName(entvars_t *pev) { GetClassPtr((DLLClassName *)pev); }
+#endif
 
 //
 // Conversion among the three types of "entity", including identity-conversions.
@@ -118,7 +115,7 @@ inline edict_t *ENT(EOFFSET eoffset) { return (*g_engfuncs.pfnPEntityOfEntOffset
 inline EOFFSET OFFSET(EOFFSET eoffset) { return eoffset; }
 inline EOFFSET OFFSET(const edict_t *pent)
 {
-#if _DEBUG
+#ifdef _DEBUG
 	if (!pent)
 		ALERT(at_error, "Bad ent in OFFSET()\n");
 #endif
@@ -126,7 +123,7 @@ inline EOFFSET OFFSET(const edict_t *pent)
 }
 inline EOFFSET OFFSET(entvars_t *pev)
 {
-#if _DEBUG
+#ifdef _DEBUG
 	if (!pev)
 		ALERT(at_error, "Bad pev in OFFSET()\n");
 #endif
@@ -144,7 +141,16 @@ inline entvars_t *VARS(edict_t *pent)
 
 inline entvars_t *VARS(EOFFSET eoffset) { return VARS(ENT(eoffset)); }
 inline int ENTINDEX(edict_t *pEdict) { return (*g_engfuncs.pfnIndexOfEdict)(pEdict); }
-inline edict_t *INDEXENT(int iEdictNum) { return (*g_engfuncs.pfnPEntityOfEntIndex)(iEdictNum); }
+#ifndef USE_METAMOD // Metamod provides that overload so disable it in AMXX module to avoid conflicts
+inline int ENTINDEX(const edict_t *pEdict)
+{
+	return (*g_engfuncs.pfnIndexOfEdict)(pEdict);
+}
+#endif
+inline edict_t *INDEXENT(int iEdictNum)
+{
+	return (*g_engfuncs.pfnPEntityOfEntIndex)(iEdictNum);
+}
 inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent)
 {
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ENT(ent));
@@ -232,7 +238,7 @@ extern CBaseEntity *UTIL_FindEntityByString(CBaseEntity *pStartEntity, const cha
 extern CBaseEntity *UTIL_FindEntityByClassname(CBaseEntity *pStartEntity, const char *szName);
 extern CBaseEntity *UTIL_FindEntityByTargetname(CBaseEntity *pStartEntity, const char *szName);
 extern CBaseEntity *UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, float flRadius);
-
+extern CBaseEntity *UTIL_FindEntityByClassname(CBaseEntity *pStartEntity, const char *szName, bool bLoop, bool bReverse);
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns NULL
 // Index is 1 based
@@ -276,13 +282,13 @@ typedef enum
 } IGNORE_GLASS;
 extern void UTIL_TraceLine(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr);
 extern void UTIL_TraceLine(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr);
-enum
+typedef enum
 {
 	point_hull = 0,
 	human_hull = 1,
 	large_hull = 2,
 	head_hull = 3
-};
+} HULL_TYPE;
 extern void UTIL_TraceHull(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, int hullNumber, edict_t *pentIgnore, TraceResult *ptr);
 extern TraceResult UTIL_GetGlobalTrace(void);
 extern void UTIL_TraceModel(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
@@ -571,3 +577,5 @@ int UTIL_SharedRandomLong(unsigned int seed, int low, int high);
 float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
 
 float UTIL_WeaponTimeBase(void);
+
+#endif

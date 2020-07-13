@@ -17,8 +17,6 @@
 #define HUD_AMMO_H
 #include "base.h"
 
-#define MAX_WEAPON_NAME 128
-
 #define WEAPON_FLAGS_SELECTONEMPTY 1
 
 #define WEAPON_IS_ONTARGET 0x40

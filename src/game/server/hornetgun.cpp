@@ -83,9 +83,7 @@ int CHgun::AddToPlayer(CBasePlayer *pPlayer)
 		}
 #endif
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
-		WRITE_BYTE(m_iId);
-		MESSAGE_END();
+		CBasePlayerWeapon::SendWeaponPickup(pPlayer);
 		return TRUE;
 	}
 	return FALSE;
@@ -160,7 +158,7 @@ void CHgun::PrimaryAttack()
 	// player "shoot" animation
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.25);
+	m_flNextPrimaryAttack = m_flNextPrimaryAttack + 0.25;
 
 	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase())
 	{

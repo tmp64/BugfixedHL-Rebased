@@ -105,6 +105,7 @@ public:
 	// Scripted sequence Info
 	SCRIPTSTATE m_scriptState; // internal cinematic state
 	CCineMonster *m_pCine;
+	float m_flLastYawTime; // Not currently used, added for binary compatibility with 8308 build
 
 	virtual int Save(CSave &save);
 	virtual int Restore(CRestore &restore);

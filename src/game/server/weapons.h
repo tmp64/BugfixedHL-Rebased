@@ -18,6 +18,7 @@
 #include "effects.h"
 
 class CBasePlayer;
+extern int gmsgAmmoPickup;
 extern int gmsgWeapPickup;
 
 void DeactivateSatchels(CBasePlayer *pOwner);
@@ -341,7 +342,6 @@ public:
 	void PrintState(void);
 
 	virtual CBasePlayerItem *GetWeaponPtr(void) { return (CBasePlayerItem *)this; };
-	float GetNextAttackDelay(float delay);
 
 	float m_flPumpTime;
 	int m_fInSpecialReload; // Are we in the middle of a reload for the shotguns
@@ -357,9 +357,8 @@ public:
 
 	int m_iDefaultAmmo; // how much ammo you get when you pick up this weapon as placed by a level designer.
 
-	// hle time creep vars
-	float m_flPrevPrimaryAttack;
-	float m_flLastFireTime;
+protected:
+	void SendWeaponPickup(CBasePlayer *pPlayer);
 };
 
 class CBasePlayerAmmo : public CBaseEntity
@@ -473,6 +472,7 @@ public:
 	void Precache(void);
 	int iItemSlot(void) { return 2; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer(CBasePlayer *pPlayer);
 
 	void PrimaryAttack(void);
 	void SecondaryAttack(void);
@@ -506,6 +506,7 @@ public:
 	void EXPORT SwingAgain(void);
 	void EXPORT Smack(void);
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer(CBasePlayer *pPlayer);
 
 	void PrimaryAttack(void);
 	int Swing(int fFirst);
@@ -541,6 +542,7 @@ public:
 	void Holster(int skiplocal = 0);
 	void Reload(void);
 	void WeaponIdle(void);
+	float m_flSoundDelay;
 
 	BOOL m_fInZoom; // don't save this.
 
@@ -699,8 +701,8 @@ public:
 	void SecondaryAttack(void);
 	void WeaponIdle(void);
 
+	void ItemPostFrame(void);
 	void UpdateSpot(void);
-	BOOL ShouldWeaponIdle(void) { return TRUE; };
 
 	CLaserSpot *m_pSpot;
 	int m_fSpotActive;
@@ -717,6 +719,7 @@ public:
 
 private:
 	unsigned short m_usRpg;
+	BOOL m_bHolstered;
 };
 
 class CRpgRocket : public CGrenade

@@ -22,8 +22,14 @@
 class Vector2D
 {
 public:
-	inline Vector2D(void) { }
+	inline Vector2D(void)
+	    : x(0.0)
+	    , y(0.0)
+	{
+	}
 	inline Vector2D(float X, float Y)
+	    : x(0.0)
+	    , y(0.0)
 	{
 		x = X;
 		y = Y;
@@ -37,7 +43,7 @@ public:
 
 	inline Vector2D Normalize(void) const
 	{
-		Vector2D vec2;
+		// Vector2D vec2;
 
 		float flLen = Length();
 		if (flLen == 0)
@@ -64,8 +70,16 @@ class Vector // same data-layout as engine's vec3_t,
 { //		which is a vec_t[3]
 public:
 	// Construction/destruction
-	inline Vector(void) { }
+	inline Vector(void)
+	    : x(0.0)
+	    , y(0.0)
+	    , z(0.0)
+	{
+	}
 	inline Vector(float X, float Y, float Z)
+	    : x(0.0)
+	    , y(0.0)
+	    , z(0.0)
 	{
 		x = X;
 		y = Y;
@@ -74,12 +88,18 @@ public:
 	//inline Vector(double X, double Y, double Z)		{ x = (float)X; y = (float)Y; z = (float)Z;	}
 	//inline Vector(int X, int Y, int Z)				{ x = (float)X; y = (float)Y; z = (float)Z;	}
 	inline Vector(const Vector &v)
+	    : x(0.0)
+	    , y(0.0)
+	    , z(0.0)
 	{
 		x = v.x;
 		y = v.y;
 		z = v.z;
 	}
 	inline Vector(float rgfl[3])
+	    : x(0.0)
+	    , y(0.0)
+	    , z(0.0)
 	{
 		x = rgfl[0];
 		y = rgfl[1];

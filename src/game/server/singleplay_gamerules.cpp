@@ -23,6 +23,7 @@
 #include "gamerules.h"
 #include "skill.h"
 #include "items.h"
+#include "game.h"
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 extern DLL_GLOBAL BOOL g_fGameOver;
@@ -41,6 +42,7 @@ CHalfLifeRules::CHalfLifeRules(void)
 //=========================================================
 void CHalfLifeRules::Think(void)
 {
+	PM_SetBHopCapEnabled(!bunnyhop.value);
 }
 
 //=========================================================

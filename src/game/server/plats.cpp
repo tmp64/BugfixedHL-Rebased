@@ -373,14 +373,14 @@ void CPlatTrigger ::Touch(CBaseEntity *pOther)
 		return;
 
 	// Ignore touches by corpses
-	if (!pOther->IsAlive() || !m_pPlatform || !m_pPlatform->pev)
+	if (!pOther->IsAlive())
 		return;
 
 	// Make linked platform go up/down.
 	if (m_pPlatform->m_toggle_state == TS_AT_BOTTOM)
 		m_pPlatform->GoUp();
 	else if (m_pPlatform->m_toggle_state == TS_AT_TOP)
-		m_pPlatform->pev->nextthink = m_pPlatform->pev->ltime + 1; // delay going down
+		m_pPlatform->pev->nextthink = m_pPlatform->pev->ltime + 3; // delay going down
 }
 
 //
@@ -416,10 +416,11 @@ void CFuncPlat ::PlatUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 //
 void CFuncPlat ::GoDown(void)
 {
-	if (pev->noiseMovement)
+	ASSERT(m_toggle_state == TS_AT_TOP || m_toggle_state == TS_GOING_UP);
+
+	if (pev->noiseMovement && m_toggle_state == TS_AT_TOP)
 		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
 
-	ASSERT(m_toggle_state == TS_AT_TOP || m_toggle_state == TS_GOING_UP);
 	m_toggle_state = TS_GOING_DOWN;
 	SetMoveDone(&CFuncPlat::CallHitBottom);
 	LinearMove(m_vecPosition2, pev->speed);
@@ -430,14 +431,24 @@ void CFuncPlat ::GoDown(void)
 //
 void CFuncPlat ::HitBottom(void)
 {
+	ASSERT(m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
+
+	// Delay sound emiting for a case plat will go up again immediately
+	if (m_toggle_state == TS_GOING_DOWN)
+	{
+		m_toggle_state = TS_AT_BOTTOM;
+		pev->iuser1 = 1;
+		pev->nextthink = pev->ltime + 0.1;
+		SetThink(&CFuncPlat::CallHitBottom);
+		return;
+	}
+	pev->iuser1 = 0;
+
 	if (pev->noiseMovement)
 		STOP_SOUND(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseMovement));
 
 	if (pev->noiseStopMoving)
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, (char *)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
-
-	ASSERT(m_toggle_state == TS_GOING_DOWN);
-	m_toggle_state = TS_AT_BOTTOM;
 }
 
 //
@@ -445,10 +456,12 @@ void CFuncPlat ::HitBottom(void)
 //
 void CFuncPlat ::GoUp(void)
 {
-	if (pev->noiseMovement)
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
-
 	ASSERT(m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
+
+	if (pev->noiseMovement && m_toggle_state == TS_AT_BOTTOM && pev->iuser1 != 1)
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
+	pev->iuser1 = 0;
+
 	m_toggle_state = TS_GOING_UP;
 	SetMoveDone(&CFuncPlat::CallHitTop);
 	LinearMove(m_vecPosition1, pev->speed);
@@ -459,13 +472,14 @@ void CFuncPlat ::GoUp(void)
 //
 void CFuncPlat ::HitTop(void)
 {
+	ASSERT(m_toggle_state == TS_GOING_UP);
+
 	if (pev->noiseMovement)
 		STOP_SOUND(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseMovement));
 
 	if (pev->noiseStopMoving)
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, (char *)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
 
-	ASSERT(m_toggle_state == TS_GOING_UP);
 	m_toggle_state = TS_AT_TOP;
 
 	if (!IsTogglePlat())
@@ -478,15 +492,13 @@ void CFuncPlat ::HitTop(void)
 
 void CFuncPlat ::Blocked(CBaseEntity *pOther)
 {
+	ASSERT(m_toggle_state == TS_GOING_UP || m_toggle_state == TS_GOING_DOWN);
+
 	ALERT(at_aiconsole, "%s Blocked by %s\n", STRING(pev->classname), STRING(pOther->pev->classname));
 	// Hurt the blocker a little
 	pOther->TakeDamage(pev, pev, 1, DMG_CRUSH);
 
-	if (pev->noiseMovement)
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseMovement));
-
 	// Send the platform back where it came from
-	ASSERT(m_toggle_state == TS_GOING_UP || m_toggle_state == TS_GOING_DOWN);
 	if (m_toggle_state == TS_GOING_UP)
 		GoDown();
 	else if (m_toggle_state == TS_GOING_DOWN)
@@ -1079,7 +1091,7 @@ void CFuncTrackTrain ::UpdateSound(void)
 	if (!pev->noise)
 		return;
 
-	flpitch = TRAIN_STARTPITCH + (abs(pev->speed) * (TRAIN_MAXPITCH - TRAIN_STARTPITCH) / TRAIN_MAXSPEED);
+	flpitch = TRAIN_STARTPITCH + (fabs(pev->speed) * (TRAIN_MAXPITCH - TRAIN_STARTPITCH) / TRAIN_MAXSPEED);
 
 	if (!m_soundPlaying)
 	{

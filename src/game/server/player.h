@@ -17,6 +17,10 @@
 
 #include "pm_materials.h"
 
+extern "C"
+{
+#include "pm_shared.h"
+}
 #define PLAYER_FATAL_FALL_SPEED      1024 // approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED   580 // approx 20 feet
 #define DAMAGE_FOR_FALL_SPEED        (float)100 / (PLAYER_FATAL_FALL_SPEED - PLAYER_MAX_SAFE_FALL_SPEED) // damage per unit per second.
@@ -58,8 +62,6 @@
 #define SOUND_FLASHLIGHT_ON  "items/flashlight1.wav"
 #define SOUND_FLASHLIGHT_OFF "items/flashlight1.wav"
 
-#define TEAM_NAME_LENGTH 16
-
 typedef enum
 {
 	PLAYER_IDLE,
@@ -81,22 +83,19 @@ enum sbar_data
 	SBAR_END,
 };
 
-#define CHAT_INTERVAL 1.0f
+#define CHAT_FLOOD          3
+#define CHAT_INTERVAL       0.5f
+#define CHAT_PENALTY        2.0f
+#define FULLUPDATE_INTERVAL 5.0f
 
 class CBasePlayer : public CBaseMonster
 {
 public:
-	// Spectator camera
-	void Observer_FindNextPlayer(bool bReverse);
-	void Observer_HandleButtons();
-	void Observer_SetMode(int iMode);
-	void Observer_CheckTarget();
-	void Observer_CheckProperties();
+	// Observer camera
 	EHANDLE m_hObserverTarget;
 	float m_flNextObserverInput;
-	int m_iObserverWeapon; // weapon of current tracked target
-	int m_iObserverLastMode; // last used observer mode
-	int IsObserver() { return pev->iuser1; };
+	int m_iObservedWeaponId;
+	int m_iObserverMode;
 
 	int random_seed; // See that is shared between client & server for shared weapons code
 
@@ -185,14 +184,15 @@ public:
 	Vector m_vecAutoAim;
 	BOOL m_fOnTarget;
 	int m_iDeaths;
-	float m_iRespawnFrames; // used in PlayerDeathThink() to make sure players can always respawn
+	int m_iRespawnFrames; // used in PlayerDeathThink() to make sure players can always respawn
+	float m_flDeathAnimationStartTime; // used in PlayerDeathThink() to make sure players can always respawn
 
 	int m_lastx, m_lasty; // These are the previous update's crosshair angles, DON"T SAVE/RESTORE
 
 	int m_nCustomSprayFrames; // Custom clan logo frames for this player
 	float m_flNextDecalTime; // next time this player can spray a decal
 
-	char m_szTeamName[TEAM_NAME_LENGTH];
+	char m_szTeamName[MAX_TEAM_NAME];
 
 	virtual void Spawn(void);
 	void Pain(void);
@@ -252,7 +252,14 @@ public:
 	void CheatImpulseCommands(int iImpulse);
 
 	void StartDeathCam(void);
-	void StartObserver(Vector vecPosition, Vector vecViewAngle);
+	void StartObserver(void);
+	void StopObserver(void);
+	void Observer_FindNextPlayer(bool bReverse, bool bOverview);
+	void Observer_FindNextSpot(bool bReverse);
+	void Observer_HandleButtons();
+	void Observer_SetMode(int iMode);
+	void Observer_CheckTarget();
+	int IsObserver() { return pev->iuser1; };
 
 	void AddPoints(int score, BOOL bAllowNegativeScore);
 	void AddPointsToTeam(int score, BOOL bAllowNegativeScore);
@@ -272,7 +279,7 @@ public:
 	void EnableControl(BOOL fControl);
 
 	int GiveAmmo(int iAmount, char *szName, int iMax);
-	void SendAmmoUpdate(void);
+	void SendAmmoUpdate(CBasePlayer *pPlayer);
 
 	void WaterMove(void);
 	void EXPORT PlayerDeathThink(void);
@@ -317,7 +324,30 @@ public:
 	char m_SbarString0[SBAR_STRING_SIZE];
 	char m_SbarString1[SBAR_STRING_SIZE];
 
+	int m_iChatFlood;
 	float m_flNextChatTime;
+	float m_flNextSpectatorCommand;
+	float m_flNextFullupdate[2];
+
+	BOOL m_bConnected; // we set it in Spawn() so it will be TRUE only after player was spawned
+	BOOL m_bPutInServer; // we set it after PutInServer finished
+	BOOL m_bIsBot; // we set it at PutInServer start
+	BOOL IsConnected() { return m_bConnected; }
+	void Disconnect()
+	{
+		m_bConnected = FALSE;
+		m_bPutInServer = FALSE;
+		m_bIsBot = FALSE;
+		m_bInWelcomeCam = FALSE;
+	}
+
+	Vector m_vecLastViewAngles;
+
+	int m_iAutoWeaponSwitch;
+
+	BOOL m_bInWelcomeCam;
+	void StartWelcomeCam(void);
+	void StopWelcomeCam(void);
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

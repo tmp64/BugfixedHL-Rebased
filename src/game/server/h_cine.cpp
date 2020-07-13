@@ -134,7 +134,7 @@ void CLegacyCineMonster ::CineSpawn(char *szModel)
 void CLegacyCineMonster ::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
 	pev->animtime = 0; // reset the sequence
-	SetThink(&CLegacyCineMonster::CineThink);
+	SetThink(&CLegacyCineMonster ::CineThink);
 	pev->nextthink = gpGlobals->time;
 }
 

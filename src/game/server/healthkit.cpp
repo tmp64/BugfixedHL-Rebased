@@ -22,8 +22,6 @@
 #include "items.h"
 #include "gamerules.h"
 
-extern int gmsgItemPickup;
-
 class CHealthKit : public CItem
 {
 	void Spawn(void);
@@ -73,9 +71,7 @@ BOOL CHealthKit::MyTouch(CBasePlayer *pPlayer)
 
 	if (pPlayer->TakeHealth(gSkillData.healthkitCapacity, DMG_GENERIC))
 	{
-		MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
-		WRITE_STRING(STRING(pev->classname));
-		MESSAGE_END();
+		CItem::SendItemPickup(pPlayer);
 
 		EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM);
 

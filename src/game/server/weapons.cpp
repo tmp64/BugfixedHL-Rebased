@@ -301,6 +301,7 @@ void W_Precache(void)
 
 	// common world objects
 	UTIL_PrecacheOther("item_suit");
+	UTIL_PrecacheOther("item_healthkit");
 	UTIL_PrecacheOther("item_battery");
 	UTIL_PrecacheOther("item_antidote");
 	UTIL_PrecacheOther("item_security");
@@ -322,31 +323,26 @@ void W_Precache(void)
 	UTIL_PrecacheOther("ammo_9mmAR");
 	UTIL_PrecacheOther("ammo_ARgrenades");
 
+	// 9mm ammo box
+	UTIL_PrecacheOther("ammo_9mmbox");
+
 #if !defined(OEM_BUILD) && !defined(HLDEMO_BUILD)
 	// python
 	UTIL_PrecacheOtherWeapon("weapon_357");
 	UTIL_PrecacheOther("ammo_357");
-#endif
 
-#if !defined(OEM_BUILD) && !defined(HLDEMO_BUILD)
 	// gauss
 	UTIL_PrecacheOtherWeapon("weapon_gauss");
 	UTIL_PrecacheOther("ammo_gaussclip");
-#endif
 
-#if !defined(OEM_BUILD) && !defined(HLDEMO_BUILD)
 	// rpg
 	UTIL_PrecacheOtherWeapon("weapon_rpg");
 	UTIL_PrecacheOther("ammo_rpgclip");
-#endif
 
-#if !defined(OEM_BUILD) && !defined(HLDEMO_BUILD)
 	// crossbow
 	UTIL_PrecacheOtherWeapon("weapon_crossbow");
 	UTIL_PrecacheOther("ammo_crossbow");
-#endif
 
-#if !defined(OEM_BUILD) && !defined(HLDEMO_BUILD)
 	// egon
 	UTIL_PrecacheOtherWeapon("weapon_egon");
 #endif
@@ -365,14 +361,11 @@ void W_Precache(void)
 #if !defined(OEM_BUILD) && !defined(HLDEMO_BUILD)
 	// squeak grenade
 	UTIL_PrecacheOtherWeapon("weapon_snark");
-#endif
 
-#if !defined(OEM_BUILD) && !defined(HLDEMO_BUILD)
 	// hornetgun
 	UTIL_PrecacheOtherWeapon("weapon_hornetgun");
-#endif
 
-#if !defined(OEM_BUILD) && !defined(HLDEMO_BUILD)
+	// weaponbox
 	if (g_pGameRules->IsDeathmatch())
 	{
 		UTIL_PrecacheOther("weaponbox"); // container for dropped deathmatch weapons
@@ -503,8 +496,8 @@ void CBasePlayerItem::Materialize(void)
 	}
 
 	pev->solid = SOLID_TRIGGER;
-
 	UTIL_SetOrigin(pev, pev->origin); // link into world.
+
 	SetTouch(&CBasePlayerItem::DefaultTouch);
 	SetThink(NULL);
 }
@@ -618,52 +611,49 @@ BOOL CanAttack(float attack_time, float curtime, BOOL isPredicted)
 
 void CBasePlayerWeapon::ItemPostFrame(void)
 {
-	if ((m_fInReload) && (m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase()))
+	CBasePlayer *pPlayer = m_pPlayer; // Cache player cos attack could retire weapon and remove it from player
+
+	if ((m_fInReload) && (pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase()))
 	{
 		// complete the reload.
-		int j = min(iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+		int j = min(iMaxClip() - m_iClip, pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 
 		// Add them to the clip
 		m_iClip += j;
-		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
+		pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
 
-		m_pPlayer->TabulateAmmo();
+		pPlayer->TabulateAmmo();
 
 		m_fInReload = FALSE;
 	}
 
-	if (!(m_pPlayer->pev->button & IN_ATTACK))
+	if ((pPlayer->pev->button & IN_ATTACK2) && CanAttack(m_flNextSecondaryAttack, gpGlobals->time, UseDecrement()))
 	{
-		m_flLastFireTime = 0.0f;
-	}
-
-	if ((m_pPlayer->pev->button & IN_ATTACK2) && CanAttack(m_flNextSecondaryAttack, gpGlobals->time, UseDecrement()))
-	{
-		if (pszAmmo2() && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex()])
+		if (pszAmmo2() && !pPlayer->m_rgAmmo[SecondaryAmmoIndex()])
 		{
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
+		pPlayer->TabulateAmmo();
 		SecondaryAttack();
-		m_pPlayer->pev->button &= ~IN_ATTACK2;
+		pPlayer->pev->button &= ~IN_ATTACK2;
 	}
-	else if ((m_pPlayer->pev->button & IN_ATTACK) && CanAttack(m_flNextPrimaryAttack, gpGlobals->time, UseDecrement()))
+	else if ((pPlayer->pev->button & IN_ATTACK) && CanAttack(m_flNextPrimaryAttack, gpGlobals->time, UseDecrement()))
 	{
-		if ((m_iClip == 0 && pszAmmo1()) || (iMaxClip() == -1 && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()]))
+		if ((m_iClip == 0 && pszAmmo1()) || (iMaxClip() == WEAPON_NOCLIP && !pPlayer->m_rgAmmo[PrimaryAmmoIndex()]))
 		{
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
+		pPlayer->TabulateAmmo();
 		PrimaryAttack();
 	}
-	else if (m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload)
+	else if (pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload)
 	{
 		// reload when reload is pressed, or if no buttons are down and weapon is empty.
 		Reload();
 	}
-	else if (!(m_pPlayer->pev->button & (IN_ATTACK | IN_ATTACK2)))
+	else if (!(pPlayer->pev->button & (IN_ATTACK | IN_ATTACK2)))
 	{
 		// no fire buttons down
 
@@ -672,7 +662,7 @@ void CBasePlayerWeapon::ItemPostFrame(void)
 		if (!IsUseable() && m_flNextPrimaryAttack < (UseDecrement() ? 0.0 : gpGlobals->time))
 		{
 			// weapon isn't useable, switch.
-			if (!(iFlags() & ITEM_FLAG_NOAUTOSWITCHEMPTY) && g_pGameRules->GetNextBestWeapon(m_pPlayer, this))
+			if (!(iFlags() & ITEM_FLAG_NOAUTOSWITCHEMPTY) && g_pGameRules->GetNextBestWeapon(pPlayer, this))
 			{
 				m_flNextPrimaryAttack = (UseDecrement() ? 0.0 : gpGlobals->time) + 0.3;
 				return;
@@ -691,20 +681,16 @@ void CBasePlayerWeapon::ItemPostFrame(void)
 		WeaponIdle();
 		return;
 	}
-
-	// catch all
-	if (ShouldWeaponIdle())
-	{
-		WeaponIdle();
-	}
 }
 
 void CBasePlayerItem::DestroyItem(void)
 {
 	if (m_pPlayer)
 	{
+		CBasePlayer *pPlayer = m_pPlayer;
+		m_pPlayer = NULL; // RemovePlayerItem will not call Holster
 		// if attached to a player, remove.
-		m_pPlayer->RemovePlayerItem(this);
+		pPlayer->RemovePlayerItem(this);
 	}
 
 	Kill();
@@ -719,9 +705,7 @@ int CBasePlayerItem::AddToPlayer(CBasePlayer *pPlayer)
 
 void CBasePlayerItem::Drop(void)
 {
-	SetTouch(NULL);
-	SetThink(&CBasePlayerItem::SUB_Remove);
-	pev->nextthink = gpGlobals->time + .1;
+	Kill();
 }
 
 void CBasePlayerItem::Kill(void)
@@ -746,8 +730,9 @@ void CBasePlayerItem::AttachToPlayer(CBasePlayer *pPlayer)
 	pev->modelindex = 0; // server won't send down to clients if modelindex == 0
 	pev->model = iStringNull;
 	pev->owner = pPlayer->edict();
-	pev->nextthink = gpGlobals->time + .1;
+	pev->nextthink = 0; // Remove think - prevents futher attempts to materialize
 	SetTouch(NULL);
+	SetThink(NULL);
 }
 
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal
@@ -816,6 +801,21 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer *pPlayer)
 
 	if (bSend)
 	{
+		// Send this player's current weapon to all his spectators
+		CBasePlayer *plr;
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			plr = (CBasePlayer *)UTIL_PlayerByIndex(i);
+			if (!plr || !plr->IsObserver() || plr->m_hObserverTarget != pPlayer)
+				continue;
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, plr->pev);
+			WRITE_BYTE(state);
+			WRITE_BYTE(m_iId);
+			WRITE_BYTE(m_iClip);
+			MESSAGE_END();
+		}
+
 		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pPlayer->pev);
 		WRITE_BYTE(state);
 		WRITE_BYTE(m_iId);
@@ -938,11 +938,11 @@ BOOL CBasePlayerWeapon ::CanDeploy(void)
 
 	if (pszAmmo1())
 	{
-		bHasAmmo |= (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] != 0);
+		bHasAmmo |= (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0);
 	}
 	if (pszAmmo2())
 	{
-		bHasAmmo |= (m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] != 0);
+		bHasAmmo |= (m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] > 0);
 	}
 	if (m_iClip > 0)
 	{
@@ -969,7 +969,6 @@ BOOL CBasePlayerWeapon ::DefaultDeploy(char *szViewModel, char *szWeaponModel, i
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
-	m_flLastFireTime = 0.0;
 
 	return TRUE;
 }
@@ -1032,6 +1031,29 @@ void CBasePlayerWeapon::Holster(int skiplocal /* = 0 */)
 	m_pPlayer->pev->weaponmodel = 0;
 }
 
+void CBasePlayerWeapon::SendWeaponPickup(CBasePlayer *pPlayer)
+{
+	MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
+	WRITE_BYTE(m_iId);
+	MESSAGE_END();
+
+	if (!pPlayer->m_fInitHUD)
+	{
+		// Send to all spectating players
+		CBasePlayer *plr;
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			plr = (CBasePlayer *)UTIL_PlayerByIndex(i);
+			if (!plr || plr->pev->iuser1 != OBS_IN_EYE || plr->m_hObserverTarget != pPlayer)
+				continue;
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, plr->pev);
+			WRITE_BYTE(m_iId);
+			MESSAGE_END();
+		}
+	}
+}
+
 void CBasePlayerAmmo::Spawn(void)
 {
 	pev->movetype = MOVETYPE_TOSS;
@@ -1066,6 +1088,7 @@ void CBasePlayerAmmo::Materialize(void)
 	}
 
 	SetTouch(&CBasePlayerAmmo::DefaultTouch);
+	SetThink(NULL);
 }
 
 void CBasePlayerAmmo ::DefaultTouch(CBaseEntity *pOther)
@@ -1107,7 +1130,7 @@ void CBasePlayerAmmo ::DefaultTouch(CBaseEntity *pOther)
 //=========================================================
 int CBasePlayerWeapon::ExtractAmmo(CBasePlayerWeapon *pWeapon)
 {
-	int iReturn = 0;
+	int iReturn = FALSE;
 
 	if (pszAmmo1() != NULL)
 	{
@@ -1154,38 +1177,15 @@ void CBasePlayerWeapon::RetireWeapon(void)
 	m_pPlayer->pev->weaponmodel = iStringNull;
 	//m_pPlayer->pev->viewmodelindex = NULL;
 
-	g_pGameRules->GetNextBestWeapon(m_pPlayer, this);
-}
-
-//=========================================================================
-// GetNextAttackDelay - An accurate way of calcualting the next attack time.
-//=========================================================================
-float CBasePlayerWeapon::GetNextAttackDelay(float delay)
-{
-	if (m_flLastFireTime == 0 || m_flNextPrimaryAttack == -1)
+	if (!g_pGameRules->GetNextBestWeapon(m_pPlayer, this))
 	{
-		// At this point, we are assuming that the client has stopped firing
-		// and we are going to reset our book keeping variables.
-		m_flLastFireTime = gpGlobals->time;
-		m_flPrevPrimaryAttack = delay;
+		// Another weapon wasn't selected. Get rid of current one
+		if (m_pPlayer->m_pActiveItem == this)
+		{
+			m_pPlayer->ResetAutoaim();
+			m_pPlayer->m_pActiveItem->Holster();
+		}
 	}
-	// calculate the time between this shot and the previous
-	float flTimeBetweenFires = gpGlobals->time - m_flLastFireTime;
-	float flCreep = 0.0f;
-	if (flTimeBetweenFires > 0)
-		flCreep = flTimeBetweenFires - m_flPrevPrimaryAttack; // postive or negative
-
-	// save the last fire time
-	m_flLastFireTime = gpGlobals->time;
-
-	float flNextAttack = UTIL_WeaponTimeBase() + delay - flCreep;
-	// we need to remember what the m_flNextPrimaryAttack time is set to for each shot,
-	// store it as m_flPrevPrimaryAttack.
-	m_flPrevPrimaryAttack = flNextAttack - UTIL_WeaponTimeBase();
-	// 	char szMsg[256];
-	// 	_snprintf( szMsg, sizeof(szMsg), "next attack time: %0.4f\n", gpGlobals->time + flNextAttack );
-	// 	OutputDebugString( szMsg );
-	return flNextAttack;
 }
 
 //*********************************************************
@@ -1259,7 +1259,7 @@ void CWeaponBox::Kill(void)
 
 		while (pWeapon)
 		{
-			pWeapon->SetThink(&CBasePlayerItem::SUB_Remove);
+			pWeapon->SetThink(&CWeaponBox::SUB_Remove);
 			pWeapon->pev->nextthink = gpGlobals->time + 0.1;
 			pWeapon = pWeapon->m_pNext;
 		}
@@ -1385,7 +1385,6 @@ BOOL CWeaponBox::PackWeapon(CBasePlayerItem *pWeapon)
 	pWeapon->pev->owner = edict();
 	pWeapon->SetThink(NULL); // crowbar may be trying to swing again, etc.
 	pWeapon->SetTouch(NULL);
-	pWeapon->m_pPlayer = NULL;
 
 	//ALERT ( at_console, "packed %s\n", STRING(pWeapon->pev->classname) );
 

@@ -28,15 +28,16 @@
 #include "voice_gamemgr.h"
 #include "hltv.h"
 
-#if !defined(_WIN32)
 #include <ctype.h>
-#endif
+
+#include <CBugfixedServer.h>
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 extern DLL_GLOBAL BOOL g_fGameOver;
 extern int gmsgDeathMsg; // client dll messages
 extern int gmsgScoreInfo;
 extern int gmsgMOTD;
+extern int gmsgHtmlMOTD;
 extern int gmsgServerName;
 
 extern int g_teamplay;
@@ -88,11 +89,10 @@ CHalfLifeMultiplay ::CHalfLifeMultiplay()
 	// 3/31/99
 	// Added lservercfg file cvar, since listen and dedicated servers should not
 	// share a single config file. (sjb)
-	if (IS_DEDICATED_SERVER())
-	{
-		// this code has been moved into engine, to only run server.cfg once
-	}
-	else
+
+	// 2/16/2014
+	// Removed execution of servercfgfile, because server is now do it on its own.
+	if (!IS_DEDICATED_SERVER())
 	{
 		// listen server
 		char *lservercfgfile = (char *)CVAR_GET_STRING("lservercfgfile");
@@ -108,10 +108,27 @@ CHalfLifeMultiplay ::CHalfLifeMultiplay()
 	}
 }
 
+//=========================================================
+// ClientCommand
+// the user has typed a command which is unrecognized by everything else;
+// this check to see if the gamerules knows anything about the command
+//=========================================================
 BOOL CHalfLifeMultiplay::ClientCommand(CBasePlayer *pPlayer, const char *pcmd)
 {
 	if (g_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
 		return TRUE;
+
+	if (FStrEq(pcmd, "menuselect"))
+	{
+		if (CMD_ARGC() < 2)
+			return TRUE;
+
+		int slot = atoi(CMD_ARGV(1));
+
+		// There is no menu usages in server dll.
+
+		return TRUE;
+	}
 
 	return CGameRules::ClientCommand(pPlayer, pcmd);
 }
@@ -129,44 +146,48 @@ void CHalfLifeMultiplay::RefreshSkillData(void)
 	gSkillData.suitchargerCapacity = 30;
 
 	// Crowbar whack
-	gSkillData.plrDmgCrowbar = 25;
+	gSkillData.plrDmgCrowbar = mp_dmg_crowbar.value;
 
 	// Glock Round
-	gSkillData.plrDmg9MM = 12;
+	gSkillData.plrDmg9MM = mp_dmg_glock.value;
 
 	// 357 Round
-	gSkillData.plrDmg357 = 40;
+	gSkillData.plrDmg357 = mp_dmg_357.value;
 
 	// MP5 Round
-	gSkillData.plrDmgMP5 = 12;
+	gSkillData.plrDmgMP5 = mp_dmg_mp5.value;
 
 	// M203 grenade
-	gSkillData.plrDmgM203Grenade = 100;
+	gSkillData.plrDmgM203Grenade = mp_dmg_m203.value;
 
 	// Shotgun buckshot
-	gSkillData.plrDmgBuckshot = 20; // fewer pellets in deathmatch
+	gSkillData.plrDmgBuckshot = mp_dmg_shotgun.value;
 
 	// Crossbow
-	gSkillData.plrDmgCrossbowClient = 20;
+	gSkillData.plrDmgCrossbowScope = mp_dmg_xbow_scope.value;
+	gSkillData.plrDmgCrossbowNoScope = mp_dmg_xbow_noscope.value;
 
 	// RPG
-	gSkillData.plrDmgRPG = 120;
+	gSkillData.plrDmgRPG = mp_dmg_rpg.value;
 
 	// Egon
-	gSkillData.plrDmgEgonWide = 20;
-	gSkillData.plrDmgEgonNarrow = 10;
+	gSkillData.plrDmgEgonWide = mp_dmg_egon.value;
 
-	// Hand Grendade
-	gSkillData.plrDmgHandGrenade = 100;
+	// Hand Grenade
+	gSkillData.plrDmgHandGrenade = mp_dmg_hgrenade.value;
 
 	// Satchel Charge
-	gSkillData.plrDmgSatchel = 120;
+	gSkillData.plrDmgSatchel = mp_dmg_satchel.value;
 
 	// Tripmine
-	gSkillData.plrDmgTripmine = 150;
+	gSkillData.plrDmgTripmine = mp_dmg_tripmine.value;
 
 	// hornet
-	gSkillData.plrDmgHornet = 10;
+	gSkillData.plrDmgHornet = mp_dmg_hornet.value;
+
+	// gauss
+	gSkillData.plrDmgGauss = mp_dmg_gauss_primary.value;
+	gSkillData.plrDmgGaussSecondary = mp_dmg_gauss_secondary.value;
 }
 
 // longest the intermission can last, in seconds
@@ -181,6 +202,8 @@ extern cvar_t mp_chattime;
 void CHalfLifeMultiplay ::Think(void)
 {
 	g_VoiceGameMgr.Update(gpGlobals->frametime);
+
+	PM_SetBHopCapEnabled(!bunnyhop.value);
 
 	///// Check game rules /////
 	static int last_frags;
@@ -224,27 +247,33 @@ void CHalfLifeMultiplay ::Think(void)
 
 	if (flFragLimit)
 	{
-		int bestfrags = 9999;
+		bool first = true;
+		int bestfrags = flFragLimit;
 		int remain;
 
 		// check if any player is over the frag limit
 		for (int i = 1; i <= gpGlobals->maxClients; i++)
 		{
 			CBaseEntity *pPlayer = UTIL_PlayerByIndex(i);
+			if (pPlayer == NULL)
+				continue;
 
-			if (pPlayer && pPlayer->pev->frags >= flFragLimit)
+			if (pPlayer->pev->frags >= flFragLimit)
 			{
 				GoToIntermission();
 				return;
 			}
 
-			if (pPlayer)
+			remain = flFragLimit - pPlayer->pev->frags;
+			if (first)
 			{
-				remain = flFragLimit - pPlayer->pev->frags;
-				if (remain < bestfrags)
-				{
-					bestfrags = remain;
-				}
+				bestfrags = remain;
+				first = false;
+				continue;
+			}
+			if (remain < bestfrags)
+			{
+				bestfrags = remain;
 			}
 		}
 		frags_remaining = bestfrags;
@@ -301,6 +330,12 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon(CBasePlayer *pPlayer, CBasePlayerIt
 	{
 		// player doesn't have an active item!
 		return TRUE;
+	}
+
+	if (!(pPlayer->m_iAutoWeaponSwitch & (1 << 0)))
+	{
+		// player disabled auto weapon switching
+		return FALSE;
 	}
 
 	if (!pPlayer->m_pActiveItem->CanHolster())
@@ -379,9 +414,7 @@ BOOL CHalfLifeMultiplay ::GetNextBestWeapon(CBasePlayer *pPlayer, CBasePlayerIte
 		return FALSE;
 	}
 
-	pPlayer->SwitchWeapon(pBest);
-
-	return TRUE;
+	return pPlayer->SwitchWeapon(pBest);
 }
 
 //=========================================================
@@ -394,18 +427,39 @@ BOOL CHalfLifeMultiplay ::ClientConnected(edict_t *pEntity, const char *pszName,
 
 extern int gmsgSayText;
 extern int gmsgGameMode;
+extern int gmsgTeamInfo;
+extern int gmsgTeamNames;
+extern int gmsgSpectator;
+extern int gmsgAllowSpec;
+extern int gmsgTeamScore;
 
 void CHalfLifeMultiplay ::UpdateGameMode(CBasePlayer *pPlayer)
 {
 	MESSAGE_BEGIN(MSG_ONE, gmsgGameMode, NULL, pPlayer->edict());
-	WRITE_BYTE(0); // game mode none
+	// There is plugin (su-27) for scoreboard manipulation under AMXX, it should receive 0 for correct behaviour
+	// So in any case (AMXX installed and have or not su-27) we should send 0 down
+	if (g_amxmodx_version)
+		WRITE_BYTE(0); // game mode none
+	else
+		WRITE_BYTE(1); // game mode teamplay
 	MESSAGE_END();
 }
 
 void CHalfLifeMultiplay ::InitHUD(CBasePlayer *pl)
 {
+	// Send allow_spectators status
+	MESSAGE_BEGIN(MSG_ONE, gmsgAllowSpec, NULL, pl->edict());
+	WRITE_BYTE(allow_spectators.value);
+	MESSAGE_END();
+
 	// notify other clients of player joining the game
-	UTIL_ClientPrintAll(HUD_PRINTNOTIFY, UTIL_VarArgs("%s has joined the game\n", (pl->pev->netname && STRING(pl->pev->netname)[0] != 0) ? STRING(pl->pev->netname) : "unconnected"));
+	if (((int)mp_notify_player_status.value & 2) == 2)
+	{
+		const char *name = pl->pev->netname ? STRING(pl->pev->netname) : "";
+		if (name[0] == 0)
+			name = "unconnected";
+		UTIL_ClientPrintAll(HUD_PRINTTALK, UTIL_VarArgs("+ %s has joined the game\n", name));
+	}
 
 	// team match?
 	if (g_teamplay)
@@ -429,17 +483,74 @@ void CHalfLifeMultiplay ::InitHUD(CBasePlayer *pl)
 
 	// sending just one score makes the hud scoreboard active;  otherwise
 	// it is just disabled for single play
-	MESSAGE_BEGIN(MSG_ONE, gmsgScoreInfo, NULL, pl->edict());
+	// Let all know that new player have zero score
+	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo, NULL);
 	WRITE_BYTE(ENTINDEX(pl->edict()));
 	WRITE_SHORT(0);
 	WRITE_SHORT(0);
 	WRITE_SHORT(0);
-	WRITE_SHORT(0);
+	WRITE_SHORT(GetTeamIndex(pl->m_szTeamName) + 1);
 	MESSAGE_END();
 
-	SendMOTDToClient(pl->edict());
+	if (!g_teamplay)
+	{
+		// Send this player team info to all
+		MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+		WRITE_BYTE(pl->entindex());
+		if (g_amxmodx_version)
+			WRITE_STRING(pl->pev->iuser1 ? "" : pl->TeamID());
+		else
+			WRITE_STRING(pl->pev->iuser1 ? "" : "Players");
+		MESSAGE_END();
+	}
 
-	// loop through all active players and send their score info to the new client
+	// Send player spectator status (it is not used in client dll)
+	MESSAGE_BEGIN(MSG_ALL, gmsgSpectator);
+	WRITE_BYTE(pl->entindex());
+	WRITE_BYTE(pl->IsObserver());
+	MESSAGE_END();
+
+	// Send server name
+	SendServerNameToClient(pl->edict());
+
+	// Send MOTD
+	// 1. Check if motd TYPE is supported by the client
+	// 2. If it is, then check if it is enabled in API. If not, do nothing.
+	// 3. Try to send MOTD type TYPE. If failed, send the MOTD of next type.
+	// 4. Repeat
+	bool motdret = false;
+	bhl::E_ClientSupports supports = serverapi()->GetClientSupports(ENTINDEX(pl->edict()));
+	if (IsEnumFlagSet(supports, bhl::E_ClientSupports::HtmlMotd))
+	{
+		if (serverapi()->GetAutomaticMotd(bhl::E_MotdType::Html))
+		{
+			motdret = SendHtmlMOTDFileToClient(pl->edict());
+		}
+		else
+			motdret = true; // Handled by Metamod/AMXX/etc, do not send anything
+	}
+
+	if (!motdret && IsEnumFlagSet(supports, bhl::E_ClientSupports::UnicodeMotd))
+	{
+		if (serverapi()->GetAutomaticMotd(bhl::E_MotdType::Unicode))
+		{
+			motdret = SendUnicodeMOTDFileToClient(pl->edict());
+		}
+		else
+			motdret = true; // Handled by Metamod/AMXX/etc, do not send anything
+	}
+
+	if (!motdret)
+	{
+		if (serverapi()->GetAutomaticMotd(bhl::E_MotdType::Plain))
+		{
+			motdret = SendMOTDFileToClient(pl->edict());
+		}
+		else
+			motdret = true; // Handled by Metamod/AMXX/etc, do not send anything
+	}
+
+	// loop through all active players and send their score and team info to the new client
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
 		// FIXME:  Probably don't need to cast this just to read m_iDeaths
@@ -454,6 +565,17 @@ void CHalfLifeMultiplay ::InitHUD(CBasePlayer *pl)
 			WRITE_SHORT(0);
 			WRITE_SHORT(GetTeamIndex(plr->m_szTeamName) + 1);
 			MESSAGE_END();
+
+			if (!g_teamplay)
+			{
+				MESSAGE_BEGIN(MSG_ONE, gmsgTeamInfo, NULL, pl->edict());
+				WRITE_BYTE(plr->entindex());
+				if (g_amxmodx_version)
+					WRITE_STRING(plr->pev->iuser1 ? "" : plr->TeamID());
+				else
+					WRITE_STRING(plr->pev->iuser1 ? "" : "Players");
+				MESSAGE_END();
+			}
 		}
 	}
 
@@ -462,41 +584,73 @@ void CHalfLifeMultiplay ::InitHUD(CBasePlayer *pl)
 		MESSAGE_BEGIN(MSG_ONE, SVC_INTERMISSION, NULL, pl->edict());
 		MESSAGE_END();
 	}
+
+	/*MESSAGE_BEGIN(MSG_ALL, gmsgTeamNames);
+		WRITE_BYTE(2);
+		WRITE_STRING("Robots");
+		WRITE_STRING("Human Grunts");
+	MESSAGE_END();*/
+
+	MESSAGE_BEGIN(MSG_ALL, gmsgTeamScore);
+	WRITE_STRING("robo");
+	WRITE_SHORT(1337);
+	WRITE_SHORT(228);
+	MESSAGE_END();
 }
 
 //=========================================================
 //=========================================================
 void CHalfLifeMultiplay ::ClientDisconnected(edict_t *pClient)
 {
-	if (pClient)
+	if (!pClient)
+		return;
+
+	CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pClient);
+	if (!pPlayer)
+		return;
+
+	// notify other clients of player leaving the game
+	if (((int)mp_notify_player_status.value & 1) == 1)
 	{
-		CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pClient);
-
-		if (pPlayer)
-		{
-			FireTargets("game_playerleave", pPlayer, pPlayer, USE_TOGGLE, 0);
-
-			// team match?
-			if (g_teamplay)
-			{
-				UTIL_LogPrintf("\"%s<%i><%s><%s>\" disconnected\n",
-				    STRING(pPlayer->pev->netname),
-				    GETPLAYERUSERID(pPlayer->edict()),
-				    GETPLAYERAUTHID(pPlayer->edict()),
-				    g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model"));
-			}
-			else
-			{
-				UTIL_LogPrintf("\"%s<%i><%s><%i>\" disconnected\n",
-				    STRING(pPlayer->pev->netname),
-				    GETPLAYERUSERID(pPlayer->edict()),
-				    GETPLAYERAUTHID(pPlayer->edict()),
-				    GETPLAYERUSERID(pPlayer->edict()));
-			}
-
-			pPlayer->RemoveAllItems(TRUE); // destroy all of the players weapons and items
-		}
+		const char *name = pPlayer->pev->netname ? STRING(pPlayer->pev->netname) : "";
+		if (name[0] == 0)
+			name = "unconnected";
+		UTIL_ClientPrintAll(HUD_PRINTTALK, UTIL_VarArgs("- %s has left the game\n", name));
 	}
+
+	FireTargets("game_playerleave", pPlayer, pPlayer, USE_TOGGLE, 0);
+
+	// team match?
+	if (g_teamplay)
+	{
+		UTIL_LogPrintf("\"%s<%i><%s><%s>\" disconnected\n",
+		    STRING(pPlayer->pev->netname),
+		    GETPLAYERUSERID(pPlayer->edict()),
+		    GETPLAYERAUTHID(pPlayer->edict()),
+		    g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model"));
+	}
+	else
+	{
+		UTIL_LogPrintf("\"%s<%i><%s><%i>\" disconnected\n",
+		    STRING(pPlayer->pev->netname),
+		    GETPLAYERUSERID(pPlayer->edict()),
+		    GETPLAYERAUTHID(pPlayer->edict()),
+		    GETPLAYERUSERID(pPlayer->edict()));
+	}
+
+	if (pPlayer->m_pTank != NULL)
+	{
+		// Stop controlling the tank
+		pPlayer->m_pTank->Use(pPlayer, pPlayer, USE_OFF, 0);
+	}
+
+	pPlayer->RemoveAllItems(TRUE); // destroy all of the players weapons and items
+
+	// Tell all clients this player isn't a spectator anymore
+	MESSAGE_BEGIN(MSG_ALL, gmsgSpectator);
+	WRITE_BYTE(ENTINDEX(pClient));
+	WRITE_BYTE(0);
+	MESSAGE_END();
 }
 
 //=========================================================
@@ -549,6 +703,20 @@ void CHalfLifeMultiplay ::PlayerSpawn(CBasePlayer *pPlayer)
 	BOOL addDefault;
 	CBaseEntity *pWeaponEntity = NULL;
 
+	// Start welcome cam for new players
+	if (!pPlayer->m_bPutInServer && mp_welcomecam.value != 0)
+	{
+		// don't let him spawn as soon as he enters the server
+		// give enough time to plugins to send the player to spectator mode
+		pPlayer->m_flNextAttack = 0.2;
+
+		pPlayer->StartWelcomeCam();
+		return;
+	}
+
+	int aws = pPlayer->m_iAutoWeaponSwitch;
+	pPlayer->m_iAutoWeaponSwitch = 1;
+
 	pPlayer->pev->weapons |= (1 << WEAPON_SUIT);
 
 	addDefault = TRUE;
@@ -565,6 +733,10 @@ void CHalfLifeMultiplay ::PlayerSpawn(CBasePlayer *pPlayer)
 		pPlayer->GiveNamedItem("weapon_9mmhandgun");
 		pPlayer->GiveAmmo(68, "9mm", _9MM_MAX_CARRY); // 4 full reloads
 	}
+
+	FireTargets("game_playerspawn", pPlayer, pPlayer, USE_TOGGLE, 0);
+
+	pPlayer->m_iAutoWeaponSwitch = aws;
 }
 
 //=========================================================
@@ -653,12 +825,6 @@ void CHalfLifeMultiplay ::PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller,
 		// let the killer paint another decal as soon as he'd like.
 		PK->m_flNextDecalTime = gpGlobals->time;
 	}
-#ifndef HLDEMO_BUILD
-	if (pVictim->HasNamedPlayerItem("weapon_satchel"))
-	{
-		DeactivateSatchels(pVictim);
-	}
-#endif
 }
 
 //=========================================================
@@ -700,7 +866,10 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	}
 	else
 	{
-		killer_weapon_name = STRING(pevInflictor->classname);
+		if (pevInflictor)
+		{
+			killer_weapon_name = STRING(pevInflictor->classname);
+		}
 	}
 
 	// strip the monster_* or weapon_* from the inflictor's classname
@@ -1091,7 +1260,12 @@ edict_t *CHalfLifeMultiplay::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
 //=========================================================
 int CHalfLifeMultiplay::PlayerRelationship(CBaseEntity *pPlayer, CBaseEntity *pTarget)
 {
-	// half life deathmatch has only enemies
+	if (!pPlayer || !pTarget || !pPlayer->IsPlayer() || !pTarget->IsPlayer())
+		return GR_NOTTEAMMATE;
+	// Spectators are teammates, but not players in welcomecam mode
+	if (((CBasePlayer *)pPlayer)->IsObserver() && !((CBasePlayer *)pPlayer)->m_bInWelcomeCam && ((CBasePlayer *)pTarget)->IsObserver() && !((CBasePlayer *)pTarget)->m_bInWelcomeCam)
+		return GR_TEAMMATE;
+	// half life deathmatch has only enemies and spectators
 	return GR_NOTTEAMMATE;
 }
 
@@ -1629,24 +1803,36 @@ void CHalfLifeMultiplay ::ChangeLevel(void)
 	}
 }
 
-#define MAX_MOTD_CHUNK  60
-#define MAX_MOTD_LENGTH 1536 // (MAX_MOTD_CHUNK * 4)
-
-void CHalfLifeMultiplay ::SendMOTDToClient(edict_t *client)
+void CHalfLifeMultiplay::SendServerNameToClient(edict_t *client)
 {
-	// read from the MOTD.txt file
-	int length, char_count = 0;
-	char *pFileList;
-	char *aFileList = pFileList = (char *)LOAD_FILE_FOR_ME((char *)CVAR_GET_STRING("motdfile"), &length);
-
-	// send the server name
 	MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, client);
 	WRITE_STRING(CVAR_GET_STRING("hostname"));
 	MESSAGE_END();
+}
 
+#define MAX_MOTD_CHUNK  60
+#define MAX_MOTD_LENGTH 1536 // (MAX_MOTD_CHUNK * 4)
+
+bool CHalfLifeMultiplay::SendMOTDFileToClient(edict_t *client, const char *file /*= nullptr*/)
+{
+	if (!file)
+		file = (char *)CVAR_GET_STRING("motdfile");
+
+	int length;
+	char *aFileList = (char *)LOAD_FILE_FOR_ME(const_cast<char *>(file), &length);
+	if (!aFileList)
+		return false;
+	SendMOTDToClient(client, aFileList);
+	FREE_FILE(aFileList);
+	return true;
+}
+
+void CHalfLifeMultiplay::SendMOTDToClient(edict_t *client, char *string)
+{
+	int char_count = 0;
+	char *pFileList = string;
 	// Send the message of the day
 	// read it chunk-by-chunk,  and send it in parts
-
 	while (pFileList && *pFileList && char_count < MAX_MOTD_LENGTH)
 	{
 		char chunk[MAX_MOTD_CHUNK + 1];
@@ -1663,7 +1849,7 @@ void CHalfLifeMultiplay ::SendMOTDToClient(edict_t *client)
 
 		char_count += strlen(chunk);
 		if (char_count < MAX_MOTD_LENGTH)
-			pFileList = aFileList + char_count;
+			pFileList = string + char_count;
 		else
 			*pFileList = 0;
 
@@ -1672,6 +1858,100 @@ void CHalfLifeMultiplay ::SendMOTDToClient(edict_t *client)
 		WRITE_STRING(chunk);
 		MESSAGE_END();
 	}
+}
 
+#define MAX_UNICODE_MOTD_LENGTH (MAX_MOTD_LENGTH * 2) // Some Unicode charachters take two or more bytes in UTF8
+
+bool CHalfLifeMultiplay::SendUnicodeMOTDFileToClient(edict_t *client, const char *file /*= nullptr*/)
+{
+	if (!file)
+		file = (char *)CVAR_GET_STRING("motdfile_unicode");
+
+	int length;
+	char *aFileList = (char *)LOAD_FILE_FOR_ME(const_cast<char *>(file), &length);
+	if (!aFileList)
+		return false;
+	SendUnicodeMOTDToClient(client, aFileList);
 	FREE_FILE(aFileList);
+	return true;
+}
+
+void CHalfLifeMultiplay::SendUnicodeMOTDToClient(edict_t *client, char *string)
+{
+	int char_count = 0;
+	char *pFileList = string;
+	// Send the message of the day
+	// read it chunk-by-chunk,  and send it in parts
+	while (pFileList && *pFileList && char_count < MAX_UNICODE_MOTD_LENGTH)
+	{
+		char chunk[MAX_MOTD_CHUNK + 1];
+
+		if (strlen(pFileList) < MAX_MOTD_CHUNK)
+		{
+			strcpy(chunk, pFileList);
+		}
+		else
+		{
+			strncpy(chunk, pFileList, MAX_MOTD_CHUNK);
+			chunk[MAX_MOTD_CHUNK] = 0; // strncpy doesn't always append the null terminator
+		}
+
+		char_count += strlen(chunk);
+		if (char_count < MAX_UNICODE_MOTD_LENGTH)
+			pFileList = string + char_count;
+		else
+			*pFileList = 0;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgMOTD, NULL, client);
+		WRITE_BYTE(*pFileList ? FALSE : TRUE); // FALSE means there is still more message to come
+		WRITE_STRING(chunk);
+		MESSAGE_END();
+	}
+}
+
+bool CHalfLifeMultiplay::SendHtmlMOTDFileToClient(edict_t *client, const char *file /*= nullptr*/)
+{
+	if (!file)
+		file = (char *)CVAR_GET_STRING("motdfile_html");
+
+	int length;
+	char *aFileList = (char *)LOAD_FILE_FOR_ME(const_cast<char *>(file), &length);
+	if (!aFileList)
+		return false;
+	SendHtmlMOTDToClient(client, aFileList);
+	FREE_FILE(aFileList);
+	return true;
+}
+
+void CHalfLifeMultiplay::SendHtmlMOTDToClient(edict_t *client, char *string)
+{
+	int char_count = 0;
+	char *pFileList = string;
+	// Send the message of the day
+	// read it chunk-by-chunk,  and send it in parts
+	while (pFileList && *pFileList && char_count < MAX_UNICODE_MOTD_LENGTH)
+	{
+		char chunk[MAX_MOTD_CHUNK + 1];
+
+		if (strlen(pFileList) < MAX_MOTD_CHUNK)
+		{
+			strcpy(chunk, pFileList);
+		}
+		else
+		{
+			strncpy(chunk, pFileList, MAX_MOTD_CHUNK);
+			chunk[MAX_MOTD_CHUNK] = 0; // strncpy doesn't always append the null terminator
+		}
+
+		char_count += strlen(chunk);
+		if (char_count < MAX_UNICODE_MOTD_LENGTH)
+			pFileList = string + char_count;
+		else
+			*pFileList = 0;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgHtmlMOTD, NULL, client);
+		WRITE_BYTE(*pFileList ? FALSE : TRUE); // FALSE means there is still more message to come
+		WRITE_STRING(chunk);
+		MESSAGE_END();
+	}
 }

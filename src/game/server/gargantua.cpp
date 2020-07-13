@@ -158,7 +158,7 @@ void CStomp::Think(void)
 				pSprite->pev->velocity = Vector(RANDOM_FLOAT(-200, 200), RANDOM_FLOAT(-200, 200), 175);
 				// pSprite->AnimateAndDie( RANDOM_FLOAT( 8.0, 12.0 ) );
 				pSprite->pev->nextthink = gpGlobals->time + 0.3;
-				pSprite->SetThink(&CSprite::SUB_Remove);
+				pSprite->SetThink(&CStomp::SUB_Remove);
 				pSprite->SetTransparency(kRenderTransAdd, 255, 255, 255, 255, kRenderFxFadeFast);
 			}
 		}
@@ -1085,7 +1085,7 @@ void CGargantua::RunTask(Task_t *pTask)
 				pGib->pev->origin = pev->origin;
 				pGib->pev->velocity = UTIL_RandomBloodVector() * RANDOM_FLOAT(300, 500);
 				pGib->pev->nextthink = gpGlobals->time + 1.25;
-				pGib->SetThink(&CGib::SUB_FadeOut);
+				pGib->SetThink(&CGargantua::SUB_FadeOut);
 			}
 			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
 			WRITE_BYTE(TE_BREAKMODEL);

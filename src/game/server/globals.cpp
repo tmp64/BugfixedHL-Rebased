@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -37,3 +37,6 @@ DLL_GLOBAL int gDisplayTitle;
 DLL_GLOBAL BOOL g_fGameOver;
 DLL_GLOBAL const Vector g_vecZero = Vector(0, 0, 0);
 DLL_GLOBAL int g_Language;
+
+extern "C" int g_iIsAg;
+int g_iIsAg = 0;

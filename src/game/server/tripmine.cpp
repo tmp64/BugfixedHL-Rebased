@@ -396,24 +396,25 @@ int CTripmine::GetItemInfo(ItemInfo *p)
 
 BOOL CTripmine::Deploy()
 {
-	//pev->body = 0;
+	pev->body = 0;
 	return DefaultDeploy("models/v_tripmine.mdl", "models/p_tripmine.mdl", TRIPMINE_DRAW, "trip");
 }
 
 void CTripmine::Holster(int skiplocal /* = 0 */)
 {
+	pev->body = 3;
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
-	if (!m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType])
-	{
-		// out of mines
-		m_pPlayer->pev->weapons &= ~(1 << WEAPON_TRIPMINE);
-		SetThink(&CTripmine::DestroyItem);
-		pev->nextthink = gpGlobals->time + 0.1;
-	}
-
-	SendWeaponAnim(TRIPMINE_HOLSTER);
 	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM);
+
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0)
+	{
+		SendWeaponAnim(TRIPMINE_HOLSTER);
+	}
+	else
+	{
+		DestroyItem();
+	}
 }
 
 void CTripmine::PrimaryAttack(void)
@@ -468,7 +469,7 @@ void CTripmine::PrimaryAttack(void)
 	{
 	}
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.3);
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 }
 

@@ -471,16 +471,16 @@ void CSqueak::Holster(int skiplocal /* = 0 */)
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
-	if (!m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType])
-	{
-		m_pPlayer->pev->weapons &= ~(1 << WEAPON_SNARK);
-		SetThink(&CSqueak::DestroyItem);
-		pev->nextthink = gpGlobals->time + 0.1;
-		return;
-	}
-
-	SendWeaponAnim(SQUEAK_DOWN);
 	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM);
+
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0)
+	{
+		SendWeaponAnim(SQUEAK_DOWN);
+	}
+	else
+	{
+		DestroyItem();
+	}
 }
 
 void CSqueak::PrimaryAttack()
@@ -535,7 +535,7 @@ void CSqueak::PrimaryAttack()
 
 			m_fJustThrown = 1;
 
-			m_flNextPrimaryAttack = GetNextAttackDelay(0.3);
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
 		}
 	}
@@ -554,7 +554,7 @@ void CSqueak::WeaponIdle(void)
 	{
 		m_fJustThrown = 0;
 
-		if (!m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()])
+		if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0)
 		{
 			RetireWeapon();
 			return;

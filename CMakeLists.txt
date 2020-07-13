@@ -430,6 +430,7 @@ endif()
 # Link with dependencies
 target_link_libraries( hl 
 	${SERVER_PLAT_LIBS}
+	semver
 )
 
 # Linker flags

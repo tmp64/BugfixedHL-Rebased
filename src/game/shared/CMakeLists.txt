@@ -1,7 +1,13 @@
 add_sources(
 	CMakeLists.txt
-	voice_common.h
 	bitvec.h
+	CGameVersion.cpp
+	CGameVersion.h
+	ClientSupportsFlags.h
+	enum_utils.h
+	IBugfixedServer.h
+	IGameVersion.h
+	voice_common.h
 )
 
 get_sources( GAME_SHARED_SRCS )

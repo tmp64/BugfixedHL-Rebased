@@ -35,9 +35,6 @@ int iJumpSpectator;
 #ifndef DISABLE_JUMP_ORIGIN
 float vJumpOrigin[3];
 float vJumpAngles[3];
-#else
-extern float vJumpOrigin[3];
-extern float vJumpAngles[3];
 #endif
 #endif
 
@@ -151,7 +148,9 @@ typedef struct hull_s
 
 #define CONTENTS_TRANSLUCENT -15
 
-static vec3_t rgv3tStuckTable[54];
+#define MAX_STUCKTABLE_ENTRIES 52
+static vec3_t rgv3tStuckTable[MAX_STUCKTABLE_ENTRIES];
+static int g_iBigMovesOffsetInStuckTable;
 static int rgStuckLast[MAX_CLIENTS][2];
 
 // Texture names
@@ -163,6 +162,7 @@ int g_onladder = 0;
 static int s_iOnGround;
 static int s_iWaterlevel;
 static int s_bBHopCap = true;
+static int s_iIsAg = false;
 
 int PM_GetOnGround()
 {
@@ -172,6 +172,11 @@ int PM_GetOnGround()
 int PM_GetWaterLevel()
 {
 	return s_iWaterlevel;
+}
+
+void PM_SetIsAG(int state)
+{
+	s_iIsAg = state;
 }
 
 #ifdef CLIENT_DLL
@@ -970,6 +975,15 @@ int PM_FlyMove(void)
 		// See if we can make it from origin to end point.
 		trace = pmove->PM_PlayerTrace(pmove->origin, end, PM_NORMAL, -1);
 
+		// Check if we are stuck on the surface (HACKHACK: this solves precision error in the engine for small movements)
+		if (trace.fraction == 0.0)
+		{
+			// Move end point to a thousandth fraction of the unit vector away from the wall and try to move again
+			for (i = 0; i < 3; i++)
+				end[i] += trace.plane.normal[i] * 0.001;
+			trace = pmove->PM_PlayerTrace(pmove->origin, end, PM_NORMAL, -1);
+		}
+
 		allFraction += trace.fraction;
 		// If we started in a solid object, or we were in solid space
 		//  the whole way, zero out our velocity and return that we
@@ -1035,8 +1049,8 @@ int PM_FlyMove(void)
 		// Set up next clipping plane
 		VectorCopy(trace.plane.normal, planes[numplanes]);
 		numplanes++;
-		//
 
+		//
 		// modify original_velocity so it parallels all of the clip planes
 		//
 		if (pmove->movetype == MOVETYPE_WALK && ((pmove->onground == -1) || (pmove->friction != 1))) // relfect player velocity
@@ -1049,7 +1063,9 @@ int PM_FlyMove(void)
 					VectorCopy(new_velocity, original_velocity);
 				}
 				else
+				{
 					PM_ClipVelocity(original_velocity, planes[i], new_velocity, 1.0 + pmove->movevars->bounce * (1 - pmove->friction));
+				}
 			}
 
 			VectorCopy(new_velocity, pmove->velocity);
@@ -1059,18 +1075,16 @@ int PM_FlyMove(void)
 		{
 			for (i = 0; i < numplanes; i++)
 			{
-				PM_ClipVelocity(
-				    original_velocity,
-				    planes[i],
-				    pmove->velocity,
-				    1);
+				PM_ClipVelocity(original_velocity, planes[i], pmove->velocity, 1);
 				for (j = 0; j < numplanes; j++)
+				{
 					if (j != i)
 					{
 						// Are we now moving against this plane?
 						if (DotProduct(pmove->velocity, planes[j]) < 0)
 							break; // not ok
 					}
+				}
 				if (j == numplanes) // Didn't have to clip, so we're ok
 					break;
 			}
@@ -1666,11 +1680,22 @@ qboolean PM_CheckWater()
 			VectorMA(pmove->basevelocity, 50.0 * pmove->waterlevel, current_table[CONTENTS_CURRENT_0 - truecont], pmove->basevelocity);
 		}
 	}
+	else if (pmove->movetype == MOVETYPE_NOCLIP || pmove->iuser1 == OBS_ROAMING)
+	{
+		// check the eye position.  (view_ofs is relative to the origin)
+		point[2] = pmove->origin[2] + pmove->view_ofs[2];
+
+		cont = pmove->PM_PointContents(point, NULL);
+		if (cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT)
+			pmove->waterlevel = 3; // In over our eyes
+	}
 
 	s_iWaterlevel = pmove->waterlevel;
 
 	return pmove->waterlevel > 1;
 }
+
+physent_t *PM_Ladder(void);
 
 /*
 =============
@@ -1681,6 +1706,7 @@ void PM_CatagorizePosition(void)
 {
 	vec3_t point;
 	pmtrace_t tr;
+	physent_t *pLadder;
 
 	// if the player hull point one unit down is solid, the player
 	// is on ground
@@ -1689,7 +1715,7 @@ void PM_CatagorizePosition(void)
 
 	// Doing this before we move may introduce a potential latency in water detection, but
 	// doing it after can get us stuck on the bottom in water if the amount we move up
-	// is less than the 1 pixel 'threshold' we're about to snap to.	Also, we'll call
+	// is less than the 1 pixel 'threshold' we're about to snap to. Also, we'll call
 	// this several times per frame, so we really need to avoid sticking to the bottom of
 	// water on each call, and the converse case will correct itself if called twice.
 	PM_CheckWater();
@@ -1717,9 +1743,12 @@ void PM_CatagorizePosition(void)
 		{
 			// Then we are not in water jump sequence
 			pmove->waterjumptime = 0;
+			pLadder = PM_Ladder();
 			// If we could make the move, drop us down that 1 pixel
-			if (pmove->waterlevel < 2 && !tr.startsolid && !tr.allsolid)
-				VectorCopy(tr.endpos, pmove->origin);
+			// Skip for noclip move type, roaming observer mode and if we are on a ladder so we will not stick to a floor
+			if (pmove->movetype != MOVETYPE_NOCLIP && pmove->iuser1 != OBS_ROAMING && pLadder == NULL)
+				if (pmove->waterlevel < 2 && !tr.startsolid && !tr.allsolid)
+					VectorCopy(tr.endpos, pmove->origin);
 		}
 
 		// Standing on an entity other than the world
@@ -1744,9 +1773,9 @@ int PM_GetRandomStuckOffsets(int nIndex, int server, vec3_t offset)
 	int idx;
 	idx = rgStuckLast[nIndex][server]++;
 
-	VectorCopy(rgv3tStuckTable[idx % 54], offset);
+	VectorCopy(rgv3tStuckTable[idx % MAX_STUCKTABLE_ENTRIES], offset);
 
-	return (idx % 54);
+	return (idx % MAX_STUCKTABLE_ENTRIES);
 }
 
 void PM_ResetStuckOffsets(int nIndex, int server)
@@ -1763,7 +1792,7 @@ try nudging slightly on all axis to
 allow for the cut precision of the net coordinates
 =================
 */
-#define PM_CHECKSTUCK_MINTIME 0.05 // Don't check again too quickly.
+#define PM_CHECKSTUCK_MINTIME 0.02 // Don't check again too quickly.
 
 int PM_CheckStuck(void)
 {
@@ -1771,7 +1800,6 @@ int PM_CheckStuck(void)
 	vec3_t offset;
 	vec3_t test;
 	int hitent;
-	int idx;
 	float fTime;
 	int i;
 	pmtrace_t traceresult;
@@ -1788,68 +1816,59 @@ int PM_CheckStuck(void)
 
 	VectorCopy(pmove->origin, base);
 
-	//
 	// Deal with precision error in network.
-	//
+	// Only an issue on the client.
 	if (!pmove->server)
 	{
-		// World or BSP model
-		if ((hitent == 0) || (pmove->physents[hitent].model != NULL))
+		i = 0;
+		do
 		{
-			int nReps = 0;
-			PM_ResetStuckOffsets(pmove->player_index, pmove->server);
-			do
+			VectorAdd(base, rgv3tStuckTable[i], test);
+			if (pmove->PM_TestPlayerPosition(test, &traceresult) == -1)
 			{
-				i = PM_GetRandomStuckOffsets(pmove->player_index, pmove->server, offset);
-
-				VectorAdd(base, offset, test);
-				if (pmove->PM_TestPlayerPosition(test, &traceresult) == -1)
-				{
-					PM_ResetStuckOffsets(pmove->player_index, pmove->server);
-
-					VectorCopy(test, pmove->origin);
-					return 0;
-				}
-				nReps++;
-			} while (nReps < 54);
-		}
+				PM_ResetStuckOffsets(pmove->player_index, pmove->server);
+				VectorCopy(test, pmove->origin);
+				return 0;
+			}
+			i++;
+		} while (i < g_iBigMovesOffsetInStuckTable); // test only small oscillations
 	}
 
-	// Only an issue on the client.
-
-	if (pmove->server)
-		idx = 0;
-	else
-		idx = 1;
+	// Check if we are stuck in a satchel (commonly because spawned on it)
+	while ((hitent = pmove->PM_TestPlayerPosition(pmove->origin, NULL)) && hitent >= 0 && hitent < pmove->numphysent && !strcmp(pmove->physents[hitent].name, "models/w_satchel.mdl"))
+	{
+		// Remove satchel in which we are stuck from current player move iteration
+		memset(&(pmove->physents[hitent]), 0, sizeof(physent_t));
+	}
+	// If position is okay, exit
+	if (hitent == -1)
+	{
+		PM_ResetStuckOffsets(pmove->player_index, pmove->server);
+		return 0;
+	}
 
 	fTime = pmove->Sys_FloatTime();
 	// Too soon?
-	if (rgStuckCheckTime[pmove->player_index][idx] >= (fTime - PM_CHECKSTUCK_MINTIME))
-	{
+	if (rgStuckCheckTime[pmove->player_index][pmove->server] >= fTime)
 		return 1;
-	}
-	rgStuckCheckTime[pmove->player_index][idx] = fTime;
+	rgStuckCheckTime[pmove->player_index][pmove->server] = fTime + PM_CHECKSTUCK_MINTIME;
 
 	pmove->PM_StuckTouch(hitent, &traceresult);
 
 	i = PM_GetRandomStuckOffsets(pmove->player_index, pmove->server, offset);
-
 	VectorAdd(base, offset, test);
 	if ((hitent = pmove->PM_TestPlayerPosition(test, NULL)) == -1)
 	{
 		//Con_DPrintf("Nudged\n");
-
 		PM_ResetStuckOffsets(pmove->player_index, pmove->server);
-
-		if (i >= 27)
-			VectorCopy(test, pmove->origin);
-
+		VectorCopy(test, pmove->origin);
 		return 0;
 	}
 
 	// If player is flailing while stuck in another player ( should never happen ), then see
 	//  if we can't "unstick" them forceably.
-	if (pmove->cmd.buttons & (IN_JUMP | IN_DUCK | IN_ATTACK) && (pmove->physents[hitent].player != 0))
+	// Seems some rare conditions. Will check this only on server side, cos .player is bugged on clientside or I does't get a clue how it works.
+	if (pmove->server && pmove->cmd.buttons & (IN_JUMP | IN_DUCK | IN_ATTACK) && pmove->physents[hitent].player != 0)
 	{
 		float x, y, z;
 		float xystep = 8.0;
@@ -1916,9 +1935,9 @@ void PM_SpectatorMove(void)
 			iJumpSpectator = 0;
 			return;
 		}
-#endif
-		// Move around in normal spectator method
+#endif // CLIENT_DLL
 
+		// Move around in normal spectator method
 		speed = Length(pmove->velocity);
 		if (speed < 1)
 		{
@@ -2200,12 +2219,6 @@ void PM_LadderMove(physent_t *pLadder)
 	if (pmove->movetype == MOVETYPE_NOCLIP)
 		return;
 
-#if defined(_TFC)
-	// this is how TFC freezes players, so we don't want them climbing ladders
-	if (pmove->maxspeed <= 1.0)
-		return;
-#endif
-
 	pmove->PM_GetModelBounds(pLadder->model, modelmins, modelmaxs);
 
 	VectorAdd(modelmins, modelmaxs, ladderCenter);
@@ -2229,37 +2242,23 @@ void PM_LadderMove(physent_t *pLadder)
 	{
 		float forward = 0, right = 0;
 		vec3_t vpn, v_right;
-		float flSpeed = MAX_CLIMB_SPEED;
 
-		// they shouldn't be able to move faster than their maxspeed
-		if (flSpeed > pmove->maxspeed)
-		{
-			flSpeed = pmove->maxspeed;
-		}
+		float climbSpeed = MAX_CLIMB_SPEED;
+		if (climbSpeed > pmove->maxspeed)
+			climbSpeed = pmove->maxspeed;
+		if (!s_iIsAg && (pmove->flags & FL_DUCKING))
+			climbSpeed *= PLAYER_DUCKING_MULTIPLIER;
 
 		AngleVectors(pmove->angles, vpn, v_right, NULL);
 
-		if (pmove->flags & FL_DUCKING)
-		{
-			flSpeed *= PLAYER_DUCKING_MULTIPLIER;
-		}
-
 		if (pmove->cmd.buttons & IN_BACK)
-		{
-			forward -= flSpeed;
-		}
+			forward -= climbSpeed;
 		if (pmove->cmd.buttons & IN_FORWARD)
-		{
-			forward += flSpeed;
-		}
+			forward += climbSpeed;
 		if (pmove->cmd.buttons & IN_MOVELEFT)
-		{
-			right -= flSpeed;
-		}
+			right -= climbSpeed;
 		if (pmove->cmd.buttons & IN_MOVERIGHT)
-		{
-			right += flSpeed;
-		}
+			right += climbSpeed;
 
 		if (pmove->cmd.buttons & IN_JUMP)
 		{
@@ -2281,8 +2280,8 @@ void PM_LadderMove(physent_t *pLadder)
 				VectorMA(velocity, right, v_right, velocity);
 
 				// Perpendicular in the ladder plane
-				//					Vector perp = CrossProduct( Vector(0,0,1), trace.vecPlaneNormal );
-				//					perp = perp.Normalize();
+				//Vector perp = CrossProduct( Vector(0,0,1), trace.vecPlaneNormal );
+				//perp = perp.Normalize();
 				VectorClear(tmp);
 				tmp[2] = 1;
 				CrossProduct(tmp, trace.plane.normal, perp);
@@ -2724,17 +2723,6 @@ void PM_Jump(void)
 
 	// Flag that we jumped.
 	pmove->oldbuttons |= IN_JUMP; // don't jump again until released
-
-	// BHop autodetection
-#ifdef CLIENT_DLL
-	float speed = sqrt(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
-	int isLongJumping = cansuperjump && (pmove->oldbuttons & IN_DUCK);
-
-	if (s_iBHopState == 2 && s_flBHopCheckTime == 0 && speed >= pmove->maxspeed * BUNNYJUMP_MAX_SPEED_FACTOR && !isLongJumping)
-	{
-		s_flBHopCheckTime = pmove->time + (BHOP_DETECT_DELAY * 1000);
-	}
-#endif
 }
 
 /*
@@ -3124,6 +3112,7 @@ void PM_PlayerMove(qboolean server)
 		if (pLadder)
 		{
 			g_onladder = 1;
+			s_iOnGround = 1; // allow to jump off
 		}
 	}
 
@@ -3146,13 +3135,11 @@ void PM_PlayerMove(qboolean server)
 		}
 	}
 
-#if !defined(_TFC)
 	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
 	if ((pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
 	{
 		VectorScale(pmove->velocity, 0.3, pmove->velocity);
 	}
-#endif
 
 	// Handle movement
 	switch (pmove->movetype)
@@ -3327,31 +3314,32 @@ void PM_CreateStuckTable(void)
 	int i;
 	float zi[3];
 
-	memset(rgv3tStuckTable, 0, 54 * sizeof(vec3_t));
+	memset(rgv3tStuckTable, 0, MAX_STUCKTABLE_ENTRIES * sizeof(vec3_t));
+
+	// Little Moves.
 
 	idx = 0;
-	// Little Moves.
-	x = y = 0;
 	// Z moves
-	for (z = -0.125; z <= 0.125; z += 0.125)
+	x = y = 0;
+	for (z = -0.125; z <= 0.125; z += 0.250)
 	{
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
 		rgv3tStuckTable[idx][2] = z;
 		idx++;
 	}
-	x = z = 0;
 	// Y moves
-	for (y = -0.125; y <= 0.125; y += 0.125)
+	x = z = 0;
+	for (y = -0.125; y <= 0.125; y += 0.250)
 	{
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
 		rgv3tStuckTable[idx][2] = z;
 		idx++;
 	}
-	y = z = 0;
 	// X moves
-	for (x = -0.125; x <= 0.125; x += 0.125)
+	y = z = 0;
+	for (x = -0.125; x <= 0.125; x += 0.250)
 	{
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
@@ -3359,13 +3347,16 @@ void PM_CreateStuckTable(void)
 		idx++;
 	}
 
+	// idx == 6
 	// Remaining multi axis nudges.
-	for (x = -0.125; x <= 0.125; x += 0.250)
+	for (x = -0.125; x <= 0.125; x += 0.125)
 	{
-		for (y = -0.125; y <= 0.125; y += 0.250)
+		for (y = -0.125; y <= 0.125; y += 0.125)
 		{
-			for (z = -0.125; z <= 0.125; z += 0.250)
+			for (z = -0.125; z <= 0.125; z += 0.125)
 			{
+				if ((x == 0 && y == 0 && z == 0) || (x == 0 && y == 0) || (x == 0 && z == 0) || (y == 0 && z == 0))
+					continue;
 				rgv3tStuckTable[idx][0] = x;
 				rgv3tStuckTable[idx][1] = y;
 				rgv3tStuckTable[idx][2] = z;
@@ -3375,14 +3366,16 @@ void PM_CreateStuckTable(void)
 	}
 
 	// Big Moves.
-	x = y = 0;
-	zi[0] = 0.0f;
-	zi[1] = 1.0f;
-	zi[2] = 6.0f;
+	g_iBigMovesOffsetInStuckTable = idx;
+	zi[0] = 0.0;
+	zi[1] = 1.0;
+	zi[2] = 6.0;
 
-	for (i = 0; i < 3; i++)
+	// idx == 26
+	// Y moves
+	x = y = 0;
+	for (i = 1; i < 3; i++)
 	{
-		// Z moves
 		z = zi[i];
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
@@ -3390,19 +3383,10 @@ void PM_CreateStuckTable(void)
 		idx++;
 	}
 
-	x = z = 0;
-
+	// idx == 28
 	// Y moves
-	for (y = -2.0f; y <= 2.0f; y += 2.0)
-	{
-		rgv3tStuckTable[idx][0] = x;
-		rgv3tStuckTable[idx][1] = y;
-		rgv3tStuckTable[idx][2] = z;
-		idx++;
-	}
-	y = z = 0;
-	// X moves
-	for (x = -2.0f; x <= 2.0f; x += 2.0f)
+	x = z = 0;
+	for (y = -2.0; y <= 2.0; y += 4.0)
 	{
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
@@ -3410,15 +3394,29 @@ void PM_CreateStuckTable(void)
 		idx++;
 	}
 
+	// idx == 30
+	// X moves
+	y = z = 0;
+	for (x = -2.0; x <= 2.0; x += 4.0)
+	{
+		rgv3tStuckTable[idx][0] = x;
+		rgv3tStuckTable[idx][1] = y;
+		rgv3tStuckTable[idx][2] = z;
+		idx++;
+	}
+
+	// idx == 32
 	// Remaining multi axis nudges.
 	for (i = 0; i < 3; i++)
 	{
 		z = zi[i];
 
-		for (x = -2.0f; x <= 2.0f; x += 2.0f)
+		for (x = -2.0; x <= 2.0; x += 2.0)
 		{
-			for (y = -2.0f; y <= 2.0f; y += 2.0)
+			for (y = -2.0; y <= 2.0; y += 2.0)
 			{
+				if ((x == 0 && y == 0 && z == 0) || (x == 0 && y == 0) || (x == 0 && z == 0) || (y == 0 && z == 0))
+					continue;
 				rgv3tStuckTable[idx][0] = x;
 				rgv3tStuckTable[idx][1] = y;
 				rgv3tStuckTable[idx][2] = z;
@@ -3426,6 +3424,9 @@ void PM_CreateStuckTable(void)
 			}
 		}
 	}
+
+	// idx == 52
+	assert(idx == MAX_STUCKTABLE_ENTRIES);
 }
 
 /*

@@ -26,6 +26,8 @@ char PM_FindTextureType(char *name);
 int PM_GetOnGround();
 int PM_GetWaterLevel();
 
+void PM_SetIsAG(int state);
+
 #ifdef CLIENT_DLL
 int PM_GetBHopCapState();
 void PM_SetBHopCapState(int state);

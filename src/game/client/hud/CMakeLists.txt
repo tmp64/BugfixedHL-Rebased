@@ -12,6 +12,8 @@ add_sources(
 	battery.h
 	chat.cpp
 	chat.h
+	crosshair.cpp
+	crosshair.h
 	death_notice.cpp
 	death_notice.h
 	flashlight.cpp

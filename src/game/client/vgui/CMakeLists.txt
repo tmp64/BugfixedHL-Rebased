@@ -6,6 +6,8 @@ add_sources(
 	client_motd.h
 	client_viewport.cpp
 	client_viewport.h
+	crosshair_image.cpp
+	crosshair_image.h
 	player_list_panel.cpp
 	player_list_panel.h
 	png_image.cpp

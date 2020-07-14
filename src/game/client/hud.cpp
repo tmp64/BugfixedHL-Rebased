@@ -39,6 +39,7 @@
 // HUD Elements
 #include "hud/ammo.h"
 #include "hud/chat.h"
+#include "hud/crosshair.h"
 #include "hud/health.h"
 #include "hud/spectator.h"
 #include "hud/geiger.h"
@@ -172,6 +173,7 @@ void CHud::Init(void)
 	RegisterHudElem<CHudAmmo>();
 	RegisterHudElem<CHudHealth>();
 	RegisterHudElem<CHudChat>();
+	RegisterHudElem<CHudCrosshair>();
 	RegisterHudElem<CHudSpectator>();
 	RegisterHudElem<CHudGeiger>();
 	RegisterHudElem<CHudTrain>();

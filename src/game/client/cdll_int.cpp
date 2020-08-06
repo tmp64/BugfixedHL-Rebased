@@ -35,6 +35,7 @@ extern "C"
 #include "client_steam_context.h"
 #include "vgui/client_viewport.h"
 #include "Exports.h"
+#include "engine_patches.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -190,6 +191,7 @@ void CL_DLLEXPORT HUD_Init(void)
 {
 	//	RecClHudInit();
 	console::HudInit();
+	CEnginePatches::Get().Init();
 	InitInput();
 	ClientSteamContext().Activate();
 	gHUD.Init();
@@ -263,6 +265,7 @@ void CL_DLLEXPORT HUD_Frame(double time)
 {
 	//	RecClHudFrame(time);
 
+	CEnginePatches::Get().RunFrame();
 	gHUD.Frame(time);
 	GetClientVoiceMgr()->Frame(time);
 }
@@ -321,6 +324,7 @@ void CL_DLLEXPORT HUD_Shutdown(void)
 	ShutdownInput();
 	CL_UnloadParticleMan();
 	ClientSteamContext().Shutdown();
+	CEnginePatches::Get().Shutdown();
 	console::HudShutdown();
 }
 

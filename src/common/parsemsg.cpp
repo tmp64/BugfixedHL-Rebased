@@ -32,9 +32,9 @@ int READ_OK(void)
 	return !giBadRead;
 }
 
-void BEGIN_READ(void *buf, int size)
+void BEGIN_READ(void *buf, int size, int readpos)
 {
-	giRead = 0;
+	giRead = readpos;
 	giBadRead = 0;
 	giSize = size;
 	gpBuf = (byte *)buf;
@@ -146,6 +146,31 @@ char *READ_STRING(void)
 
 		c = READ_CHAR();
 		if (c == -1 || c == 0)
+			break;
+		string[l] = c;
+		l++;
+	} while (l < sizeof(string) - 1);
+
+	string[l] = 0;
+
+	return string;
+}
+
+char *READ_LINE(void)
+{
+	static char string[2048];
+	int l, c;
+
+	string[0] = 0;
+
+	l = 0;
+	do
+	{
+		if (giRead + 1 > giSize)
+			break; // no more characters
+
+		c = READ_CHAR();
+		if (c == -1 || c == 0 || c == '\n')
 			break;
 		string[l] = c;
 		l++;

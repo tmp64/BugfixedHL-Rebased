@@ -18,6 +18,8 @@ add_sources(
 	console.h
 	demo.cpp
 	demo.h
+	engine_patches.cpp
+	engine_patches.h
 	entity.cpp
 	ev_common.cpp
 	ev_hldm.cpp
@@ -73,6 +75,12 @@ add_sources(
 	../server/squeakgrenade.cpp
 	../server/tripmine.cpp
 )
+
+if( WIN32 )
+	add_sources( engine_patches_windows.cpp )
+else()
+	add_sources( engine_patches_stub.cpp )
+endif()
 
 add_subdirectory( hl )
 add_subdirectory( hud )

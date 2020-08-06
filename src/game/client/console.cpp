@@ -70,13 +70,14 @@ static std::queue<EarlyConItem> s_EarlyConQueue;
 
 static void EnableEarlyCon();
 static void EarlyConPrintf(const char *fmt, ...);
+static void EarlyConDPrintf(const char *fmt, ...);
 static void DisableEarlyCon();
 static void DumpEarlyCon();
 
 //-----------------------------------------------------
 // Console redirection
 // Con_Printf doesn't work until after HUD_Init finishes.
-// EnablePassthrough redirects it to Con_DPrintf, which
+// EnableRedirection redirects it to Con_DPrintf, which
 // does work.
 //-----------------------------------------------------
 static void EnableRedirection();
@@ -90,6 +91,9 @@ static void DisableRedirection();
 static SpewOutputFunc_t s_fnDefaultSpewOutput = nullptr;
 static void EnableSpewOutputFunc();
 static void DisableSpewOutputFunc();
+
+// True if launched with -dev (Con_DPrintf works).
+static bool s_bIsDev = false;
 }
 
 void console::Initialize()
@@ -102,15 +106,38 @@ void console::Initialize()
 
 void console::HudInit()
 {
-	DisableEarlyCon();
-	EnableRedirection();
-	HookConsoleColor();
-	DumpEarlyCon();
+	if (gEngfuncs.CheckParm("-dev", nullptr))
+		s_bIsDev = true;
+
+	if (s_bIsDev)
+	{
+		// Only enable redirection in developer mode.
+		// Otherwise, keep storing messages in a buffer.
+		DisableEarlyCon();
+		EnableRedirection();
+		HookConsoleColor();
+		DumpEarlyCon();
+	}
+	else
+	{
+		HookConsoleColor();
+	}
 }
 
 void console::HudPostInit()
 {
-	DisableRedirection();
+	if (s_bIsDev)
+	{
+		DisableRedirection();
+	}
+	else
+	{
+		// Console will be available on first frame.
+		gHUD.CallOnNextFrame([]() {
+			DisableEarlyCon();
+			DumpEarlyCon();
+		});
+	}
 }
 
 void console::HudShutdown()
@@ -191,11 +218,26 @@ void console::HookConsoleColor()
 void console::EnableEarlyCon()
 {
 	gEngfuncs.Con_Printf = EarlyConPrintf;
-	gEngfuncs.Con_DPrintf = EarlyConPrintf;
+	gEngfuncs.Con_DPrintf = EarlyConDPrintf;
 }
 
 void console::EarlyConPrintf(const char *fmt, ...)
 {
+	va_list args;
+	va_start(args, fmt);
+
+	char *buf = new char[EARLY_CON_BUFFER_SIZE];
+	vsnprintf(buf, EARLY_CON_BUFFER_SIZE, fmt, args);
+	s_EarlyConQueue.push({ buf, GetColor() });
+
+	va_end(args);
+}
+
+void console::EarlyConDPrintf(const char *fmt, ...)
+{
+	if (!s_bIsDev)
+		return;
+
 	va_list args;
 	va_start(args, fmt);
 
@@ -230,7 +272,24 @@ void console::DumpEarlyCon()
 //-----------------------------------------------------
 void console::EnableRedirection()
 {
-	gEngfuncs.Con_Printf = s_fnEngineDPrintf;
+	gEngfuncs.Con_Printf = [](const char *const pszFormat, ...) {
+		// Print redirected messages with Con_Printf color instead of Con_DPrintf
+		// But only if color wasn't changed.
+		if (*s_ConColor == s_DefaultColor)
+			*s_ConDColor = s_DefaultColor;
+
+		va_list args;
+		va_start(args, pszFormat);
+
+		static char buf[1024];
+		vsnprintf(buf, sizeof(buf), pszFormat, args);
+		s_fnEngineDPrintf("%s", buf);
+
+		va_end(args);
+
+		if (*s_ConColor == s_DefaultColor)
+			*s_ConDColor = s_DefaultDColor;
+	};
 }
 
 void console::DisableRedirection()

@@ -35,6 +35,8 @@ public:
 
 	virtual void RunFrame() override;
 
+	virtual void HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT]) override;
+
 protected:
 	virtual void PlatformPatchesInit() override;
 	virtual void PlatformPatchesShutdown() override;
@@ -108,6 +110,11 @@ private:
 	 */
 	void StopServerBrowserThreads();
 
+	/**
+	 * Restores svc handlers to original state.
+	 */
+	void RemoveSvcHooks();
+
 	//-------------------------------------------------------------------
 	// Utility functions
 	//-------------------------------------------------------------------
@@ -166,6 +173,21 @@ void CEnginePatchesWindows::RunFrame()
 	}
 }
 
+void CEnginePatchesWindows::HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT])
+{
+	Assert(GetSvcArray());
+
+	for (size_t i = 0; i < SVC_MSG_COUNT; i++)
+	{
+		if (array[i] && GetSvcArray()[i].pfnParse != array[i])
+		{
+			uintptr_t addr = reinterpret_cast<uintptr_t>(&GetSvcArray()[i].pfnParse);
+			uint32_t newVal = reinterpret_cast<uint32_t>(array[i]);
+			HookDWord(addr, newVal);
+		}
+	}
+}
+
 void CEnginePatchesWindows::PlatformPatchesInit()
 {
 	if (!GetEngineModule())
@@ -200,6 +222,7 @@ void CEnginePatchesWindows::PlatformPatchesShutdown()
 	PatchFPSBug(false);
 	PatchConnectionlessPacketHandler(false);
 	PatchCommandList(false);
+	RemoveSvcHooks();
 }
 
 void CEnginePatchesWindows::PlatformLatePatching()
@@ -298,6 +321,13 @@ void CEnginePatchesWindows::FindSvcArray()
 	{
 		m_pSvcArray = nullptr;
 		ConPrintf(ConColor::Red, "Engine patch: SvcMessagesTable check has failed.\n");
+		return;
+	}
+
+	// Copy engine handler into an array
+	for (size_t i = 0; i < SVC_MSG_COUNT; i++)
+	{
+		m_EngineSvcHandlers.array[i] = GetSvcArray()[i].pfnParse;
 	}
 }
 
@@ -582,6 +612,22 @@ void CEnginePatchesWindows::StopServerBrowserThreads()
 			FreeLibrary(hNTDLL);
 		}
 		CloseHandle(hTool);
+	}
+}
+
+void CEnginePatchesWindows::RemoveSvcHooks()
+{
+	if (!GetSvcArray())
+		return;
+
+	for (size_t i = 0; i < SVC_MSG_COUNT; i++)
+	{
+		if (GetSvcArray()[i].pfnParse != m_EngineSvcHandlers.array[i])
+		{
+			uintptr_t addr = reinterpret_cast<uintptr_t>(&GetSvcArray()[i].pfnParse);
+			uint32_t newVal = reinterpret_cast<uint32_t>(m_EngineSvcHandlers.array[i]);
+			HookDWord(addr, newVal);
+		}
 	}
 }
 

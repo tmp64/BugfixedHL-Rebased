@@ -1,23 +1,11 @@
 #ifndef ENGINE_PATCHES_H
 #define ENGINE_PATCHES_H
+#include <array>
 #include <cstdint>
+#include "svc_messages.h"
 
-using SvcParseFunc = void (*)();
-
-struct SvcHandler
-{
-	unsigned char nOpcode;
-	const char *pszName;
-	SvcParseFunc *pfnParse;
-};
-
-struct UserMessage
-{
-	int messageId;
-	int messageLen;
-	char messageName[16];
-	UserMessage *nextMessage;
-};
+struct SvcHandler;
+struct UserMessage;
 
 /**
  * Engine patching includes fixing some bugs and 
@@ -79,8 +67,19 @@ public:
 
 	/**
 	 * Returns an array of SVC message handlers or nullptr.
+	 * It may be located in read-only section and requires platform-specific methods to write to.
 	 */
-	SvcHandler *GetSvcArray();
+	const SvcHandler *GetSvcArray();
+
+	/**
+	 * Returns an array of original engine SVC handlers. The array is not affected by SVC hooks.
+	 */
+	const SvcClientFuncs &GetEngineSvcHandlers();
+
+	/**
+	 * If i-th element is not null, i-th SVC handler will be set to the pointer.
+	 */
+	virtual void HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT]);
 
 	/**
 	 * Returns first element of user message linked list or nullptr.
@@ -136,8 +135,14 @@ protected:
 	bool m_bIsSDLEngine = false;
 	bool m_bLatePatchesDone = false;
 	EngineMsgBuf m_MsgBuf;
-	SvcHandler *m_pSvcArray = nullptr;
+	const SvcHandler *m_pSvcArray = nullptr;
 	UserMessage **m_pUserMsgList = nullptr;
+
+	union
+	{
+		SvcClientFuncs funcs;
+		SvcParseFunc array[SVC_MSG_COUNT];
+	} m_EngineSvcHandlers;
 
 	/**
 	 * Called from Init() before all other patches for
@@ -184,7 +189,12 @@ inline const CEnginePatches::EngineMsgBuf &CEnginePatches::GetMsgBuf()
 	return m_MsgBuf;
 }
 
-inline SvcHandler *CEnginePatches::GetSvcArray() { return m_pSvcArray; }
+inline const SvcHandler *CEnginePatches::GetSvcArray() { return m_pSvcArray; }
+
+inline const SvcClientFuncs &CEnginePatches::GetEngineSvcHandlers()
+{
+	return m_EngineSvcHandlers.funcs;
+}
 
 inline UserMessage *CEnginePatches::GetUserMsgList()
 {

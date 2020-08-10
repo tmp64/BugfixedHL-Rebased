@@ -49,6 +49,8 @@ add_sources(
 	studio_util.h
 	StudioModelRenderer.cpp
 	StudioModelRenderer.h
+	svc_messages.cpp
+	svc_messages.h
 	tf_defs.h
 	tri.cpp
 	tri.h

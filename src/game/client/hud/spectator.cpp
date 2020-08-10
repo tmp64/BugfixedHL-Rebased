@@ -31,6 +31,8 @@
 #include "text_message.h"
 #include "message.h"
 
+#include "svc_messages.h"
+
 #pragma warning(disable : 4244)
 
 extern "C" int iJumpSpectator;
@@ -747,7 +749,12 @@ void CHudSpectator::DirectorMessage(int iSize, void *pbuf)
 		break;
 
 	case DRC_CMD_STUFFTEXT:
-		EngineClientCmd(READ_STRING());
+		string = READ_STRING();
+		CSvcMessages::Get().SanitizeCommands(string);
+		if (string[0] != 0)
+		{
+			EngineClientCmd(string);
+		}
 		break;
 
 	case DRC_CMD_CAMPATH:

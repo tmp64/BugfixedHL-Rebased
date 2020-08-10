@@ -322,6 +322,7 @@ void CHud::Frame(double time)
 	vgui2::GetAnimationController()->UpdateAnimations(gEngfuncs.GetClientTime());
 
 	CHudVoiceStatus::Get()->RunFrame(time);
+	g_pViewport->GetAllPlayersInfo();
 
 	while (m_NextFrameQueue.size())
 	{

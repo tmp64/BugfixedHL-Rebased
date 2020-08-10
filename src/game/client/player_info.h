@@ -71,6 +71,11 @@ public:
 	const char *GetTeamName();
 	bool IsSpectator();
 
+	/**
+	 * Returns SteamID string. Requires SVC hook.
+	 */
+	const char *GetSteamID();
+
 	// Should be called before reading engine info.
 	// Returns this
 	CPlayerInfo *Update();
@@ -81,6 +86,7 @@ private:
 	extra_player_info_t m_ExtraInfo;
 	bool m_bIsConnected;
 	bool m_bIsSpectator;
+	char m_szSteamID[MAX_STEAMID + 1];
 
 	player_info_t *GetEnginePlayerInfo();
 
@@ -88,6 +94,7 @@ private:
 	friend CPlayerInfo *GetPlayerInfo(int idx);
 	friend class CHud;
 	friend class CClientViewport;
+	friend class CSvcMessages;
 };
 
 inline CPlayerInfo *GetPlayerInfo(int idx)

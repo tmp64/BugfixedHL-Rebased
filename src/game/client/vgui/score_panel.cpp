@@ -433,7 +433,7 @@ void CScorePanel::UpdateClientInfo(int client, bool autoUpdate)
 	playerData->SetInt("client", client);
 	snprintf(buf, 64, "%s%s", playerInfo->GetName(), (playerInfo->IsSpectator() ? " ^0(spectator)" : ""));
 	playerData->SetString("name", buf);
-	//playerData->SetString("steamid", g_PlayerSteamId[client]);
+	playerData->SetString("steamid", playerInfo->GetSteamID());
 
 	// Efficiency
 	{

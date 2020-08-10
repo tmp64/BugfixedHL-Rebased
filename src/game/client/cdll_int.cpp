@@ -36,6 +36,7 @@ extern "C"
 #include "vgui/client_viewport.h"
 #include "Exports.h"
 #include "engine_patches.h"
+#include "svc_messages.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -195,6 +196,7 @@ void CL_DLLEXPORT HUD_Init(void)
 	InitInput();
 	ClientSteamContext().Activate();
 	gHUD.Init();
+	CSvcMessages::Get().Init();
 	console::HudPostInit();
 }
 

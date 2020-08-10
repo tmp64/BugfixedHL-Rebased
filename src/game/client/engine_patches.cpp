@@ -14,6 +14,7 @@ CEnginePatches::CEnginePatches()
 {
 	Assert(!s_pInstance);
 	s_pInstance = this;
+	memset(&m_EngineSvcHandlers.funcs, 0, sizeof(m_EngineSvcHandlers.funcs));
 }
 
 CEnginePatches::~CEnginePatches()
@@ -24,7 +25,7 @@ CEnginePatches::~CEnginePatches()
 
 void CEnginePatches::Init()
 {
-	if (gEngfuncs.CheckParm("nopatch", nullptr))
+	if (gEngfuncs.CheckParm("-nopatch", nullptr))
 	{
 		ConPrintf("Engine patching disabled with -nopatch.\n");
 		return;
@@ -54,6 +55,11 @@ void CEnginePatches::RunFrame()
 		PlatformLatePatching();
 		m_bLatePatchesDone = true;
 	}
+}
+
+void CEnginePatches::HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT])
+{
+	Assert(false);
 }
 
 void CEnginePatches::PlatformPatchesInit()

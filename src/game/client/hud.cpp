@@ -523,7 +523,7 @@ Color CHud::GetHudColor(HudPart hudPart, int value)
 	if (value >= 50)
 		return m_HudColor2;
 
-	if (value > 25)
+	if (value > 25 || hudPart == HudPart::Armor)
 		return m_HudColor3;
 
 	return Color(255, 0, 0, 255);

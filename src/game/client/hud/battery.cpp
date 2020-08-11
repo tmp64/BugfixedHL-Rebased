@@ -37,7 +37,7 @@ void CHudBattery::Init(void)
 	HookMessage<&CHudBattery::MsgFunc_Battery>("Battery");
 };
 
-void CHudBattery::VidInit(void)
+void CHudBattery::VidInit()
 {
 	int HUD_suit_empty = gHUD.GetSpriteIndex("suit_empty");
 	int HUD_suit_full = gHUD.GetSpriteIndex("suit_full");
@@ -54,24 +54,14 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 	m_iFlags |= HUD_ACTIVE;
 
 	BEGIN_READ(pbuf, iSize);
-	int x = READ_SHORT();
+	int battery = READ_SHORT();
+	battery = clamp(battery, 0, 999);
 
-#if defined(_TFC)
-	int y = READ_SHORT();
-
-	if (x != m_iBat || y != m_iBatMax)
+	if (battery != m_iBat)
 	{
 		m_fFade = FADE_TIME;
-		m_iBat = x;
-		m_iBatMax = y;
+		m_iBat = battery;
 	}
-#else
-	if (x != m_iBat)
-	{
-		m_fFade = FADE_TIME;
-		m_iBat = x;
-	}
-#endif
 
 	return 1;
 }
@@ -81,47 +71,31 @@ void CHudBattery::Draw(float flTime)
 	if (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH)
 		return;
 
-	int r, g, b, x, y, a;
+	int r, g, b, x, y;
+	float a;
 	wrect_t rc;
 
 	rc = *m_prc2;
-
-#if defined(_TFC)
-	float fScale = 0.0;
-
-	if (m_iBatMax > 0)
-		fScale = 1.0 / (float)m_iBatMax;
-
-	rc.top += m_iHeight * ((float)(m_iBatMax - (min(m_iBatMax, m_iBat))) * fScale); // battery can go from 0 to m_iBatMax so * fScale goes from 0 to 1
-#else
-	rc.top += m_iHeight * ((float)(100 - (min(100, m_iBat))) * 0.01); // battery can go from 0 to 100 so * 0.01 goes from 0 to 1
-#endif
-
-	UnpackRGB(r, g, b, RGB_YELLOWISH);
+	rc.top += m_iHeight * ((float)(100 - (min(100, m_iBat))) * 0.01f); // battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
 		return;
 
-	// Has health changed? Flash the health #
-	if (m_fFade)
+	if (!hud_dim.GetBool())
+		a = MIN_ALPHA + ALPHA_POINTS_MAX;
+	else if (m_fFade > 0)
 	{
-		if (m_fFade > FADE_TIME)
-			m_fFade = FADE_TIME;
-
+		// Fade the armor number back to dim
 		m_fFade -= (gHUD.m_flTimeDelta * 20);
 		if (m_fFade <= 0)
-		{
-			a = 128;
 			m_fFade = 0;
-		}
-
-		// Fade the health number back to dim
-
-		a = MIN_ALPHA + (m_fFade / FADE_TIME) * 128;
+		a = MIN_ALPHA + (m_fFade / FADE_TIME) * ALPHA_POINTS_FLASH;
 	}
 	else
 		a = MIN_ALPHA;
 
+	a *= gHUD.GetHudTransparency();
+	gHUD.GetHudColor(HudPart::Armor, m_iBat, r, g, b);
 	ScaleColors(r, g, b, a);
 
 	int iOffset = (m_prc1->bottom - m_prc1->top) / 6;

@@ -110,6 +110,8 @@ int CHud::Redraw(float flTime, int intermission)
 	if (m_flTimeDelta < 0)
 		m_flTimeDelta = 0;
 
+	UpdateHudColors();
+
 	// Bring up the scoreboard during intermission
 	if (g_pViewport)
 	{

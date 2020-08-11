@@ -23,6 +23,7 @@
 #include <functional>
 #include <vector>
 #include <queue>
+#include <Color.h>
 #include "global_consts.h"
 #include "hud/base.h"
 #include "player_info.h"
@@ -31,21 +32,34 @@
 #define RGB_REDISH    0x00FF1010 //255,160,0
 #define RGB_GREENISH  0x0000A000 //0,160,0
 
-#define DHN_DRAWZERO 1
-#define DHN_2DIGITS  2
-#define DHN_3DIGITS  4
-#define MIN_ALPHA    100
+#define DHN_DRAWZERO       1
+#define DHN_2DIGITS        2
+#define DHN_3DIGITS        4
+#define MIN_ALPHA          100
+#define ALPHA_AMMO_FLASH   100
+#define ALPHA_AMMO_MAX     128
+#define ALPHA_POINTS_FLASH 128
+#define ALPHA_POINTS_MAX   155
 
 #define HUDELEM_ACTIVE 1
 
 #define HUD_ACTIVE       1
 #define HUD_INTERMISSION 2
 
+class ConVar;
+
 enum class BHopCap
 {
 	Disabled = 0,
 	Enabled = 1,
 	Auto = 2
+};
+
+enum class HudPart
+{
+	Common = 0,
+	Health,
+	Armor,
 };
 
 class CHud
@@ -116,6 +130,21 @@ public:
 
 	void CallOnNextFrame(std::function<void()> f);
 
+	// Colors
+	/**
+	 * Returns color for specified HUD part with specified value.
+	 * @param	hudPart		Part of the hud
+	 * @param	value		Value. Affects color when hudPart != Common.
+	 */
+	Color GetHudColor(HudPart hudPart, int value);
+
+	/**
+	 * @see GetHudColor(HudPart hudPart, int value)
+	 */
+	void GetHudColor(HudPart hudPart, int value, int &r, int &g, int &b);
+
+	float GetHudTransparency();
+
 private:
 	HSPRITE m_hsprLogo;
 	int m_iLogo;
@@ -133,6 +162,13 @@ private:
 	std::vector<char> m_rgszSpriteNames; /*[HUD_SPRITE_COUNT][MAX_SPRITE_NAME_LENGTH]*/
 
 	std::queue<std::function<void()>> m_NextFrameQueue;
+
+	Color m_HudColor;
+	Color m_HudColor1;
+	Color m_HudColor2;
+	Color m_HudColor3;
+
+	void UpdateHudColors();
 
 	template <typename T>
 	inline T *RegisterHudElem()
@@ -154,6 +190,8 @@ inline wrect_t &CHud::GetSpriteRect(int index)
 }
 
 extern CHud gHUD;
+
+extern ConVar hud_dim;
 
 extern int g_iPlayerClass;
 extern int g_iTeamNumber;

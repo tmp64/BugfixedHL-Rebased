@@ -61,7 +61,12 @@ extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, i
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
 
-ConVar cl_bhopcap("cl_bhopcap", "2", FCVAR_ARCHIVE, "Enables/disables bhop speed cap, '2' - detect automatically");
+ConVar cl_bhopcap("cl_bhopcap", "2", FCVAR_BHL_ARCHIVE, "Enables/disables bhop speed cap, '2' - detect automatically");
+ConVar hud_color("hud_color", "255 160 0", FCVAR_BHL_ARCHIVE, "Main color of HUD elements");
+ConVar hud_color1("hud_color1", "0 255 0", FCVAR_BHL_ARCHIVE, "HUD color when >= 90%");
+ConVar hud_color2("hud_color2", "255 160 0", FCVAR_BHL_ARCHIVE, "HUD color when [50%; 90%)");
+ConVar hud_color3("hud_color3", "255 96 0", FCVAR_BHL_ARCHIVE, "HUD color when (25%; 50%)");
+ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
 
 template <void (CClientViewport::*FUNC)(const char *, int, void *)>
 void HookViewportMessage(const char *name)
@@ -168,6 +173,9 @@ void CHud::Init(void)
 
 	// In case we get messages before the first update -- time will be valid
 	m_flTime = 1.0;
+
+	// Load default HUD colors into m_HudColor*.
+	UpdateHudColors();
 
 	// Create HUD elements
 	RegisterHudElem<CHudAmmo>();
@@ -502,4 +510,42 @@ void CHud::CallOnNextFrame(std::function<void()> f)
 {
 	Assert(f);
 	m_NextFrameQueue.push(f);
+}
+
+Color CHud::GetHudColor(HudPart hudPart, int value)
+{
+	if (hudPart == HudPart::Common)
+		return m_HudColor;
+
+	if (value >= 90)
+		return m_HudColor1;
+
+	if (value >= 50)
+		return m_HudColor2;
+
+	if (value > 25)
+		return m_HudColor3;
+
+	return Color(255, 0, 0, 255);
+}
+
+void CHud::GetHudColor(HudPart hudPart, int value, int &r, int &g, int &b)
+{
+	Color c = GetHudColor(hudPart, value);
+	r = c.r();
+	g = c.g();
+	b = c.b();
+}
+
+float CHud::GetHudTransparency()
+{
+	return clamp(m_pCvarDraw->value, 0.f, 1.f);
+}
+
+void CHud::UpdateHudColors()
+{
+	ParseColor(hud_color.GetString(), m_HudColor);
+	ParseColor(hud_color1.GetString(), m_HudColor1);
+	ParseColor(hud_color2.GetString(), m_HudColor2);
+	ParseColor(hud_color3.GetString(), m_HudColor3);
 }

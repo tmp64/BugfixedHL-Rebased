@@ -168,3 +168,11 @@ inline void UnpackRGB(int &r, int &g, int &b, unsigned long ulRGB)
 }
 
 HSPRITE LoadSprite(const char *pszName);
+
+/**
+ * Parses a string in format "RRR GGG BBB" where each component is integer [0; 255].
+ * @param	string	Input string
+ * @param	color	Output color (unchanged if returned false)
+ * @return	Whether or not string was parsed successfully.
+ */
+bool ParseColor(const char *string, Color &color);

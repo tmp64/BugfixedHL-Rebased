@@ -97,3 +97,53 @@ HSPRITE LoadSprite(const char *pszName)
 
 	return SPR_Load(sz);
 }
+
+bool ParseColor(const char *string, Color &color)
+{
+	Color newColor;
+	const char *value = string;
+
+	// Red
+	{
+		while (*value == ' ')
+			value++;
+
+		if (*value < '0' || *value > '9')
+			return false;
+
+		newColor[0] = atoi(value);
+
+		value = strchr(value, ' ');
+		if (value == NULL)
+			return false;
+	}
+
+	// Green
+	{
+		while (*value == ' ')
+			value++;
+
+		if (*value < '0' || *value > '9')
+			return false;
+
+		newColor[1] = atoi(value);
+		value = strchr(value, ' ');
+		if (value == NULL)
+			return false;
+	}
+
+	// Blue
+	{
+		while (*value == ' ')
+			value++;
+
+		if (*value < '0' || *value > '9')
+			return false;
+
+		newColor[2] = atoi(value);
+	}
+
+	newColor[3] = 255;
+	color = newColor;
+	return true;
+}

@@ -115,11 +115,11 @@ public:
 private:
 	HSPRITE m_hSprite;
 	HSPRITE m_hDamage;
-
+	wrect_t *m_prcCross;
 	DAMAGE_IMAGE m_dmg[NUM_DMG_TYPES];
 	int m_bitsDamage;
-	int DrawPain(float fTime);
-	int DrawDamage(float fTime);
+	void DrawPain(float fTime);
+	void DrawDamage(float fTime);
 	void CalcDamageDirection(vec3_t vecFrom);
 	void UpdateTiles(float fTime, long bits);
 };

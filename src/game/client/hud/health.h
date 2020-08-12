@@ -115,7 +115,7 @@ public:
 private:
 	HSPRITE m_hSprite;
 	HSPRITE m_hDamage;
-	wrect_t *m_prcCross;
+	wrect_t m_rcCross;
 	DAMAGE_IMAGE m_dmg[NUM_DMG_TYPES];
 	int m_bitsDamage;
 	void DrawPain(float fTime);

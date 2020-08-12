@@ -30,8 +30,8 @@ Client:
   - [ ] Options dialog
   - [ ] Demo list dialog
 - [ ] Automatic demo recording
-- [ ] Support for WeaponMod
-- [ ] Slowhacking protection (for older game versions)
+- [x] Support for WeaponMod
+- [x] Slowhacking protection (for older game versions)
 
 
 Server:

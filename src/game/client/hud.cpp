@@ -228,11 +228,38 @@ int CHud::GetSpriteIndex(const char *SpriteName)
 	// look through the loaded sprite name list for SpriteName
 	for (int i = 0; i < m_iSpriteCount; i++)
 	{
-		if (strncmp(SpriteName, m_rgszSpriteNames.data() + (i * MAX_SPRITE_NAME_LENGTH), MAX_SPRITE_NAME_LENGTH) == 0)
+		if (Q_stricmp(SpriteName, m_rgszSpriteNames[i].name) == 0)
 			return i;
 	}
 
 	return -1; // invalid sprite
+}
+
+void CHud::AddSprite(client_sprite_t *p)
+{
+	// Search for existing sprite
+	int i = 0;
+	for (i = 0; i < m_iSpriteCount; i++)
+	{
+		if (!Q_stricmp(m_rgszSpriteNames[i].name, p->szName))
+			return;
+	}
+
+	char sz[256];
+	snprintf(sz, sizeof(sz), "sprites/%s.spr", p->szSprite);
+
+	m_rghSprites.push_back(SPR_Load(sz));
+	m_rgrcRects.push_back(p->rc);
+
+	// Copy sprite name
+	m_rgszSpriteNames.push_back({});
+	Q_strncpy(m_rgszSpriteNames[m_iSpriteCount].name, p->szName, MAX_SPRITE_NAME_LENGTH);
+
+	m_iSpriteCount++;
+
+	Assert(m_rghSprites.size() == m_iSpriteCount);
+	Assert(m_rgrcRects.size() == m_iSpriteCount);
+	Assert(m_rgszSpriteNames.size() == m_iSpriteCount);
 }
 
 void CHud::VidInit(void)
@@ -275,7 +302,7 @@ void CHud::VidInit(void)
 			// allocated memory for sprite handle arrays
 			m_rghSprites.resize(m_iSpriteCount);
 			m_rgrcRects.resize(m_iSpriteCount);
-			m_rgszSpriteNames.resize(m_iSpriteCount * MAX_SPRITE_NAME_LENGTH);
+			m_rgszSpriteNames.resize(m_iSpriteCount);
 
 			p = m_pSpriteList;
 			int index = 0;
@@ -287,7 +314,7 @@ void CHud::VidInit(void)
 					sprintf(sz, "sprites/%s.spr", p->szSprite);
 					m_rghSprites[index] = SPR_Load(sz);
 					m_rgrcRects[index] = p->rc;
-					strncpy(&m_rgszSpriteNames[index * MAX_SPRITE_NAME_LENGTH], p->szName, MAX_SPRITE_NAME_LENGTH);
+					Q_strncpy(m_rgszSpriteNames[index].name, p->szName, MAX_SPRITE_NAME_LENGTH);
 
 					index++;
 				}
@@ -532,6 +559,39 @@ Color CHud::GetHudColor(HudPart hudPart, int value)
 void CHud::GetHudColor(HudPart hudPart, int value, int &r, int &g, int &b)
 {
 	Color c = GetHudColor(hudPart, value);
+	r = c.r();
+	g = c.g();
+	b = c.b();
+}
+
+void CHud::GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b)
+{
+	Color c;
+	if (maxvalue == -1 || maxvalue == 0)
+	{
+		// Custom weapons will use default colors
+		c = m_HudColor;
+	}
+	else if ((value * 100) / maxvalue > 90)
+	{
+		c = m_HudColor1;
+	}
+	else if ((value * 100) / maxvalue > 50)
+	{
+		c = m_HudColor2;
+	}
+	else if ((value * 100) / maxvalue > 20)
+	{
+		c = m_HudColor3;
+	}
+	else
+	{
+		r = 255;
+		g = 0;
+		b = 0;
+		return;
+	}
+
 	r = c.r();
 	g = c.g();
 	b = c.b();

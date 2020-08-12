@@ -112,8 +112,9 @@ public:
 
 	// Sprite functions
 	HSPRITE GetSprite(int index);
-	wrect_t &GetSpriteRect(int index);
+	const wrect_t &GetSpriteRect(int index);	// Don't keep the reference! It may become invalid.
 	int GetSpriteIndex(const char *SpriteName); // gets a sprite index, for use in the m_rghSprites[] array
+	void AddSprite(client_sprite_t *p);
 
 	// User messages
 	int MsgFunc_Damage(const char *pszName, int iSize, void *pbuf);
@@ -143,9 +144,16 @@ public:
 	 */
 	void GetHudColor(HudPart hudPart, int value, int &r, int &g, int &b);
 
+	void GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b);
+
 	float GetHudTransparency();
 
 private:
+	struct SpriteName
+	{
+		char name[MAX_SPRITE_NAME_LENGTH];
+	};
+	
 	HSPRITE m_hsprLogo;
 	int m_iLogo;
 	client_sprite_t *m_pSpriteList;
@@ -159,7 +167,7 @@ private:
 	// to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
 	std::vector<HSPRITE> m_rghSprites; /*[HUD_SPRITE_COUNT]*/ // the sprites loaded from hud.txt
 	std::vector<wrect_t> m_rgrcRects; /*[HUD_SPRITE_COUNT]*/
-	std::vector<char> m_rgszSpriteNames; /*[HUD_SPRITE_COUNT][MAX_SPRITE_NAME_LENGTH]*/
+	std::vector<SpriteName> m_rgszSpriteNames; /*[HUD_SPRITE_COUNT].name*/
 
 	std::queue<std::function<void()>> m_NextFrameQueue;
 
@@ -184,7 +192,7 @@ inline HSPRITE CHud::GetSprite(int index)
 	return (index < 0) ? 0 : m_rghSprites[index];
 }
 
-inline wrect_t &CHud::GetSpriteRect(int index)
+inline const wrect_t &CHud::GetSpriteRect(int index)
 {
 	return m_rgrcRects[index];
 }

@@ -40,7 +40,7 @@ void CHudCrosshair::Draw(float flTime)
 		return;
 
 	// Draw custom crosshair if enabled
-	if (cl_cross_enable.GetBool() /*&& !(CHudAmmo::Get()->m_fOnTarget && CHudAmmo::Get()->m_pWeapon->hAutoaim)*/)
+	if (cl_cross_enable.GetBool() && !(CHudAmmo::Get()->m_fOnTarget && CHudAmmo::Get()->m_pWeapon->hAutoaim))
 	{
 		CrosshairSettings settings;
 		settings.color = Color(cl_cross_red.GetInt(), cl_cross_green.GetInt(), cl_cross_blue.GetInt(), 255);
@@ -55,4 +55,9 @@ void CHudCrosshair::Draw(float flTime)
 		m_Img.SetSettings(settings);
 		m_Img.Paint();
 	}
+}
+
+bool CHudCrosshair::IsEnabled()
+{
+	return cl_cross_enable.GetBool();
 }

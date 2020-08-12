@@ -13,8 +13,8 @@ public:
 private:
 	HSPRITE m_hSprite1;
 	HSPRITE m_hSprite2;
-	wrect_t *m_prc1;
-	wrect_t *m_prc2;
+	wrect_t m_rc1;
+	wrect_t m_rc2;
 	int m_iBat;
 	float m_fFade;
 	int m_iHeight; // width of the battery innards

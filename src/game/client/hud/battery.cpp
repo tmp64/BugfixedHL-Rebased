@@ -43,9 +43,9 @@ void CHudBattery::VidInit()
 	int HUD_suit_full = gHUD.GetSpriteIndex("suit_full");
 
 	m_hSprite1 = m_hSprite2 = 0; // delaying get sprite handles until we know the sprites are loaded
-	m_prc1 = &gHUD.GetSpriteRect(HUD_suit_empty);
-	m_prc2 = &gHUD.GetSpriteRect(HUD_suit_full);
-	m_iHeight = m_prc2->bottom - m_prc1->top;
+	m_rc1 = gHUD.GetSpriteRect(HUD_suit_empty);
+	m_rc2 = gHUD.GetSpriteRect(HUD_suit_full);
+	m_iHeight = m_rc2.bottom - m_rc1.top;
 	m_fFade = 0;
 };
 
@@ -75,7 +75,7 @@ void CHudBattery::Draw(float flTime)
 	float a;
 	wrect_t rc;
 
-	rc = *m_prc2;
+	rc = m_rc2;
 	rc.top += m_iHeight * ((float)(100 - (min(100, m_iBat))) * 0.01f); // battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
@@ -98,7 +98,7 @@ void CHudBattery::Draw(float flTime)
 	gHUD.GetHudColor(HudPart::Armor, m_iBat, r, g, b);
 	ScaleColors(r, g, b, a);
 
-	int iOffset = (m_prc1->bottom - m_prc1->top) / 6;
+	int iOffset = (m_rc1.bottom - m_rc1.top) / 6;
 
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 	x = ScreenWidth / 5;
@@ -110,14 +110,14 @@ void CHudBattery::Draw(float flTime)
 		m_hSprite2 = gHUD.GetSprite(gHUD.GetSpriteIndex("suit_full"));
 
 	SPR_Set(m_hSprite1, r, g, b);
-	SPR_DrawAdditive(0, x, y - iOffset, m_prc1);
+	SPR_DrawAdditive(0, x, y - iOffset, &m_rc1);
 
 	if (rc.bottom > rc.top)
 	{
 		SPR_Set(m_hSprite2, r, g, b);
-		SPR_DrawAdditive(0, x, y - iOffset + (rc.top - m_prc2->top), &rc);
+		SPR_DrawAdditive(0, x, y - iOffset + (rc.top - m_rc2.top), &rc);
 	}
 
-	x += (m_prc1->right - m_prc1->left);
+	x += (m_rc1.right - m_rc1.left);
 	x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b);
 }

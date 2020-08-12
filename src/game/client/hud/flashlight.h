@@ -16,9 +16,9 @@ private:
 	HSPRITE m_hSprite1;
 	HSPRITE m_hSprite2;
 	HSPRITE m_hBeam;
-	wrect_t *m_prc1;
-	wrect_t *m_prc2;
-	wrect_t *m_prcBeam;
+	wrect_t m_rc1;
+	wrect_t m_rc2;
+	wrect_t m_rcBeam;
 	float m_flBat;
 	int m_iBat;
 	int m_fOn;

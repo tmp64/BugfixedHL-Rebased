@@ -10,6 +10,8 @@ public:
 	virtual void Init();
 	virtual void Draw(float flTime);
 
+	bool IsEnabled();
+
 private:
 	CCrosshairImage m_Img;
 };

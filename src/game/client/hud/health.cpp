@@ -88,7 +88,7 @@ void CHudHealth::VidInit()
 	m_HUD_dmg_bio = gHUD.GetSpriteIndex("dmg_bio") + 1;
 	m_HUD_cross = gHUD.GetSpriteIndex("cross");
 
-	m_prcCross = &gHUD.GetSpriteRect(m_HUD_cross);
+	m_rcCross = gHUD.GetSpriteRect(m_HUD_cross);
 
 	giDmgHeight = gHUD.GetSpriteRect(m_HUD_dmg_bio).right - gHUD.GetSpriteRect(m_HUD_dmg_bio).left;
 	giDmgWidth = gHUD.GetSpriteRect(m_HUD_dmg_bio).bottom - gHUD.GetSpriteRect(m_HUD_dmg_bio).top;
@@ -210,14 +210,14 @@ void CHudHealth::Draw(float flTime)
 	if (gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT)))
 	{
 		HealthWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
-		int CrossWidth = m_prcCross->right - m_prcCross->left;
-		int iOffset = (m_prcCross->bottom - m_prcCross->top - gHUD.m_iFontHeight) / 2;
+		int CrossWidth = m_rcCross.right - m_rcCross.left;
+		int iOffset = (m_rcCross.bottom - m_rcCross.top - gHUD.m_iFontHeight) / 2;
 
 		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 		x = gHUD.m_iFontHeight / 2 - iOffset;
 
 		SPR_Set(gHUD.GetSprite(m_HUD_cross), r, g, b);
-		SPR_DrawAdditive(0, x, y - iOffset, m_prcCross);
+		SPR_DrawAdditive(0, x, y - iOffset, &m_rcCross);
 
 		x = CrossWidth + HealthWidth / 2;
 

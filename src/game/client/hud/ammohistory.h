@@ -26,7 +26,7 @@ private:
 	WEAPON rgWeapons[MAX_WEAPONS]; // Weapons Array
 
 	// counts of weapons * ammo
-	WEAPON *rgSlots[MAX_WEAPON_SLOTS + 1][MAX_WEAPON_POSITIONS + 1]; // The slots currently in use by weapons.  The value is a pointer to the weapon;  if it's NULL, no weapon is there
+	WEAPON *rgSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS]; // The slots currently in use by weapons. The value is a pointer to the weapon; if it's NULL, no weapon is there
 	int riAmmo[MAX_AMMO_TYPES]; // count of each ammo type
 
 public:
@@ -55,11 +55,15 @@ public:
 
 	void PickupWeapon(WEAPON *wp)
 	{
+		if (wp->iSlot >= MAX_WEAPON_SLOTS || wp->iSlotPos >= MAX_WEAPON_POSITIONS)
+			return;
 		rgSlots[wp->iSlot][wp->iSlotPos] = wp;
 	}
 
 	void DropWeapon(WEAPON *wp)
 	{
+		if (wp->iSlot >= MAX_WEAPON_SLOTS || wp->iSlotPos >= MAX_WEAPON_POSITIONS)
+			return;
 		rgSlots[wp->iSlot][wp->iSlotPos] = NULL;
 	}
 
@@ -72,7 +76,12 @@ public:
 		}
 	}
 
-	WEAPON *GetWeaponSlot(int slot, int pos) { return rgSlots[slot][pos]; }
+	WEAPON *GetWeaponSlot(int slot, int pos)
+	{
+		if (slot >= MAX_WEAPON_SLOTS || pos >= MAX_WEAPON_POSITIONS)
+			return NULL;
+		return rgSlots[slot][pos];
+	}
 
 	void LoadWeaponSprites(WEAPON *wp);
 	void LoadAllWeaponSprites(void);
@@ -80,9 +89,9 @@ public:
 	void SelectSlot(int iSlot, int fAdvance, int iDirection);
 	WEAPON *GetNextActivePos(int iSlot, int iSlotPos);
 
+	///// AMMO /////
 	int HasAmmo(WEAPON *p);
 
-	///// AMMO /////
 	AMMO GetAmmo(int iId) { return iId; }
 
 	void SetAmmo(int iId, int iCount) { riAmmo[iId] = iCount; }

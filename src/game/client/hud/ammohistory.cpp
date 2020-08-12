@@ -122,9 +122,13 @@ int HistoryResource::DrawAmmoHistory(float flTime)
 				HSPRITE *spr = gWR.GetAmmoPicFromWeapon(rgAmmoHistory[i].iId, rcPic);
 
 				int r, g, b;
-				UnpackRGB(r, g, b, RGB_YELLOWISH);
+				float a;
+
 				float scale = (rgAmmoHistory[i].DisplayTime - flTime) * 80;
-				ScaleColors(r, g, b, min(scale, 255.f));
+				a = min(scale, 255.f) * gHUD.GetHudTransparency();
+
+				gHUD.GetHudColor(HudPart::Common, 0, r, g, b);
+				ScaleColors(r, g, b, a);
 
 				// Draw the pic
 				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
@@ -146,13 +150,17 @@ int HistoryResource::DrawAmmoHistory(float flTime)
 					return 1; // we don't know about the weapon yet, so don't draw anything
 
 				int r, g, b;
-				UnpackRGB(r, g, b, RGB_YELLOWISH);
+				float a;
+
+				float scale = (rgAmmoHistory[i].DisplayTime - flTime) * 80;
+				a = min(scale, 255.f) * gHUD.GetHudTransparency();
+
+				gHUD.GetHudColor(HudPart::Common, 0, r, g, b);
 
 				if (!gWR.HasAmmo(weap))
 					UnpackRGB(r, g, b, RGB_REDISH); // if the weapon doesn't have ammo, display it as red
 
-				float scale = (rgAmmoHistory[i].DisplayTime - flTime) * 80;
-				ScaleColors(r, g, b, min(scale, 255.f));
+				ScaleColors(r, g, b, a);
 
 				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
 				int xpos = ScreenWidth - (weap->rcInactive.right - weap->rcInactive.left);
@@ -162,15 +170,18 @@ int HistoryResource::DrawAmmoHistory(float flTime)
 			else if (rgAmmoHistory[i].type == HISTSLOT_ITEM)
 			{
 				int r, g, b;
+				float a;
 
 				if (!rgAmmoHistory[i].iId)
 					continue; // sprite not loaded
 
 				wrect_t rect = gHUD.GetSpriteRect(rgAmmoHistory[i].iId);
 
-				UnpackRGB(r, g, b, RGB_YELLOWISH);
 				float scale = (rgAmmoHistory[i].DisplayTime - flTime) * 80;
-				ScaleColors(r, g, b, min(scale, 255.f));
+				a = min(scale, 255.f) * gHUD.GetHudTransparency();
+
+				gHUD.GetHudColor(HudPart::Common, 0, r, g, b);
+				ScaleColors(r, g, b, a);
 
 				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
 				int xpos = ScreenWidth - (rect.right - rect.left) - 10;

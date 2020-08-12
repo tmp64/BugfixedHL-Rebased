@@ -112,7 +112,7 @@ public:
 
 	// Sprite functions
 	HSPRITE GetSprite(int index);
-	const wrect_t &GetSpriteRect(int index);	// Don't keep the reference! It may become invalid.
+	const wrect_t &GetSpriteRect(int index); // Don't keep the reference! It may become invalid.
 	int GetSpriteIndex(const char *SpriteName); // gets a sprite index, for use in the m_rghSprites[] array
 	void AddSprite(client_sprite_t *p);
 
@@ -153,7 +153,7 @@ private:
 	{
 		char name[MAX_SPRITE_NAME_LENGTH];
 	};
-	
+
 	HSPRITE m_hsprLogo;
 	int m_iLogo;
 	client_sprite_t *m_pSpriteList;

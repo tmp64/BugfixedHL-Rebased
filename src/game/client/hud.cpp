@@ -20,6 +20,7 @@
 
 #include <cstring>
 #include <cstdio>
+#include <vgui/IScheme.h>
 #include <vgui_controls/AnimationController.h>
 #include <vgui_controls/Controls.h>
 
@@ -68,6 +69,19 @@ ConVar hud_color2("hud_color2", "255 160 0", FCVAR_BHL_ARCHIVE, "HUD color when 
 ConVar hud_color3("hud_color3", "255 96 0", FCVAR_BHL_ARCHIVE, "HUD color when (25%; 50%)");
 ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
 
+static Color s_DefaultColorCodeColors[10] = {
+	Color(0xFF, 0xAA, 0x00, 0xFF), // ^0 orange/reset
+	Color(0xFF, 0x00, 0x00, 0xFF), // ^1 red
+	Color(0x00, 0xFF, 0x00, 0xFF), // ^2 green
+	Color(0xFF, 0xFF, 0x00, 0xFF), // ^3 yellow
+	Color(0x00, 0x00, 0xFF, 0xFF), // ^4 blue
+	Color(0x00, 0xFF, 0xFF, 0xFF), // ^5 cyan
+	Color(0xFF, 0x00, 0xFF, 0xFF), // ^6 magenta
+	Color(0x88, 0x88, 0x88, 0xFF), // ^7 grey
+	Color(0xFF, 0xFF, 0xFF, 0xFF), // ^8 white
+	Color(0xFF, 0xAA, 0x00, 0xFF), // ^9 orange/reset
+};
+
 template <void (CClientViewport::*FUNC)(const char *, int, void *)>
 void HookViewportMessage(const char *name)
 {
@@ -101,6 +115,9 @@ void CHud::Init(void)
 {
 	// Check that elem list is empty
 	Assert(m_HudList.empty());
+
+	// Fill color code colors with default ones
+	memcpy(m_ColorCodeColors, s_DefaultColorCodeColors, sizeof(s_DefaultColorCodeColors));
 
 	// Set player info IDs
 	for (int i = 1; i < MAX_PLAYERS; i++)
@@ -378,6 +395,16 @@ void CHud::Shutdown()
 		// vgui2::~Panel calls VGUI2 interfaces which are not available.
 		if (!dynamic_cast<vgui2::Panel *>(i))
 			delete i;
+	}
+}
+
+void CHud::ApplyViewportSchemeSettings(vgui2::IScheme *pScheme)
+{
+	char buf[64];
+	for (int i = 0; i <= 9; i++)
+	{
+		snprintf(buf, sizeof(buf), "ColorCode%d", i);
+		m_ColorCodeColors[i] = pScheme->GetColor(buf, s_DefaultColorCodeColors[i]);
 	}
 }
 

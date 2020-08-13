@@ -147,3 +147,139 @@ bool ParseColor(const char *string, Color &color)
 	color = newColor;
 	return true;
 }
+
+//-------------------------------------------------------------------
+// Text drawing in console font
+//-------------------------------------------------------------------
+int DrawConsoleString(int x, int y, char *string, const float *colorOverride)
+{
+	// How colorcodes work in DrawConsoleString
+	// 1) If float *color is set (e.g. team color), it is used, colorcodes are ignored.
+	// 2) Otherwise, colorcodes ^0 and ^9 reset color to con_color.
+
+	if (!string || !*string)
+		return x;
+
+	if (colorOverride)
+	{
+		gEngfuncs.pfnDrawSetTextColor(colorOverride[0], colorOverride[1], colorOverride[2]);
+	}
+	else
+		gEngfuncs.pfnDrawConsoleString(x, y, " "); // Reset color to con_color
+
+	if (gHUD.GetColorCodeAction() == ColorCodeAction::Ignore)
+		return gEngfuncs.pfnDrawConsoleString(x, y, string);
+
+	char *c1 = string;
+	char *c2 = string;
+	float r, g, b;
+	int colorIndex;
+	while (true)
+	{
+		// Search for next color code
+		colorIndex = -1;
+		while (*c2 && *(c2 + 1) && !IsColorCode(c2))
+			c2++;
+
+		if (IsColorCode(c2))
+		{
+			colorIndex = *(c2 + 1) - '0';
+			*c2 = 0;
+		}
+
+		// Draw current string
+		x = gEngfuncs.pfnDrawConsoleString(x, y, c1);
+
+		if (colorIndex >= 0)
+		{
+			// Revert change and advance
+			*c2 = '^';
+			c2 += 2;
+			c1 = c2;
+
+			// Return if next string is empty
+			if (!*c1)
+				return x;
+
+			// Setup color
+			if (!colorOverride && colorIndex <= 9 && gHUD.GetColorCodeAction() == ColorCodeAction::Handle)
+			{
+				if (colorIndex == 0 || colorIndex == 9)
+				{
+					gEngfuncs.pfnDrawConsoleString(x, y, " "); // Reset color to con_color
+				}
+				else
+				{
+					r = gHUD.GetColorCodeColor(colorIndex)[0] / 255.0;
+					g = gHUD.GetColorCodeColor(colorIndex)[1] / 255.0;
+					b = gHUD.GetColorCodeColor(colorIndex)[2] / 255.0;
+					gEngfuncs.pfnDrawSetTextColor(r, g, b);
+				}
+			}
+			else if (colorOverride)
+			{
+				gEngfuncs.pfnDrawSetTextColor(colorOverride[0], colorOverride[1], colorOverride[2]);
+			}
+			continue;
+		}
+
+		// Done
+		break;
+	}
+	return x;
+}
+
+void GetConsoleStringSize(const char *string, int *width, int *height)
+{
+	if (gHUD.GetColorCodeAction() == ColorCodeAction::Ignore)
+		gEngfuncs.pfnDrawConsoleStringLen(string, width, height);
+	else
+		gEngfuncs.pfnDrawConsoleStringLen(RemoveColorCodes(string), width, height);
+}
+
+//-------------------------------------------------------------------
+// Color code utilities
+//-------------------------------------------------------------------
+void RemoveColorCodesInPlace(char *string)
+{
+	char *c1 = string;
+	char *c2 = string;
+	while (*c2)
+	{
+		if (IsColorCode(c2))
+		{
+			c2 += 2;
+			continue;
+		}
+		*c1 = *c2;
+		c1++;
+		c2++;
+	}
+	*c1 = 0;
+}
+
+void RemoveColorCodes(const char *string, char *buf, size_t bufSize)
+{
+	char *c1 = buf;
+	const char *c2 = string;
+	char *end = buf + bufSize - 1;
+	while (*c2 && c1 < end)
+	{
+		if (*c2 == '^' && *(c2 + 1) >= '0' && *(c2 + 1) <= '9')
+		{
+			c2 += 2;
+			continue;
+		}
+		*c1 = *c2;
+		c1++;
+		c2++;
+	}
+	*c1 = 0;
+}
+
+const char *RemoveColorCodes(const char *string)
+{
+	static char buffer[1024];
+	RemoveColorCodes(string, buffer, sizeof(buffer));
+	return buffer;
+}

@@ -127,9 +127,7 @@ void CHudDeathNotice::Draw(float flTime)
 				x -= (5 + ConsoleStringLen(rgDeathNoticeList[i].szKiller));
 
 				// Draw killers name
-				if (rgDeathNoticeList[i].KillerColor)
-					gEngfuncs.pfnDrawSetTextColor(rgDeathNoticeList[i].KillerColor[0], rgDeathNoticeList[i].KillerColor[1], rgDeathNoticeList[i].KillerColor[2]);
-				x = 5 + DrawConsoleString(x, y, rgDeathNoticeList[i].szKiller);
+				x = 5 + DrawConsoleString(x, y, rgDeathNoticeList[i].szKiller, rgDeathNoticeList[i].KillerColor);
 			}
 
 			r = 255;
@@ -151,9 +149,7 @@ void CHudDeathNotice::Draw(float flTime)
 			// Draw victims name (if it was a player that was killed)
 			if (rgDeathNoticeList[i].iNonPlayerKill == FALSE)
 			{
-				if (rgDeathNoticeList[i].VictimColor)
-					gEngfuncs.pfnDrawSetTextColor(rgDeathNoticeList[i].VictimColor[0], rgDeathNoticeList[i].VictimColor[1], rgDeathNoticeList[i].VictimColor[2]);
-				x = DrawConsoleString(x, y, rgDeathNoticeList[i].szVictim);
+				x = DrawConsoleString(x, y, rgDeathNoticeList[i].szVictim, rgDeathNoticeList[i].VictimColor);
 			}
 		}
 	}

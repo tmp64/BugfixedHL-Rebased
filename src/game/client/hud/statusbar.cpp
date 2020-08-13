@@ -202,10 +202,7 @@ void CHudStatusBar::Draw(float fTime)
 			y = (ScreenHeight / 2) + (TextHeight * CVAR_GET_FLOAT("hud_centerid"));
 		}
 
-		if (m_pflNameColors[i])
-			gEngfuncs.pfnDrawSetTextColor(m_pflNameColors[i][0], m_pflNameColors[i][1], m_pflNameColors[i][2]);
-
-		DrawConsoleString(x, y, m_szStatusBar[i]);
+		DrawConsoleString(x, y, m_szStatusBar[i], m_pflNameColors[i]);
 	}
 }
 

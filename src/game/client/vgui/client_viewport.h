@@ -54,7 +54,8 @@ public:
 	void VidInit();
 	bool KeyInput(int down, int keynum, const char *pszCurrentBinding);
 
-	virtual void OnThink();
+	virtual void OnThink() override;
+	virtual void ApplySchemeSettings(vgui2::IScheme *pScheme) override;
 
 	void ShowVGUIMenu(int iMenu);
 	void HideAllVGUIMenu();

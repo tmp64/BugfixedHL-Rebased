@@ -41,6 +41,8 @@ float HUD_GetFOV(void);
 
 extern cvar_t *sensitivity;
 
+ConVar hud_colortext("hud_colortext", "1", FCVAR_BHL_ARCHIVE);
+
 // Think
 void CHud::Think(void)
 {
@@ -94,6 +96,12 @@ void CHud::Think(void)
 	int bhopCapState = (int)GetBHopCapState();
 	if (PM_GetBHopCapState() != bhopCapState)
 		PM_SetBHopCapState(bhopCapState);
+
+	// Update color code action
+	int colorText = clamp(hud_colortext.GetInt(), 0, 2);
+	m_ColorCodeAction = (ColorCodeAction)colorText;
+	if (hud_colortext.GetInt() != colorText)
+		hud_colortext.SetValue(colorText);
 }
 
 // Redraw

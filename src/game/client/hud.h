@@ -23,6 +23,7 @@
 #include <functional>
 #include <vector>
 #include <queue>
+#include <tier0/dbg.h>
 #include <Color.h>
 #include "global_consts.h"
 #include "hud/base.h"
@@ -46,6 +47,11 @@
 #define HUD_ACTIVE       1
 #define HUD_INTERMISSION 2
 
+namespace vgui2
+{
+class IScheme;
+}
+
 class ConVar;
 
 enum class BHopCap
@@ -60,6 +66,13 @@ enum class HudPart
 	Common = 0,
 	Health,
 	Armor,
+};
+
+enum class ColorCodeAction
+{
+	Ignore = 0,	//!< Color codes are not touched.
+	Handle = 1,	//!< Color codes change the color.
+	Strip = 2,	//!< Color codes don't change the color but are removed from the string.
 };
 
 class CHud
@@ -102,6 +115,7 @@ public:
 	void Think(void);
 	int Redraw(float flTime, int intermission);
 	int UpdateClientData(client_data_t *cdata, float time);
+	void ApplyViewportSchemeSettings(vgui2::IScheme *pScheme);
 
 	// Draw functions
 	int DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b);
@@ -148,6 +162,9 @@ public:
 
 	float GetHudTransparency();
 
+	ColorCodeAction GetColorCodeAction();
+	Color GetColorCodeColor(int code);
+
 private:
 	struct SpriteName
 	{
@@ -175,6 +192,9 @@ private:
 	Color m_HudColor1;
 	Color m_HudColor2;
 	Color m_HudColor3;
+	Color m_ColorCodeColors[10];
+
+	ColorCodeAction m_ColorCodeAction;
 
 	void UpdateHudColors();
 
@@ -195,6 +215,17 @@ inline HSPRITE CHud::GetSprite(int index)
 inline const wrect_t &CHud::GetSpriteRect(int index)
 {
 	return m_rgrcRects[index];
+}
+
+inline ColorCodeAction CHud::GetColorCodeAction()
+{
+	return m_ColorCodeAction;
+}
+
+inline Color CHud::GetColorCodeColor(int code)
+{
+	Assert(code >= 0 && code <= 9);
+	return m_ColorCodeColors[code];
 }
 
 extern CHud gHUD;

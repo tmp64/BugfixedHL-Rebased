@@ -102,23 +102,6 @@ inline int TextMessageDrawChar(int x, int y, int number, int r, int g, int b)
 	return gEngfuncs.pfnDrawCharacter(x, y, number, r, g, b);
 }
 
-inline int DrawConsoleString(int x, int y, const char *string)
-{
-	return gEngfuncs.pfnDrawConsoleString(x, y, (char *)string);
-}
-
-inline void GetConsoleStringSize(const char *string, int *width, int *height)
-{
-	gEngfuncs.pfnDrawConsoleStringLen(string, width, height);
-}
-
-inline int ConsoleStringLen(const char *string)
-{
-	int _width, _height;
-	GetConsoleStringSize(string, &_width, &_height);
-	return _width;
-}
-
 inline void ConsolePrint(const char *string)
 {
 	gEngfuncs.pfnConsolePrint(string);
@@ -176,3 +159,69 @@ HSPRITE LoadSprite(const char *pszName);
  * @return	Whether or not string was parsed successfully.
  */
 bool ParseColor(const char *string, Color &color);
+
+//-------------------------------------------------------------------
+// Text drawing in console font
+//-------------------------------------------------------------------
+
+/**
+ * Draws a string with console font
+ * @param	x				Left position.
+ * @param	y				Top position.
+ * @param	string			String to draw. Note that it is temporarily modified while drawing.
+ * @param	colorOverride	If set, color codes don't change color of the string.
+ * @return Total width of the drawn string.
+ */
+int DrawConsoleString(int x, int y, char *string, const float *colorOverride = nullptr);
+
+/**
+ * Gets the dimensions in pixels of a console string if it were drawn onscreen.
+ * @param	pszString	String to check.
+ * @param	piLength	Pointer to a variable that will contain the total width of the string.
+ * @param	piHeight	Pointer to a variable that will contain the height of the string.
+*/
+void GetConsoleStringSize(const char *string, int *width, int *height);
+
+/**
+ * Returns length of a console string if it were drawn on the screen.
+ */
+inline int ConsoleStringLen(const char *string)
+{
+	int _width, _height;
+	GetConsoleStringSize(string, &_width, &_height);
+	return _width;
+}
+
+//-------------------------------------------------------------------
+// Color code utilities
+//-------------------------------------------------------------------
+
+/**
+ * Checks c[0] and c[1] if they are '^' and a digit.
+ */
+inline bool IsColorCode(const char *s)
+{
+	return (s[0] == '^' && s[1] >= '0' && s[1] <= '9');
+}
+
+/**
+ * Removes color codes from specified string.
+ * @param	string	Input string.
+ */
+void RemoveColorCodesInPlace(char *string);
+
+/**
+ * Removes color codes from specified string.
+ * @param	string	Input string.
+ * @param	buf		Output buffer.
+ * @param	bufSize	Output buffer size.
+ * @return	Pointer to a static buffer.
+ */
+void RemoveColorCodes(const char *string, char *buf, size_t bufSize);
+
+/**
+ * Removes color codes from specified string.
+ * @param	string	Input string.
+ * @return	Pointer to a static buffer.
+ */
+const char *RemoveColorCodes(const char *string);

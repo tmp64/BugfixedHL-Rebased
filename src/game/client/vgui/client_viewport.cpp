@@ -221,6 +221,11 @@ void CClientViewport::OnThink()
 	BaseClass::OnThink();
 }
 
+void CClientViewport::ApplySchemeSettings(vgui2::IScheme *pScheme)
+{
+	gHUD.ApplyViewportSchemeSettings(pScheme);
+}
+
 void CClientViewport::ShowVGUIMenu(int iMenu)
 {
 	// Don't open menus in demo playback

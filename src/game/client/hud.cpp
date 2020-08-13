@@ -82,6 +82,9 @@ static Color s_DefaultColorCodeColors[10] = {
 	Color(0xFF, 0xAA, 0x00, 0xFF), // ^9 orange/reset
 };
 
+const Color NoTeamColor::Orange = Color(255, 178, 0, 255);
+const Color NoTeamColor::White = Color(216, 216, 216, 255);
+
 template <void (CClientViewport::*FUNC)(const char *, int, void *)>
 void HookViewportMessage(const char *name)
 {
@@ -627,6 +630,24 @@ void CHud::GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b)
 float CHud::GetHudTransparency()
 {
 	return clamp(m_pCvarDraw->value, 0.f, 1.f);
+}
+
+inline Color CHud::GetClientColor(int idx, Color noTeamColor)
+{
+	int team = GetPlayerInfo(idx)->Update()->GetTeamNumber();
+
+	if (team == 0)
+		return noTeamColor;
+	else
+		return g_pViewport->GetTeamColor(team);
+}
+
+void CHud::GetClientColorAsFloat(int idx, float out[3], Color noTeamColor)
+{
+	Color c = GetClientColor(idx, noTeamColor);
+	out[0] = c[0] / 255.f;
+	out[1] = c[1] / 255.f;
+	out[2] = c[2] / 255.f;
 }
 
 void CHud::UpdateHudColors()

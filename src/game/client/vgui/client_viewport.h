@@ -113,10 +113,10 @@ private:
 
 	Color m_pTeamColors[5] = {
 		Color(216, 216, 216, 255), // "Off" white (default)
-		Color(125, 165, 210, 255), // Blue
-		Color(200, 90, 70, 255), // Red
+		Color(153, 204, 255, 255), // Blue
+		Color(255, 64, 64, 255), // Red
 		Color(225, 205, 45, 255), // Yellow
-		Color(145, 215, 140, 255) // Green
+		Color(153, 255, 153, 255) // Green
 	};
 
 	// Panel handling

@@ -70,9 +70,15 @@ enum class HudPart
 
 enum class ColorCodeAction
 {
-	Ignore = 0,	//!< Color codes are not touched.
-	Handle = 1,	//!< Color codes change the color.
-	Strip = 2,	//!< Color codes don't change the color but are removed from the string.
+	Ignore = 0, //!< Color codes are not touched.
+	Handle = 1, //!< Color codes change the color.
+	Strip = 2, //!< Color codes don't change the color but are removed from the string.
+};
+
+struct NoTeamColor
+{
+	static const Color Orange;
+	static const Color White;
 };
 
 class CHud
@@ -164,6 +170,18 @@ public:
 
 	ColorCodeAction GetColorCodeAction();
 	Color GetColorCodeColor(int code);
+
+	/**
+	 * Returns a color for client.
+	 * @param	idx			Player index.
+	 * @param	noTeamColor	Color if player has no team (e.g. in DM). Could be one from NoTeamColors::SomeColor.
+	 */
+	Color GetClientColor(int idx, Color noTeamColor);
+
+	/**
+	 * Puts client color into float array in range [0; 1].
+	 */
+	void GetClientColorAsFloat(int idx, float out[3], Color noTeamColor);
 
 private:
 	struct SpriteName

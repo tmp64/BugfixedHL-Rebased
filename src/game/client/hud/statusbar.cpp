@@ -34,10 +34,14 @@
 #define STATUSBAR_ID_LINE 1
 #endif
 
-float *GetClientColor(int clientIndex);
-extern float g_ColorYellow[3];
-
 DEFINE_HUD_ELEM(CHudStatusBar);
+
+void CHudStatusBar::ResetLineColor(int line)
+{
+	m_pflNameColors[line][0] = NoTeamColor::Orange[0] / 255.f;
+	m_pflNameColors[line][1] = NoTeamColor::Orange[1] / 255.f;
+	m_pflNameColors[line][2] = NoTeamColor::Orange[2] / 255.f;
+}
 
 void CHudStatusBar::Init(void)
 {
@@ -68,7 +72,9 @@ void CHudStatusBar::Reset(void)
 
 	// reset our colors for the status bar lines (yellow is default)
 	for (i = 0; i < MAX_STATUSBAR_LINES; i++)
-		m_pflNameColors[i] = g_ColorYellow;
+	{
+		ResetLineColor(i);
+	}
 }
 
 void CHudStatusBar::ParseStatusString(int line_num)
@@ -142,7 +148,7 @@ void CHudStatusBar::ParseStatusString(int line_num)
 							if (GetPlayerInfo(indexval)->IsConnected())
 							{
 								safe_strcpy(szRepString, GetPlayerInfo(indexval)->GetName(), MAX_PLAYERNAME_LENGTH);
-								m_pflNameColors[line_num] = GetClientColor(indexval);
+								gHUD.GetClientColorAsFloat(indexval, m_pflNameColors[line_num], NoTeamColor::Orange);
 							}
 							else
 							{
@@ -178,7 +184,7 @@ void CHudStatusBar::Draw(float fTime)
 	{
 		for (int i = 0; i < MAX_STATUSBAR_LINES; i++)
 		{
-			m_pflNameColors[i] = g_ColorYellow;
+			ResetLineColor(i);
 			ParseStatusString(i);
 		}
 		m_bReparseString = FALSE;

@@ -233,7 +233,7 @@ void CHudHealth::Draw(float flTime)
 		else
 			a = MIN_ALPHA;
 		a *= gHUD.GetHudTransparency();
-		gHUD.GetHudColor(HudPart::Health, 0, r, g, b);
+		gHUD.GetHudColor(HudPart::Common, 0, r, g, b);
 
 		FillRGBA(x, y, iWidth, iHeight, r, g, b, a);
 	}

@@ -38,6 +38,8 @@ struct DeathNoticeItem
 	float VictimColor[3];
 };
 
+static ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE);
+
 #define MAX_DEATHNOTICES 4
 static int DEATHNOTICE_DISPLAY_TIME = 6;
 
@@ -56,12 +58,12 @@ void CHudDeathNotice::Init(void)
 	CVAR_CREATE("hud_deathnotice_time", "6", 0);
 }
 
-void CHudDeathNotice::InitHudData(void)
+void CHudDeathNotice::InitHudData()
 {
 	memset(rgDeathNoticeList, 0, sizeof(rgDeathNoticeList));
 }
 
-void CHudDeathNotice::VidInit(void)
+void CHudDeathNotice::VidInit()
 {
 	m_HUD_d_skull = gHUD.GetSpriteIndex("d_skull");
 }
@@ -89,10 +91,12 @@ void CHudDeathNotice::Draw(float flTime)
 		if (g_pViewport && g_pViewport->AllowedToPrintText())
 		{
 			// Draw the death notice
-			y = DEATHNOTICE_TOP + 2 + (20 * i); //!!!
+			y = YRES(DEATHNOTICE_TOP) + 2 + (20 * i); //!!!
 
 			int id = (rgDeathNoticeList[i].iId == -1) ? m_HUD_d_skull : rgDeathNoticeList[i].iId;
-			x = ScreenWidth - ConsoleStringLen(rgDeathNoticeList[i].szVictim) - (gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left);
+			HSPRITE spr = gHUD.GetSprite(id);
+			wrect_t rect = gHUD.GetSpriteRect(id);
+			x = ScreenWidth - ConsoleStringLen(rgDeathNoticeList[i].szVictim) - (rect.right - rect.left);
 
 			if (!rgDeathNoticeList[i].iSuicide)
 			{
@@ -113,10 +117,10 @@ void CHudDeathNotice::Draw(float flTime)
 			}
 
 			// Draw death weapon
-			SPR_Set(gHUD.GetSprite(id), r, g, b);
-			SPR_DrawAdditive(0, x, y, &gHUD.GetSpriteRect(id));
+			SPR_Set(spr, r, g, b);
+			SPR_DrawAdditive(0, x, y, &rect);
 
-			x += (gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left);
+			x += (rect.right - rect.left);
 
 			// Draw victims name (if it was a player that was killed)
 			if (rgDeathNoticeList[i].iNonPlayerKill == FALSE)
@@ -137,14 +141,16 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	int killer = READ_BYTE();
 	int victim = READ_BYTE();
 
-	char killedwith[32];
+	char killedwith[MAX_WEAPON_NAME];
 	strcpy(killedwith, "d_");
-	strncat(killedwith, READ_STRING(), 32);
+	strncat(killedwith, READ_STRING(), sizeof(killedwith) - 3);
+	killedwith[sizeof(killedwith) - 1] = 0;
 
 	if (g_pViewport)
 		g_pViewport->DeathMsg(killer, victim);
 
 	CHudSpectator::Get()->DeathMessage(victim);
+
 	int i;
 	for (i = 0; i < MAX_DEATHNOTICES; i++)
 	{
@@ -163,7 +169,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	// Get the Killer's name
 	CPlayerInfo *killerInfo = nullptr;
 	const char *killer_name;
-	if (killer != 0 && (killerInfo = GetPlayerInfo(killer)->Update())->IsConnected())
+	if (killer != 0 && (killerInfo = GetPlayerInfo(killer))->IsConnected())
 	{
 		killer_name = killerInfo->GetName();
 		gHUD.GetClientColorAsFloat(killer, rgDeathNoticeList[i].KillerColor, NoTeamColor::Orange);
@@ -180,7 +186,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	const char *victim_name = NULL;
 	// If victim is -1, the killer killed a specific, non-player object (like a sentrygun)
 	if (((char)victim) != -1)
-		victim_name = GetPlayerInfo(victim)->Update()->GetName();
+		victim_name = GetPlayerInfo(victim)->GetName();
 	if (!victim_name)
 	{
 		victim_name = "";
@@ -189,8 +195,8 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	else
 	{
 		gHUD.GetClientColorAsFloat(victim, rgDeathNoticeList[i].VictimColor, NoTeamColor::Orange);
-		strncpy(rgDeathNoticeList[i].szVictim, victim_name, MAX_PLAYERNAME_LENGTH);
-		rgDeathNoticeList[i].szVictim[MAX_PLAYERNAME_LENGTH - 1] = 0;
+		strncpy(rgDeathNoticeList[i].szVictim, victim_name, MAX_PLAYER_NAME);
+		rgDeathNoticeList[i].szVictim[MAX_PLAYER_NAME - 1] = 0;
 	}
 
 	// Is it a non-player object kill?
@@ -218,6 +224,13 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	DEATHNOTICE_DISPLAY_TIME = CVAR_GET_FLOAT("hud_deathnotice_time");
 	rgDeathNoticeList[i].flDisplayTime = gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME;
 
+	// Play kill sound
+	if (killerInfo->IsThisPlayer() && !rgDeathNoticeList[i].iNonPlayerKill && !rgDeathNoticeList[i].iSuicide && cl_killsound.GetBool())
+	{
+		PlaySound("buttons/bell1.wav", 1.0f);
+	}
+
+	// Print to console
 	if (rgDeathNoticeList[i].iNonPlayerKill)
 	{
 		ConsolePrint(rgDeathNoticeList[i].szKiller);

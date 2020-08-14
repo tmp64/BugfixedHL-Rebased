@@ -102,6 +102,16 @@ inline int TextMessageDrawChar(int x, int y, int number, int r, int g, int b)
 	return gEngfuncs.pfnDrawCharacter(x, y, number, r, g, b);
 }
 
+inline int TextMessageDrawString(int x, int y, const char *string, int r, int g, int b)
+{
+	return gEngfuncs.pfnDrawString(x, y, string, r, g, b);
+}
+
+inline int TextMessageDrawStringReverse(int x, int y, const char *string, int r, int g, int b)
+{
+	return gEngfuncs.pfnDrawStringReverse(x, y, string, r, g, b);
+}
+
 inline void ConsolePrint(const char *string)
 {
 	gEngfuncs.pfnConsolePrint(string);

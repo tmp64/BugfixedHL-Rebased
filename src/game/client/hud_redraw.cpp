@@ -247,6 +247,84 @@ int CHud::DrawHudStringReverse(int xpos, int ypos, int iMinX, char *szString, in
 	return xpos - gEngfuncs.pfnDrawStringReverse(xpos, ypos, szString, r, g, b);
 }
 
+int CHud::DrawHudStringColorCodes(int x, int y, int iMaxX, char *string, int _r, int _g, int _b)
+{
+	// How colorcodes work in DrawHudStringColorCodes
+	// 1) Colorcodes are not ignored.
+	// 2) Codes ^0 and ^9 reset color to _r, _g, _b.
+
+	if (!string || !*string)
+		return x;
+
+	if (GetColorCodeAction() == ColorCodeAction::Ignore)
+		return gHUD.DrawHudString(x, y, iMaxX, string, _r, _g, _b);
+
+	char *c1 = string;
+	char *c2 = string;
+	int r = _r, g = _g, b = _b;
+	int colorIndex;
+	while (true)
+	{
+		// Search for next color code
+		colorIndex = -1;
+		while (*c2 && *(c2 + 1) && !IsColorCode(c2))
+			c2++;
+		if (IsColorCode(c2))
+		{
+			colorIndex = *(c2 + 1) - '0';
+			*c2 = 0;
+		}
+		// Draw current string
+		x = gHUD.DrawHudString(x, y, iMaxX, c1, r, g, b);
+
+		if (colorIndex >= 0)
+		{
+			// Revert change and advance
+			*c2 = '^';
+			c2 += 2;
+			c1 = c2;
+
+			// Return if next string is empty
+			if (!*c1)
+				return x;
+
+			// Setup color
+			if (colorIndex == 0 || colorIndex == 9)
+			{
+				// Reset color
+				r = _r;
+				g = _g;
+				b = _b;
+			}
+			else
+			{
+				r = gHUD.GetColorCodeColor(colorIndex)[0];
+				g = gHUD.GetColorCodeColor(colorIndex)[1];
+				b = gHUD.GetColorCodeColor(colorIndex)[2];
+			}
+			continue;
+		}
+
+		// Done
+		break;
+	}
+	return x;
+}
+
+int CHud::DrawHudStringReverseColorCodes(int x, int y, int iMaxX, char *string, int _r, int _g, int _b)
+{
+	if (!string || !*string)
+		return x;
+
+	if (GetColorCodeAction() == ColorCodeAction::Ignore)
+		return gHUD.DrawHudStringReverse(x, y, iMaxX, string, _r, _g, _b);
+
+	// Move the string pos to the left to make it look like DrawHudStringReverse
+	x -= TextMessageDrawString(ScreenWidth + 1, y, RemoveColorCodes(string), _r, _g, _b);
+
+	return DrawHudStringColorCodes(x, y, iMaxX, string, _r, _g, _b);
+}
+
 int CHud::DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b)
 {
 	int iWidth = GetSpriteRect(m_HUD_number_0).right - GetSpriteRect(m_HUD_number_0).left;

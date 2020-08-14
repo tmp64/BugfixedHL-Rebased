@@ -48,6 +48,7 @@ void CHudMenu::InitHudData(void)
 {
 	m_fMenuDisplayed = 0;
 	m_bitsValidSlots = 0;
+	m_iFlags &= ~HUD_ACTIVE;
 	Reset();
 }
 
@@ -171,7 +172,7 @@ void CHudMenu::Draw(float flTime)
 		{
 			menu_ralign = FALSE;
 			menu_x = 20;
-			y += (12);
+			y += (16);
 
 			sptr++;
 		}
@@ -189,14 +190,16 @@ void CHudMenu::Draw(float flTime)
 			if (menu_ralign)
 			{
 				// IMPORTANT: Right-to-left rendered text does not parse escape tokens!
-				menu_x = gHUD.DrawHudStringReverse(menu_x, y, 0, menubuf, menu_r, menu_g, menu_b);
+				menu_x = gHUD.DrawHudStringReverseColorCodes(menu_x, y, 0, menubuf, menu_r, menu_g, menu_b);
 			}
 			else
 			{
-				menu_x = gHUD.DrawHudString(menu_x, y, 320, menubuf, menu_r, menu_g, menu_b);
+				menu_x = gHUD.DrawHudStringColorCodes(menu_x, y, 0, menubuf, menu_r, menu_g, menu_b);
 			}
 		}
 	}
+
+	return;
 }
 
 // selects an item from the menu

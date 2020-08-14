@@ -23,6 +23,7 @@
 #include <functional>
 #include <vector>
 #include <queue>
+#include <unordered_map>
 #include <tier0/dbg.h>
 #include <Color.h>
 #include "global_consts.h"
@@ -131,6 +132,8 @@ public:
 	int DrawHudStringReverseColorCodes(int x, int y, int iMaxX, char *string, int _r, int _g, int _b);
 	int DrawHudNumberString(int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b);
 	int GetNumWidth(int iNumber, int iFlags);
+	int GetHudCharWidth(int c);
+	int CalculateCharWidth(int c);
 
 	// Sprite functions
 	HSPRITE GetSprite(int index);
@@ -199,6 +202,7 @@ private:
 	float m_flMouseSensitivity;
 	int m_iConcussionEffect;
 	std::vector<CHudElem *> m_HudList;
+	std::unordered_map<int, int> m_CharWidths;
 
 	// the memory for these arrays are allocated in the first call
 	// to CHud::VidInit(), when the hud.txt and associated sprites are loaded.

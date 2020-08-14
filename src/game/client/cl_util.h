@@ -215,6 +215,14 @@ inline bool IsColorCode(const char *s)
 }
 
 /**
+ * Checks c[0] and c[1] if they are '^' and a digit.
+ */
+inline bool IsColorCode(const wchar_t *s)
+{
+	return (s[0] == L'^' && s[1] >= L'0' && s[1] <= L'9');
+}
+
+/**
  * Removes color codes from specified string.
  * @param	string	Input string.
  */

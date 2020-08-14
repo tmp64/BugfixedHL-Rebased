@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <tier1/strtools.h>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -27,9 +28,10 @@
 #include "message.h"
 
 // 1 Global client_textmessage_t for custom messages that aren't in the titles.txt
+constexpr int MAX_MESSAGE_TEXT_LENGTH = 1024;
 client_textmessage_t g_pCustomMessage;
 char *g_pCustomName = "Custom";
-char g_pCustomText[1024];
+char g_pCustomText[MAX_MESSAGE_TEXT_LENGTH];
 
 DEFINE_HUD_ELEM(CHudMessage);
 
@@ -49,13 +51,22 @@ void CHudMessage::VidInit(void)
 	m_HUD_title_life = gHUD.GetSpriteIndex("title_life");
 };
 
-void CHudMessage::Reset(void)
+void CHudMessage::Reset()
 {
 	memset(m_pMessages, 0, sizeof(m_pMessages[0]) * MAX_HUD_MESSAGES);
 	memset(m_startTime, 0, sizeof(m_startTime[0]) * MAX_HUD_MESSAGES);
+	for (int i = 0; i < MAX_HUD_MESSAGES; i++)
+		m_sMessageStrings[i].clear();
 
 	m_gameTitleTime = 0;
 	m_pGameTitle = NULL;
+}
+
+void CHudMessage::CStrToWide(const char *pString, std::wstring &wstr)
+{
+	wchar_t wTextBuf[MAX_MESSAGE_TEXT_LENGTH];
+	Q_UTF8ToWString(pString, wTextBuf, sizeof(wTextBuf), STRINGCONVERT_REPLACE);
+	wstr = wTextBuf;
 }
 
 float CHudMessage::FadeBlend(float fadein, float fadeout, float hold, float localTime)
@@ -130,16 +141,16 @@ int CHudMessage::YPosition(float y, int height)
 	return yPos;
 }
 
-void CHudMessage::MessageScanNextChar(void)
+void CHudMessage::MessageScanNextChar(Color srcColor)
 {
 	int srcRed, srcGreen, srcBlue, destRed, destGreen, destBlue;
 	int blend;
 
-	srcRed = m_parms.pMessage->r1;
-	srcGreen = m_parms.pMessage->g1;
-	srcBlue = m_parms.pMessage->b1;
-	blend = 0; // Pure source
+	srcRed = srcColor.r();
+	srcGreen = srcColor.g();
+	srcBlue = srcColor.b();
 	destRed = destGreen = destBlue = 0;
+	blend = 0; // Pure source
 
 	switch (m_parms.pMessage->effect)
 	{
@@ -187,8 +198,8 @@ void CHudMessage::MessageScanNextChar(void)
 
 	if (m_parms.pMessage->effect == 1 && m_parms.charTime != 0)
 	{
-		if (m_parms.x >= 0 && m_parms.y >= 0 && (m_parms.x + gHUD.m_scrinfo.charWidths[m_parms.text]) <= ScreenWidth)
-			TextMessageDrawChar(m_parms.x, m_parms.y, m_parms.text, m_parms.pMessage->r2, m_parms.pMessage->g2, m_parms.pMessage->b2);
+		if (m_parms.x >= 0 && m_parms.y >= 0 && (m_parms.x + gHUD.GetHudCharWidth(m_parms.currentChar)) <= ScreenWidth)
+			TextMessageDrawChar(m_parms.x, m_parms.y, m_parms.currentChar, m_parms.pMessage->r2, m_parms.pMessage->g2, m_parms.pMessage->b2);
 	}
 }
 
@@ -197,8 +208,8 @@ void CHudMessage::MessageScanStart(void)
 	switch (m_parms.pMessage->effect)
 	{
 	// Fade-in / out with flicker
-	case 1:
 	case 0:
+	case 1:
 		m_parms.fadeTime = m_parms.pMessage->fadein + m_parms.pMessage->holdtime;
 
 		if (m_parms.time < m_parms.pMessage->fadein)
@@ -231,23 +242,36 @@ void CHudMessage::MessageScanStart(void)
 	}
 }
 
-void CHudMessage::MessageDrawScan(client_textmessage_t *pMessage, float time)
+void CHudMessage::MessageDrawScan(client_textmessage_t *pMessage, float time, const std::wstring &wstr)
 {
-	int i, j, length, width;
-	const char *pText;
-	unsigned char line[80];
+	int i, j, width;
+	wchar_t wLine[MAX_HUD_STRING + 1];
 
-	pText = pMessage->pMessage;
-	// Count lines
-	m_parms.lines = 1;
+	// Alpha value is used as a boolean.
+	// 1 means that this is the first char with new color
+	Color lineColor[MAX_HUD_STRING + 1];
+
+	const wchar_t *wText = wstr.c_str();
+	const wchar_t *pwText;
+	int lineHeight = gHUD.m_scrinfo.iCharHeight + ADJUST_MESSAGE;
+	ColorCodeAction nColorMode = gHUD.GetColorCodeAction();
+
+	// Count lines and width
 	m_parms.time = time;
+	m_parms.charTime = 0;
 	m_parms.pMessage = pMessage;
-	length = 0;
-	width = 0;
+	m_parms.lines = 1;
+	m_parms.length = 0;
 	m_parms.totalWidth = 0;
-	while (*pText)
+	width = 0;
+	pwText = wText;
+	while (*pwText)
 	{
-		if (*pText == '\n')
+		if (nColorMode != ColorCodeAction::Ignore && IsColorCode(pwText))
+		{
+			pwText += 1;
+		}
+		else if (*pwText == '\n')
 		{
 			m_parms.lines++;
 			if (width > m_parms.totalWidth)
@@ -255,49 +279,75 @@ void CHudMessage::MessageDrawScan(client_textmessage_t *pMessage, float time)
 			width = 0;
 		}
 		else
-			width += gHUD.m_scrinfo.charWidths[*pText];
-		pText++;
-		length++;
+		{
+			int c = (int)*pwText;
+			width += gHUD.GetHudCharWidth(c);
+		}
+		pwText++;
+		m_parms.length++;
 	}
-	m_parms.length = length;
-	m_parms.totalHeight = (m_parms.lines * gHUD.m_scrinfo.iCharHeight);
-
+	m_parms.totalHeight = m_parms.lines * (lineHeight);
 	m_parms.y = YPosition(pMessage->y, m_parms.totalHeight);
-	pText = pMessage->pMessage;
-
-	m_parms.charTime = 0;
 
 	MessageScanStart();
 
+	pwText = wText;
 	for (i = 0; i < m_parms.lines; i++)
 	{
 		m_parms.lineLength = 0;
 		m_parms.width = 0;
-		while (*pText && *pText != '\n')
+		memset(lineColor, 0, sizeof(lineColor));
+		lineColor[0] = Color(pMessage->r1, pMessage->g1, pMessage->b1, 255);
+		while (*pwText && *pwText != '\n')
 		{
-			unsigned char c = *pText;
-			line[m_parms.lineLength] = c;
-			m_parms.width += gHUD.m_scrinfo.charWidths[c];
-			m_parms.lineLength++;
-			pText++;
+			int c = *pwText;
+			if (m_parms.lineLength < MAX_HUD_STRING)
+			{
+				if (nColorMode != ColorCodeAction::Ignore && IsColorCode(pwText))
+				{
+					int coloridx = *(pwText + 1) - L'0';
+					if (coloridx == 0 || coloridx == 9 || nColorMode == ColorCodeAction::Strip)
+					{
+						// Reset
+						lineColor[m_parms.lineLength] = Color(pMessage->r1, pMessage->g1, pMessage->b1, 255);
+					}
+					else
+					{
+						lineColor[m_parms.lineLength] = gHUD.GetColorCodeColor(coloridx);
+					}
+					lineColor[m_parms.lineLength][3] = 1;
+					pwText += 2;
+					continue;
+				}
+				else
+				{
+					wLine[m_parms.lineLength] = c;
+					Color &color = lineColor[m_parms.lineLength];
+					if (m_parms.lineLength > 0 && !color.a())
+						color = lineColor[m_parms.lineLength - 1];
+					m_parms.width += gHUD.GetHudCharWidth(c);
+					m_parms.lineLength++;
+				}
+			}
+			pwText++;
 		}
-		pText++; // Skip LF
-		line[m_parms.lineLength] = 0;
+		pwText++; // Skip LF
+		wLine[m_parms.lineLength] = 0;
 
 		m_parms.x = XPosition(pMessage->x, m_parms.width, m_parms.totalWidth);
 
 		for (j = 0; j < m_parms.lineLength; j++)
 		{
-			m_parms.text = line[j];
-			int next = m_parms.x + gHUD.m_scrinfo.charWidths[m_parms.text];
-			MessageScanNextChar();
+			m_parms.currentChar = wLine[j];
+			int nextX = m_parms.x + gHUD.GetHudCharWidth(m_parms.currentChar);
+			MessageScanNextChar(lineColor[j]);
 
-			if (m_parms.x >= 0 && m_parms.y >= 0 && next <= ScreenWidth)
-				TextMessageDrawChar(m_parms.x, m_parms.y, m_parms.text, m_parms.r, m_parms.g, m_parms.b);
-			m_parms.x = next;
+			if (m_parms.x >= 0 && m_parms.y >= 0 && nextX <= ScreenWidth)
+				TextMessageDrawChar(m_parms.x, m_parms.y, m_parms.currentChar, m_parms.r, m_parms.g, m_parms.b);
+			m_parms.x = nextX;
 		}
 
-		m_parms.y += gHUD.m_scrinfo.iCharHeight;
+		m_parms.y += lineHeight;
 	}
 }
 
@@ -305,7 +355,7 @@ void CHudMessage::Draw(float fTime)
 {
 	int i, drawn;
 	client_textmessage_t *pMessage;
-	float endTime;
+	float endTime = 0;
 
 	drawn = 0;
 
@@ -354,41 +404,55 @@ void CHudMessage::Draw(float fTime)
 
 	for (i = 0; i < MAX_HUD_MESSAGES; i++)
 	{
-		if (m_pMessages[i])
+		if (!m_pMessages[i])
+			continue;
+
+		pMessage = m_pMessages[i];
+
+		// FIXME: AG Timer
+#if 0
+		// Filter out MiniAG timer that passed before we detected server AG version
+		if (gHUD.m_Timer->GetAgVersion() == CHudTimer::SV_AG_MINI && (fabs(pMessage->y - 0.01) < 0.0002f && fabs(pMessage->x - 0.5) < 0.0002f || // Original MiniAG coordinates
+		        fabs(pMessage->y - 0.01) < 0.0002f && fabs(pMessage->x + 1) < 0.0002f // Russian Crossfire MiniAG coordinates
+		        ))
 		{
-			pMessage = m_pMessages[i];
+			// TODO: Additional checks on text in the message...
+			m_pMessages[i] = NULL;
+			continue;
+		}
+#endif
 
-			// This is when the message is over
-			switch (pMessage->effect)
-			{
-			case 0:
-			case 1:
-				endTime = m_startTime[i] + pMessage->fadein + pMessage->fadeout + pMessage->holdtime;
-				break;
+		// This is when the message is over
+		switch (pMessage->effect)
+		{
+		case 0:
+		case 1:
+			endTime = m_startTime[i] + pMessage->fadein + pMessage->fadeout + pMessage->holdtime;
+			break;
 
-			// Fade in is per character in scanning messages
-			case 2:
-				endTime = m_startTime[i] + (pMessage->fadein * strlen(pMessage->pMessage)) + pMessage->fadeout + pMessage->holdtime;
-				break;
-			}
+		// Fade in is per character in scanning messages
+		case 2:
+			endTime = m_startTime[i] + (pMessage->fadein * strlen(pMessage->pMessage)) + pMessage->fadeout + pMessage->holdtime;
+			break;
+		}
 
-			if (fTime <= endTime)
-			{
-				float messageTime = fTime - m_startTime[i];
+		if (fTime <= endTime)
+		{
+			float messageTime = fTime - m_startTime[i];
 
-				// Draw the message
-				// effect 0 is fade in/fade out
-				// effect 1 is flickery credits
-				// effect 2 is write out (training room)
-				MessageDrawScan(pMessage, messageTime);
+			// Draw the message
+			// effect 0 is fade in/fade out
+			// effect 1 is flickery credits
+			// effect 2 is write out (training room)
+			MessageDrawScan(pMessage, messageTime, m_sMessageStrings[i]);
 
-				drawn++;
-			}
-			else
-			{
-				// The message is over
-				m_pMessages[i] = NULL;
-			}
+			drawn++;
+		}
+		else
+		{
+			// The message is over
+			m_pMessages[i] = NULL;
+			m_sMessageStrings[i].clear();
 		}
 	}
 
@@ -406,60 +470,78 @@ void CHudMessage::MessageAdd(const char *pName, float time)
 
 	for (i = 0; i < MAX_HUD_MESSAGES; i++)
 	{
-		if (!m_pMessages[i])
+		if (m_pMessages[i])
+			continue;
+
+		// Trim off a leading # if it's there
+		if (pName[0] == '#')
+			tempMessage = TextMessageGet(pName + 1);
+		else
+			tempMessage = TextMessageGet(pName);
+		// If we couldnt find it in the titles.txt or server's received messages, just create it
+		if (!tempMessage)
 		{
-			// Trim off a leading # if it's there
-			if (pName[0] == '#')
-				tempMessage = TextMessageGet(pName + 1);
-			else
-				tempMessage = TextMessageGet(pName);
-			// If we couldnt find it in the titles.txt, just create it
-			if (!tempMessage)
-			{
-				g_pCustomMessage.effect = 2;
-				g_pCustomMessage.r1 = g_pCustomMessage.g1 = g_pCustomMessage.b1 = g_pCustomMessage.a1 = 100;
-				g_pCustomMessage.r2 = 240;
-				g_pCustomMessage.g2 = 110;
-				g_pCustomMessage.b2 = 0;
-				g_pCustomMessage.a2 = 0;
-				g_pCustomMessage.x = -1; // Centered
-				g_pCustomMessage.y = 0.7;
-				g_pCustomMessage.fadein = 0.01;
-				g_pCustomMessage.fadeout = 1.5;
-				g_pCustomMessage.fxtime = 0.25;
-				g_pCustomMessage.holdtime = 5;
-				g_pCustomMessage.pName = g_pCustomName;
-				strcpy(g_pCustomText, pName);
-				g_pCustomMessage.pMessage = g_pCustomText;
+			g_pCustomMessage.effect = 2;
+			g_pCustomMessage.r1 = g_pCustomMessage.g1 = g_pCustomMessage.b1 = g_pCustomMessage.a1 = 100;
+			g_pCustomMessage.r2 = 240;
+			g_pCustomMessage.g2 = 110;
+			g_pCustomMessage.b2 = 0;
+			g_pCustomMessage.a2 = 0;
+			g_pCustomMessage.x = -1; // Centered
+			g_pCustomMessage.y = 0.7;
+			g_pCustomMessage.fadein = 0.01;
+			g_pCustomMessage.fadeout = 1.5;
+			g_pCustomMessage.fxtime = 0.25;
+			g_pCustomMessage.holdtime = 5;
+			g_pCustomMessage.pName = g_pCustomName;
+			g_pCustomMessage.pMessage = g_pCustomText;
+			strcpy(g_pCustomText, pName);
 
-				tempMessage = &g_pCustomMessage;
-			}
+			tempMessage = &g_pCustomMessage;
+		}
 
-			for (j = 0; j < MAX_HUD_MESSAGES; j++)
-			{
-				if (m_pMessages[j])
-				{
-					// is this message already in the list
-					if (!strcmp(tempMessage->pMessage, m_pMessages[j]->pMessage))
-					{
-						return;
-					}
-
-					// get rid of any other messages in same location (only one displays at a time)
-					if (fabs(tempMessage->y - m_pMessages[j]->y) < 0.0001)
-					{
-						if (fabs(tempMessage->x - m_pMessages[j]->x) < 0.0001)
-						{
-							m_pMessages[j] = NULL;
-						}
-					}
-				}
-			}
-
-			m_pMessages[i] = tempMessage;
-			m_startTime[i] = time;
+		// Filter out MiniAG timer
+		// FIXME: AG Timer
+#if 0
+		if (gHUD.m_Timer->GetAgVersion() == CHudTimer::SV_AG_MINI && (fabs(tempMessage->y - 0.01) < 0.0002f && fabs(tempMessage->x - 0.5) < 0.0002f || // Original MiniAG coordinates
+		        fabs(tempMessage->y - 0.01) < 0.0002f && fabs(tempMessage->x + 1) < 0.0002f // Russian Crossfire MiniAG coordinates
+		        ))
+		{
+			// TODO: Additional checks on text in the message...
 			return;
 		}
+#endif
+
+		for (j = 0; j < MAX_HUD_MESSAGES; j++)
+		{
+			if (!m_pMessages[j])
+				continue;
+
+			// is this message already in the list
+			if (!strcmp(tempMessage->pMessage, m_pMessages[j]->pMessage))
+			{
+				// Convert the string to std::wstring
+				CStrToWide(m_pMessages[j]->pMessage, m_sMessageStrings[j]);
+				return;
+			}
+
+			// get rid of any other messages in same location (only one displays at a time)
+			if (fabs(tempMessage->y - m_pMessages[j]->y) < 0.0002)
+			{
+				if (fabs(tempMessage->x - m_pMessages[j]->x) < 0.0002)
+				{
+					m_pMessages[j] = NULL;
+					m_sMessageStrings[j].clear();
+				}
+			}
+		}
+
+		// Convert the string to std::wstring
+		CStrToWide(tempMessage->pMessage, m_sMessageStrings[i]);
+
+		m_pMessages[i] = tempMessage;
+		m_startTime[i] = time;
+		return;
 	}
 }
 
@@ -509,6 +591,7 @@ void CHudMessage::MessageAdd(client_textmessage_t *newMessage)
 		{
 			m_pMessages[i] = newMessage;
 			m_startTime[i] = gHUD.m_flTime;
+			CStrToWide(newMessage->pMessage, m_sMessageStrings[i]);
 			return;
 		}
 	}

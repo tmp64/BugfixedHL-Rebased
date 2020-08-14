@@ -1,8 +1,13 @@
 #ifndef HUD_MESSAGE_H
 #define HUD_MESSAGE_H
+#include <string>
 #include "base.h"
 
+constexpr int MAX_HUD_STRING = 80;
 constexpr int MAX_HUD_MESSAGES = 16;
+
+// Space correction between text lines in hud messages in pixels
+constexpr int ADJUST_MESSAGE = 0;
 
 struct message_parms_t
 {
@@ -15,7 +20,7 @@ struct message_parms_t
 	int lineLength;
 	int length;
 	int r, g, b;
-	int text;
+	int currentChar;
 	int fadeBlend;
 	float charTime;
 	float fadeTime;
@@ -36,10 +41,10 @@ public:
 
 	void MessageAdd(const char *pName, float time);
 	void MessageAdd(client_textmessage_t *newMessage);
-	void MessageDrawScan(client_textmessage_t *pMessage, float time);
-	void MessageScanStart(void);
-	void MessageScanNextChar(void);
-	void Reset(void);
+	void MessageDrawScan(client_textmessage_t *pMessage, float time, const std::wstring &wstr);
+	void MessageScanStart();
+	void MessageScanNextChar(Color srcColor);
+	void Reset();
 
 private:
 	client_textmessage_t *m_pMessages[MAX_HUD_MESSAGES];
@@ -47,9 +52,12 @@ private:
 	message_parms_t m_parms;
 	float m_gameTitleTime;
 	client_textmessage_t *m_pGameTitle;
+	std::wstring m_sMessageStrings[MAX_HUD_MESSAGES];
 
 	int m_HUD_title_life;
 	int m_HUD_title_half;
+
+	void CStrToWide(const char *pString, std::wstring &wstr);
 };
 
 #endif

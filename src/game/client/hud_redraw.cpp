@@ -416,3 +416,27 @@ int CHud::GetNumWidth(int iNumber, int iFlags)
 
 	return 3;
 }
+
+int CHud::GetHudCharWidth(int c)
+{
+	auto it = m_CharWidths.find(c);
+
+	if (it != m_CharWidths.end())
+		return it->second;
+
+	int w = CalculateCharWidth(c);
+	m_CharWidths.insert({ c, w });
+	return w;
+}
+
+int CHud::CalculateCharWidth(int c)
+{
+	wchar_t wch[2];
+	char buf[16];
+	wch[0] = c;
+	wch[1] = 0;
+
+	Q_WStringToUTF8(wch, buf, sizeof(buf), STRINGCONVERT_REPLACE);
+	int width = TextMessageDrawString(ScreenWidth + 1, 0, buf, 255, 255, 255);
+	return width;
+}

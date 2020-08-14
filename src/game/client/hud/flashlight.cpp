@@ -47,6 +47,8 @@ void CHudFlashlight::Reset(void)
 {
 	m_fFade = 0;
 	m_fOn = 0;
+	m_iBat = 100;
+	m_flBat = 1.0;
 }
 
 void CHudFlashlight::VidInit(void)
@@ -77,7 +79,6 @@ int CHudFlashlight::MsgFunc_FlashBat(const char *pszName, int iSize, void *pbuf)
 
 int CHudFlashlight::MsgFunc_Flashlight(const char *pszName, int iSize, void *pbuf)
 {
-
 	BEGIN_READ(pbuf, iSize);
 	m_fOn = READ_BYTE();
 	int x = READ_BYTE();
@@ -92,7 +93,8 @@ void CHudFlashlight::Draw(float flTime)
 	if (gHUD.m_iHideHUDDisplay & (HIDEHUD_FLASHLIGHT | HIDEHUD_ALL))
 		return;
 
-	int r, g, b, x, y, a;
+	int r, g, b, x, y;
+	float a;
 	wrect_t rc;
 
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
@@ -102,11 +104,12 @@ void CHudFlashlight::Draw(float flTime)
 		a = 225;
 	else
 		a = MIN_ALPHA;
+	a *= gHUD.GetHudTransparency();
 
 	if (m_flBat < 0.20)
 		UnpackRGB(r, g, b, RGB_REDISH);
 	else
-		UnpackRGB(r, g, b, RGB_YELLOWISH);
+		gHUD.GetHudColor(HudPart::Common, 0, r, g, b);
 
 	ScaleColors(r, g, b, a);
 

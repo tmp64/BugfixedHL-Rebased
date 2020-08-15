@@ -28,6 +28,8 @@ add_sources(
 	message.h
 	spectator.cpp
 	spectator.h
+	speedometer.cpp
+	speedometer.h
 	status_icons.cpp
 	status_icons.h
 	statusbar.cpp

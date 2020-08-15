@@ -56,6 +56,7 @@
 #include "hud/menu.h"
 #include "hud/voice_status.h"
 #include "hud/voice_status_self.h"
+#include "hud/speedometer.h"
 
 extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
 
@@ -216,6 +217,7 @@ void CHud::Init(void)
 	RegisterHudElem<CHudMenu>();
 	RegisterHudElem<CHudVoiceStatus>();
 	RegisterHudElem<CHudVoiceStatusSelf>();
+	RegisterHudElem<CHudSpeedometer>();
 
 	ClientVoiceMgr_Init();
 

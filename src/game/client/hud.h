@@ -126,6 +126,8 @@ public:
 
 	// Draw functions
 	int DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b);
+	int DrawHudNumber(int x, int y, int number, int r, int g, int b);
+	int DrawHudNumberCentered(int x, int y, int number, int r, int g, int b);
 	int DrawHudString(int x, int y, int iMaxX, char *szString, int r, int g, int b);
 	int DrawHudStringReverse(int xpos, int ypos, int iMinX, char *szString, int r, int g, int b);
 	int DrawHudStringColorCodes(int x, int y, int iMaxX, char *string, int _r, int _g, int _b);

@@ -225,7 +225,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	rgDeathNoticeList[i].flDisplayTime = gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME;
 
 	// Play kill sound
-	if (killerInfo->IsThisPlayer() && !rgDeathNoticeList[i].iNonPlayerKill && !rgDeathNoticeList[i].iSuicide && cl_killsound.GetBool())
+	if (killerInfo && killerInfo->IsThisPlayer() && !rgDeathNoticeList[i].iNonPlayerKill && !rgDeathNoticeList[i].iSuicide && cl_killsound.GetBool())
 	{
 		PlaySound("buttons/bell1.wav", 1.0f);
 	}

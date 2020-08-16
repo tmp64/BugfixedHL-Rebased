@@ -36,6 +36,8 @@ struct DeathNoticeItem
 	float flDisplayTime;
 	float KillerColor[3];
 	float VictimColor[3];
+	bool bKillerHasColor;
+	bool bVictimHasColor;
 };
 
 static ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE);
@@ -103,7 +105,8 @@ void CHudDeathNotice::Draw(float flTime)
 				x -= (5 + ConsoleStringLen(rgDeathNoticeList[i].szKiller));
 
 				// Draw killers name
-				x = 5 + DrawConsoleString(x, y, rgDeathNoticeList[i].szKiller, rgDeathNoticeList[i].KillerColor);
+				float *color = (rgDeathNoticeList[i].bKillerHasColor) ? rgDeathNoticeList[i].KillerColor : nullptr;
+				x = 5 + DrawConsoleString(x, y, rgDeathNoticeList[i].szKiller, color);
 			}
 
 			r = 255;
@@ -125,7 +128,8 @@ void CHudDeathNotice::Draw(float flTime)
 			// Draw victims name (if it was a player that was killed)
 			if (rgDeathNoticeList[i].iNonPlayerKill == FALSE)
 			{
-				x = DrawConsoleString(x, y, rgDeathNoticeList[i].szVictim, rgDeathNoticeList[i].VictimColor);
+				float *color = (rgDeathNoticeList[i].bVictimHasColor) ? rgDeathNoticeList[i].VictimColor : nullptr;
+				x = DrawConsoleString(x, y, rgDeathNoticeList[i].szVictim, color);
 			}
 		}
 	}
@@ -172,7 +176,17 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	if (killer != 0 && (killerInfo = GetPlayerInfo(killer))->IsConnected())
 	{
 		killer_name = killerInfo->GetName();
-		gHUD.GetClientColorAsFloat(killer, rgDeathNoticeList[i].KillerColor, NoTeamColor::Orange);
+
+		if (killerInfo->GetTeamNumber() == 0)
+		{
+			rgDeathNoticeList[i].bKillerHasColor = false;
+		}
+		else
+		{
+			rgDeathNoticeList[i].bKillerHasColor = true;
+			gHUD.GetClientColorAsFloat(killer, rgDeathNoticeList[i].KillerColor, NoTeamColor::Orange);
+		}
+
 		strncpy(rgDeathNoticeList[i].szKiller, killer_name, MAX_PLAYERNAME_LENGTH);
 		rgDeathNoticeList[i].szKiller[MAX_PLAYERNAME_LENGTH - 1] = 0;
 	}
@@ -194,7 +208,18 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	}
 	else
 	{
-		gHUD.GetClientColorAsFloat(victim, rgDeathNoticeList[i].VictimColor, NoTeamColor::Orange);
+		CPlayerInfo *victimInfo = GetPlayerInfo(victim);
+
+		if (victimInfo->GetTeamNumber() == 0)
+		{
+			rgDeathNoticeList[i].bVictimHasColor = false;
+		}
+		else
+		{
+			rgDeathNoticeList[i].bVictimHasColor = true;
+			gHUD.GetClientColorAsFloat(victim, rgDeathNoticeList[i].VictimColor, NoTeamColor::Orange);
+		}
+
 		strncpy(rgDeathNoticeList[i].szVictim, victim_name, MAX_PLAYER_NAME);
 		rgDeathNoticeList[i].szVictim[MAX_PLAYER_NAME - 1] = 0;
 	}

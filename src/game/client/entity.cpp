@@ -20,6 +20,7 @@
 extern IParticleMan *g_pParticleMan;
 
 ConVar r_dynamic_ent_light("r_dynamic_ent_light", "1", FCVAR_BHL_ARCHIVE);
+ConVar cl_hidecorpses("cl_hidecorpses", "0", FCVAR_BHL_ARCHIVE);
 
 void Game_AddObjects(void);
 
@@ -35,18 +36,32 @@ HUD_AddEntity
 */
 int CL_DLLEXPORT HUD_AddEntity(int type, struct cl_entity_s *ent, const char *modelname)
 {
-	//	RecClAddEntity(type, ent, modelname);
-
 	switch (type)
 	{
+	case ET_BEAM:
+		// Change beam ent end to local player so beam will go from the gun viewmodel
+		if (g_iUser1 == OBS_IN_EYE && (ent->curstate.skin & 0x0FFF) == g_iUser2)
+		{
+			ent->curstate.skin = (gEngfuncs.GetLocalPlayer()->index & 0x0FFF) | (ent->curstate.skin & 0xF000);
+		}
+		break;
 	case ET_NORMAL:
 	case ET_PLAYER:
-	case ET_BEAM:
 	case ET_TEMPENTITY:
 	case ET_FRAGMENTED:
 	default:
 		break;
 	}
+
+	// hide corpses option
+	if (cl_hidecorpses.GetBool() && ent->curstate.renderfx == kRenderFxDeadPlayer)
+		return 0;
+
+	// fix standing corpses from players with high fps by setting animation to his last frame
+	// note: we only do this when the animation is done (framerate is equal to 0)
+	if ((ent->player || ent->curstate.renderfx == kRenderFxDeadPlayer) && ent->curstate.framerate == 0)
+		ent->curstate.frame = 256.0f;
+
 	// each frame every entity passes this function, so the overview hooks it to filter the overview entities
 	// in spectator mode:
 	// each frame every entity passes this function, so the overview hooks
@@ -87,6 +102,9 @@ void CL_DLLEXPORT HUD_TxferLocalOverrides(struct entity_state_s *state, const st
 
 	VectorCopy(client->origin, state->origin);
 
+	// Wider range health
+	state->health = client->health;
+
 	// Spectator
 	state->iuser1 = client->iuser1;
 	state->iuser2 = client->iuser2;
@@ -108,8 +126,6 @@ playerstate structure
 */
 void CL_DLLEXPORT HUD_ProcessPlayerState(struct entity_state_s *dst, const struct entity_state_s *src)
 {
-	//	RecClProcessPlayerState(dst, src);
-
 	// Copy in network data
 	VectorCopy(src->origin, dst->origin);
 	VectorCopy(src->angles, dst->angles);
@@ -125,7 +141,11 @@ void CL_DLLEXPORT HUD_ProcessPlayerState(struct entity_state_s *dst, const struc
 	dst->sequence = src->sequence;
 	dst->animtime = src->animtime;
 
-	dst->solid = src->solid;
+	// Prevent lags when passing over dead player
+	if (src->solid == SOLID_SLIDEBOX && (src->movetype == MOVETYPE_TOSS || src->movetype == MOVETYPE_NONE || src->movetype == MOVETYPE_NOCLIP))
+		dst->solid = SOLID_NOT;
+	else
+		dst->solid = src->solid;
 
 	dst->rendermode = src->rendermode;
 	dst->renderamt = src->renderamt;
@@ -180,8 +200,6 @@ Because we can predict an arbitrary number of frames before the server responds 
 */
 void CL_DLLEXPORT HUD_TxferPredictionData(struct entity_state_s *ps, const struct entity_state_s *pps, struct clientdata_s *pcd, const struct clientdata_s *ppcd, struct weapon_data_s *wd, const struct weapon_data_s *pwd)
 {
-	//	RecClTxferPredictionData(ps, pps, pcd, ppcd, wd, pwd);
-
 	ps->oldbuttons = pps->oldbuttons;
 	ps->flFallVelocity = pps->flFallVelocity;
 	ps->iStepLeft = pps->iStepLeft;
@@ -314,8 +332,6 @@ Gives us a chance to add additional entities to the render this frame
 */
 void CL_DLLEXPORT HUD_CreateEntities(void)
 {
-	//	RecClCreateEntities();
-
 #if defined(BEAM_TEST)
 	Beams();
 #endif
@@ -397,8 +413,6 @@ void CL_DLLEXPORT HUD_TempEntUpdate(
     int (*Callback_AddVisibleEntity)(cl_entity_t *pEntity),
     void (*Callback_TempEntPlaySound)(TEMPENTITY *pTemp, float damp))
 {
-	//	RecClTempEntUpdate(frametime, client_time, cl_gravity, ppTempEntFree, ppTempEntActive, Callback_AddVisibleEntity, Callback_TempEntPlaySound);
-
 	static int gTempEntFrame = 0;
 	int i;
 	TEMPENTITY *pTemp, *pnext, *pprev;
@@ -768,8 +782,6 @@ Indices must start at 1, not zero.
 */
 cl_entity_t CL_DLLEXPORT *HUD_GetUserEntity(int index)
 {
-	//	RecClGetUserEntity(index);
-
 #if defined(BEAM_TEST)
 	// None by default, you would return a valic pointer if you create a client side
 	//  beam and attach it to a client side entity.

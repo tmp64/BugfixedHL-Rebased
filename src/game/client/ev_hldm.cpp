@@ -35,6 +35,8 @@
 #include "r_studioint.h"
 #include "com_model.h"
 
+#include "hud/spectator.h"
+
 extern engine_studio_api_t IEngineStudio;
 
 static int tracerCount[32];
@@ -43,6 +45,8 @@ extern "C"
 {
 #include "pm_shared.h"
 }
+
+#define IS_FIRSTPERSON_SPEC (g_iUser1 == OBS_IN_EYE || (g_iUser1 && (CHudSpectator::Get()->m_pip->value == INSET_IN_EYE)))
 
 void V_PunchAxis(int axis, float punch);
 void VectorAngles(const float *forward, float *angles);
@@ -333,13 +337,12 @@ int EV_HLDM_CheckTracer(int idx, float *vecSrc, float *end, float *forward, floa
 {
 	int tracer = 0;
 	int i;
-	qboolean player = idx >= 1 && idx <= gEngfuncs.GetMaxClients() ? true : false;
 
 	if (iTracerFreq != 0 && ((*tracerCount)++ % iTracerFreq) == 0)
 	{
 		vec3_t vecTracerSrc;
 
-		if (player)
+		if (EV_IsPlayer(idx))
 		{
 			vec3_t offset(0, 0, -4);
 
@@ -513,7 +516,7 @@ void EV_FireGlock1(event_args_t *args)
 
 	VectorCopy(forward, vecAiming);
 
-	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, 0, args->fparam1, args->fparam2);
+	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, NULL, args->fparam1, args->fparam2);
 }
 
 void EV_FireGlock2(event_args_t *args)
@@ -558,7 +561,7 @@ void EV_FireGlock2(event_args_t *args)
 
 	VectorCopy(forward, vecAiming);
 
-	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, &tracerCount[idx - 1], args->fparam1, args->fparam2);
+	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, NULL, args->fparam1, args->fparam2);
 }
 //======================
 //	   GLOCK END
@@ -614,11 +617,11 @@ void EV_FireShotGunDouble(event_args_t *args)
 
 	if (gEngfuncs.GetMaxClients() > 1)
 	{
-		EV_HLDM_FireBullets(idx, forward, right, up, 8, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx - 1], 0.17365, 0.04362);
+		EV_HLDM_FireBullets(idx, forward, right, up, 8, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, NULL, 0.17365, 0.04362);
 	}
 	else
 	{
-		EV_HLDM_FireBullets(idx, forward, right, up, 12, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx - 1], 0.08716, 0.08716);
+		EV_HLDM_FireBullets(idx, forward, right, up, 12, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, NULL, 0.08716, 0.08716);
 	}
 }
 
@@ -666,11 +669,11 @@ void EV_FireShotGunSingle(event_args_t *args)
 
 	if (gEngfuncs.GetMaxClients() > 1)
 	{
-		EV_HLDM_FireBullets(idx, forward, right, up, 4, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx - 1], 0.08716, 0.04362);
+		EV_HLDM_FireBullets(idx, forward, right, up, 4, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, NULL, 0.08716, 0.04362);
 	}
 	else
 	{
-		EV_HLDM_FireBullets(idx, forward, right, up, 6, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx - 1], 0.08716, 0.08716);
+		EV_HLDM_FireBullets(idx, forward, right, up, 6, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, NULL, 0.08716, 0.08716);
 	}
 }
 //======================
@@ -729,14 +732,9 @@ void EV_FireMP5(event_args_t *args)
 	EV_GetGunPosition(args, vecSrc, origin);
 	VectorCopy(forward, vecAiming);
 
-	if (gEngfuncs.GetMaxClients() > 1)
-	{
-		EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &tracerCount[idx - 1], args->fparam1, args->fparam2);
-	}
-	else
-	{
-		EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &tracerCount[idx - 1], args->fparam1, args->fparam2);
-	}
+	// Array overflow fix: Use increased tracerCount array and wrap indexes in case if amount of entities is set very high, with hope that they will not overlap after wrap.
+	// If they do, well ... it will not hurt much.
+	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &tracerCount[idx % ARRAYSIZE(tracerCount) - 1], args->fparam1, args->fparam2);
 }
 
 // We only predict the animation and sound
@@ -817,7 +815,7 @@ void EV_FirePython(event_args_t *args)
 
 	VectorCopy(forward, vecAiming);
 
-	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_357, 0, 0, args->fparam1, args->fparam2);
+	EV_HLDM_FireBullets(idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_357, 0, NULL, args->fparam1, args->fparam2);
 }
 //======================
 //	    PHYTON END
@@ -951,8 +949,15 @@ void EV_FireGauss(event_args_t *args)
 			}
 			fFirstBeam = 0;
 
+			// Use index of local player if spectating from eyes so gauss beam will out from a gun
+			int idx2 = idx;
+			if (g_iUser1 == OBS_IN_EYE && g_iUser2 == idx)
+			{
+				idx2 = gEngfuncs.GetLocalPlayer()->index;
+			}
+
 			gEngfuncs.pEfxAPI->R_BeamEntPoint(
-			    idx | 0x1000,
+			    idx2 | 0x1000,
 			    tr.endpos,
 			    m_iBeam,
 			    0.1,
@@ -1345,13 +1350,13 @@ void EV_FireCrossbow(event_args_t *args)
 //======================
 enum rpg_e
 {
-	RPG_IDLE = 0,
-	RPG_FIDGET,
+	RPG_IDLE = 0, // loaded
+	RPG_FIDGET, // loaded
 	RPG_RELOAD, // to reload
 	RPG_FIRE2, // to empty
-	RPG_HOLSTER1, // loaded
-	RPG_DRAW1, // loaded
-	RPG_HOLSTER2, // unloaded
+	RPG_HOLSTER, // loaded
+	RPG_DRAW, // loaded
+	RPG_HOLSTER_UL, // unloaded
 	RPG_DRAW_UL, // unloaded
 	RPG_IDLE_UL, // unloaded idle
 	RPG_FIDGET_UL, // unloaded fidget
@@ -1381,7 +1386,7 @@ void EV_FireRpg(event_args_t *args)
 //======================
 
 //======================
-//	    EGON END
+//	    EGON START
 //======================
 enum egon_e
 {
@@ -1419,9 +1424,7 @@ enum EGON_FIREMODE
 #define EGON_SOUND_RUN      "weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP  "weapons/egon_windup2.wav"
 
-#ifndef ARRAYSIZE
-#define ARRAYSIZE(p) (sizeof(p) / sizeof(p[0]))
-#endif
+#define HLARRAYSIZE(p) (sizeof(p) / sizeof(p[0]))
 
 BEAM *pBeam;
 BEAM *pBeam2;
@@ -1456,7 +1459,7 @@ void EV_EgonFire(event_args_t *args)
 	if (EV_IsLocal(idx))
 		gEngfuncs.pEventAPI->EV_WeaponAnimation(g_fireAnims1[gEngfuncs.pfnRandomLong(0, 3)], 1);
 
-	if (iStartup == 1 && EV_IsLocal(idx) && !pBeam && !pBeam2 && cl_lw->value) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
+	if (iStartup == 1 && EV_IsLocal(idx) && !IS_FIRSTPERSON_SPEC && !pBeam && !pBeam2 && cl_lw->value) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
 	{
 		vec3_t vecSrc, vecEnd, origin, angles, forward, right, up;
 		pmtrace_t tr;
@@ -1498,12 +1501,12 @@ void EV_EgonFire(event_args_t *args)
 				g /= 100.0f;
 			}
 
-			pBeam = gEngfuncs.pEfxAPI->R_BeamEntPoint(idx | 0x1000, tr.endpos, iBeamModelIndex, 99999, 3.5, 0.2, 0.7, 55, 0, 0, r, g, b);
+			pBeam = gEngfuncs.pEfxAPI->R_BeamEntPoint(idx | 0x1000, tr.endpos, iBeamModelIndex, 999999, 3.5, 0.2, 0.7, 55, 0, 0, r, g, b);
 
 			if (pBeam)
 				pBeam->flags |= (FBEAM_SINENOISE);
 
-			pBeam2 = gEngfuncs.pEfxAPI->R_BeamEntPoint(idx | 0x1000, tr.endpos, iBeamModelIndex, 99999, 5.0, 0.08, 0.7, 25, 0, 0, r, g, b);
+			pBeam2 = gEngfuncs.pEfxAPI->R_BeamEntPoint(idx | 0x1000, tr.endpos, iBeamModelIndex, 999999, 5.0, 0.08, 0.7, 25, 0, 0, r, g, b);
 		}
 	}
 }

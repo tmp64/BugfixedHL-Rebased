@@ -40,7 +40,8 @@ void CHudSpeedometer::Draw(float time)
 		if (m_fFade <= 0)
 			m_fFade = 0;
 		a = MIN_ALPHA + (m_fFade / FADE_TIME) * ALPHA_AMMO_FLASH;
-	} else
+	}
+	else
 		a = MIN_ALPHA;
 
 	a *= gHUD.GetHudTransparency();

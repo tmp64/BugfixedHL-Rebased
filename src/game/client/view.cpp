@@ -162,10 +162,11 @@ void V_InterpolateAngles( float *start, float *end, float *output, float frac )
 // Quakeworld bob code, this fixes jitters in the mutliplayer since the clock (pparams->time) isn't quite linear
 float V_CalcBob(struct ref_params_s *pparams)
 {
+	static float lasttime;
 	static double bobtime;
 	static float bob;
 	float cycle;
-	static float lasttime;
+	float cvar_bob, cvar_bobup, cvar_bobcycle;
 	vec3_t vel;
 
 	if (pparams->onground == -1 || pparams->time == lasttime)
@@ -176,17 +177,24 @@ float V_CalcBob(struct ref_params_s *pparams)
 
 	lasttime = pparams->time;
 
-	bobtime += pparams->frametime;
-	cycle = bobtime - (int)(bobtime / cl_bobcycle->value) * cl_bobcycle->value;
-	cycle /= cl_bobcycle->value;
+	cvar_bobcycle = max(cl_bobcycle->value, 0.1f);
+	cvar_bobup = max(cl_bobup->value, 0.1f);
+	cvar_bob = max(cl_bob->value, 0.f);
 
-	if (cycle < cl_bobup->value)
+	if (cvar_bob == 0.0)
+		return 0.0;
+
+	bobtime += pparams->frametime;
+	cycle = bobtime - (int)(bobtime / cvar_bobcycle) * cvar_bobcycle;
+	cycle /= cvar_bobcycle;
+
+	if (cycle < cvar_bobup)
 	{
-		cycle = M_PI * cycle / cl_bobup->value;
+		cycle = M_PI * cycle / cvar_bobup;
 	}
 	else
 	{
-		cycle = M_PI + M_PI * (cycle - cl_bobup->value) / (1.0 - cl_bobup->value);
+		cycle = M_PI + M_PI * (cycle - cvar_bobup) / (1.0 - cvar_bobup);
 	}
 
 	// bob is proportional to simulated velocity in the xy plane
@@ -194,7 +202,7 @@ float V_CalcBob(struct ref_params_s *pparams)
 	VectorCopy(pparams->simvel, vel);
 	vel[2] = 0;
 
-	bob = sqrt(vel[0] * vel[0] + vel[1] * vel[1]) * cl_bob->value;
+	bob = sqrt(vel[0] * vel[0] + vel[1] * vel[1]) * cvar_bob;
 	bob = bob * 0.3 + bob * 0.7 * sin(cycle);
 	bob = min(bob, 4.f);
 	bob = max(bob, -7.f);
@@ -278,7 +286,7 @@ void V_DriftPitch(struct ref_params_s *pparams)
 {
 	float delta, move;
 
-	if (gEngfuncs.IsNoClipping() || !pparams->onground || pparams->demoplayback || pparams->spectator)
+	if (gEngfuncs.IsNoClipping() || !pparams->onground || pparams->demoplayback || pparams->spectator || g_iUser1 == OBS_IN_EYE)
 	{
 		pd.driftmove = 0;
 		pd.pitchvel = 0;
@@ -497,7 +505,7 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 
 	V_DriftPitch(pparams);
 
-	if (gEngfuncs.IsSpectateOnly())
+	if (gEngfuncs.IsSpectateOnly() || g_iUser1 == OBS_IN_EYE)
 	{
 		ent = gEngfuncs.GetEntityByIndex(g_iUser2);
 	}

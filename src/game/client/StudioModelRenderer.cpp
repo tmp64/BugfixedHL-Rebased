@@ -22,23 +22,25 @@
 #include "StudioModelRenderer.h"
 #include "GameStudioModelRenderer.h"
 
-extern cvar_t *tfc_newmodels;
-
-extern extra_player_info_t g_PlayerExtraInfo[MAX_PLAYERS + 1];
-
-// team colors for old TFC models
-#define TEAM1_COLOR 150
-#define TEAM2_COLOR 250
-#define TEAM3_COLOR 45
-#define TEAM4_COLOR 100
-
-int m_nPlayerGaitSequences[MAX_CLIENTS];
+// Bones that used in gait animation
+#define NUM_LEGS_BONES 8
+const char *legs_bones[NUM_LEGS_BONES] = {
+	"Bip01",
+	"Bip01 Pelvis",
+	"Bip01 L Leg",
+	"Bip01 L Leg1",
+	"Bip01 L Foot",
+	"Bip01 R Leg",
+	"Bip01 R Leg1",
+	"Bip01 R Foot",
+};
 
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
 
 /////////////////////
 // Implementation of CStudioModelRenderer.h
+/////////////////////
 
 /*
 ====================
@@ -794,22 +796,6 @@ void CStudioModelRenderer::StudioSetupBones(void)
 
 	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;
 
-	// always want new gait sequences to start on frame zero
-	/*	if ( m_pPlayerInfo )
-	{
-		int playerNum = m_pCurrentEntity->index - 1;
-
-		// new jump gaitsequence?  start from frame zero
-		if ( m_nPlayerGaitSequences[ playerNum ] != m_pPlayerInfo->gaitsequence )
-		{
-	//		m_pPlayerInfo->gaitframe = 0.0;
-			gEngfuncs.Con_Printf( "Setting gaitframe to 0\n" );
-		}
-
-		m_nPlayerGaitSequences[ playerNum ] = m_pPlayerInfo->gaitsequence;
-//		gEngfuncs.Con_Printf( "index: %d     gaitsequence: %d\n",playerNum, m_pPlayerInfo->gaitsequence);
-	}
-*/
 	f = StudioEstimateFrame(pseqdesc);
 
 	if (m_pCurrentEntity->latched.prevframe > f)
@@ -918,8 +904,6 @@ void CStudioModelRenderer::StudioSetupBones(void)
 			m_pPlayerInfo->gaitsequence = 0;
 		}
 
-		int copy = 1;
-
 		pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pPlayerInfo->gaitsequence;
 
 		panim = StudioGetAnim(m_pRenderModel, pseqdesc);
@@ -927,19 +911,14 @@ void CStudioModelRenderer::StudioSetupBones(void)
 
 		for (i = 0; i < m_pStudioHeader->numbones; i++)
 		{
-			if (!strcmp(pbones[i].name, "Bip01 Spine"))
+			for (int j = 0; j < NUM_LEGS_BONES; j++)
 			{
-				copy = 0;
-			}
-			else if (!strcmp(pbones[pbones[i].parent].name, "Bip01 Pelvis"))
-			{
-				copy = 1;
-			}
-
-			if (copy)
-			{
+				if (strcmp(pbones[i].name, legs_bones[j]))
+					continue;
+				// setup animation only for legs bones
 				memcpy(pos[i], pos2[i], sizeof(pos[i]));
 				memcpy(q[i], q2[i], sizeof(q[i]));
+				break;
 			}
 		}
 	}
@@ -1088,52 +1067,6 @@ void CStudioModelRenderer::StudioMergeBones(model_t *m_pSubModel)
 	}
 }
 
-#if defined(_TFC)
-#include "pm_shared.h"
-const Vector &GetTeamColor(int team_no);
-#define IS_FIRSTPERSON_SPEC (g_iUser1 == OBS_IN_EYE || (g_iUser1 && (CHudSpectator::Get()->m_pip->value == INSET_IN_EYE)))
-
-int GetRemapColor(int iTeam, bool bTopColor)
-{
-	int retVal = 0;
-
-	switch (iTeam)
-	{
-	default:
-	case 1:
-		if (bTopColor)
-			retVal = TEAM1_COLOR;
-		else
-			retVal = TEAM1_COLOR - 10;
-
-		break;
-	case 2:
-		if (bTopColor)
-			retVal = TEAM2_COLOR;
-		else
-			retVal = TEAM2_COLOR - 10;
-
-		break;
-	case 3:
-		if (bTopColor)
-			retVal = TEAM3_COLOR;
-		else
-			retVal = TEAM3_COLOR - 10;
-
-		break;
-	case 4:
-		if (bTopColor)
-			retVal = TEAM4_COLOR;
-		else
-			retVal = TEAM4_COLOR - 10;
-
-		break;
-	}
-
-	return retVal;
-}
-#endif
-
 /*
 ====================
 StudioDrawModel
@@ -1236,85 +1169,8 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 		IEngineStudio.StudioSetupLighting(&lighting);
 
 		// get remap colors
-#if defined(_TFC)
-
 		m_nTopColor = m_pCurrentEntity->curstate.colormap & 0xFF;
 		m_nBottomColor = (m_pCurrentEntity->curstate.colormap & 0xFF00) >> 8;
-
-		// use the old tfc colors for the models (view models)
-		// team 1
-		if ((m_nTopColor < 155) && (m_nTopColor > 135))
-		{
-			m_nTopColor = TEAM1_COLOR;
-			m_nBottomColor = TEAM1_COLOR - 10;
-		}
-		// team 2
-		else if ((m_nTopColor < 260) && ((m_nTopColor > 240) || (m_nTopColor == 5)))
-		{
-			m_nTopColor = TEAM2_COLOR;
-			m_nBottomColor = TEAM2_COLOR - 10;
-		}
-		// team 3
-		else if ((m_nTopColor < 50) && (m_nTopColor > 40))
-		{
-			m_nTopColor = TEAM3_COLOR;
-			m_nBottomColor = TEAM3_COLOR - 10;
-		}
-		// team 4
-		else if ((m_nTopColor < 110) && (m_nTopColor > 75))
-		{
-			m_nTopColor = TEAM4_COLOR;
-			m_nBottomColor = TEAM4_COLOR - 10;
-		}
-
-		// is this our view model and should it be glowing? we also fix a remap colors
-		// problem if we're spectating in first-person mode
-		if (m_pCurrentEntity == gEngfuncs.GetViewModel())
-		{
-			cl_entity_t *pTarget = NULL;
-
-			// we're spectating someone via first-person mode
-			if (IS_FIRSTPERSON_SPEC)
-			{
-				pTarget = gEngfuncs.GetEntityByIndex(g_iUser2);
-
-				if (pTarget)
-				{
-					// we also need to correct the m_nTopColor and m_nBottomColor for the
-					// view model here. this is separate from the glowshell stuff, but
-					// the same conditions need to be met (this is the view model and we're
-					// in first-person spectator mode)
-					m_nTopColor = GetRemapColor(g_PlayerExtraInfo[pTarget->index].teamnumber, true);
-					m_nBottomColor = GetRemapColor(g_PlayerExtraInfo[pTarget->index].teamnumber, false);
-				}
-			}
-			// we're not spectating, this is OUR view model
-			else
-			{
-				pTarget = gEngfuncs.GetLocalPlayer();
-			}
-
-			if (pTarget && pTarget->curstate.renderfx == kRenderFxGlowShell)
-			{
-				m_pCurrentEntity->curstate.renderfx = kRenderFxGlowShell;
-				m_pCurrentEntity->curstate.rendercolor.r = pTarget->curstate.rendercolor.r;
-				m_pCurrentEntity->curstate.rendercolor.g = pTarget->curstate.rendercolor.g;
-				m_pCurrentEntity->curstate.rendercolor.b = pTarget->curstate.rendercolor.b;
-			}
-			else
-			{
-				m_pCurrentEntity->curstate.renderfx = kRenderFxNone;
-				m_pCurrentEntity->curstate.rendercolor.r = 0;
-				m_pCurrentEntity->curstate.rendercolor.g = 0;
-				m_pCurrentEntity->curstate.rendercolor.b = 0;
-			}
-		}
-
-#else
-		m_nTopColor = m_pCurrentEntity->curstate.colormap & 0xFF;
-		m_nBottomColor = (m_pCurrentEntity->curstate.colormap & 0xFF00) >> 8;
-
-#endif
 
 		IEngineStudio.StudioSetRemapColors(m_nTopColor, m_nBottomColor);
 
@@ -1493,142 +1349,41 @@ void CStudioModelRenderer::StudioProcessGait(entity_state_t *pplayer)
 		m_pPlayerInfo->gaitframe += pseqdesc->numframes;
 }
 
-#if defined _TFC
+/*
+====================
+GetPlayerModel
 
-#define PC_UNDEFINED 0
-
-#define PC_SCOUT    1
-#define PC_SNIPER   2
-#define PC_SOLDIER  3
-#define PC_DEMOMAN  4
-#define PC_MEDIC    5
-#define PC_HVYWEAP  6
-#define PC_PYRO     7
-#define PC_SPY      8
-#define PC_ENGINEER 9
-#define PC_RANDOM   10
-#define PC_CIVILIAN 11
-
-#define PC_LASTCLASS 12
-
-#define TFC_MODELS_OLD 0
-
-extern cvar_t *tfc_newmodels;
-
-char *sNewClassModelFiles[] = {
-	NULL,
-	"models/player/scout/scout.mdl",
-	"models/player/sniper/sniper.mdl",
-	"models/player/soldier/soldier.mdl",
-	"models/player/demo/demo.mdl",
-	"models/player/medic/medic.mdl",
-	"models/player/hvyweapon/hvyweapon.mdl",
-	"models/player/pyro/pyro.mdl",
-	"models/player/spy/spy.mdl",
-	"models/player/engineer/engineer.mdl",
-	"models/player/scout/scout.mdl", // PC_RANDOM
-	"models/player/civilian/civilian.mdl",
-};
-
-char *sOldClassModelFiles[] = {
-	NULL,
-	"models/player/scout/scout2.mdl",
-	"models/player/sniper/sniper2.mdl",
-	"models/player/soldier/soldier2.mdl",
-	"models/player/demo/demo2.mdl",
-	"models/player/medic/medic2.mdl",
-	"models/player/hvyweapon/hvyweapon2.mdl",
-	"models/player/pyro/pyro2.mdl",
-	"models/player/spy/spy2.mdl",
-	"models/player/engineer/engineer2.mdl",
-	"models/player/scout/scout2.mdl", // PC_RANDOM
-	"models/player/civilian/civilian.mdl",
-};
-
-#define NUM_WEAPON_PMODELS 18
-
-char *sNewWeaponPModels[] = {
-	"models/p_9mmhandgun.mdl",
-	"models/p_crowbar.mdl",
-	"models/p_egon.mdl",
-	"models/p_glauncher.mdl",
-	"models/p_grenade.mdl",
-	"models/p_knife.mdl",
-	"models/p_medkit.mdl",
-	"models/p_mini.mdl",
-	"models/p_nailgun.mdl",
-	"models/p_srpg.mdl",
-	"models/p_shotgun.mdl",
-	"models/p_snailgun.mdl",
-	"models/p_sniper.mdl",
-	"models/p_spanner.mdl",
-	"models/p_umbrella.mdl",
-	"models/p_rpg.mdl",
-	"models/p_spygun.mdl",
-	"models/p_smallshotgun.mdl"
-};
-
-char *sOldWeaponPModels[] = {
-	"models/p_9mmhandgun2.mdl",
-	"models/p_crowbar2.mdl",
-	"models/p_egon2.mdl",
-	"models/p_glauncher2.mdl",
-	"models/p_grenade2.mdl",
-	"models/p_knife2.mdl",
-	"models/p_medkit2.mdl",
-	"models/p_mini2.mdl",
-	"models/p_nailgun2.mdl",
-	"models/p_rpg2.mdl",
-	"models/p_shotgun2.mdl",
-	"models/p_snailgun2.mdl",
-	"models/p_sniper2.mdl",
-	"models/p_spanner2.mdl",
-	"models/p_umbrella.mdl",
-	"models/p_rpg2.mdl",
-	"models/p_9mmhandgun2.mdl",
-	"models/p_shotgun2.mdl"
-};
-
-int CStudioModelRenderer::ReturnDiguisedClass(int iPlayerIndex)
+====================
+*/
+model_t *CStudioModelRenderer::GetPlayerModel(int playerIndex)
 {
-	m_pRenderModel = IEngineStudio.SetupPlayerModel(iPlayerIndex);
-
-	if (!m_pRenderModel)
-		return PC_SCOUT;
-
-	for (int i = PC_SCOUT; i < PC_LASTCLASS; i++)
-	{
-		if (!strcmp(m_pRenderModel->name, sNewClassModelFiles[i]))
-			return i;
-	}
-
-	return PC_SCOUT;
+	return IEngineStudio.SetupPlayerModel(playerIndex);
 }
 
-char *ReturnCorrectedModelString(int iSwitchClass)
+/*
+====================
+SetPlayerRemapColors
+
+====================
+*/
+void CStudioModelRenderer::SetPlayerRemapColors(int playerIndex)
 {
-	if (tfc_newmodels->value == TFC_MODELS_OLD)
+	if (!m_pPlayerInfo)
 	{
-		if (sOldClassModelFiles[iSwitchClass])
-			return sOldClassModelFiles[iSwitchClass];
-		else
-			return sOldClassModelFiles[PC_SCOUT];
+		m_nTopColor = 0;
+		m_nBottomColor = 0;
 	}
 	else
 	{
-		if (sNewClassModelFiles[iSwitchClass])
-			return sNewClassModelFiles[iSwitchClass];
-		else
-			return sNewClassModelFiles[PC_SCOUT];
+		m_nTopColor = m_pPlayerInfo->topcolor;
+		m_nBottomColor = m_pPlayerInfo->bottomcolor;
+		m_nTopColor = clamp(m_nTopColor, 0, 254);
+		m_nBottomColor = clamp(m_nBottomColor, 0, 254);
 	}
+
+	// Set remap colors
+	IEngineStudio.StudioSetRemapColors(m_nTopColor, m_nBottomColor);
 }
-
-#endif
-
-#ifdef _TFC
-float g_flSpinUpTime[33];
-float g_flSpinDownTime[33];
-#endif
 
 /*
 ====================
@@ -1646,36 +1401,18 @@ int CStudioModelRenderer::StudioDrawPlayer(int flags, entity_state_t *pplayer)
 	IEngineStudio.GetViewInfo(m_vRenderOrigin, m_vUp, m_vRight, m_vNormal);
 	IEngineStudio.GetAliasScale(&m_fSoftwareXScale, &m_fSoftwareYScale);
 
+	// Con_DPrintf("DrawPlayer %d\n", m_pCurrentEntity->blending[0] );
+
+	// Con_DPrintf("DrawPlayer %d %d (%d)\n", m_nFrameCount, pplayer->player_index, m_pCurrentEntity->curstate.sequence );
+
+	// Con_DPrintf("Player %.2f %.2f %.2f\n", pplayer->velocity[0], pplayer->velocity[1], pplayer->velocity[2] );
+
 	m_nPlayerIndex = pplayer->number - 1;
 
 	if (m_nPlayerIndex < 0 || m_nPlayerIndex >= gEngfuncs.GetMaxClients())
 		return 0;
 
-#if defined(_TFC)
-
-	int modelindex;
-	int iSwitchClass = pplayer->playerclass;
-
-	if (iSwitchClass == PC_SPY)
-		iSwitchClass = ReturnDiguisedClass(m_nPlayerIndex);
-
-	// do we have a "replacement_model" for this player?
-	if (pplayer->fuser1)
-	{
-		m_pRenderModel = IEngineStudio.SetupPlayerModel(m_nPlayerIndex);
-	}
-	else
-	{
-		// get the model pointer using a "corrected" model string based on tfc_newmodels
-		m_pRenderModel = gEngfuncs.CL_LoadModel(ReturnCorrectedModelString(iSwitchClass), &modelindex);
-	}
-
-#else
-
-	m_pRenderModel = IEngineStudio.SetupPlayerModel(m_nPlayerIndex);
-
-#endif
-
+	m_pRenderModel = GetPlayerModel(m_nPlayerIndex);
 	if (m_pRenderModel == NULL)
 		return 0;
 
@@ -1771,58 +1508,7 @@ int CStudioModelRenderer::StudioDrawPlayer(int flags, entity_state_t *pplayer)
 
 		m_pPlayerInfo = IEngineStudio.PlayerInfo(m_nPlayerIndex);
 
-#if defined _TFC
-
-		m_nTopColor = m_pPlayerInfo->topcolor;
-		m_nBottomColor = m_pPlayerInfo->bottomcolor;
-
-		// get old remap colors
-		if (tfc_newmodels->value == TFC_MODELS_OLD)
-		{
-			// team 1
-			if ((m_nTopColor < 155) && (m_nTopColor > 135))
-			{
-				m_nTopColor = TEAM1_COLOR;
-				m_nBottomColor = TEAM1_COLOR - 10;
-			}
-			// team 2
-			else if ((m_nTopColor < 260) && ((m_nTopColor > 240) || (m_nTopColor == 5)))
-			{
-				m_nTopColor = TEAM2_COLOR;
-				m_nBottomColor = TEAM2_COLOR - 10;
-			}
-			// team 3
-			else if ((m_nTopColor < 50) && (m_nTopColor > 40))
-			{
-				m_nTopColor = TEAM3_COLOR;
-				m_nBottomColor = TEAM3_COLOR - 10;
-			}
-			// team 4
-			else if ((m_nTopColor < 110) && (m_nTopColor > 75))
-			{
-				m_nTopColor = TEAM4_COLOR;
-				m_nBottomColor = TEAM4_COLOR - 10;
-			}
-		}
-
-#else
-		// get remap colors
-		m_nTopColor = m_pPlayerInfo->topcolor;
-		m_nBottomColor = m_pPlayerInfo->bottomcolor;
-
-#endif
-
-		// bounds check
-		if (m_nTopColor < 0)
-			m_nTopColor = 0;
-		if (m_nTopColor > 360)
-			m_nTopColor = 360;
-		if (m_nBottomColor < 0)
-			m_nBottomColor = 0;
-		if (m_nBottomColor > 360)
-			m_nBottomColor = 360;
-
-		IEngineStudio.StudioSetRemapColors(m_nTopColor, m_nBottomColor);
+		SetPlayerRemapColors(m_nPlayerIndex);
 
 		StudioRenderModel();
 		m_pPlayerInfo = NULL;
@@ -1833,75 +1519,8 @@ int CStudioModelRenderer::StudioDrawPlayer(int flags, entity_state_t *pplayer)
 
 			model_t *pweaponmodel = IEngineStudio.GetModelByIndex(pplayer->weaponmodel);
 
-#if defined _TFC
-			if (pweaponmodel)
-			{
-				// if we want to see the old p_models
-				if (tfc_newmodels->value == TFC_MODELS_OLD)
-				{
-					for (int i = 0; i < NUM_WEAPON_PMODELS; ++i)
-					{
-						if (!_stricmp(pweaponmodel->name, sNewWeaponPModels[i]))
-						{
-							gEngfuncs.CL_LoadModel(sOldWeaponPModels[i], &modelindex);
-							pweaponmodel = IEngineStudio.GetModelByIndex(modelindex);
-							break;
-						}
-					}
-				}
-			}
-#endif
 			m_pStudioHeader = (studiohdr_t *)IEngineStudio.Mod_Extradata(pweaponmodel);
 			IEngineStudio.StudioSetHeader(m_pStudioHeader);
-
-#ifdef _TFC
-			//Do spinning stuff for the HWGuy minigun
-			if (strstr(m_pStudioHeader->name, "p_mini.mdl"))
-			{
-				if (g_flSpinUpTime[m_nPlayerIndex] && g_flSpinUpTime[m_nPlayerIndex] > gEngfuncs.GetClientTime())
-				{
-					float flmod = (g_flSpinUpTime[m_nPlayerIndex] - (gEngfuncs.GetClientTime() + 3.5));
-					flmod *= -30;
-
-					m_pCurrentEntity->curstate.frame = flmod;
-					m_pCurrentEntity->curstate.sequence = 2;
-				}
-
-				else if (g_flSpinUpTime[m_nPlayerIndex] && g_flSpinUpTime[m_nPlayerIndex] <= gEngfuncs.GetClientTime())
-					g_flSpinUpTime[m_nPlayerIndex] = 0.0;
-
-				else if (g_flSpinDownTime[m_nPlayerIndex] && g_flSpinDownTime[m_nPlayerIndex] > gEngfuncs.GetClientTime() && !g_flSpinUpTime[m_nPlayerIndex])
-				{
-					float flmod = (g_flSpinDownTime[m_nPlayerIndex] - (gEngfuncs.GetClientTime() + 3.5));
-					flmod *= -30;
-
-					m_pCurrentEntity->curstate.frame = flmod;
-					m_pCurrentEntity->curstate.sequence = 3;
-				}
-
-				else if (g_flSpinDownTime[m_nPlayerIndex] && g_flSpinDownTime[m_nPlayerIndex] <= gEngfuncs.GetClientTime() && !g_flSpinUpTime[m_nPlayerIndex])
-					g_flSpinDownTime[m_nPlayerIndex] = 0.0;
-
-				if (m_pCurrentEntity->curstate.sequence == 70 || m_pCurrentEntity->curstate.sequence == 72)
-				{
-					if (g_flSpinUpTime[m_nPlayerIndex])
-						g_flSpinUpTime[m_nPlayerIndex] = 0.0;
-
-					m_pCurrentEntity->curstate.sequence = 1;
-				}
-
-				StudioSetupBones();
-			}
-			else
-			{
-				if (g_flSpinUpTime[m_nPlayerIndex] || g_flSpinDownTime[m_nPlayerIndex])
-				{
-					g_flSpinUpTime[m_nPlayerIndex] = 0.0;
-					g_flSpinDownTime[m_nPlayerIndex] = 0.0;
-				}
-			}
-
-#endif
 
 			StudioMergeBones(pweaponmodel);
 

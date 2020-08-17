@@ -545,3 +545,55 @@ void CHud::UpdateHudColors()
 	ParseColor(hud_color2.GetString(), m_HudColor2);
 	ParseColor(hud_color3.GetString(), m_HudColor3);
 }
+
+CON_COMMAND(_toggle, "Switches cvar values from arguments.")
+{
+	int argc = gEngfuncs.Cmd_Argc();
+	if (argc <= 1 || argc == 3)
+	{
+		gEngfuncs.Con_Printf("usage: _toggle <cvar> or _toggle <cvar> <val1> <val2> [val3] ... [valN]\n");
+		return;
+	}
+
+	ConVarRef cvar(gEngfuncs.Cmd_Argv(1));
+
+	if (!cvar.IsValid())
+	{
+		gEngfuncs.Con_Printf("_toggle failed: cvar '%s' not found.\n", gEngfuncs.Cmd_Argv(1));
+		return;
+	}
+
+	char cmd[256];
+
+	if (argc == 2)
+	{
+		// Toggle between 0 and 1
+		cvar.SetValue(!cvar.GetBool());
+		return;
+	}
+	else
+	{
+		for (int i = 2; i < argc; i++)
+		{
+			if (!strcmp(cvar.GetString(), gEngfuncs.Cmd_Argv(i)))
+			{
+				if (i + 1 < argc)
+				{
+					// switch cvar value to the next one
+					cvar.SetValue(gEngfuncs.Cmd_Argv(i + 1));
+					return;
+				}
+				else
+				{
+					// if we have get to the top of _toggle values list, then start from the beginning
+					cvar.SetValue(gEngfuncs.Cmd_Argv(2));
+					return;
+				}
+			}
+		}
+
+		// if cvar value isn't equal to any values from _toggle, then set it to the first value of _toggle
+		cvar.SetValue(gEngfuncs.Cmd_Argv(2));
+		return;
+	}
+}

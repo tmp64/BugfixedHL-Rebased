@@ -410,7 +410,6 @@ void CHudMessage::Draw(float fTime)
 
 		pMessage = m_pMessages[i];
 
-		
 		// Filter out MiniAG timer that passed before we detected server AG version
 		if (CHudTimer::Get()->GetAgVersion() == CHudTimer::SV_AG_MINI && (fabs(pMessage->y - 0.01) < 0.0002f && fabs(pMessage->x - 0.5) < 0.0002f || // Original MiniAG coordinates
 		        fabs(pMessage->y - 0.01) < 0.0002f && fabs(pMessage->x + 1) < 0.0002f // Russian Crossfire MiniAG coordinates

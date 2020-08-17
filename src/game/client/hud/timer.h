@@ -17,7 +17,8 @@ public:
 	void ReadDemoTimerBuffer(int type, const unsigned char *buffer);
 	void CustomTimerCommand();
 
-	enum {
+	enum
+	{
 		SV_AG_NONE = -1,
 		SV_AG_UNKNOWN = 0,
 		SV_AG_MINI = 1,
@@ -30,8 +31,8 @@ public:
 	void SetNextmap(const char *nextmap);
 
 private:
-
-	enum {
+	enum
+	{
 		MAX_CUSTOM_TIMERS = 2,
 	};
 
@@ -40,21 +41,21 @@ private:
 	void SyncTimerRemote(unsigned int ip, unsigned short port, float fTime, double latency);
 	void DrawTimerInternal(int time, float ypos, int r, int g, int b, bool redOnLow);
 
-	float	m_flDemoSyncTime;
-	bool	m_bDemoSyncTimeValid;
-	float	m_flNextSyncTime;
-	bool	m_flSynced;
-	float	m_flEndTime;
-	float	m_flEffectiveTime;
-	bool	m_bDelayTimeleftReading;
-	float	m_flCustomTimerStart[MAX_CUSTOM_TIMERS];
-	float	m_flCustomTimerEnd[MAX_CUSTOM_TIMERS];
-	bool	m_bCustomTimerNeedSound[MAX_CUSTOM_TIMERS];
-	int		m_eAgVersion;
-	char	m_szNextmap[MAX_MAP_NAME];
-	bool	m_bNeedWriteTimer;
-	bool	m_bNeedWriteCustomTimer;
-	bool	m_bNeedWriteNextmap;
+	float m_flDemoSyncTime;
+	bool m_bDemoSyncTimeValid;
+	float m_flNextSyncTime;
+	bool m_flSynced;
+	float m_flEndTime;
+	float m_flEffectiveTime;
+	bool m_bDelayTimeleftReading;
+	float m_flCustomTimerStart[MAX_CUSTOM_TIMERS];
+	float m_flCustomTimerEnd[MAX_CUSTOM_TIMERS];
+	bool m_bCustomTimerNeedSound[MAX_CUSTOM_TIMERS];
+	int m_eAgVersion;
+	char m_szNextmap[MAX_MAP_NAME];
+	bool m_bNeedWriteTimer;
+	bool m_bNeedWriteCustomTimer;
+	bool m_bNeedWriteNextmap;
 
 	cvar_t *m_pCvarHudTimer;
 	cvar_t *m_pCvarHudTimerSync;
@@ -64,11 +65,11 @@ private:
 	cvar_t *m_pCvarSvAgVersion;
 	cvar_t *m_pCvarAmxNextmap;
 
-	char	m_szPacketBuffer[22400];	// 16x1400 split packets
-	int		m_iResponceID;
-	int		m_iReceivedSize;
-	int		m_iReceivedPackets;
-	int		m_iReceivedPacketsCount;
+	char m_szPacketBuffer[22400]; // 16x1400 split packets
+	int m_iResponceID;
+	int m_iReceivedSize;
+	int m_iReceivedPackets;
+	int m_iReceivedPacketsCount;
 };
 
 #endif

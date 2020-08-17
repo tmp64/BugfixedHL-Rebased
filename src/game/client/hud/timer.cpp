@@ -22,14 +22,14 @@
 
 #define NET_API gEngfuncs.pNetAPI
 
-#define TIMER_Y 0.04
+#define TIMER_Y             0.04
 #define TIMER_Y_NEXT_OFFSET 0.04
-#define TIMER_RED_R 255
-#define TIMER_RED_G 16
-#define TIMER_RED_B 16
-#define CUSTOM_TIMER_R 0
-#define CUSTOM_TIMER_G 160
-#define CUSTOM_TIMER_B 0
+#define TIMER_RED_R         255
+#define TIMER_RED_G         16
+#define TIMER_RED_B         16
+#define CUSTOM_TIMER_R      0
+#define CUSTOM_TIMER_G      160
+#define CUSTOM_TIMER_B      0
 
 enum RulesRequestStatus
 {
@@ -39,7 +39,7 @@ enum RulesRequestStatus
 	SOCKET_AWAITING_ANSWER = 3,
 };
 RulesRequestStatus g_eRulesRequestStatus = SOCKET_NONE;
-NetSocket g_timerSocket = 0;	// We will declare socket here to not include winsocks in hud.h
+NetSocket g_timerSocket = 0; // We will declare socket here to not include winsocks in hud.h
 
 DEFINE_HUD_ELEM(CHudTimer);
 
@@ -111,7 +111,8 @@ void CHudTimer::DoResync(void)
 
 void CHudTimer::SyncTimer(float fTime)
 {
-	if (gEngfuncs.pDemoAPI->IsPlayingback()) return;
+	if (gEngfuncs.pDemoAPI->IsPlayingback())
+		return;
 
 	if ((int)m_pCvarHudTimerSync->value == 0)
 	{
@@ -128,7 +129,7 @@ void CHudTimer::SyncTimer(float fTime)
 	{
 		if (status.remote_address.type == NA_IP)
 		{
-			SyncTimerRemote(*(unsigned int*)status.remote_address.ip, status.remote_address.port, fTime, status.latency);
+			SyncTimerRemote(*(unsigned int *)status.remote_address.ip, status.remote_address.port, fTime, status.latency);
 			if (g_eRulesRequestStatus == SOCKET_AWAITING_CODE || g_eRulesRequestStatus == SOCKET_AWAITING_ANSWER)
 				return;
 		}
@@ -183,7 +184,8 @@ void CHudTimer::SyncTimerLocal(float fTime)
 					m_flEndTime = endtime;
 			}
 		}
-		if (m_flEndTime != prevEndtime) m_bNeedWriteTimer = true;
+		if (m_flEndTime != prevEndtime)
+			m_bNeedWriteTimer = true;
 	}
 
 	// Get AG version
@@ -205,7 +207,8 @@ void CHudTimer::SyncTimerLocal(float fTime)
 			m_eAgVersion = SV_AG_NONE;
 		}
 
-		if (m_eAgVersion != prevAgVersion) m_bNeedWriteTimer = true;
+		if (m_eAgVersion != prevAgVersion)
+			m_bNeedWriteTimer = true;
 	}
 
 	// Get nextmap
@@ -232,7 +235,7 @@ void CHudTimer::SyncTimerRemote(unsigned int ip, unsigned short port, float fTim
 		g_eRulesRequestStatus = SOCKET_IDLE;
 
 	// Retrieve settings from the server
-	switch(g_eRulesRequestStatus)
+	switch (g_eRulesRequestStatus)
 	{
 	case SOCKET_NONE:
 	case SOCKET_IDLE:
@@ -243,18 +246,19 @@ void CHudTimer::SyncTimerRemote(unsigned int ip, unsigned short port, float fTim
 		NetClearSocket(g_timerSocket);
 		NetSendUdp(ip, port, "\xFF\xFF\xFF\xFFV\xFF\xFF\xFF\xFF", 9, &g_timerSocket);
 		g_eRulesRequestStatus = SOCKET_AWAITING_CODE;
-		m_flNextSyncTime = fTime;	// set time for timeout checking
+		m_flNextSyncTime = fTime; // set time for timeout checking
 		return;
 	case SOCKET_AWAITING_CODE:
 		len = NetReceiveUdp(ip, port, buffer, sizeof(buffer), g_timerSocket);
-		if (len < 5) return;
-		if (*(int*)buffer == -1 /*0xFFFFFFFF*/ && buffer[4] == 'A' && len == 9)
+		if (len < 5)
+			return;
+		if (*(int *)buffer == -1 /*0xFFFFFFFF*/ && buffer[4] == 'A' && len == 9)
 		{
 			// Answer is challenge response, send request again with the code
 			buffer[4] = 'V';
 			NetSendUdp(ip, port, buffer, 9, &g_timerSocket);
 			g_eRulesRequestStatus = SOCKET_AWAITING_ANSWER;
-			m_flNextSyncTime = fTime;	// set time for timeout checking
+			m_flNextSyncTime = fTime; // set time for timeout checking
 			return;
 		}
 		// Answer should be rules response
@@ -262,26 +266,28 @@ void CHudTimer::SyncTimerRemote(unsigned int ip, unsigned short port, float fTim
 		break;
 	case SOCKET_AWAITING_ANSWER:
 		len = NetReceiveUdp(ip, port, buffer, sizeof(buffer), g_timerSocket);
-		if (len < 5) return;
+		if (len < 5)
+			return;
 		break;
 	}
 
 	// Check for split packet
-	if (*(int*)buffer == -2 /*0xFEFFFFFF*/)
+	if (*(int *)buffer == -2 /*0xFEFFFFFF*/)
 	{
-		if (len < 9) return;
+		if (len < 9)
+			return;
 		int currentPacket = *((unsigned char *)buffer + 8) >> 4;
 		int totalPackets = *((unsigned char *)buffer + 8) & 0x0F;
 		if (currentPacket >= totalPackets)
-			return;	// broken split packet
+			return; // broken split packet
 		if (m_iReceivedPackets == 0)
-			m_iResponceID = *(int*)(buffer + 4);
-		else if (*(int*)(buffer + 4) != m_iResponceID)
-			return;	// packet is from different responce
+			m_iResponceID = *(int *)(buffer + 4);
+		else if (*(int *)(buffer + 4) != m_iResponceID)
+			return; // packet is from different responce
 		if (m_iReceivedPackets & (1 << currentPacket))
-			return;	// already has this packet
+			return; // already has this packet
 		if (currentPacket < totalPackets - 1 && len != 1400)
-			return;	// strange split packet
+			return; // strange split packet
 		// Copy into merge buffer
 		int pos = (1400 - 9) * currentPacket;
 		memcpy(m_szPacketBuffer + pos, buffer + 9, len - 9);
@@ -292,7 +298,7 @@ void CHudTimer::SyncTimerRemote(unsigned int ip, unsigned short port, float fTim
 		if (m_iReceivedPacketsCount < totalPackets)
 			return;
 	}
-	else if (*(int*)buffer == -1 /*0xFFFFFFFF*/)
+	else if (*(int *)buffer == -1 /*0xFFFFFFFF*/)
 	{
 		memcpy(m_szPacketBuffer, buffer, len);
 		m_iReceivedSize += len;
@@ -303,14 +309,14 @@ void CHudTimer::SyncTimerRemote(unsigned int ip, unsigned short port, float fTim
 	}
 
 	// Check that this is actually rules responce
-	if (*(int*)m_szPacketBuffer != -1 /*0xFFFFFFFF*/ || m_szPacketBuffer[4] != 'E')
+	if (*(int *)m_szPacketBuffer != -1 /*0xFFFFFFFF*/ || m_szPacketBuffer[4] != 'E')
 	{
 		return;
 	}
 
 	m_flSynced = true;
 	g_eRulesRequestStatus = SOCKET_IDLE;
-	m_flNextSyncTime = fTime + 10;	// Don't sync offten, we get update notifications via svc_print
+	m_flNextSyncTime = fTime + 10; // Don't sync offten, we get update notifications via svc_print
 
 	// Parse rules
 	// Get map end time
@@ -334,7 +340,8 @@ void CHudTimer::SyncTimerRemote(unsigned int ip, unsigned short port, float fTim
 				m_flEndTime = endtime;
 		}
 	}
-	if (m_flEndTime != prevEndtime) m_bNeedWriteTimer = true;
+	if (m_flEndTime != prevEndtime)
+		m_bNeedWriteTimer = true;
 
 	// Get AG version
 	if (m_eAgVersion == SV_AG_UNKNOWN)
@@ -356,7 +363,8 @@ void CHudTimer::SyncTimerRemote(unsigned int ip, unsigned short port, float fTim
 			m_eAgVersion = SV_AG_NONE;
 		}
 
-		if (m_eAgVersion != prevAgVersion) m_bNeedWriteTimer = true;
+		if (m_eAgVersion != prevAgVersion)
+			m_bNeedWriteTimer = true;
 	}
 
 	// Get nextmap
@@ -376,9 +384,11 @@ void CHudTimer::Think(void)
 {
 	float flTime = gEngfuncs.GetClientTime();
 	// Check for time reset (can it happen?)
-	if (m_flNextSyncTime - flTime > 60) m_flNextSyncTime = flTime;
+	if (m_flNextSyncTime - flTime > 60)
+		m_flNextSyncTime = flTime;
 	// Do sync. We do it always, so message hud can hide miniAG timer, and timer could work just as it is enabled
-	if (m_flNextSyncTime <= flTime) SyncTimer(flTime);
+	if (m_flNextSyncTime <= flTime)
+		SyncTimer(flTime);
 
 	// If we are recording write changes to the demo
 	if (gEngfuncs.pDemoAPI->IsRecording())
@@ -452,7 +462,8 @@ void CHudTimer::ReadDemoTimerBuffer(int type, const unsigned char *buffer)
 	case TYPE_CUSTOM_TIMER:
 		count = *(int *)&buffer[i];
 		i += sizeof(int);
-		if (count > MAX_CUSTOM_TIMERS) count = MAX_CUSTOM_TIMERS;
+		if (count > MAX_CUSTOM_TIMERS)
+			count = MAX_CUSTOM_TIMERS;
 		for (int number = 0; number < count; number++)
 		{
 			m_flCustomTimerStart[number] = *(float *)&buffer[i];
@@ -472,21 +483,25 @@ void CHudTimer::ReadDemoTimerBuffer(int type, const unsigned char *buffer)
 
 void CHudTimer::CustomTimerCommand(void)
 {
-	if (gEngfuncs.pDemoAPI->IsPlayingback()) return;
+	if (gEngfuncs.pDemoAPI->IsPlayingback())
+		return;
 
 	if (gEngfuncs.Cmd_Argc() <= 1)
 	{
-		gEngfuncs.Con_Printf( "usage:  customtimer <interval in seconds> [timer number 1|2]\n" );
+		gEngfuncs.Con_Printf("usage:  customtimer <interval in seconds> [timer number 1|2]\n");
 		return;
 	}
 
 	// Get interval value
 	int interval;
 	char *intervalString = gEngfuncs.Cmd_Argv(1);
-	if (!intervalString || !intervalString[0]) return;
+	if (!intervalString || !intervalString[0])
+		return;
 	interval = atoi(intervalString);
-	if (interval < 0) return;
-	if (interval > 86400) interval = 86400;
+	if (interval < 0)
+		return;
+	if (interval > 86400)
+		interval = 86400;
 
 	// Get timer number
 	int number = 0;
@@ -494,7 +509,8 @@ void CHudTimer::CustomTimerCommand(void)
 	if (numberString && numberString[0])
 	{
 		number = atoi(numberString) - 1;
-		if (number < 0 || number >= MAX_CUSTOM_TIMERS) return;
+		if (number < 0 || number >= MAX_CUSTOM_TIMERS)
+			return;
 	}
 
 	// Set custom timer
@@ -557,17 +573,17 @@ void CHudTimer::Draw(float fTime)
 	float timeleft = m_flSynced ? (int)(m_flEndTime - currentTime) + 1 : (int)(m_flEndTime - m_flEffectiveTime);
 	int hud_timer = (int)m_pCvarHudTimer->value;
 	int ypos = ScreenHeight * TIMER_Y;
-	switch(hud_timer)
+	switch (hud_timer)
 	{
-	case 1:	// time left
+	case 1: // time left
 		if (currentTime > 0 && timeleft > 0)
 			DrawTimerInternal((int)timeleft, ypos, r, g, b, true);
 		break;
-	case 2:	// time passed
+	case 2: // time passed
 		if (currentTime > 0)
 			DrawTimerInternal((int)currentTime, ypos, r, g, b, false);
 		break;
-	case 3:	// local PC time
+	case 3: // local PC time
 		time_t rawtime;
 		struct tm *timeinfo;
 		time(&rawtime);
@@ -581,8 +597,7 @@ void CHudTimer::Draw(float fTime)
 
 	// Draw next map
 	int hud_nextmap = (int)m_pCvarHudNextmap->value;
-	if (m_szNextmap[0] && timeleft < 60 && timeleft >= 0 && m_flEndTime > 0 &&
-		(hud_nextmap == 2 || (hud_nextmap == 1 && timeleft >= 37)))
+	if (m_szNextmap[0] && timeleft < 60 && timeleft >= 0 && m_flEndTime > 0 && (hud_nextmap == 2 || (hud_nextmap == 1 && timeleft >= 37)))
 	{
 		sprintf(text, "Nextmap is %s", m_szNextmap);
 		ypos = ScreenHeight * (TIMER_Y + TIMER_Y_NEXT_OFFSET);

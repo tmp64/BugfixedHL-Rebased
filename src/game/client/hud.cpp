@@ -58,10 +58,7 @@
 #include "hud/voice_status_self.h"
 #include "hud/speedometer.h"
 
-extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
-
-extern cvar_t *sensitivity;
-cvar_t *cl_lw = NULL;
+extern cvar_t *cl_lw;
 
 ConVar cl_bhopcap("cl_bhopcap", "2", FCVAR_BHL_ARCHIVE, "Enables/disables bhop speed cap, '2' - detect automatically");
 ConVar hud_color("hud_color", "255 160 0", FCVAR_BHL_ARCHIVE, "Main color of HUD elements");
@@ -112,6 +109,14 @@ static void AboutCommand(void)
 	ConsolePrint("\n");
 	ConsolePrint("Github: " BHL_GITHUB_URL "\n");
 	ConsolePrint("Discussion forum: " BHL_FORUM_URL "\n");
+}
+
+CHud::CHud()
+{
+}
+
+CHud::~CHud()
+{
 }
 
 // This is called every time the DLL is loaded
@@ -231,57 +236,6 @@ void CHud::Init(void)
 	g_pViewport->ReloadLayout();
 
 	bhlcfg::Init();
-}
-
-CHud::CHud()
-{
-}
-
-CHud::~CHud()
-{
-}
-
-// GetSpriteIndex()
-// searches through the sprite list loaded from hud.txt for a name matching SpriteName
-// returns an index into the gHUD.m_rghSprites[] array
-// returns 0 if sprite not found
-int CHud::GetSpriteIndex(const char *SpriteName)
-{
-	// look through the loaded sprite name list for SpriteName
-	for (int i = 0; i < m_iSpriteCount; i++)
-	{
-		if (Q_stricmp(SpriteName, m_rgszSpriteNames[i].name) == 0)
-			return i;
-	}
-
-	return -1; // invalid sprite
-}
-
-void CHud::AddSprite(client_sprite_t *p)
-{
-	// Search for existing sprite
-	int i = 0;
-	for (i = 0; i < m_iSpriteCount; i++)
-	{
-		if (!Q_stricmp(m_rgszSpriteNames[i].name, p->szName))
-			return;
-	}
-
-	char sz[256];
-	snprintf(sz, sizeof(sz), "sprites/%s.spr", p->szSprite);
-
-	m_rghSprites.push_back(SPR_Load(sz));
-	m_rgrcRects.push_back(p->rc);
-
-	// Copy sprite name
-	m_rgszSpriteNames.push_back({});
-	Q_strncpy(m_rgszSpriteNames[m_iSpriteCount].name, p->szName, MAX_SPRITE_NAME_LENGTH);
-
-	m_iSpriteCount++;
-
-	Assert(m_rghSprites.size() == m_iSpriteCount);
-	Assert(m_rgrcRects.size() == m_iSpriteCount);
-	Assert(m_rgszSpriteNames.size() == m_iSpriteCount);
 }
 
 void CHud::VidInit(void)
@@ -413,79 +367,50 @@ void CHud::ApplyViewportSchemeSettings(vgui2::IScheme *pScheme)
 	}
 }
 
-int CHud::MsgFunc_Logo(const char *pszName, int iSize, void *pbuf)
+// GetSpriteIndex()
+// searches through the sprite list loaded from hud.txt for a name matching SpriteName
+// returns an index into the gHUD.m_rghSprites[] array
+// returns 0 if sprite not found
+int CHud::GetSpriteIndex(const char *SpriteName)
 {
-	BEGIN_READ(pbuf, iSize);
+	// look through the loaded sprite name list for SpriteName
+	for (int i = 0; i < m_iSpriteCount; i++)
+	{
+		if (Q_stricmp(SpriteName, m_rgszSpriteNames[i].name) == 0)
+			return i;
+	}
 
-	// update Train data
-	m_iLogo = READ_BYTE();
+	return -1; // invalid sprite
+}
 
-	return 1;
+void CHud::AddSprite(client_sprite_t *p)
+{
+	// Search for existing sprite
+	int i = 0;
+	for (i = 0; i < m_iSpriteCount; i++)
+	{
+		if (!Q_stricmp(m_rgszSpriteNames[i].name, p->szName))
+			return;
+	}
+
+	char sz[256];
+	snprintf(sz, sizeof(sz), "sprites/%s.spr", p->szSprite);
+
+	m_rghSprites.push_back(SPR_Load(sz));
+	m_rgrcRects.push_back(p->rc);
+
+	// Copy sprite name
+	m_rgszSpriteNames.push_back({});
+	Q_strncpy(m_rgszSpriteNames[m_iSpriteCount].name, p->szName, MAX_SPRITE_NAME_LENGTH);
+
+	m_iSpriteCount++;
+
+	Assert(m_rghSprites.size() == m_iSpriteCount);
+	Assert(m_rgrcRects.size() == m_iSpriteCount);
+	Assert(m_rgszSpriteNames.size() == m_iSpriteCount);
 }
 
 float g_lastFOV = 0.0;
-
-/*
-============
-COM_FileBase
-============
-*/
-// Extracts the base name of a file (no path, no extension, assumes '/' as path separator)
-void COM_FileBase(const char *in, char *out)
-{
-	int len, start, end;
-
-	len = strlen(in);
-
-	// scan backward for '.'
-	end = len - 1;
-	while (end && in[end] != '.' && in[end] != '/' && in[end] != '\\')
-		end--;
-
-	if (in[end] != '.') // no '.', copy to end
-		end = len - 1;
-	else
-		end--; // Found ',', copy to left of '.'
-
-	// Scan backward for '/'
-	start = len - 1;
-	while (start >= 0 && in[start] != '/' && in[start] != '\\')
-		start--;
-
-	if (in[start] != '/' && in[start] != '\\')
-		start = 0;
-	else
-		start++;
-
-	// Length of new sting
-	len = end - start + 1;
-
-	// Copy partial string
-	strncpy(out, &in[start], len);
-	// Terminate it
-	out[len] = 0;
-}
-
-/*
-=================
-HUD_IsGame
-
-=================
-*/
-int HUD_IsGame(const char *game)
-{
-	const char *gamedir;
-	char gd[1024];
-
-	gamedir = gEngfuncs.pfnGetGameDirectory();
-	if (gamedir && gamedir[0])
-	{
-		COM_FileBase(gamedir, gd);
-		if (!_stricmp(gd, game))
-			return 1;
-	}
-	return 0;
-}
 
 /*
 =====================
@@ -514,45 +439,6 @@ float HUD_GetFOV(void)
 		g_lastFOV = g_demozoom;
 	}
 	return g_lastFOV;
-}
-
-int CHud::MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
-{
-	BEGIN_READ(pbuf, iSize);
-
-	int newfov = READ_BYTE();
-	int def_fov = CVAR_GET_FLOAT("default_fov");
-
-	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
-	if (cl_lw && cl_lw->value)
-		return 1;
-
-	g_lastFOV = newfov;
-
-	if (newfov == 0)
-	{
-		m_iFOV = def_fov;
-	}
-	else
-	{
-		m_iFOV = newfov;
-	}
-
-	// the clients fov is actually set in the client data update section of the hud
-
-	// Set a new sensitivity
-	if (m_iFOV == def_fov)
-	{
-		// reset to saved sensitivity
-		m_flMouseSensitivity = 0;
-	}
-	else
-	{
-		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)def_fov) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
-	}
-
-	return 1;
 }
 
 float CHud::GetSensitivity(void)

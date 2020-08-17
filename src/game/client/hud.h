@@ -112,19 +112,27 @@ public:
 	// Screen information
 	SCREENINFO m_scrinfo;
 
+	//-----------------------------------------------------
 	// HUD exports
+	//-----------------------------------------------------
 	CHud();
 	~CHud();
 	void Init(void);
 	void VidInit(void);
 	void Frame(double time);
 	void Shutdown();
+	void ApplyViewportSchemeSettings(vgui2::IScheme *pScheme);
+
+	//-----------------------------------------------------
+	// HUD Updating (hud_redraw.cpp, hud_update.cpp)
+	//-----------------------------------------------------
 	void Think(void);
 	int Redraw(float flTime, int intermission);
 	int UpdateClientData(client_data_t *cdata, float time);
-	void ApplyViewportSchemeSettings(vgui2::IScheme *pScheme);
 
-	// Draw functions
+	//-----------------------------------------------------
+	// Draw functions (hud_redraw.cpp)
+	//-----------------------------------------------------
 	int DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b);
 	int DrawHudNumber(int x, int y, int number, int r, int g, int b);
 	int DrawHudNumberCentered(int x, int y, int number, int r, int g, int b);
@@ -137,18 +145,22 @@ public:
 	int GetHudCharWidth(int c);
 	int CalculateCharWidth(int c);
 
+	//-----------------------------------------------------
 	// Sprite functions
+	//-----------------------------------------------------
 	HSPRITE GetSprite(int index);
 	const wrect_t &GetSpriteRect(int index); // Don't keep the reference! It may become invalid.
 	int GetSpriteIndex(const char *SpriteName); // gets a sprite index, for use in the m_rghSprites[] array
 	void AddSprite(client_sprite_t *p);
 
-	// User messages
+	//-----------------------------------------------------
+	// User messages (hud_msg.cpp)
+	//-----------------------------------------------------
+	int MsgFunc_InitHUD(const char *pszName, int iSize, void *pbuf);
+	int MsgFunc_ResetHUD(const char *pszName, int iSize, void *pbuf);
+	int MsgFunc_Logo(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_Damage(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf);
-	int MsgFunc_Logo(const char *pszName, int iSize, void *pbuf);
-	int MsgFunc_ResetHUD(const char *pszName, int iSize, void *pbuf);
-	int MsgFunc_InitHUD(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_ViewMode(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_Concuss(const char *pszName, int iSize, void *pbuf);
@@ -156,9 +168,15 @@ public:
 	float GetSensitivity();
 	BHopCap GetBHopCapState();
 
+	/**
+	 * Runs function next time HUD_Frame is called.
+	 */
 	void CallOnNextFrame(std::function<void()> f);
 
+	//-----------------------------------------------------
 	// Colors
+	//-----------------------------------------------------
+
 	/**
 	 * Returns color for specified HUD part with specified value.
 	 * @param	hudPart		Part of the hud

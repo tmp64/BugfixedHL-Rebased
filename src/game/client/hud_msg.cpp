@@ -36,30 +36,14 @@ extern BEAM *pBeam2;
 void ClearEventList(void);
 #endif
 
-/// USER-DEFINED SERVER MESSAGE HANDLERS
+extern cvar_t *sensitivity;
+extern float g_lastFOV;
 
-int CHud::MsgFunc_ResetHUD(const char *pszName, int iSize, void *pbuf)
-{
-	// clear all hud data
-	for (CHudElem *i : m_HudList)
-		i->Reset();
-
-	// reset sensitivity
-	m_flMouseSensitivity = 0;
-
-	// reset concussion effect
-	m_iConcussionEffect = 0;
-
-	return 1;
-}
+cvar_t *cl_lw = nullptr;
 
 void CAM_ToFirstPerson(void);
 
-int CHud::MsgFunc_ViewMode(const char *pszName, int iSize, void *pbuf)
-{
-	CAM_ToFirstPerson();
-	return 1;
-}
+/// USER-DEFINED SERVER MESSAGE HANDLERS
 
 int CHud::MsgFunc_InitHUD(const char *pszName, int iSize, void *pbuf)
 {
@@ -85,10 +69,27 @@ int CHud::MsgFunc_InitHUD(const char *pszName, int iSize, void *pbuf)
 	return 1;
 }
 
-int CHud::MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf)
+int CHud::MsgFunc_ResetHUD(const char *pszName, int iSize, void *pbuf)
+{
+	// clear all hud data
+	for (CHudElem *i : m_HudList)
+		i->Reset();
+
+	// reset sensitivity
+	m_flMouseSensitivity = 0;
+
+	// reset concussion effect
+	m_iConcussionEffect = 0;
+
+	return 1;
+}
+
+int CHud::MsgFunc_Logo(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
-	m_Teamplay = READ_BYTE();
+
+	// update Train data
+	m_iLogo = READ_BYTE();
 
 	return 1;
 }
@@ -113,6 +114,59 @@ int CHud::MsgFunc_Damage(const char *pszName, int iSize, void *pbuf)
 		count = 10;
 
 	// TODO: kick viewangles,  show damage visually
+
+	return 1;
+}
+
+int CHud::MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	m_Teamplay = READ_BYTE();
+
+	return 1;
+}
+
+int CHud::MsgFunc_ViewMode(const char *pszName, int iSize, void *pbuf)
+{
+	CAM_ToFirstPerson();
+	return 1;
+}
+
+int CHud::MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	int newfov = READ_BYTE();
+	int def_fov = CVAR_GET_FLOAT("default_fov");
+
+	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
+	if (cl_lw && cl_lw->value)
+		return 1;
+
+	g_lastFOV = newfov;
+
+	if (newfov == 0)
+	{
+		m_iFOV = def_fov;
+	}
+	else
+	{
+		m_iFOV = newfov;
+	}
+
+	// the clients fov is actually set in the client data update section of the hud
+
+	// Set a new sensitivity
+	if (m_iFOV == def_fov)
+	{
+		// reset to saved sensitivity
+		m_flMouseSensitivity = 0;
+	}
+	else
+	{
+		// set a new sensitivity that is proportional to the change from the FOV default
+		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)def_fov) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
+	}
 
 	return 1;
 }

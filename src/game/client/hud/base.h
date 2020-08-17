@@ -8,6 +8,7 @@
 #define FADE_TIME 100
 
 #define MAX_SPRITE_NAME_LENGTH 24
+#define MAX_MAP_NAME           64
 
 typedef struct cvar_s cvar_t;
 

@@ -19,6 +19,7 @@
 #include "engine_patches.h"
 #include "parsemsg.h"
 #include "vgui/client_viewport.h"
+#include "hud/timer.h"
 
 static_assert(sizeof(SvcClientFuncs) == sizeof(void *) * SVC_MSG_COUNT, "SvcClientFuncs size doesn't match SVC_MSG_COUNT");
 
@@ -345,7 +346,7 @@ void CSvcMessages::SvcPrint()
 
 	if (!strncmp(str, "\"mp_timelimit\" changed to \"", 27) || !strncmp(str, "\"amx_nextmap\" changed to \"", 26))
 	{
-		// TODO: Sync HUD timer
+		CHudTimer::Get()->DoResync();
 	}
 	else if (m_iStatusRequestState != StatusRequestState::Idle)
 	{

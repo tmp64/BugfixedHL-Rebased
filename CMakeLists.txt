@@ -364,6 +364,7 @@ find_package( SDL2 MODULE REQUIRED )
 
 if( WIN32 )
 	set( CLIENT_PLAT_LIBS
+		wsock32
     )
 else()
 	set( CLIENT_PLAT_LIBS

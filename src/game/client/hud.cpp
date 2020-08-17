@@ -57,6 +57,7 @@
 #include "hud/voice_status.h"
 #include "hud/voice_status_self.h"
 #include "hud/speedometer.h"
+#include "hud/timer.h"
 
 extern cvar_t *cl_lw;
 
@@ -223,6 +224,7 @@ void CHud::Init(void)
 	RegisterHudElem<CHudVoiceStatus>();
 	RegisterHudElem<CHudVoiceStatusSelf>();
 	RegisterHudElem<CHudSpeedometer>();
+	RegisterHudElem<CHudTimer>();
 
 	ClientVoiceMgr_Init();
 

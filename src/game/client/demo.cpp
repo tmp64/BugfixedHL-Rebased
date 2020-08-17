@@ -18,6 +18,7 @@
 #include "demo_api.h"
 #include <memory.h>
 #include "Exports.h"
+#include "hud/timer.h"
 
 int g_demosniper = 0;
 int g_demosniperdamage = 0;
@@ -91,6 +92,12 @@ void CL_DLLEXPORT Demo_ReadBuffer(int size, unsigned char *buffer)
 	case TYPE_ZOOM:
 		g_demozoom = *(float *)&buffer[i];
 		i += sizeof(float);
+		break;
+	case TYPE_TIME:
+	case TYPE_TIMER:
+	case TYPE_CUSTOM_TIMER:
+	case TYPE_NEXTMAP:
+		CHudTimer::Get()->ReadDemoTimerBuffer(type, buffer + i);
 		break;
 	default:
 		gEngfuncs.Con_DPrintf("Unknown demo buffer type, skipping.\n");

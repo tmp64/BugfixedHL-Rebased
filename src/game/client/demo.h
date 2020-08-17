@@ -13,7 +13,11 @@
 enum
 {
 	TYPE_SNIPERDOT = 0,
-	TYPE_ZOOM
+	TYPE_ZOOM,
+	TYPE_TIME,
+	TYPE_TIMER,
+	TYPE_CUSTOM_TIMER,
+	TYPE_NEXTMAP,
 };
 
 void Demo_WriteBuffer(int type, int size, unsigned char *buffer);

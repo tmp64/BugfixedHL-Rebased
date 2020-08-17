@@ -36,6 +36,8 @@ add_sources(
 	statusbar.h
 	text_message.cpp
 	text_message.h
+	timer.cpp
+	timer.h
 	train.cpp
 	train.h
 	voice_status.cpp

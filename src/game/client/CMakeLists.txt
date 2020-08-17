@@ -43,6 +43,7 @@ add_sources(
 	interpolation.cpp
 	interpolation.h
 	kbutton.h
+	net.h
 	player_info.cpp
 	player_info.h
 	studio_util.cpp
@@ -79,9 +80,15 @@ add_sources(
 )
 
 if( WIN32 )
-	add_sources( engine_patches_windows.cpp )
+	add_sources(
+		engine_patches_windows.cpp
+		net_windows.cpp
+	)
 else()
-	add_sources( engine_patches_stub.cpp )
+	add_sources(
+		engine_patches_stub.cpp
+		net_stub.cpp
+	)
 endif()
 
 add_subdirectory( hl )

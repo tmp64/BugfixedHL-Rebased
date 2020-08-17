@@ -26,6 +26,7 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "message.h"
+#include "timer.h"
 
 // 1 Global client_textmessage_t for custom messages that aren't in the titles.txt
 constexpr int MAX_MESSAGE_TEXT_LENGTH = 1024;
@@ -409,10 +410,9 @@ void CHudMessage::Draw(float fTime)
 
 		pMessage = m_pMessages[i];
 
-		// FIXME: AG Timer
-#if 0
+		
 		// Filter out MiniAG timer that passed before we detected server AG version
-		if (gHUD.m_Timer->GetAgVersion() == CHudTimer::SV_AG_MINI && (fabs(pMessage->y - 0.01) < 0.0002f && fabs(pMessage->x - 0.5) < 0.0002f || // Original MiniAG coordinates
+		if (CHudTimer::Get()->GetAgVersion() == CHudTimer::SV_AG_MINI && (fabs(pMessage->y - 0.01) < 0.0002f && fabs(pMessage->x - 0.5) < 0.0002f || // Original MiniAG coordinates
 		        fabs(pMessage->y - 0.01) < 0.0002f && fabs(pMessage->x + 1) < 0.0002f // Russian Crossfire MiniAG coordinates
 		        ))
 		{
@@ -420,7 +420,6 @@ void CHudMessage::Draw(float fTime)
 			m_pMessages[i] = NULL;
 			continue;
 		}
-#endif
 
 		// This is when the message is over
 		switch (pMessage->effect)
@@ -501,16 +500,13 @@ void CHudMessage::MessageAdd(const char *pName, float time)
 		}
 
 		// Filter out MiniAG timer
-		// FIXME: AG Timer
-#if 0
-		if (gHUD.m_Timer->GetAgVersion() == CHudTimer::SV_AG_MINI && (fabs(tempMessage->y - 0.01) < 0.0002f && fabs(tempMessage->x - 0.5) < 0.0002f || // Original MiniAG coordinates
+		if (CHudTimer::Get()->GetAgVersion() == CHudTimer::SV_AG_MINI && (fabs(tempMessage->y - 0.01) < 0.0002f && fabs(tempMessage->x - 0.5) < 0.0002f || // Original MiniAG coordinates
 		        fabs(tempMessage->y - 0.01) < 0.0002f && fabs(tempMessage->x + 1) < 0.0002f // Russian Crossfire MiniAG coordinates
 		        ))
 		{
 			// TODO: Additional checks on text in the message...
 			return;
 		}
-#endif
 
 		for (j = 0; j < MAX_HUD_MESSAGES; j++)
 		{

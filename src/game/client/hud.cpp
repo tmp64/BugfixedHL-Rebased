@@ -570,7 +570,8 @@ CON_COMMAND(_toggle, "Switches cvar values from arguments.")
 	if (argc == 2)
 	{
 		// Toggle between 0 and 1
-		cvar.SetValue(!cvar.GetBool());
+		sprintf(cmd, "%s %d", gEngfuncs.Cmd_Argv(1), (int)(!cvar.GetBool()));
+		EngineClientCmd(cmd);
 		return;
 	}
 	else
@@ -582,13 +583,15 @@ CON_COMMAND(_toggle, "Switches cvar values from arguments.")
 				if (i + 1 < argc)
 				{
 					// switch cvar value to the next one
-					cvar.SetValue(gEngfuncs.Cmd_Argv(i + 1));
+					sprintf(cmd, "%s \"%s\"", gEngfuncs.Cmd_Argv(1), gEngfuncs.Cmd_Argv(i + 1));
+					EngineClientCmd(cmd);
 					return;
 				}
 				else
 				{
 					// if we have get to the top of _toggle values list, then start from the beginning
-					cvar.SetValue(gEngfuncs.Cmd_Argv(2));
+					sprintf(cmd, "%s \"%s\"", gEngfuncs.Cmd_Argv(1), gEngfuncs.Cmd_Argv(2));
+					EngineClientCmd(cmd);
 					return;
 				}
 			}

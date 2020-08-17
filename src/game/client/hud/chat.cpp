@@ -23,69 +23,7 @@
 #include "cl_voice_status.h"
 
 ConVar hud_saytext_time("hud_saytext_time", "12", 0);
-ConVar cl_mute_all_comms("cl_mute_all_comms", "1", FCVAR_ARCHIVE, "If 1, then all communications from a player will be blocked when that player is muted, including chat messages.");
-
-Color g_SdkColorBlue(153, 204, 255, 255);
-Color g_SdkColorRed(255, 63, 63, 255);
-Color g_SdkColorGreen(153, 255, 153, 255);
-Color g_SdkColorDarkGreen(64, 255, 64, 255);
-Color g_SdkColorYellow(255, 178, 0, 255);
-Color g_SdkColorGrey(204, 204, 204, 255);
-
-// removes all color markup characters, so Msg can deal with the string properly
-// returns a pointer to str
-char *RemoveColorMarkup(char *str)
-{
-	char *out = str;
-	for (char *in = str; *in != 0; ++in)
-	{
-		if (*in > 0 && *in < COLOR_MAX)
-		{
-			if (*in == COLOR_HEXCODE || *in == COLOR_HEXCODE_ALPHA)
-			{
-				// skip the next six or eight characters
-				const int nSkip = (*in == COLOR_HEXCODE ? 6 : 8);
-				for (int i = 0; i < nSkip && *in != 0; i++)
-				{
-					++in;
-				}
-
-				// if we reached the end of the string first, then back up
-				if (*in == 0)
-				{
-					--in;
-				}
-			}
-
-			continue;
-		}
-		*out = *in;
-		++out;
-	}
-	*out = 0;
-
-	return str;
-}
-
-// converts all '\r' characters to '\n', so that the engine can deal with the properly
-// returns a pointer to str
-wchar_t *ConvertCRtoNL(wchar_t *str)
-{
-	for (wchar_t *ch = str; *ch != 0; ch++)
-		if (*ch == L'\r')
-			*ch = L'\n';
-	return str;
-}
-
-void StripEndNewlineFromString(wchar_t *str)
-{
-	int s = wcslen(str) - 1;
-	if (s >= 0)
-	{
-		if (str[s] == L'\n' || str[s] == L'\r')
-			str[s] = 0;
-	}
-}
+ConVar cl_mute_all_comms("cl_mute_all_comms", "1", FCVAR_BHL_ARCHIVE, "If 1, then all communications from a player will be blocked when that player is muted, including chat messages.");
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -677,7 +615,7 @@ void CHudChat::StartMessageMode(int iMessageModeType)
 		GetChatHistory()->SetMouseInputEnabled(true);
 		GetChatHistory()->SetKeyBoardInputEnabled(false);
 		GetChatHistory()->SetVerticalScrollbar(true);
-		GetChatHistory()->ResetAllFades(true); // FIXME
+		GetChatHistory()->ResetAllFades(true);
 		GetChatHistory()->SetPaintBorderEnabled(true);
 		GetChatHistory()->SetVisible(true);
 	}
@@ -714,7 +652,7 @@ void CHudChat::StopMessageMode(void)
 		GetChatHistory()->GotoTextEnd();
 		GetChatHistory()->SetMouseInputEnabled(false);
 		GetChatHistory()->SetVerticalScrollbar(false);
-		GetChatHistory()->ResetAllFades(false, true, CHAT_HISTORY_FADE_TIME); // FIXME
+		GetChatHistory()->ResetAllFades(false, true, CHAT_HISTORY_FADE_TIME);
 		GetChatHistory()->SelectNoText();
 	}
 
@@ -794,10 +732,6 @@ Color CHudChat::GetTextColorForClient(TextColor colorNum, int clientIndex)
 		c = GetClientColor(clientIndex);
 		break;
 
-	case COLOR_LOCATION:
-		c = g_SdkColorDarkGreen;
-		break;
-
 	case COLOR_ACHIEVEMENT:
 	{
 		vgui2::IScheme *pSourceScheme = vgui2::scheme()->GetIScheme(vgui2::scheme()->GetScheme("SourceScheme"));
@@ -829,7 +763,7 @@ void CHudChat::SetCustomColor(const char *pszColorName)
 //-----------------------------------------------------------------------------
 Color CHudChat::GetDefaultTextColor(void)
 {
-	return g_SdkColorYellow;
+	return NoTeamColor::Orange;
 }
 
 //-----------------------------------------------------------------------------
@@ -846,6 +780,19 @@ Color CHudChat::GetClientColor(int clientIndex)
 //-----------------------------------------------------------------------------
 void CHudChatLine::InsertAndColorizeText(wchar_t *buf, int clientIndex)
 {
+	// buf will look something like this
+	// \x02PlayerName: A chat message!\0
+	//     ^~~~~~~~~~^~~~~~~~~~~~~~~~~
+	// <player color>   <default color>
+	// \x02 is COLOR_PLAYERNAME
+
+	// m_textRanges contains TextRanges.
+	// Each TextRange describes color of a substring of the chat message.
+	//
+	// start - index of the first char of the substring
+	// end - index AFTER the last char of the substring
+	// color - color of the substring
+
 	if (m_text)
 	{
 		delete[] m_text;
@@ -853,14 +800,12 @@ void CHudChatLine::InsertAndColorizeText(wchar_t *buf, int clientIndex)
 	}
 	m_textRanges.RemoveAll();
 
-	//m_text = CloneWString( buf );
-
 	CHudChat *pChat = dynamic_cast<CHudChat *>(GetParent());
 
 	if (pChat == NULL)
 		return;
 
-	// Parse colorcodes
+	// Color the message
 	{
 		wchar_t *buf2 = buf;
 		int len = wcslen(buf2);
@@ -868,6 +813,7 @@ void CHudChatLine::InsertAndColorizeText(wchar_t *buf, int clientIndex)
 
 		wchar_t *str = m_text;
 
+		// Add initial color of the message
 		{
 			TextRange range;
 			range.start = 0;
@@ -875,64 +821,71 @@ void CHudChatLine::InsertAndColorizeText(wchar_t *buf, int clientIndex)
 			range.end = len;
 			m_textRanges.AddToTail(range);
 		}
+
 		int last_range_idx = 0;
+		int is_player_msg = *buf2 == 2 ? 1 : 0;
+
 		while (*buf2)
 		{
 			int pos = str - m_text;
 
-			if (pos == m_iNameStart + m_iNameLength - 1 && m_textRanges[last_range_idx].end == pos - 1)
+			// Reset color after player name to default
+			if (pos == m_iNameStart + m_iNameLength && is_player_msg) // The only color is player name
 			{
 				TextRange range;
 				range.start = pos;
 				range.color = pChat->GetTextColorForClient(COLOR_NORMAL, clientIndex);
 				range.end = len;
 
-				last_range_idx = m_textRanges.Count();
+				m_textRanges[last_range_idx].end = pos;
+
 				m_textRanges.AddToTail(range);
+
+				last_range_idx = m_textRanges.Count() - 1;
 			}
 
-			if (*buf2 == '^' && *(buf2 + 1) >= '0' && *(buf2 + 1) <= '9')
+			if (IsColorCode(buf2)) // Parse colorcodes
 			{
 				TextRange range;
 				int idx = *(buf2 + 1) - '0';
 				if (idx == 0 || idx == 9)
 				{
-					if (pos <= m_iNameStart + m_iNameLength)
+					if (pos <= m_iNameStart + m_iNameLength && is_player_msg)
 						range.color = pChat->GetTextColorForClient(COLOR_PLAYERNAME, clientIndex);
 					else
 						range.color = pChat->GetTextColorForClient(COLOR_NORMAL, clientIndex);
 				}
 				else
 				{
-					// FIXME: Colorcodes
-					//int *clr = g_iColorsCodes[idx];
-					int clr[] = { 255, 255, 255 };
-					range.color = Color(clr[0], clr[1], clr[2]);
+					range.color = gHUD.GetColorCodeColor(idx);
 				}
 				range.start = pos;
 				range.end = len;
 
 				m_textRanges[last_range_idx].end = pos;
-				last_range_idx = m_textRanges.Count();
 				m_textRanges.AddToTail(range);
+				last_range_idx = m_textRanges.Count() - 1;
 
-				if (pos < m_iNameStart)
-					m_iNameStart -= 2;
-				else if (pos >= m_iNameStart && pos < m_iNameStart + m_iNameLength)
+				if (pos >= m_iNameStart && pos < m_iNameStart + m_iNameLength)
 					m_iNameLength -= 2;
 
 				buf2 += 2;
 			}
-			else if (*buf2 == 2) // COLOR_PLAYERNAME but for GoldSrc
+			// m_iNameLength > 0 fixes the miniag issue too, but with the drawback of not coloring
+			// the player name according to the player team
+			else if (*buf2 == COLOR_PLAYERNAME && pos == 0 && m_iNameLength > 0) // Color of the player name
 			{
 				TextRange range;
 				range.start = pos;
 				range.color = pChat->GetTextColorForClient(COLOR_PLAYERNAME, clientIndex);
-				range.end = pos + m_iNameLength;
+				range.end = len;
 
 				m_textRanges[last_range_idx].end = pos;
-				last_range_idx = m_textRanges.Count();
 				m_textRanges.AddToTail(range);
+				last_range_idx = m_textRanges.Count() - 1;
+
+				// shift name start position since we are removing a character
+				m_iNameStart--;
 				buf2++;
 			}
 			else
@@ -944,6 +897,7 @@ void CHudChatLine::InsertAndColorizeText(wchar_t *buf, int clientIndex)
 		}
 		*str = '\0';
 
+		// Add final text range if need to
 		if (m_textRanges[last_range_idx].end != len)
 		{
 			TextRange range;
@@ -954,7 +908,24 @@ void CHudChatLine::InsertAndColorizeText(wchar_t *buf, int clientIndex)
 		}
 	}
 
+	// Add text to the history as described in m_textRanges
 	Colorize();
+
+	// Color range debugging
+	// Change 0 to 1 to enable.
+	// Make sure to disable it before commiting.
+#if 0
+	std::wstring str = std::wstring(m_text);
+	for (int i = 0; i < m_textRanges.Count(); i++)
+	{
+		ConPrintf("%2d. start: %3d end: %3d color: [%3d %3d %3d] %ls\n",
+			i + 1, m_textRanges[i].start, m_textRanges[i].end,
+			m_textRanges[i].color.r(), m_textRanges[i].color.g(), m_textRanges[i].color.b(),
+			str.substr(m_textRanges[i].start, m_textRanges[i].end - m_textRanges[i].start).c_str());
+
+	}
+	ConPrintf("m_text %ls\n", m_text);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1181,6 +1152,12 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 
 		if (pName)
 		{
+			// miniag issue: server-side is giving a name with colorcodes while say message doesn't have them
+			// server-side will give the name with colors removed after first name change
+			// so until that, we need to remove them by ourselves and try to find again
+			if (!strstr(pmsg, playerName))
+				pName = RemoveColorCodes(pName);
+
 			wchar_t wideName[MAX_PLAYER_NAME];
 			g_pVGuiLocalize->ConvertANSIToUnicode(pName, wideName, sizeof(wideName));
 

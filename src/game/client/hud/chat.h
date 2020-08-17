@@ -54,8 +54,10 @@ enum
 enum TextColor
 {
 	COLOR_NORMAL = 1,
-	COLOR_USEOLDCOLORS = 2,
-	COLOR_PLAYERNAME = 3,
+	COLOR_PLAYERNAME = 2,
+
+	// These are not used in HL1, were not tested and may not be handled correctly
+	COLOR_PLAYERNAME_SOURCE = 3,
 	COLOR_LOCATION = 4,
 	COLOR_ACHIEVEMENT = 5,
 	COLOR_CUSTOM = 6, // Will use the most recently SetCustomColor()

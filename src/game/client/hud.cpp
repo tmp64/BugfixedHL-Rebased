@@ -251,7 +251,6 @@ void CHud::VidInit(void)
 	//	m_hsprFont = LoadSprite("sprites/%d_font.spr");
 
 	m_hsprLogo = 0;
-	m_hsprCursor = 0;
 
 	if (ScreenWidth < 640)
 		m_iRes = 320;

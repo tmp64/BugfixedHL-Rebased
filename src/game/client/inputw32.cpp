@@ -31,9 +31,6 @@
 
 #define MOUSE_BUTTON_COUNT 5
 
-// Set this to 1 to show mouse cursor.  Experimental
-int g_iVisibleMouse = 0;
-
 extern cl_enginefunc_t gEngfuncs;
 extern int iMouseInUse;
 
@@ -377,7 +374,7 @@ void CL_DLLEXPORT IN_MouseEvent(int mstate)
 {
 	int i;
 
-	if (iMouseInUse || g_iVisibleMouse || g_pVGuiSurface->IsCursorVisible())
+	if (iMouseInUse || g_pVGuiSurface->IsCursorVisible())
 	{
 		// Allow to release keys if they were pressed before mouse became used
 		for (int i = 0; i < mouse_buttons; i++)
@@ -475,7 +472,7 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 
 	//jjb - this disbles normal mouse control if the user is trying to
 	//      move the camera, or if the mouse cursor is visible or if we're in intermission
-	if (!iMouseInUse && !gHUD.m_iIntermission && !g_iVisibleMouse && !g_pVGuiSurface->IsCursorVisible())
+	if (!iMouseInUse && !gHUD.m_iIntermission && !g_pVGuiSurface->IsCursorVisible())
 	{
 		int deltaX, deltaY;
 #ifdef _WIN32
@@ -598,7 +595,7 @@ IN_Accumulate
 void CL_DLLEXPORT IN_Accumulate(void)
 {
 	//only accumulate mouse if we are not moving the camera with the mouse
-	if (!iMouseInUse && !g_iVisibleMouse && !g_pVGuiSurface->IsCursorVisible())
+	if (!iMouseInUse && !g_pVGuiSurface->IsCursorVisible())
 	{
 		if (mouseactive)
 		{

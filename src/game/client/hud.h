@@ -85,7 +85,6 @@ struct NoTeamColor
 class CHud
 {
 public:
-	HSPRITE m_hsprCursor;
 	float m_flTime; // the current client time
 	float m_fOldTime; // the time at which the HUD was last redrawn
 	double m_flTimeDelta; // the difference between flTime and fOldTime

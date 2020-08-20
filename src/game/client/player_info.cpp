@@ -1,9 +1,8 @@
+#include <tier1/strtools.h>
 #include "hud.h"
 #include "player_info.h"
 #include "com_model.h"
 #include "engine_patches.h"
-
-team_info_t g_TeamInfo[MAX_TEAMS + 1];
 
 CPlayerInfo CPlayerInfo::m_sPlayerInfo[MAX_PLAYERS + 1];
 
@@ -188,4 +187,67 @@ player_info_t *CPlayerInfo::GetEnginePlayerInfo()
 		return nullptr;
 	player_info_t *ptr = reinterpret_cast<player_info_t *>(m_EngineInfo.name - offsetof(player_info_t, name));
 	return ptr;
+}
+
+//-----------------------------------------------------
+
+CTeamInfo CTeamInfo::m_sTeamInfo[MAX_TEAMS + 1];
+
+int CTeamInfo::GetNumber()
+{
+	return m_iNumber;
+}
+
+const char *CTeamInfo::GetName()
+{
+	return m_Name;
+}
+
+const char *CTeamInfo::GetDisplayName()
+{
+	return m_DisplayName[0] != '\0' ? m_DisplayName : m_Name;
+}
+
+bool CTeamInfo::IsScoreOverriden()
+{
+	return m_bScoreOverriden;
+}
+
+int CTeamInfo::GetFrags()
+{
+	Assert(m_bScoreOverriden);
+	return m_iFrags;
+}
+
+int CTeamInfo::GetDeaths()
+{
+	Assert(m_bScoreOverriden);
+	return m_iDeaths;
+}
+
+void CTeamInfo::Reset(int number)
+{
+	m_iNumber = number;
+	Q_strncpy(m_Name, "< undefined >", sizeof(m_Name));
+	Q_strncpy(m_DisplayName, "", sizeof(m_DisplayName));
+	m_bScoreOverriden = false;
+	m_iFrags = 0;
+	m_iDeaths = 0;
+}
+
+void CTeamInfo::UpdateAllTeams()
+{
+	for (int i = 1; i <= MAX_PLAYERS; i++)
+	{
+		CPlayerInfo *pi = GetPlayerInfo(i);
+
+		if (!pi->IsConnected())
+			continue;
+
+		if (pi->GetTeamNumber() < 0 || pi->GetTeamNumber() > MAX_TEAMS)
+			continue;
+
+		CTeamInfo *ti = GetTeamInfo(pi->GetTeamNumber());
+		Q_strncpy(ti->m_Name, pi->GetTeamName(), sizeof(ti->m_Name));
+	}
 }

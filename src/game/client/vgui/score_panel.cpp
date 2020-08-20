@@ -297,10 +297,7 @@ void CScorePanel::RecalcItems()
 
 		if (!m_pTeamInfo[team].name[0])
 		{
-			if (g_TeamInfo[team].name[0])
-				strncpy(m_pTeamInfo[team].name, g_TeamInfo[team].name, MAX_TEAM_NAME); // Use team name from MsgFunc_TeamNames
-			else
-				strncpy(m_pTeamInfo[team].name, playerInfo->GetTeamName(), MAX_TEAM_NAME); // Use team name from player info
+			strncpy(m_pTeamInfo[team].name, GetTeamInfo(team)->GetDisplayName(), MAX_TEAM_NAME);
 		}
 
 		m_pTeamInfo[team].name[MAX_TEAM_NAME - 1] = '\0';

@@ -100,7 +100,7 @@ void CTeamMenu::Update()
 	{
 		if (i <= g_pViewport->GetNumberOfTeams())
 		{
-			snprintf(buf, sizeof(buf), "  %d   %s", i, g_TeamInfo[i].name);
+			snprintf(buf, sizeof(buf), "  %d   %s", i, GetTeamInfo(i)->GetDisplayName());
 			m_pTeamButtons[i]->SetText(buf);
 			m_pTeamButtons[i]->SetVisible(true);
 			m_pTeamButtons[i]->SetPos(xpos, ypos);

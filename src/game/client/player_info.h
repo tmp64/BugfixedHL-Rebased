@@ -29,24 +29,10 @@ struct extra_player_info_t
 	char teamname[MAX_TEAM_NAME];
 };
 
-struct team_info_t
-{
-	char name[MAX_TEAM_NAME];
-	short frags;
-	short deaths;
-	short ping;
-	short packetloss;
-	short ownteam;
-	short players;
-	int already_drawn;
-	int scores_overriden;
-	int teamnumber;
-};
-
-extern team_info_t g_TeamInfo[MAX_TEAMS + 1];
+//-----------------------------------------------------
 
 class CPlayerInfo;
-inline CPlayerInfo *GetPlayerInfo(int idx);
+CPlayerInfo *GetPlayerInfo(int idx);
 
 class CPlayerInfo
 {
@@ -101,6 +87,79 @@ inline CPlayerInfo *GetPlayerInfo(int idx)
 {
 	Assert(idx >= 1 && idx <= MAX_PLAYERS);
 	return &CPlayerInfo::m_sPlayerInfo[idx];
+}
+
+//-----------------------------------------------------
+
+class CTeamInfo;
+CTeamInfo *GetTeamInfo(int number);
+
+class CTeamInfo
+{
+public:
+	/**
+	 * Returns team number.
+	 */
+	int GetNumber();
+
+	/**
+	 * Returns name of the team. This is the one returned by CPlayerInfo::GetTeamName().
+	 */
+	const char *GetName();
+
+	/**
+	 * Returns display name. It should be used in text displayed to the player.
+	 * It can be overriden by TeamNames message.
+	 */
+	const char *GetDisplayName();
+
+	/**
+	 * Returns whether TeamScore message was used to override the scores.
+	 * If true, use GetFrags and GetDeaths instead of calculated values.
+	 */
+	bool IsScoreOverriden();
+
+	/**
+	 * Returns frag count.
+	 * Only valid if IsScoreOverriden() == true.
+	 */
+	int GetFrags();
+
+	/**
+	 * Returns death count.
+	 * Only valid if IsScoreOverriden() == true.
+	 */
+	int GetDeaths();
+
+private:
+	int m_iNumber = -1;
+	char m_Name[MAX_TEAM_NAME] = "< undefined >";
+	char m_DisplayName[MAX_TEAM_DISPLAY_NAME] = "< undefined >";
+	bool m_bScoreOverriden = false;
+	int m_iFrags = 0;
+	int m_iDeaths = 0;
+
+	/**
+	 * Called during VidInit to reset internal data.
+	 * @param	number	Number of the team (used to set m_iNumber).
+	 */
+	void Reset(int number);
+
+	/**
+	 * Updates state of all teams.
+	 */
+	static void UpdateAllTeams();
+
+	static CTeamInfo m_sTeamInfo[MAX_TEAMS + 1];
+	friend CTeamInfo *GetTeamInfo(int number);
+	friend class CHud;
+	friend class CClientViewport;
+};
+
+inline CTeamInfo *GetTeamInfo(int number)
+{
+	Assert(number >= 0 && number <= MAX_TEAMS);
+	return &CTeamInfo::m_sTeamInfo[number];
 }
 
 #endif

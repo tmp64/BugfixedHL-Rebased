@@ -375,11 +375,12 @@ void CClientViewport::MsgFunc_TeamNames(const char *pszName, int iSize, void *pb
 		}
 
 		int teamNum = i + 1;
+		CTeamInfo *ti = GetTeamInfo(teamNum);
 
-		CHudTextMessage::LocaliseTextString(READ_STRING(), g_TeamInfo[teamNum].name, MAX_TEAM_NAME);
+		CHudTextMessage::LocaliseTextString(READ_STRING(), ti->m_DisplayName, sizeof(ti->m_DisplayName));
 
 		// Parse the model and remove any %'s
-		for (char *c = g_TeamInfo[teamNum].name; *c != 0; c++)
+		for (char *c = ti->m_DisplayName; *c != 0; c++)
 		{
 			// Replace it with a space
 			if (*c == '%')
@@ -467,11 +468,7 @@ void CClientViewport::MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pb
 		info->m_ExtraInfo.frags = frags;
 		info->m_ExtraInfo.deaths = deaths;
 		info->m_ExtraInfo.playerclass = playerclass;
-		info->m_ExtraInfo.teamnumber = teamnumber;
-
-		//Dont go bellow 0!
-		if (info->m_ExtraInfo.teamnumber < 0)
-			info->m_ExtraInfo.teamnumber = 0;
+		info->m_ExtraInfo.teamnumber = clamp(teamnumber, 0, MAX_TEAMS);
 
 		UpdateOnPlayerInfo(cl);
 	}
@@ -483,6 +480,23 @@ void CClientViewport::MsgFunc_TeamScore(const char *pszName, int iSize, void *pb
 	char *TeamName = READ_STRING();
 	int frags = READ_SHORT();
 	int deaths = READ_SHORT();
+
+	// find the team matching the display name
+	int i;
+	for (i = 1; i <= MAX_TEAMS; i++)
+	{
+		if (!Q_stricmp(TeamName, GetTeamInfo(i)->m_DisplayName))
+			break;
+	}
+
+	if (i > MAX_TEAMS)
+		return;
+
+	// use this new score data instead of combined player scores
+	CTeamInfo *ti = GetTeamInfo(i);
+	ti->m_bScoreOverriden = true;
+	ti->m_iFrags = READ_SHORT();
+	ti->m_iDeaths = READ_SHORT();
 
 	m_pScorePanel->MsgFunc_TeamScore(TeamName, frags, deaths);
 }

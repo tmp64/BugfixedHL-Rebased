@@ -245,6 +245,12 @@ void CHud::VidInit(void)
 	m_scrinfo.iSize = sizeof(m_scrinfo);
 	GetScreenInfo(&m_scrinfo);
 
+	// Reset all team info
+	for (int i = 0; i <= MAX_TEAMS; i++)
+	{
+		GetTeamInfo(i)->Reset(i);
+	}
+
 	// ----------
 	// Load Sprites
 	// ---------
@@ -335,6 +341,7 @@ void CHud::Frame(double time)
 
 	CHudVoiceStatus::Get()->RunFrame(time);
 	g_pViewport->GetAllPlayersInfo();
+	CTeamInfo::UpdateAllTeams();
 
 	while (m_NextFrameQueue.size())
 	{

@@ -1,5 +1,6 @@
 #include <tier1/strtools.h>
 #include "hud.h"
+#include "cl_util.h"
 #include "player_info.h"
 #include "com_model.h"
 #include "engine_patches.h"
@@ -142,6 +143,29 @@ const char *CPlayerInfo::GetTeamName()
 bool CPlayerInfo::IsSpectator()
 {
 	return m_bIsSpectator || m_EngineInfo.spectator;
+}
+
+const char *CPlayerInfo::GetDisplayName(bool bNoColorCodes)
+{
+	// This method is a great place to add AG realnames.
+	if (bNoColorCodes && gHUD.GetColorCodeAction() != ColorCodeAction::Ignore)
+	{
+		// Select a buffer
+		static char buffers[8][MAX_PLAYER_NAME];
+		static unsigned bufferIndex = 0;
+		char *buf = buffers[bufferIndex & 0b111];
+		bufferIndex++;
+
+		// Strip color codes
+		RemoveColorCodes(GetName(), buf, MAX_PLAYER_NAME);
+
+		return buf;
+	}
+	else
+	{
+		// Return name with color codes
+		return GetName();
+	}
 }
 
 const char *CPlayerInfo::GetSteamID()

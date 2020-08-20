@@ -192,7 +192,7 @@ void CHudVoiceStatus::Paint()
 
 		bgColor[3] = 128 * newAlphaMultiplier;
 
-		const char *pName = pi->IsConnected() ? pi->GetName() : "unknown";
+		const char *pName = pi->IsConnected() ? pi->GetDisplayName(false) : "unknown";
 		wchar_t szconverted[64];
 		g_pVGuiLocalize->ConvertANSIToUnicode(pName, szconverted, sizeof(szconverted));
 

@@ -58,6 +58,13 @@ public:
 	bool IsSpectator();
 
 	/**
+	 * Returns display name. It should be used in text displayed on HUD.
+	 * @param	bNoColorCodes	If true and ColorCodeAction != Ignore, color codes will be removed.
+	 * @return	Display name stored in internal buffer. It can handle up to 8 calls before overwriting.
+	 */
+	const char *GetDisplayName(bool bNoColorCodes = false);
+
+	/**
 	 * Returns SteamID string. Requires SVC hook.
 	 */
 	const char *GetSteamID();

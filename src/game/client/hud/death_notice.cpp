@@ -175,7 +175,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	const char *killer_name;
 	if (killer != 0 && (killerInfo = GetPlayerInfo(killer))->IsConnected())
 	{
-		killer_name = killerInfo->GetName();
+		killer_name = killerInfo->GetDisplayName();
 
 		if (killerInfo->GetTeamNumber() == 0)
 		{
@@ -200,7 +200,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	const char *victim_name = NULL;
 	// If victim is -1, the killer killed a specific, non-player object (like a sentrygun)
 	if (((char)victim) != -1)
-		victim_name = GetPlayerInfo(victim)->GetName();
+		victim_name = GetPlayerInfo(victim)->GetDisplayName();
 	if (!victim_name)
 	{
 		victim_name = "";

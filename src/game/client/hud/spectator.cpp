@@ -606,7 +606,7 @@ void CHudSpectator::Draw(float flTime)
 		gHUD.GetClientColorAsFloat(i + 1, color, NoTeamColor::Orange);
 
 		// draw the players name and health underneath
-		sprintf(string, "%s", pi->GetName());
+		sprintf(string, "%s", pi->GetDisplayName());
 
 		lx = strlen(string) * 3; // 3 is avg. character length :)
 

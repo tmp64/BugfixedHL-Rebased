@@ -79,7 +79,7 @@ public:
 		char buf[512];
 		wchar_t wbuf[512];
 
-		g_pVGuiLocalize->ConvertANSIToUnicode(data.pi->GetName(), wbuf, sizeof(wbuf));
+		g_pVGuiLocalize->ConvertANSIToUnicode(data.pi->GetDisplayName(false), wbuf, sizeof(wbuf));
 		m_pNameLabel->SetText(wbuf);
 		m_pNameLabel->SetFgColor(g_pViewport->GetTeamColor(data.pi->GetTeamNumber()));
 

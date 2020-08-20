@@ -83,6 +83,14 @@ void VectorInverse(float *v)
 	v[2] = -v[2];
 }
 
+void ConsolePrint(const char *string)
+{
+	if (gHUD.GetColorCodeAction() == ColorCodeAction::Ignore)
+		gEngfuncs.pfnConsolePrint(string);
+	else
+		gEngfuncs.pfnConsolePrint(RemoveColorCodes(string));
+}
+
 HSPRITE LoadSprite(const char *pszName)
 {
 	int i;

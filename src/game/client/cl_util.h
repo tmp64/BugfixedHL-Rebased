@@ -112,10 +112,7 @@ inline int TextMessageDrawStringReverse(int x, int y, const char *string, int r,
 	return gEngfuncs.pfnDrawStringReverse(x, y, string, r, g, b);
 }
 
-inline void ConsolePrint(const char *string)
-{
-	gEngfuncs.pfnConsolePrint(string);
-}
+void ConsolePrint(const char *string);
 
 inline void CenterPrint(const char *string)
 {

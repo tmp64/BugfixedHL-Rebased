@@ -5,6 +5,7 @@ add_sources(
 	camera.h
 	cdll_int.cpp
 	cl_dll.h
+	cl_util.cpp
 	cl_util.h
 	cl_voice_status.cpp
 	cl_voice_status.h
@@ -55,7 +56,6 @@ add_sources(
 	tf_defs.h
 	tri.cpp
 	tri.h
-	util.cpp
 	view.cpp
 	view.h
 	voice_banmgr.cpp

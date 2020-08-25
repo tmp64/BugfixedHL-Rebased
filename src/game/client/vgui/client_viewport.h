@@ -69,6 +69,12 @@ public:
 	Color GetTeamColor(int team);
 	int GetNumberOfTeams();
 
+	/**
+	 * Returns number of players that have non-empty team name.
+	 * Updated every frame in GetAllPlayersInfo.
+	 */
+	int GetNumberOfNonEmptyTeamPlayers();
+
 	// Panel accessors
 	inline CScorePanel *GetScoreBoard()
 	{
@@ -101,6 +107,7 @@ private:
 	int m_iNumberOfTeams = 0;
 	int m_iAllowSpectators = 0;
 	char m_szServerName[MAX_SERVERNAME_LENGTH] = "<ERROR>";
+	int m_iNumberOfNonEmptyTeamPlayers = 0;
 
 	int m_iGotAllMOTD = 1;
 	char m_szMOTD[MAX_UNICODE_MOTD_LENGTH];
@@ -151,6 +158,11 @@ inline Color CClientViewport::GetTeamColor(int team)
 inline int CClientViewport::GetNumberOfTeams()
 {
 	return m_iNumberOfTeams;
+}
+
+inline int CClientViewport::GetNumberOfNonEmptyTeamPlayers()
+{
+	return m_iNumberOfNonEmptyTeamPlayers;
 }
 
 extern CClientViewport *g_pViewport;

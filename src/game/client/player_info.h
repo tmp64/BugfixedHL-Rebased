@@ -33,10 +33,12 @@ struct extra_player_info_t
 
 class CPlayerInfo;
 CPlayerInfo *GetPlayerInfo(int idx);
+CPlayerInfo *GetThisPlayerInfo();
 
 class CPlayerInfo
 {
 public:
+	int GetIndex();
 	bool IsConnected();
 
 	// Engine info
@@ -82,6 +84,7 @@ private:
 	char m_szSteamID[MAX_STEAMID + 1];
 
 	player_info_t *GetEnginePlayerInfo();
+	void Reset();
 
 	static CPlayerInfo m_sPlayerInfo[MAX_PLAYERS + 1];
 	friend CPlayerInfo *GetPlayerInfo(int idx);

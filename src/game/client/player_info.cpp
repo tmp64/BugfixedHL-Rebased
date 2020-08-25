@@ -4,8 +4,16 @@
 #include "player_info.h"
 #include "com_model.h"
 #include "engine_patches.h"
+#include "vgui/client_viewport.h"
+#include "vgui/score_panel.h"
 
 CPlayerInfo CPlayerInfo::m_sPlayerInfo[MAX_PLAYERS + 1];
+static CPlayerInfo *s_ThisPlayerInfo = nullptr;
+
+CPlayerInfo *GetThisPlayerInfo()
+{
+	return s_ThisPlayerInfo;
+}
 
 /**
  * Parses string into a SteamID64. Returns 0 if failed.
@@ -45,6 +53,11 @@ static uint64 ParseSteamID(const char *pszAuthID)
 	i64friendID += 76561197960265728 + iServer;
 
 	return i64friendID;
+}
+
+int CPlayerInfo::GetIndex()
+{
+	return m_iIndex;
 }
 
 bool CPlayerInfo::IsConnected()
@@ -176,18 +189,25 @@ const char *CPlayerInfo::GetSteamID()
 CPlayerInfo *CPlayerInfo::Update()
 {
 	gEngfuncs.pfnGetPlayerInfo(m_iIndex, &m_EngineInfo);
+	bool bWasConnected = m_bIsConnected;
 	bool bIsConnected = m_EngineInfo.name != nullptr;
+	m_bIsConnected = bIsConnected;
 
-	if (bIsConnected && !m_bIsConnected)
+	if (bIsConnected != bWasConnected)
+	{
+		// Player connected or disconnected
+		m_szSteamID[0] = '\0';
+		g_pViewport->GetScoreBoard()->UpdateOnPlayerInfo(GetIndex());
+	}
+
+	if (bIsConnected && !bWasConnected)
 	{
 		// Player connected, update SteamID
-		m_szSteamID[0] = '\0';
 		CSvcMessages::Get().SendStatusRequest();
 	}
-	else if (!bIsConnected && m_bIsConnected)
+	else if (!bIsConnected && bWasConnected)
 	{
-		// Player disconnected, erase SteamID.
-		m_szSteamID[0] = '\0';
+		// Player disconnected
 	}
 
 	if (bIsConnected)
@@ -197,9 +217,10 @@ CPlayerInfo *CPlayerInfo::Update()
 			// Player has no SteamID, update it
 			CSvcMessages::Get().SendStatusRequest();
 		}
-	}
 
-	m_bIsConnected = bIsConnected;
+		if (IsThisPlayer())
+			s_ThisPlayerInfo = this;
+	}
 
 	return this;
 }
@@ -211,6 +232,15 @@ player_info_t *CPlayerInfo::GetEnginePlayerInfo()
 		return nullptr;
 	player_info_t *ptr = reinterpret_cast<player_info_t *>(m_EngineInfo.name - offsetof(player_info_t, name));
 	return ptr;
+}
+
+void CPlayerInfo::Reset()
+{
+	m_EngineInfo = hud_player_info_t();
+	m_ExtraInfo = extra_player_info_t();
+	m_bIsConnected = false;
+	m_bIsSpectator = false;
+	m_szSteamID[0] = '\0';
 }
 
 //-----------------------------------------------------

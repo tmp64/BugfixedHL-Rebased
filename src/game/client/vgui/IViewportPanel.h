@@ -32,6 +32,7 @@ public:
 
 	/**
 	*	Clears internal state, deactivates it
+	*	Called during VidInit
 	*/
 	virtual void Reset() = 0;
 

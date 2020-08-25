@@ -245,6 +245,12 @@ void CHud::VidInit(void)
 	m_scrinfo.iSize = sizeof(m_scrinfo);
 	GetScreenInfo(&m_scrinfo);
 
+	// Reset all player info
+	for (int i = 1; i <= MAX_PLAYERS; i++)
+	{
+		GetPlayerInfo(i)->Reset();
+	}
+
 	// Reset all team info
 	for (int i = 0; i <= MAX_TEAMS; i++)
 	{
@@ -373,6 +379,8 @@ void CHud::ApplyViewportSchemeSettings(vgui2::IScheme *pScheme)
 		snprintf(buf, sizeof(buf), "ColorCode%d", i);
 		m_ColorCodeColors[i] = pScheme->GetColor(buf, s_DefaultColorCodeColors[i]);
 	}
+
+	vgui2::Label::SetDefaultColorCodeArray(m_ColorCodeColors);
 }
 
 // GetSpriteIndex()

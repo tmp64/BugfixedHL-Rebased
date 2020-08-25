@@ -145,6 +145,7 @@ void CClientViewport::AddNewPanel(IViewportPanel *panel)
 {
 	m_Panels.push_back(panel);
 	panel->SetParent(GetVPanel());
+	dynamic_cast<vgui2::Panel *>(panel)->MakeReadyForUse();
 }
 
 void CClientViewport::ActivateClientUI()
@@ -278,7 +279,6 @@ void CClientViewport::ShowScoreBoard()
 	if (gEngfuncs.GetMaxClients() > 1)
 	{
 		m_pScorePanel->ShowPanel(true);
-		m_pScorePanel->FullUpdate();
 	}
 }
 
@@ -335,9 +335,14 @@ void CClientViewport::UpdateSpectatorPanel()
 
 void CClientViewport::GetAllPlayersInfo(void)
 {
+	m_iNumberOfNonEmptyTeamPlayers = 0;
+
 	for (int i = 1; i < MAX_PLAYERS; i++)
 	{
-		GetPlayerInfo(i)->Update();
+		CPlayerInfo *pi = GetPlayerInfo(i)->Update();
+
+		if (pi->IsConnected() && pi->GetTeamName()[0] != '\0')
+			m_iNumberOfNonEmptyTeamPlayers++;
 	}
 }
 
@@ -348,7 +353,7 @@ const char *CClientViewport::GetServerName()
 
 void CClientViewport::UpdateOnPlayerInfo(int client)
 {
-	m_pScorePanel->UpdateClientInfo(client);
+	m_pScorePanel->UpdateOnPlayerInfo(client);
 }
 
 //-------------------------------------------------------
@@ -497,8 +502,6 @@ void CClientViewport::MsgFunc_TeamScore(const char *pszName, int iSize, void *pb
 	ti->m_bScoreOverriden = true;
 	ti->m_iFrags = READ_SHORT();
 	ti->m_iDeaths = READ_SHORT();
-
-	m_pScorePanel->MsgFunc_TeamScore(TeamName, frags, deaths);
 }
 
 void CClientViewport::MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf)

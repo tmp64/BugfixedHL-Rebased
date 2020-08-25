@@ -126,6 +126,8 @@ void CClientMOTD::Activate(const char *title, const char *msg)
 	//SetControlString( "serverName", title );
 
 	m_pMessage->SetText(msg);
+	SetKeyBoardInputEnabled(true);
+	SetMouseInputEnabled(true);
 }
 
 void CClientMOTD::ActivateHtml(const char *title, const char *msg)

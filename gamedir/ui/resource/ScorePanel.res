@@ -15,6 +15,28 @@
 		"tabPosition"		"0"
 		"settitlebarvisible"		"0"
 		"bgcolor_override" "0 0 0 64"
+		
+		// Column widths
+		// Sum of these must equal width of PlayerList
+		"column_avatar"		"26"
+		"column_name"		"170"
+		"column_steamid"	"88"
+		"column_eff"		"60"
+		"column_frags"		"60"
+		"column_deaths"		"60"
+		"column_ping"		"80"
+		
+		// Icon of muted players (without .tga)
+		"muted_icon"		"ui/gfx/muted_icon32"
+		
+		// Minimum height of the score panel
+		"min_height"		"200"
+		
+		// Minimum distance between vertical edges of the score panel and vertical edges of the screen
+		"vertical_margin"	"30"
+		
+		// Distance from bottom edge of player list to bottom edge of score panel
+		"bottom_padding"	"4"
 	}
 	"ServerName"
 	{
@@ -59,9 +81,9 @@
 	{
 		"ControlName"		"Label"
 		"fieldName"		"PlayerCount"
-		"xpos"		"516"
+		"xpos"		"496"
 		"ypos"		"12"
-		"wide"		"28"
+		"wide"		"48"
 		"tall"		"8"
 		"autoResize"		"0"
 		"pinCorner"		"0"
@@ -74,28 +96,9 @@
 		"brighttext"		"0"
 		"wrap"		"0"
 	}
-	"TimeLeft"
-	{
-		"ControlName"		"Label"
-		"fieldName"		"TimeLeft"
-		"xpos"		"444"
-		"ypos"		"4"
-		"wide"		"100"
-		"tall"		"8"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"labelText"		"Time left: 22:48"
-		"textAlignment"		"east"
-		"dulltext"		"0"
-		"brighttext"		"0"
-		"wrap"		"0"
-	}
 	"PlayerList"
 	{
-		"ControlName"		"CPlayerListPanel"
+		"ControlName"		"SectionedListPanel"
 		"fieldName"		"PlayerList"
 		"xpos"		"4"
 		"ypos"		"24"
@@ -106,28 +109,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"		"0"
+		"sectiongap"	"4"
 		"bgcolor_override" "0 0 0 84"
-	}
-	"EffSortSwitch"
-	{
-		"ControlName"		"CheckButton"
-		"fieldName"		"EffSortSwitch"
-		"ypos"		"11"
-	}
-	"BuildModeDialog"
-	{
-		"ControlName"		"BuildModeDialog"
-		"fieldName"		"BuildModeDialog"
-		"xpos"		"661"
-		"ypos"		"114"
-		"wide"		"177"
-		"tall"		"280"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"settitlebarvisible"		"1"
-		"Title"		"#Frame_Untitled"
 	}
 }

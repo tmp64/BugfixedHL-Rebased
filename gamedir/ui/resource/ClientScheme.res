@@ -46,6 +46,9 @@ Scheme
 	// controls use these to determine their settings
 	BaseSettings
 	{
+		"ThisPlayerBgColor"			"LightOrange"
+		"KillerBgColor"				"255 0 0 128"
+	
 		// vgui_controls color specifications
 		Border.Bright					"200 200 200 196"	// the lit side of a control
 		Border.Dark						"40 40 40 196"		// the dark/unlit side of a control
@@ -161,7 +164,6 @@ Scheme
 		SectionedListPanel.SelectedBgColor				"Orange"
 		SectionedListPanel.OutOfFocusSelectedTextColor	"Black"
 		SectionedListPanel.OutOfFocusSelectedBgColor	"255 155 0 128"
-		SectionedListPanel.ThisPlayerBgColor			"DimOrange"
 
 		Slider.NobColor				"108 108 108 255"
 		Slider.TextColor			"180 180 180 255"

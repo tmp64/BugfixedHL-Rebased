@@ -1691,9 +1691,11 @@ bool CHudSpectator::AddOverviewEntity(int type, struct cl_entity_s *ent, const c
 
 	if (type == ET_PLAYER)
 	{
-		if (ent->curstate.solid != SOLID_NOT)
+		CPlayerInfo *pi = GetPlayerInfo(ent->index)->Update();
+
+		if (ent->curstate.solid != SOLID_NOT && pi->IsConnected())
 		{
-			switch (GetPlayerInfo(ent->index)->Update()->GetTeamNumber())
+			switch (pi->GetTeamNumber())
 			{
 			// blue and red teams are swapped in CS and TFC
 			case 1:
@@ -1708,7 +1710,9 @@ bool CHudSpectator::AddOverviewEntity(int type, struct cl_entity_s *ent, const c
 			}
 		}
 		else
-			return false; // it's an spectator
+		{
+			return false; // it's a spectator
+		}
 	}
 	else if (type == ET_NORMAL)
 	{

@@ -47,6 +47,8 @@ add_sources(
 	net.h
 	player_info.cpp
 	player_info.h
+	results.cpp
+	results.h
 	studio_util.cpp
 	studio_util.h
 	StudioModelRenderer.cpp

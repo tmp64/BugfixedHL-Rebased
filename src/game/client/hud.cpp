@@ -36,6 +36,7 @@
 #include "demo_api.h"
 #include "cl_voice_status.h"
 #include "bhlcfg.h"
+#include "results.h"
 
 // HUD Elements
 #include "hud/ammo.h"
@@ -238,6 +239,7 @@ void CHud::Init(void)
 	g_pViewport->ReloadLayout();
 
 	bhlcfg::Init();
+	CResults::Get().Init();
 }
 
 void CHud::VidInit(void)
@@ -355,6 +357,8 @@ void CHud::Frame(double time)
 		i();
 		m_NextFrameQueue.pop();
 	}
+
+	CResults::Get().Frame();
 }
 
 void CHud::Shutdown()

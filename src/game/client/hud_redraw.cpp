@@ -26,6 +26,7 @@ extern "C"
 #include "cl_util.h"
 #include "hud/spectator.h"
 #include "vgui/client_viewport.h"
+#include "results.h"
 
 #define MAX_LOGO_FRAMES 56
 
@@ -46,6 +47,8 @@ void CHud::Think(void)
 {
 	m_scrinfo.iSize = sizeof(m_scrinfo);
 	GetScreenInfo(&m_scrinfo);
+
+	CResults::Get().Think();
 
 	int newfov;
 

@@ -21,6 +21,7 @@
 #include "chat.h"
 #include "parsemsg.h"
 #include "cl_voice_status.h"
+#include "results.h"
 
 ConVar hud_saytext_time("hud_saytext_time", "12", 0);
 ConVar cl_mute_all_comms("cl_mute_all_comms", "1", FCVAR_BHL_ARCHIVE, "If 1, then all communications from a player will be blocked when that player is muted, including chat messages.");
@@ -1188,6 +1189,8 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	current = localtime(&now);
 	sprintf(time_buf, "[%02i:%02i:%02i] ", current->tm_hour, current->tm_min, current->tm_sec);
 	ConPrintf(m_ConsoleMsgColor, "%s %s\n", time_buf, pmsg);
+	CResults::Get().AddLog(time_buf, true);
+	CResults::Get().AddLog(pmsg, true);
 }
 
 void CHudChatEntry::OnKeyCodeTyped(vgui2::KeyCode code)

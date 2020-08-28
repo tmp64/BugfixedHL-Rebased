@@ -540,7 +540,7 @@ float CHud::GetHudTransparency()
 	return clamp(m_pCvarDraw->value, 0.f, 1.f);
 }
 
-inline Color CHud::GetClientColor(int idx, Color noTeamColor)
+Color CHud::GetClientColor(int idx, Color noTeamColor)
 {
 	int team = GetPlayerInfo(idx)->Update()->GetTeamNumber();
 

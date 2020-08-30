@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import datetime
 import distutils
 import distutils.dir_util
@@ -63,6 +65,7 @@ class PlatformLinux:
     def get_cmake_args(self):
         args = []
         args.extend(['-G', 'Ninja'])
+        args.extend(['-DCMAKE_TOOLCHAIN_FILE={}cmake/Linux32Toolchain.cmake'.format(self.script.repo_root)])
         return args
 
     def need_cmake_build_type_var(self):

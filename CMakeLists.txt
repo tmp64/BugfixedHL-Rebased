@@ -7,6 +7,9 @@ cmake_minimum_required( VERSION 3.15.0 )
 # Use static MSVC runtime
 set( CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" )
 
+# Enable PIC
+set( CMAKE_POSITION_INDEPENDENT_CODE ON )
+
 # Disable RPATH
 set( CMAKE_SKIP_BUILD_RPATH TRUE )
 
@@ -101,7 +104,7 @@ if( COMPILER_GNU )
 	# - Trigger an error if any code tries to use an implicit return type
 	# - Default visibility is hidden unless explicitly altered with __attribute__( visibility() )
 	set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -mfpmath=387 -Werror=return-type -fvisibility=hidden" )
-
+	
 	if( PLATFORM_MACOS )
 		set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -momit-leaf-frame-pointer -mtune=core2" )
 	else()

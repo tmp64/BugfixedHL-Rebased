@@ -14,6 +14,7 @@
 ****/
 #ifndef ENTITY_STATE_H
 #define ENTITY_STATE_H
+#include <cstdint>
 
 // For entityType below
 #define ENTITY_NORMAL (1 << 0)

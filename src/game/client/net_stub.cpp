@@ -22,12 +22,12 @@ int NetSendReceiveUdp(unsigned long sin_addr, int sin_port, const char *sendbuf,
 	return -1;
 }
 
-int NetSendUdp(unsigned long sin_addr, int sin_port, const char *sendbuf, int len, SOCKET *s)
+int NetSendUdp(unsigned long sin_addr, int sin_port, const char *sendbuf, int len, NetSocket *s)
 {
 	return -1;
 }
 
-int NetReceiveUdp(unsigned long sin_addr, int sin_port, char *recvbuf, int size, SOCKET s)
+int NetReceiveUdp(unsigned long sin_addr, int sin_port, char *recvbuf, int size, NetSocket s)
 {
 	return -1;
 }

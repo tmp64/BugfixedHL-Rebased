@@ -1,5 +1,6 @@
-#include "engine_patches.h"
+#include "hud.h"
 #include "cl_util.h"
+#include "engine_patches.h"
 
 class CEnginePatchesStub : public CEnginePatches
 {

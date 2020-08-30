@@ -11,6 +11,7 @@
 
 #ifndef SVC_MESSAGES_H
 #define SVC_MESSAGES_H
+#include <cstddef>
 
 using SvcParseFunc = void (*)();
 

@@ -42,4 +42,5 @@ void NetCloseSocket(NetSocket s)
 
 char *NetGetRuleValueFromBuffer(const char *buffer, int len, const char *cvar)
 {
+	return nullptr;
 }

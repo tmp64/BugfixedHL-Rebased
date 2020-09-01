@@ -697,7 +697,7 @@ void CNihilanth ::NextActivity()
 		CBaseEntity *pRecharger = NULL;
 		float flDist = 8192;
 
-		sprintf(szName, "%s%d", m_szRechargerTarget, m_iLevel);
+		snprintf(szName, sizeof(szName), "%s%d", m_szRechargerTarget, m_iLevel);
 
 		while ((pEnt = UTIL_FindEntityByTargetname(pEnt, szName)) != NULL)
 		{
@@ -741,7 +741,7 @@ void CNihilanth ::NextActivity()
 			{
 				char szText[64];
 
-				sprintf(szText, "%s%d", m_szDrawUse, m_iLevel);
+				snprintf(szText, sizeof(szText), "%s%d", m_szDrawUse, m_iLevel);
 				FireTargets(szText, this, this, USE_ON, 1.0);
 
 				ALERT(at_console, "fireing %s\n", szText);
@@ -789,10 +789,10 @@ void CNihilanth ::NextActivity()
 				{
 					char szText[64];
 
-					sprintf(szText, "%s%d", m_szTeleportTouch, m_iTeleport);
+					snprintf(szText, sizeof(szText), "%s%d", m_szTeleportTouch, m_iTeleport);
 					CBaseEntity *pTouch = UTIL_FindEntityByTargetname(NULL, szText);
 
-					sprintf(szText, "%s%d", m_szTeleportUse, m_iTeleport);
+					snprintf(szText, sizeof(szText), "%s%d", m_szTeleportUse, m_iTeleport);
 					CBaseEntity *pTrigger = UTIL_FindEntityByTargetname(NULL, szText);
 
 					if (pTrigger != NULL || pTouch != NULL)
@@ -1064,10 +1064,10 @@ void CNihilanth ::HandleAnimEvent(MonsterEvent_t *pEvent)
 		{
 			char szText[32];
 
-			sprintf(szText, "%s%d", m_szTeleportTouch, m_iTeleport);
+			snprintf(szText, sizeof(szText), "%s%d", m_szTeleportTouch, m_iTeleport);
 			CBaseEntity *pTouch = UTIL_FindEntityByTargetname(NULL, szText);
 
-			sprintf(szText, "%s%d", m_szTeleportUse, m_iTeleport);
+			snprintf(szText, sizeof(szText), "%s%d", m_szTeleportUse, m_iTeleport);
 			CBaseEntity *pTrigger = UTIL_FindEntityByTargetname(NULL, szText);
 
 			if (pTrigger != NULL || pTouch != NULL)

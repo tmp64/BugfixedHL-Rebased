@@ -544,7 +544,7 @@ void CHudTimer::SetNextmap(const char *nextmap)
 
 void CHudTimer::Draw(float fTime)
 {
-	char text[64];
+	char text[128];
 
 	if (gHUD.m_iHideHUDDisplay & HIDEHUD_ALL)
 		return;
@@ -588,7 +588,7 @@ void CHudTimer::Draw(float fTime)
 		struct tm *timeinfo;
 		time(&rawtime);
 		timeinfo = localtime(&rawtime);
-		sprintf(text, "Clock %ld:%02ld:%02ld", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+		sprintf(text, "Clock %d:%02d:%02d", (int)timeinfo->tm_hour, (int)timeinfo->tm_min, (int)timeinfo->tm_sec);
 		// Output to screen
 		int width = TextMessageDrawString(ScreenWidth + 1, ypos, text, 0, 0, 0);
 		TextMessageDrawString((ScreenWidth - width) / 2, ypos, text, r, g, b);
@@ -599,7 +599,7 @@ void CHudTimer::Draw(float fTime)
 	int hud_nextmap = (int)m_pCvarHudNextmap->value;
 	if (m_szNextmap[0] && timeleft < 60 && timeleft >= 0 && m_flEndTime > 0 && (hud_nextmap == 2 || (hud_nextmap == 1 && timeleft >= 37)))
 	{
-		sprintf(text, "Nextmap is %s", m_szNextmap);
+		snprintf(text, sizeof(text), "Nextmap is %s", m_szNextmap);
 		ypos = ScreenHeight * (TIMER_Y + TIMER_Y_NEXT_OFFSET);
 		int width = TextMessageDrawString(ScreenWidth + 1, ypos, text, 0, 0, 0);
 		float a = (timeleft >= 40 || hud_nextmap > 1 ? 255.0 : 255.0 / 3 * ((m_flEndTime - currentTime) + 1 - 37)) * gHUD.GetHudTransparency();
@@ -621,7 +621,7 @@ void CHudTimer::Draw(float fTime)
 		else if (m_flCustomTimerEnd[i] > currentTime)
 		{
 			timeleft = (int)(m_flCustomTimerEnd[i] - currentTime) + 1;
-			sprintf(text, "Timer %ld", (int)timeleft);
+			sprintf(text, "Timer %d", (int)timeleft);
 			// Output to screen
 			ypos = ScreenHeight * (TIMER_Y + TIMER_Y_NEXT_OFFSET * (i + 2));
 			int width = TextMessageDrawString(ScreenWidth + 1, ypos, text, 0, 0, 0);
@@ -656,7 +656,7 @@ void CHudTimer::DrawTimerInternal(int time, float ypos, int r, int g, int b, boo
 		q = div(q.rem, 60);
 		int m = q.quot;
 		int s = q.rem;
-		sprintf(text, "%ldd %ldh %02ldm %02lds", d, h, m, s);
+		sprintf(text, "%dd %dh %02dm %02ds", d, h, m, s);
 	}
 	else if (time >= 3600)
 	{
@@ -665,18 +665,18 @@ void CHudTimer::DrawTimerInternal(int time, float ypos, int r, int g, int b, boo
 		q = div(q.rem, 60);
 		int m = q.quot;
 		int s = q.rem;
-		sprintf(text, "%ldh %02ldm %02lds", h, m, s);
+		sprintf(text, "%dh %02dm %02ds", h, m, s);
 	}
 	else if (time >= 60)
 	{
 		q = div(time, 60);
 		int m = q.quot;
 		int s = q.rem;
-		sprintf(text, "%ld:%02ld", m, s);
+		sprintf(text, "%d:%02d", m, s);
 	}
 	else
 	{
-		sprintf(text, "%ld", (int)time);
+		sprintf(text, "%d", (int)time);
 		if (redOnLow)
 		{
 			float a = 255 * gHUD.GetHudTransparency();

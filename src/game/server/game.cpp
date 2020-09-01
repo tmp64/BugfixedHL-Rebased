@@ -968,11 +968,11 @@ void GameDLLInit(void)
 						buffer[j] = startupCfgFile[j];
 					}
 					buffer[i + 1] = 0;
-					sprintf(szCommand, "exec %sstartup_%s\n", buffer, startupCfgFile + i + 1);
+					snprintf(szCommand, sizeof(szCommand), "exec %sstartup_%s\n", buffer, startupCfgFile + i + 1);
 				}
 				else
 				{
-					sprintf(szCommand, "exec startup_%s\n", startupCfgFile);
+                    snprintf(szCommand, sizeof(szCommand), "exec startup_%s\n", startupCfgFile);
 				}
 				// Execute
 				ALERT(at_console, "Executing %s server startup config file\n", serverType);

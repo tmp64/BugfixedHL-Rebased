@@ -1,0 +1,41 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request events
+on: [push, pull_request]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    strategy:
+      matrix:
+        runs-on: [windows-2019, ubuntu-18.04]
+        target: [client, server]
+    
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.runs-on }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      
+      - name: Install Ubuntu packages
+        if: matrix.runs-on == 'ubuntu-18.04'
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt update
+          sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib
+
+      - name: Build release
+        run: |
+          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2019 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out

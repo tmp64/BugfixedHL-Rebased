@@ -37,12 +37,11 @@ class PlatformWindows:
         args = []
         if self.script.vs_version == '2017':
             args.extend(['-G', 'Visual Studio 15 2017'])
-        elif self.script.vs_version == '2017_xp':
-            args.extend(['-G', 'Visual Studio 15 2017'])
-            args.extend(['-T', 'v141_xp'])
         elif self.script.vs_version == '2019':
             args.extend(['-G', 'Visual Studio 16 2019'])
             args.extend(['-A', 'Win32'])
+
+        args.extend(['-T', self.script.vs_toolset])
 
         return args
 
@@ -65,7 +64,18 @@ class PlatformLinux:
     def get_cmake_args(self):
         args = []
         args.extend(['-G', 'Ninja'])
-        args.extend(['-DCMAKE_TOOLCHAIN_FILE={}cmake/Linux32Toolchain.cmake'.format(self.script.repo_root)])
+
+        toolchain_file = ''
+
+        if self.script.linux_compiler == 'gcc':
+            toolchain_file = 'ToolchainLinuxGCC.cmake'
+        elif self.script.linux_compiler == 'gcc-8':
+            toolchain_file = 'ToolchainLinuxGCC8.cmake'
+        elif self.script.linux_compiler == 'gcc-9':
+            toolchain_file = 'ToolchainLinuxGCC9.cmake'
+
+        if toolchain_file:
+            args.extend(['-DCMAKE_TOOLCHAIN_FILE={}cmake/{}'.format(self.script.repo_root, toolchain_file)])
         return args
 
     def need_cmake_build_type_var(self):
@@ -153,16 +163,23 @@ class BuildScript:
     DEFAULT_VERSION = [0, 1, 0, 'dev', '']
     allowed_targets = ['client', 'server']
     allowed_build_types = ['debug', 'release']
-    allowed_vs_versions = ['2017', '2017_xp', '2019']
+
+    allowed_vs_versions = ['2017', '2019']
+    allowed_vs_toolsets = ['v141', 'v141_xp', 'v142']
+
+    allowed_linux_compilers = ['gcc', 'gcc-8', 'gcc-9']
 
     platform = None
     build_target = None
     build_target_name = ''
     build_type = ''  # Values are Debug or RelWithDebInfo
     vs_version = ''
+    vs_toolset = ''
+    linux_compiler = ''
     release_version = ''
 
     cmake_binary = ''
+    cmake_args = []
 
     repo_root = ''
     git_hash = ''
@@ -210,12 +227,18 @@ class BuildScript:
                             help='(required) build type')
         parser.add_argument('--vs', action='store', required=(get_platform_type() == 'windows'),
                             choices=self.allowed_vs_versions, help='(windows only, required) Visual Studio version')
+        parser.add_argument('--toolset', action='store', required=(get_platform_type() == 'windows'),
+                            choices=self.allowed_vs_toolsets, help='(windows only, required) Visual Studio toolset')
+        parser.add_argument('--linux-compiler', action='store', default='gcc',
+                            choices=self.allowed_linux_compilers, help='(linux only) CMake toolchain file to use')
         # parser.add_argument('--updater', action='store_true',
         #                    help='enable updater')
         parser.add_argument('--out-dir', action='store',
                             help='output directory (if not set, uses <workdir>/BugfixedHL-<version>)')
         parser.add_argument('--cmake-bin', action='store', default=shutil.which("cmake"),
                             help='path to cmake binary (PATH used instead)')
+        parser.add_argument('--cmake-args', action='store',
+                            help='additional CMake arguments')
 
         # Version override
         parser.add_argument('--v-major', action='store', type=int, default=self.DEFAULT_VERSION[0],
@@ -232,7 +255,11 @@ class BuildScript:
         # Parse arguments
         args = parser.parse_args()
         self.vs_version = args.vs
+        self.vs_toolset = args.toolset
+        self.linux_compiler = args.linux_compiler
         self.cmake_binary = args.cmake_bin
+        if args.cmake_args:
+            self.cmake_args = [i.strip() for i in args.cmake_args.split(' ')]
 
         # Set target
         self.build_target_name = args.target
@@ -259,7 +286,9 @@ class BuildScript:
                                                        self.build_target_name, self.git_hash, self.date_code)
 
         out_dir = args.out_dir
-        if not out_dir:
+        if out_dir:
+            self.paths.base = out_dir
+        else:
             work_dir = os.getcwd()
             out_dir = self.out_dir_name
             if os.path.exists(os.path.realpath(work_dir + '/' + out_dir)):
@@ -298,6 +327,7 @@ class BuildScript:
             args.extend(['-S', self.repo_root])
             args.extend(['-B', self.paths.build])
             args.extend(self.platform.get_cmake_args())
+            args.extend(self.cmake_args)
 
             if self.platform.need_cmake_build_type_var():
                 args.extend(['-DCMAKE_BUILD_TYPE=' + self.build_type])

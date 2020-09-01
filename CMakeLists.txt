@@ -100,10 +100,12 @@ if( COMPILER_GNU )
 	# Linker options
 	#-----------------------------------------------------------------
 	# From the Github 2013 Makefile, match the settings for Unix environments.
-	# - Force 387 for FP math so the precision between win32 and linux and osx match
+	# - OLD: Force 387 for FP math so the precision between win32 and linux and osx match
+	# - Use SSE2 for FP math so Source SDK mathlib compiles correctly
 	# - Trigger an error if any code tries to use an implicit return type
 	# - Default visibility is hidden unless explicitly altered with __attribute__( visibility() )
-	set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -mfpmath=387 -Werror=return-type -fvisibility=hidden" )
+	set( C_CXX_COMPILER_FLAGS "${C_CXX_COMPILER_FLAGS} -mfpmath=sse -msse2" )
+	set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -mfpmath=sse -msse2 -Werror=return-type -fvisibility=hidden" )
 	
 	if( PLATFORM_MACOS )
 		set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -momit-leaf-frame-pointer -mtune=core2" )

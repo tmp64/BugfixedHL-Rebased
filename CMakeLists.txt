@@ -193,6 +193,8 @@ endif()
 # Warning level
 #-----------------------------------------------------------------
 
+option( WARNINGS_ARE_ERRORS "Treat warnings as errors" OFF )
+
 set( WARNING_LEVEL_C "" )
 set( WARNING_LEVEL_CXX "" )
 set( WARNING_LEVEL_C_CXX "" )
@@ -205,8 +207,13 @@ if( COMPILER_GNU )
 	set( WARNING_LEVEL_C_CXX "${WARNING_LEVEL_C_CXX} -Wno-pointer-arith" )
 	set( WARNING_LEVEL_CXX "${WARNING_LEVEL_CXX} -Wno-delete-non-virtual-dtor -Wno-invalid-offsetof -Wno-conversion-null" )
 	
+	if( WARNINGS_ARE_ERRORS )
+		set( WARNING_LEVEL_C_CXX "${WARNING_LEVEL_C_CXX} -Werror" )
+	endif()
 elseif( COMPILER_MSVC )
-	
+	if( WARNINGS_ARE_ERRORS )
+		set( WARNING_LEVEL_C_CXX "${WARNING_LEVEL_C_CXX} /WX" )
+	endif()
 endif()
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_LEVEL_C} ${WARNING_LEVEL_C_CXX}" )

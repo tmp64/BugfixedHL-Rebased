@@ -38,4 +38,4 @@ jobs:
 
       - name: Build release
         run: |
-          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2019 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args "-DWARNINGS_ARE_ERRORS"
+          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2019 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON"

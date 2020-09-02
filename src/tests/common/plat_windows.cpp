@@ -22,8 +22,8 @@ plat::Module plat::LoadModuleOrDie(const char *pszName)
 		    0,
 		    NULL);
 
-		printf("Failed to load library %s from path %s\n", ret.moduleName.c_str(), pszName);
-		printf("%s\n", lpMsgBuf);
+		fprintf(stderr, "Failed to load library %s from path %s\n", ret.moduleName.c_str(), pszName);
+		fprintf(stderr, "%s\n", lpMsgBuf);
 
 		LocalFree((HLOCAL)lpMsgBuf);
 		
@@ -40,7 +40,7 @@ void *plat::GetProcAddr(const Module &mod, const char *name, bool dieOnError)
 
 	if (!addr && dieOnError)
 	{
-		printf("Failed to load proc %s from module %s\n", name, mod.moduleName.c_str());
+		fprintf(stderr, "Failed to load proc %s from module %s\n", name, mod.moduleName.c_str());
 		PLAT_FatalError("plat::GetProcAddr failed.");
 	}
 

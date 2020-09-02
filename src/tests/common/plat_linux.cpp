@@ -20,7 +20,7 @@ plat::Module plat::LoadModuleOrDie(const char *pszName)
 	return ret;
 }
 
-void *plat::GetProcAddress(const Module &mod, const char *name, bool dieOnError)
+void *plat::GetProcAddr(const Module &mod, const char *name, bool dieOnError)
 {
 	void *addr = dlsym(reinterpret_cast<void *>(mod.pHandle), name);
 

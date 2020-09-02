@@ -114,7 +114,7 @@ void CServerTest::CheckServerExports()
 
 	for (size_t i = 0; i < std::size(SERVER_EXPORTED_FUNCTIONS); i++)
 	{
-		plat::GetProcAddress(m_ServerLib, SERVER_EXPORTED_FUNCTIONS[i], true);
+		plat::GetProcAddr(m_ServerLib, SERVER_EXPORTED_FUNCTIONS[i], true);
 	}
 
 	fprintf(stderr, "%d functions okay\n\n", (int)std::size(SERVER_EXPORTED_FUNCTIONS));

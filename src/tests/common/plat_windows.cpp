@@ -34,14 +34,14 @@ plat::Module plat::LoadModuleOrDie(const char *pszName)
 	return ret;
 }
 
-void *plat::GetProcAddress(const Module &mod, const char *name, bool dieOnError)
+void *plat::GetProcAddr(const Module &mod, const char *name, bool dieOnError)
 {
 	void *addr = ::GetProcAddress(reinterpret_cast<HMODULE>(mod.pHandle), name);
 
 	if (!addr && dieOnError)
 	{
 		printf("Failed to load proc %s from module %s\n", name, mod.moduleName.c_str());
-		PLAT_FatalError("plat::GetProcAddress failed.");
+		PLAT_FatalError("plat::GetProcAddr failed.");
 	}
 
 	return addr;

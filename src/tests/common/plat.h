@@ -15,7 +15,7 @@ struct Module
 };
 
 Module LoadModuleOrDie(const char *pszName);
-void *GetProcAddress(const Module &mod, const char *name, bool dieOnError = false);
+void *GetProcAddr(const Module &mod, const char *name, bool dieOnError = false);
 
 }
 

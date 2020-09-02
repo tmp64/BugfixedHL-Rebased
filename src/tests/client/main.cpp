@@ -152,7 +152,7 @@ void CClientTest::LoadClientExports()
 		if (!CLIENT_FUNC_NAMES[i])
 			continue;
 
-		m_ClientExports.array[i] = plat::GetProcAddress(m_ClientLib, CLIENT_FUNC_NAMES[i], true);
+		m_ClientExports.array[i] = plat::GetProcAddr(m_ClientLib, CLIENT_FUNC_NAMES[i], true);
 		count++;
 	}
 

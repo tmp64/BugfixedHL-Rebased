@@ -51,6 +51,10 @@ if( BUILD_TESTING )
 		vstdlib
 		tier0
 	)
+	
+	if( PLATFORM_LINUX )
+		target_link_libraries( test_client PRIVATE dl )
+	endif()
 
 	#-----------------------------------------------------------------
 
@@ -75,6 +79,10 @@ if( BUILD_TESTING )
 		vstdlib
 		tier0
 	)
+	
+	if( PLATFORM_LINUX )
+		target_link_libraries( test_server PRIVATE dl )
+	endif()
 
 	#-----------------------------------------------------------------
 

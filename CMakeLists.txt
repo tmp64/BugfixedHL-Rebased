@@ -348,16 +348,6 @@ add_subdirectory( src/game/client )
 preprocess_sources()
 add_library( client SHARED ${PREP_SRCS} )
 check_winxp_support( client )
-
-if( PLATFORM_LINUX )
-	# Fix vgui.so (and others) path in client.so
-	# " The best kostil' is not kostil' " (c) EzicMan
-	add_custom_command( TARGET client
-		POST_BUILD
-		COMMAND ${CMAKE_SOURCE_DIR}/scripts/FixClientLibPath.sh "$<TARGET_FILE:client>"
-	)
-endif()
-
 add_auto_deploy( client PublishPathClient.txt )
 
 target_include_directories( client PRIVATE

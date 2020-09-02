@@ -63,7 +63,6 @@ if( BUILD_TESTING )
 
 	target_include_directories( test_server PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/common
-		${GAME_COMMON_SRCS}
 		${SOURCE_SDK_INCLUDE_PATHS}
 	)
 

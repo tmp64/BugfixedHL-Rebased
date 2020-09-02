@@ -361,7 +361,8 @@ class BuildScript:
             print("---------------- Building targets", targets)
             args = [self.cmake_binary]
             args.extend(['--build', self.paths.build])
-            args.extend(['--target', targets])
+            args.append('--target')
+            args.extend(self.build_target.get_build_target_names())
             args.extend(['--config', self.build_type])
 
             for i in args:

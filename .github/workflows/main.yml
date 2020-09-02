@@ -40,6 +40,11 @@ jobs:
         run: |
           python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2019 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON"
 
+      - name: Run tests
+        run: |
+          cd ./_build_out/build
+          ctest --build-config RelWithDebInfo --output-on-failure
+
       - name: Upload build result
         uses: actions/upload-artifact@v2
         with:

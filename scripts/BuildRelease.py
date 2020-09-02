@@ -112,7 +112,7 @@ class TargetClient:
         self.script = scr
 
     def get_build_target_names(self):
-        return ['client']
+        return ['client', 'test_client']
 
     def get_file_list(self):
         files = COMMON_FILES_TO_COPY
@@ -135,7 +135,7 @@ class TargetServer:
         self.script = scr
 
     def get_build_target_names(self):
-        return ['hl']
+        return ['hl', 'test_server']
 
     def get_file_list(self):
         files = COMMON_FILES_TO_COPY

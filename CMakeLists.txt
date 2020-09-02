@@ -56,6 +56,7 @@ unset( BHL_REPO_VERSION_TAG )
 
 project( BugfixedHL VERSION "${BHL_VERSION_MAJOR}.${BHL_VERSION_MINOR}.${BHL_VERSION_PATCH}" )
 include( PlatformInfo )
+include( CTest )
 
 #-----------------------------------------------------------------
 # Build options
@@ -464,3 +465,8 @@ set_target_properties( hl PROPERTIES PREFIX "" )
 
 create_source_groups( "${CMAKE_SOURCE_DIR}" )
 clear_sources()
+
+#-----------------------------------------------------------------
+# Tests
+#-----------------------------------------------------------------
+add_subdirectory( src/tests )

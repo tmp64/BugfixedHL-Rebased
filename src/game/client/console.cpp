@@ -273,24 +273,24 @@ void console::DumpEarlyCon()
 //-----------------------------------------------------
 // Console redirection
 //-----------------------------------------------------
-static void console::RedirectedConPrintf(const char * pszFormat, ...)
+static void console::RedirectedConPrintf(const char *pszFormat, ...)
 {
-    // Print redirected messages with Con_Printf color instead of Con_DPrintf
-    // But only if color wasn't changed.
-    if (*s_ConColor == s_DefaultColor)
-        *s_ConDColor = s_DefaultColor;
+	// Print redirected messages with Con_Printf color instead of Con_DPrintf
+	// But only if color wasn't changed.
+	if (*s_ConColor == s_DefaultColor)
+		*s_ConDColor = s_DefaultColor;
 
-    va_list args;
-    va_start(args, pszFormat);
+	va_list args;
+	va_start(args, pszFormat);
 
-    static char buf[1024];
-    vsnprintf(buf, sizeof(buf), pszFormat, args);
-    s_fnEngineDPrintf("%s", buf);
+	static char buf[1024];
+	vsnprintf(buf, sizeof(buf), pszFormat, args);
+	s_fnEngineDPrintf("%s", buf);
 
-    va_end(args);
+	va_end(args);
 
-    if (*s_ConColor == s_DefaultColor)
-        *s_ConDColor = s_DefaultDColor;
+	if (*s_ConColor == s_DefaultColor)
+		*s_ConDColor = s_DefaultDColor;
 }
 
 void console::EnableRedirection()

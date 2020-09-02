@@ -12,7 +12,7 @@ plat::Module plat::LoadModuleOrDie(const char *pszName)
 	if (!hModule)
 	{
 		fprintf(stderr, "Failed to load library %s from path %s\n", ret.moduleName.c_str(), pszName);
-        fprintf(stderr, "%s\n", dlerror());
+		fprintf(stderr, "%s\n", dlerror());
 		PLAT_FatalError("LoadModuleOrDie died.");
 	}
 

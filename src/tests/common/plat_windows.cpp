@@ -26,7 +26,7 @@ plat::Module plat::LoadModuleOrDie(const char *pszName)
 		fprintf(stderr, "%s\n", lpMsgBuf);
 
 		LocalFree((HLOCAL)lpMsgBuf);
-		
+
 		PLAT_FatalError("LoadModuleOrDie died.");
 	}
 

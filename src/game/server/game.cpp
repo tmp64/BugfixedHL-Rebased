@@ -972,7 +972,7 @@ void GameDLLInit(void)
 				}
 				else
 				{
-                    snprintf(szCommand, sizeof(szCommand), "exec startup_%s\n", startupCfgFile);
+					snprintf(szCommand, sizeof(szCommand), "exec startup_%s\n", startupCfgFile);
 				}
 				// Execute
 				ALERT(at_console, "Executing %s server startup config file\n", serverType);

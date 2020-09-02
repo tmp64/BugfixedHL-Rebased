@@ -83,7 +83,7 @@ int CClientTest::Run(int argc, char **argv)
 		fprintf(stderr, "%s", e.what());
 		FatalError("Unhandled exception.");
 	}
-    catch (...)
+	catch (...)
 	{
 		FatalError("Unhandled exception of non-exception type.");
 	}

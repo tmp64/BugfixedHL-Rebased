@@ -43,7 +43,7 @@ jobs:
       - name: Run tests
         run: |
           cd ./_build_out/build
-          ctest --build-config RelWithDebInfo --output-on-failure
+          ctest -R ${{ matrix.target }} --build-config RelWithDebInfo --output-on-failure
 
       - name: Upload build result
         uses: actions/upload-artifact@v2

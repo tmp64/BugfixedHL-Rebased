@@ -105,7 +105,7 @@ if( COMPILER_GNU )
 	# - Use SSE2 for FP math so Source SDK mathlib compiles correctly
 	# - Trigger an error if any code tries to use an implicit return type
 	# - Default visibility is hidden unless explicitly altered with __attribute__( visibility() )
-	set( C_CXX_COMPILER_FLAGS "${C_CXX_COMPILER_FLAGS} -mfpmath=sse -msse2" )
+	set( C_CXX_COMPILER_FLAGS "${C_CXX_COMPILER_FLAGS} -mfpmath=sse -msse2 -fvisibility=hidden" )
 	set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -mfpmath=sse -msse2 -Werror=return-type -fvisibility=hidden" )
 	
 	if( PLATFORM_MACOS )

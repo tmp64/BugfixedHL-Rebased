@@ -132,9 +132,11 @@ ConVarRef::ConVarRef(const char *name)
 
 ConVarRef::ConVarRef(cvar_t *cvar)
 {
-	assert(cvar);
-	m_pCvar = cvar;
-	m_pName = cvar->name;
+	if (cvar)
+	{
+		m_pCvar = cvar;
+		m_pName = cvar->name;
+	}
 }
 
 ConVarRef::ConVarRef(ConVar &cvar)

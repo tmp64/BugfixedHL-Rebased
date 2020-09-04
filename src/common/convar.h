@@ -107,7 +107,7 @@ public:
 	cvar_t *GetCvar();
 
 private:
-	const char *m_pName;
+	const char *m_pName = nullptr;
 	cvar_t *m_pCvar = nullptr;
 };
 

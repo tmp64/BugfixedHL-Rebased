@@ -367,9 +367,15 @@ target_compile_definitions( client PRIVATE
 find_package( SDL2 MODULE REQUIRED )
 
 if( WIN32 )
+	# DInput for direct mouse input
+	find_package( DInput REQUIRED )
+	find_package( DXGUID REQUIRED )
+
 	set( CLIENT_PLAT_LIBS
 		wsock32
 		psapi
+		DInput
+		DXGUID
     )
 
 	target_include_directories( client PRIVATE

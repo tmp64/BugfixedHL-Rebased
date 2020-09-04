@@ -85,6 +85,9 @@ static Color s_DefaultColorCodeColors[10] = {
 const Color NoTeamColor::Orange = Color(255, 178, 0, 255);
 const Color NoTeamColor::White = Color(216, 216, 216, 255);
 
+// inputw32.cpp
+void IN_RunFrame();
+
 template <void (CClientViewport::*FUNC)(const char *, int, void *)>
 void HookViewportMessage(const char *name)
 {
@@ -347,9 +350,12 @@ void CHud::Frame(double time)
 {
 	vgui2::GetAnimationController()->UpdateAnimations(gEngfuncs.GetClientTime());
 
+	IN_RunFrame();
+
 	CHudVoiceStatus::Get()->RunFrame(time);
 	g_pViewport->GetAllPlayersInfo();
 	CTeamInfo::UpdateAllTeams();
+	CResults::Get().Frame();
 
 	while (m_NextFrameQueue.size())
 	{
@@ -357,8 +363,6 @@ void CHud::Frame(double time)
 		i();
 		m_NextFrameQueue.pop();
 	}
-
-	CResults::Get().Frame();
 }
 
 void CHud::Shutdown()

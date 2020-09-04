@@ -28,7 +28,19 @@
 
 #include "sdl_rt.h"
 
+#ifdef PLATFORM_WINDOWS
+#include <dinput.h>
+#endif
+
 #define MOUSE_BUTTON_COUNT 5
+
+enum class MouseMode
+{
+	Auto = -1,
+	Engine = 0,
+	DirectInput = 1,
+	RawInput = 2,
+};
 
 extern cl_enginefunc_t gEngfuncs;
 extern int iMouseInUse;
@@ -61,6 +73,14 @@ extern globalvars_t *gpGlobals;
 // mouse variables
 cvar_t *m_filter;
 cvar_t *sensitivity;
+
+static cvar_t *m_rawinput = nullptr;
+static ConVar m_input("m_input", "-1", FCVAR_BHL_ARCHIVE,
+    "Mouse input mode\n"
+    "- 0: Engine\n"
+    "- 1: DirectInput (Windows-only)\n"
+    "- 2: Raw Input (Steam-only)");
+static MouseMode m_mode = MouseMode::Engine;
 
 // Custom mouse acceleration (0 disable, 1 to enable, 2 enable with separate yaw/pitch rescale)
 static cvar_t *m_customaccel;
@@ -152,7 +172,137 @@ DWORD s_hMouseThreadId = 0;
 HANDLE s_hMouseThread = 0;
 HANDLE s_hMouseQuitEvent = 0;
 HANDLE s_hMouseDoneQuitEvent = 0;
+
+// DirectInput
+static LPDIRECTINPUT dinput_lpdi = NULL; // DirectInput interface
+static LPDIRECTINPUTDEVICE dinput_lpdiMouse = NULL; // mouse device interface
+static int dinput_mouse_acquired = 0;
+static DIMOUSESTATE dinput_mousestate;
 #endif
+
+/**
+ * Updates m_mode based on value of m_input cvar.
+ */
+void IN_UpdateMouseMode()
+{
+	MouseMode newMode = (MouseMode)clamp(m_input.GetInt(), -1, 2);
+
+	if (newMode != m_mode)
+	{
+		if (newMode == MouseMode::Auto)
+		{
+			if (IsWindows())
+			{
+				// Prefer DirectInput on Windows
+				newMode = MouseMode::DirectInput;
+			}
+			else if (GetSDL()->IsGood())
+			{
+				// Prefer raw input on SteamPipe engine
+				newMode = MouseMode::RawInput;
+			}
+			else
+			{
+				newMode = MouseMode::Engine;
+			}
+		}
+
+		ConVarRef rawinput(m_rawinput);
+
+		switch (newMode)
+		{
+		case MouseMode::Engine:
+		{
+			ConPrintf("Set mouse input mode to engine input.\n");
+			if (rawinput.IsValid())
+				rawinput.SetValue(0);
+			break;
+		}
+		case MouseMode::DirectInput:
+		{
+			if (IsWindows())
+			{
+				ConPrintf("Set mouse input mode to DirectInput.\n");
+				if (rawinput.IsValid())
+					rawinput.SetValue(0);
+			}
+			else
+			{
+				ConPrintf(ConColor::Cyan, "DirectInput is not supported on Linux.\n");
+				ConPrintf(ConColor::Cyan, "Setting to Raw Input instead.\n");
+
+				newMode = MouseMode::RawInput;
+				rawinput.SetValue(1);
+			}
+
+			break;
+		}
+		case MouseMode::RawInput:
+		{
+			if (GetSDL()->IsGood() && rawinput.IsValid())
+			{
+				ConPrintf("Set mouse input mode to Raw Input.\n");
+				rawinput.SetValue(1);
+			}
+			else
+			{
+				ConPrintf(ConColor::Cyan, "Raw Input is not supported on your client.\n");
+				ConPrintf(ConColor::Cyan, "Setting to DirectInput instead.\n");
+				newMode = MouseMode::DirectInput;
+			}
+
+			break;
+		}
+		}
+
+		m_mode = newMode;
+		m_input.SetValue((int)newMode);
+	}
+
+	// We should never have Auto as mouse mode
+	Assert(m_mode != MouseMode::Auto);
+
+	// Only allow raw input if SDL2 is working
+	Assert(GetSDL()->IsGood() || m_mode != MouseMode::RawInput);
+
+#ifndef PLATFORM_WINDOWS
+	// DirectInput is Windows-only
+	Assert(m_mode != MouseMode::DirectInput);
+#endif
+}
+
+void IN_RunFrame()
+{
+	// Wait a few frames for config to load
+	static int iDelay = 5;
+	if (iDelay > 0)
+	{
+		iDelay--;
+		return;
+	}
+
+	IN_UpdateMouseMode();
+
+	// Check m_rawinput
+	ConVarRef rawinput(m_rawinput);
+
+	if (rawinput.IsValid() && GetSDL()->IsGood())
+	{
+		if (rawinput.GetBool() && m_mode != MouseMode::RawInput)
+		{
+			m_input.SetValue((int)MouseMode::RawInput);
+			IN_UpdateMouseMode();
+
+			if (IsWindows())
+				ConPrintf(ConColor::Cyan, "NOTE: It is recommended to use `m_input 1` on Windows.\n");
+		}
+		else if (!rawinput.GetBool() && m_mode == MouseMode::RawInput)
+		{
+			m_input.SetValue((int)MouseMode::Engine);
+			IN_UpdateMouseMode();
+		}
+	}
+}
 
 /*
 ===========
@@ -212,6 +362,24 @@ DWORD WINAPI MousePos_ThreadFunction(LPVOID p)
 
 	return 0;
 }
+
+void DINPUT_SetBufferSize(void)
+{
+	static DIPROPDWORD dipdw = { { sizeof(dipdw), sizeof(dipdw.diph), 0, DIPH_DEVICE }, 0 };
+
+	dipdw.dwData = dipdw.dwData + max(1ul, dipdw.dwData / 2);
+
+	gEngfuncs.Con_DPrintf("DirectInput overflow, increasing buffer size to %u.\n", dipdw.dwData);
+
+	IN_DeactivateMouse();
+
+	HRESULT hr = dinput_lpdiMouse->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
+
+	IN_ActivateMouse();
+
+	if (hr != DI_OK)
+		gEngfuncs.Con_DPrintf("Failed to increase DirectInput buffer size.\n");
+}
 #endif
 
 /*
@@ -221,15 +389,36 @@ IN_ActivateMouse
 */
 void CL_DLLEXPORT IN_ActivateMouse(void)
 {
-	if (mouseinitialized)
-	{
-#ifdef _WIN32
-		if (mouseparmsvalid)
-			restore_spi = SystemParametersInfo(SPI_SETMOUSE, 0, newmouseparms, 0);
+	if (!mouseinitialized)
+		return;
 
-#endif
-		mouseactive = 1;
+#ifdef _WIN32
+	if (mouseparmsvalid)
+		restore_spi = SystemParametersInfo(SPI_SETMOUSE, 0, newmouseparms, 0);
+
+	if (dinput_lpdiMouse && !dinput_mouse_acquired)
+	{
+		if (dinput_lpdiMouse->Acquire() == DI_OK)
+			dinput_mouse_acquired = 1;
 	}
+
+	// Always clip cursor in fullscreen mode
+	// Except when SDL is used
+	HWND hwndA = GetActiveWindow();
+	if (hwndA && m_mode != MouseMode::RawInput)
+	{
+		HWND hwndF = GetForegroundWindow();
+		if (hwndA == hwndF && hwndF != GetDesktopWindow() && hwndF != GetShellWindow())
+		{
+			RECT appBounds, rect;
+			GetWindowRect(hwndA, &appBounds);
+			GetWindowRect(GetDesktopWindow(), &rect);
+			if (appBounds.left == rect.left && appBounds.right == rect.right && appBounds.top == rect.top && appBounds.bottom == rect.bottom)
+				ClipCursor(&rect);
+		}
+	}
+#endif
+	mouseactive = 1;
 }
 
 /*
@@ -239,16 +428,23 @@ IN_DeactivateMouse
 */
 void CL_DLLEXPORT IN_DeactivateMouse(void)
 {
-	if (mouseinitialized)
-	{
-#ifdef _WIN32
-		if (restore_spi)
-			SystemParametersInfo(SPI_SETMOUSE, 0, originalmouseparms, 0);
+	if (!mouseinitialized)
+		return;
 
+#ifdef _WIN32
+	if (restore_spi)
+		SystemParametersInfo(SPI_SETMOUSE, 0, originalmouseparms, 0);
+
+	if (dinput_lpdiMouse && dinput_mouse_acquired)
+	{
+		if (dinput_lpdiMouse->Unacquire() == DI_OK)
+			dinput_mouse_acquired = 0;
+	}
+
+	ClipCursor(NULL);
 #endif
 
-		mouseactive = 0;
-	}
+	mouseactive = 0;
 }
 
 /*
@@ -261,7 +457,12 @@ void IN_StartupMouse(void)
 	if (gEngfuncs.CheckParm("-nomouse", NULL))
 		return;
 
+	if (mouseinitialized)
+		return;
+
 	mouseinitialized = 1;
+	mouse_buttons = MOUSE_BUTTON_COUNT;
+
 #ifdef _WIN32
 	mouseparmsvalid = SystemParametersInfo(SPI_GETMOUSE, 0, originalmouseparms, 0);
 
@@ -283,9 +484,26 @@ void IN_StartupMouse(void)
 			newmouseparms[2] = originalmouseparms[2];
 		}
 	}
-#endif
 
-	mouse_buttons = MOUSE_BUTTON_COUNT;
+	// Program instance
+	HINSTANCE hinst;
+	hinst = GetModuleHandle("client.dll");
+
+	if (DirectInput8Create(hinst, DIRECTINPUT_VERSION, IID_IDirectInput8A, (LPVOID *)&dinput_lpdi, NULL) != DI_OK)
+		return;
+
+	// We'll skip the enumeration step, since we care only about the standard system mouse.
+	if (dinput_lpdi->CreateDevice(GUID_SysMouse, &dinput_lpdiMouse, NULL) != DI_OK)
+		return;
+
+	HWND hwnd = GetActiveWindow();
+	if (dinput_lpdiMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND) != DI_OK)
+		return;
+
+	// Note: c_dfDIMouse is an external DIDATAFORMAT structure supplied by DirectInput.
+	if (dinput_lpdiMouse->SetDataFormat(&c_dfDIMouse) != DI_OK)
+		return;
+#endif
 }
 
 /*
@@ -322,6 +540,18 @@ void IN_Shutdown(void)
 		CloseHandle(s_hMouseDoneQuitEvent);
 		s_hMouseDoneQuitEvent = (HANDLE)0;
 	}
+
+	if (dinput_lpdiMouse)
+	{
+		IDirectInputDevice_Release(dinput_lpdiMouse);
+		dinput_lpdiMouse = nullptr;
+	}
+
+	if (dinput_lpdi)
+	{
+		IDirectInput_Release(dinput_lpdi);
+		dinput_lpdi = nullptr;
+	}
 #endif
 }
 
@@ -350,7 +580,6 @@ void IN_ResetMouse(void)
 #ifdef _WIN32
 	if (!m_bRawInput && mouseactive && gEngfuncs.GetWindowCenterX && gEngfuncs.GetWindowCenterY)
 	{
-
 		SetCursorPos(gEngfuncs.GetWindowCenterX(), gEngfuncs.GetWindowCenterY());
 		ThreadInterlockedExchange(&old_mouse_pos.x, gEngfuncs.GetWindowCenterX());
 		ThreadInterlockedExchange(&old_mouse_pos.y, gEngfuncs.GetWindowCenterY());
@@ -359,7 +588,7 @@ void IN_ResetMouse(void)
 	if (gpGlobals && gpGlobals->time - s_flRawInputUpdateTime > 1.0f)
 	{
 		s_flRawInputUpdateTime = gpGlobals->time;
-		m_bRawInput = CVAR_GET_FLOAT("m_rawinput") != 0;
+		m_bRawInput = m_rawinput->value != 0;
 	}
 #endif
 }
@@ -475,7 +704,7 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 	{
 		int deltaX, deltaY;
 #ifdef _WIN32
-		if (!m_bRawInput)
+		if (m_mode == MouseMode::Engine)
 		{
 			if (m_bMouseThread)
 			{
@@ -489,7 +718,18 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 				GetCursorPos(&current_pos);
 			}
 		}
-		else
+		else if (m_mode == MouseMode::DirectInput)
+		{
+			if (dinput_mouse_acquired)
+			{
+				HRESULT hr = dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&dinput_mousestate);
+				if (hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST)
+					dinput_lpdiMouse->Acquire();
+				else if (hr == DI_BUFFEROVERFLOW)
+					DINPUT_SetBufferSize();
+			}
+		}
+		else if (m_mode == MouseMode::RawInput)
 #endif
 		{
 			GetSDL()->GetRelativeMouseState(&deltaX, &deltaY);
@@ -498,7 +738,7 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 		}
 
 #ifdef _WIN32
-		if (!m_bRawInput)
+		if (m_mode == MouseMode::Engine)
 		{
 			if (m_bMouseThread)
 			{
@@ -511,7 +751,15 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 				my = current_pos.y - gEngfuncs.GetWindowCenterY() + my_accum;
 			}
 		}
-		else
+		else if (m_mode == MouseMode::DirectInput)
+		{
+			if (dinput_mouse_acquired)
+			{
+				mx = dinput_mousestate.lX + mx_accum;
+				my = dinput_mousestate.lY + my_accum;
+			}
+		}
+		else if(m_mode == MouseMode::RawInput)
 #endif
 		{
 			mx = deltaX + mx_accum;
@@ -570,6 +818,17 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 			IN_ResetMouse();
 		}
 	}
+#ifdef _WIN32
+	else
+	{
+		if (m_mode == MouseMode::DirectInput && dinput_mouse_acquired)
+		{
+			// Discard any info when mouse is not active
+			DIMOUSESTATE state;
+			dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&state);
+		}
+	}
+#endif
 
 	gEngfuncs.SetViewAngles((float *)viewangles);
 
@@ -599,7 +858,7 @@ void CL_DLLEXPORT IN_Accumulate(void)
 		if (mouseactive)
 		{
 #ifdef _WIN32
-			if (!m_bRawInput)
+			if (m_mode == MouseMode::Engine)
 			{
 				if (!m_bMouseThread)
 				{
@@ -609,7 +868,22 @@ void CL_DLLEXPORT IN_Accumulate(void)
 					my_accum += current_pos.y - gEngfuncs.GetWindowCenterY();
 				}
 			}
-			else
+			else if (m_mode == MouseMode::DirectInput)
+			{
+				if (dinput_mouse_acquired)
+				{
+					HRESULT hr = dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&dinput_mousestate);
+
+					if (hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST)
+						dinput_lpdiMouse->Acquire();
+					else if (hr == DI_BUFFEROVERFLOW)
+						DINPUT_SetBufferSize();
+
+					mx_accum += dinput_mousestate.lX;
+					my_accum += dinput_mousestate.lY;
+				}
+			}
+			else if (m_mode == MouseMode::RawInput)
 #endif
 			{
 				int deltaX, deltaY;
@@ -651,6 +925,13 @@ void IN_StartupJoystick(void)
 
 	// assume no joystick
 	joy_avail = 0;
+
+	// Joystick only with SDL
+	if (!GetSDL()->IsGood())
+	{
+		gEngfuncs.Con_DPrintf("joystick not found -- SDL2 is required\n\n");
+		return;
+	}
 
 	int nJoysticks = GetSDL()->NumJoysticks();
 	if (nJoysticks > 0)
@@ -708,6 +989,9 @@ Joy_AdvancedUpdate_f
 */
 void Joy_AdvancedUpdate_f(void)
 {
+	// Joystick only with SDL
+	if (!GetSDL()->IsGood())
+		return;
 
 	// called once by IN_ReadJoystick and by user whenever an update is needed
 	// cvars are now available
@@ -1079,8 +1363,16 @@ void IN_Init(void)
 	m_customaccel_max = gEngfuncs.pfnRegisterVariable("m_customaccel_max", "0", FCVAR_ARCHIVE);
 	m_customaccel_exponent = gEngfuncs.pfnRegisterVariable("m_customaccel_exponent", "1", FCVAR_ARCHIVE);
 
+	m_rawinput = gEngfuncs.pfnGetCvarPointer("m_rawinput");
+
+	if (!IsWindows())
+	{
+		// All non-Windows version of the game should have m_rawinput.
+		Assert(m_rawinput);
+	}
+
 #ifdef _WIN32
-	m_bRawInput = CVAR_GET_FLOAT("m_rawinput") > 0;
+	m_bRawInput = m_rawinput->value != 0;
 	m_bMouseThread = gEngfuncs.CheckParm("-mousethread", NULL) != NULL;
 	m_mousethread_sleep = gEngfuncs.pfnRegisterVariable("m_mousethread_sleep", "10", FCVAR_ARCHIVE);
 

@@ -225,6 +225,9 @@ void IN_UpdateMouseMode()
 				ConPrintf("Set mouse input mode to DirectInput.\n");
 				if (rawinput.IsValid())
 					rawinput.SetValue(0);
+
+				if (m_mode == MouseMode::RawInput)
+					ConPrintf(ConColor::Yellow, "Warning: you may need to restart the game.\n");
 			}
 			else
 			{
@@ -759,7 +762,7 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 				my = dinput_mousestate.lY + my_accum;
 			}
 		}
-		else if(m_mode == MouseMode::RawInput)
+		else if (m_mode == MouseMode::RawInput)
 #endif
 		{
 			mx = deltaX + mx_accum;

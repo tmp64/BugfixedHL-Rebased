@@ -49,6 +49,8 @@ add_sources(
 	player_info.h
 	results.cpp
 	results.h
+	sdl_rt.cpp
+	sdl_rt.h
 	studio_util.cpp
 	studio_util.h
 	StudioModelRenderer.cpp

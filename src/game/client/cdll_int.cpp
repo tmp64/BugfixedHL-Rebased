@@ -37,6 +37,7 @@ extern "C"
 #include "Exports.h"
 #include "engine_patches.h"
 #include "svc_messages.h"
+#include "sdl_rt.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -143,6 +144,7 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 	console::Initialize();
 	CvarSystem::RegisterCvars();
 	EV_HookEvents();
+	GetSDL()->Init();
 
 	// Note 10.07.2020
 	// There is something odd with IParticleMan on Linux.

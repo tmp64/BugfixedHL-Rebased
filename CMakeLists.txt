@@ -371,9 +371,15 @@ if( WIN32 )
 		wsock32
 		psapi
     )
+
+	target_include_directories( client PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2/include
+	)
 else()
+	# Only link with SDL2 on Linux. Windows will conditionally link in runtime.
 	set( CLIENT_PLAT_LIBS
 		dl
+		SDL2
 	)
 endif()
 
@@ -382,7 +388,6 @@ target_link_libraries( client
 	${SOURCE_SDK_LIBS}
 	lodepng
 	pcre
-	SDL2
 	semver
 	${CLIENT_PLAT_LIBS}
 )

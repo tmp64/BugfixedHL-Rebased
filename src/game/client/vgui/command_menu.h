@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <vgui_controls/Menu.h>
+#include <vgui_controls/MenuItem.h>
 #include "IViewportPanel.h"
 
 class CCommandMenu : public vgui2::Menu, public IViewportPanel

@@ -2,7 +2,6 @@
 #include <tier1/strtools.h>
 #include <vgui/ISurface.h>
 #include <vgui/ILocalize.h>
-#include <vgui_controls/MenuItem.h>
 #include <FileSystem.h>
 #include <KeyValues.h>
 #include "command_menu.h"

@@ -591,6 +591,12 @@ void CClientViewport::MsgFunc_AllowSpec(const char *pszName, int iSize, void *pb
 //-------------------------------------------------------
 void CClientViewport::InputPlayerSpecial(void)
 {
+	// Originl purpose: activate the player special ability.
+	// Only used in TFC.
+	// In HL it just sends _special command to the server... using EngineClientCmd.
+	// This used to allow people to alias it to create scripts that run every frame (e.g. for bhop).
+	// Valve banned aliasing of _special it in the engine.
+	EngineClientCmd("_special");
 }
 
 bool CClientViewport::AllowedToPrintText(void)

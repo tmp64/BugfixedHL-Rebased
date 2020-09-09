@@ -148,9 +148,8 @@ void CHud::Init(void)
 
 	// TFFree CommandMenu
 	HookCommand("+commandmenu", [] {
-		// FIXME:
-		//if (g_pViewport)
-		//	g_pViewport->ShowCommandMenu(g_pViewport->m_StandardMenu);
+		if (g_pViewport)
+			g_pViewport->ShowCommandMenu();
 	});
 
 	HookCommand("-commandmenu", [] {

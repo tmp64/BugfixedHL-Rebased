@@ -38,6 +38,7 @@ class CScorePanel;
 class CClientMOTD;
 class CSpectatorPanel;
 class CTeamMenu;
+class CCommandMenu;
 
 class CClientViewport : public vgui2::EditablePanel
 {
@@ -59,10 +60,17 @@ public:
 
 	void ShowVGUIMenu(int iMenu);
 	void HideAllVGUIMenu();
+
 	bool IsScoreBoardVisible();
 	void ShowScoreBoard();
 	void HideScoreBoard();
+
 	void UpdateSpectatorPanel();
+
+	void ShowCommandMenu();
+	void HideCommandMenu();
+	void InputSignalHideCommandMenu();
+	bool SlotInput(int iSlot);
 
 	void GetAllPlayersInfo(void);
 	const char *GetServerName();
@@ -87,15 +95,13 @@ public:
 	}
 
 	// TeamFortressViewport stubs
-	void ShowCommandMenu(int menuIndex);
-	void HideCommandMenu();
-	void InputSignalHideCommandMenu();
 	void InputPlayerSpecial(void);
-	bool SlotInput(int iSlot);
 	bool AllowedToPrintText(void);
 	void DeathMsg(int killer, int victim);
 
 private:
+	static constexpr float COMMAND_MENU_TAP_DELAY = 0.3f;
+
 	std::vector<IViewportPanel *> m_Panels;
 
 	vgui2::AnimationController *m_pAnimController = nullptr;
@@ -103,6 +109,7 @@ private:
 	CClientMOTD *m_pMOTD = nullptr;
 	CSpectatorPanel *m_pSpectatorPanel = nullptr;
 	CTeamMenu *m_pTeamMenu = nullptr;
+	CCommandMenu *m_pCommandMenu = nullptr;
 
 	int m_iNumberOfTeams = 0;
 	int m_iAllowSpectators = 0;
@@ -117,6 +124,10 @@ private:
 	int m_iUser2;
 	int m_iUser3;
 	float m_flSpectatorPanelLastUpdated;
+
+	// Command Menu
+	float m_flMenuOpenTime = 0;
+	bool m_bMenuIsKeyTapped = false;
 
 	Color m_pTeamColors[5] = {
 		Color(216, 216, 216, 255), // "Off" white (default)

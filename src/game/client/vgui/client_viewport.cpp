@@ -18,6 +18,7 @@
 #include "client_motd.h"
 #include "spectator_panel.h"
 #include "team_menu.h"
+#include "command_menu.h"
 
 // FIXME: Move it to hud.cpp
 int g_iPlayerClass;
@@ -139,6 +140,7 @@ void CClientViewport::CreateDefaultPanels()
 	AddNewPanel(m_pMOTD = new CClientMOTD());
 	AddNewPanel(m_pSpectatorPanel = new CSpectatorPanel());
 	AddNewPanel(m_pTeamMenu = new CTeamMenu());
+	AddNewPanel(m_pCommandMenu = new CCommandMenu());
 }
 
 void CClientViewport::AddNewPanel(IViewportPanel *panel)
@@ -201,7 +203,7 @@ void CClientViewport::OnThink()
 {
 	m_pAnimController->UpdateAnimations(gEngfuncs.GetClientTime());
 
-	// See if the Spectator Menu needs to be update
+	// See if the Spectator Menu needs to be updated
 	if ((g_iUser1 != m_iUser1 || g_iUser2 != m_iUser2) || (m_flSpectatorPanelLastUpdated < gHUD.m_flTime))
 	{
 		UpdateSpectatorPanel();
@@ -331,6 +333,55 @@ void CClientViewport::UpdateSpectatorPanel()
 	}
 
 	m_flSpectatorPanelLastUpdated = gHUD.m_flTime + 0.5; // next update interval
+}
+
+void CClientViewport::ShowCommandMenu()
+{
+	if (m_pCommandMenu->IsVisible())
+		return;
+
+	m_flMenuOpenTime = gHUD.m_flTime;
+	m_bMenuIsKeyTapped = false;
+	m_pCommandMenu->ShowPanel(true);
+	m_pCommandMenu->UpdateMouseInputEnabled(true);
+}
+
+void CClientViewport::HideCommandMenu()
+{
+	m_flMenuOpenTime = 0;
+	m_pCommandMenu->ShowPanel(false);
+}
+
+void CClientViewport::InputSignalHideCommandMenu()
+{
+	// if they've just tapped the command menu key, leave it open
+	if (m_pCommandMenu->IsVisible() && (m_flMenuOpenTime + COMMAND_MENU_TAP_DELAY) > gHUD.m_flTime)
+	{
+		m_bMenuIsKeyTapped = true;
+		m_pCommandMenu->UpdateMouseInputEnabled(false);
+		return;
+	}
+
+	HideCommandMenu();
+}
+
+bool CClientViewport::SlotInput(int iSlot)
+{
+	// iSlot is int in [0; 9]
+	// Note that
+	// "slot1" == 0
+	// "slot2" == 1
+	// ...
+	// "slot9" == 8
+	// "slot0" == 9
+
+	if (m_pCommandMenu->IsVisible())
+	{
+		m_pCommandMenu->SlotInput(iSlot);
+		return true;
+	}
+
+	return false;
 }
 
 void CClientViewport::GetAllPlayersInfo(void)
@@ -538,25 +589,8 @@ void CClientViewport::MsgFunc_AllowSpec(const char *pszName, int iSize, void *pb
 //-------------------------------------------------------
 // TeamFortressViewport stubs
 //-------------------------------------------------------
-void CClientViewport::ShowCommandMenu(int menuIndex)
-{
-}
-
-void CClientViewport::HideCommandMenu()
-{
-}
-
-void CClientViewport::InputSignalHideCommandMenu()
-{
-}
-
 void CClientViewport::InputPlayerSpecial(void)
 {
-}
-
-bool CClientViewport::SlotInput(int iSlot)
-{
-	return false;
 }
 
 bool CClientViewport::AllowedToPrintText(void)

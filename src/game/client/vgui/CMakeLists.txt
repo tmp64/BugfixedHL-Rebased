@@ -6,6 +6,8 @@ add_sources(
 	client_motd.h
 	client_viewport.cpp
 	client_viewport.h
+	command_menu.cpp
+	command_menu.h
 	crosshair_image.cpp
 	crosshair_image.h
 	png_image.cpp

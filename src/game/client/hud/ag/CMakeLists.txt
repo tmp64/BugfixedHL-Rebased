@@ -1,0 +1,25 @@
+add_sources(
+	CMakeLists.txt
+	ag_countdown.cpp
+	ag_countdown.h
+	ag_ctf.cpp
+	ag_ctf.h
+	ag_global.cpp
+	ag_global.h
+	ag_location.cpp
+	ag_location.h
+	ag_longjump.cpp
+	ag_longjump.h
+	ag_nextmap.cpp
+	ag_nextmap.h
+	ag_playerid.cpp
+	ag_playerid.h
+	ag_settings.cpp
+	ag_settings.h
+	ag_sudden_death.cpp
+	ag_sudden_death.h
+	ag_timeout.cpp
+	ag_timeout.h
+	ag_vote.cpp
+	ag_vote.h
+)

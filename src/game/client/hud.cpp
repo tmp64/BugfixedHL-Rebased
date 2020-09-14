@@ -27,6 +27,11 @@
 #include <appversion.h>
 #include <bhl_urls.h>
 
+extern "C"
+{
+#include <pm_shared.h>
+}
+
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
@@ -59,6 +64,19 @@
 #include "hud/voice_status_self.h"
 #include "hud/speedometer.h"
 #include "hud/timer.h"
+
+// Adrenaline Gamer HUD Elements
+#include "hud/ag/ag_countdown.h"
+#include "hud/ag/ag_ctf.h"
+#include "hud/ag/ag_global.h"
+#include "hud/ag/ag_location.h"
+#include "hud/ag/ag_longjump.h"
+#include "hud/ag/ag_nextmap.h"
+#include "hud/ag/ag_playerid.h"
+#include "hud/ag/ag_settings.h"
+#include "hud/ag/ag_sudden_death.h"
+#include "hud/ag/ag_timeout.h"
+#include "hud/ag/ag_vote.h"
 
 extern cvar_t *cl_lw;
 
@@ -136,6 +154,10 @@ void CHud::Init(void)
 	// Set player info IDs
 	for (int i = 1; i < MAX_PLAYERS; i++)
 		CPlayerInfo::m_sPlayerInfo[i].m_iIndex = i;
+
+	// Check for AG
+	m_bIsAg = !strcmp(gEngfuncs.pfnGetGameDirectory(), "ag");
+	PM_SetIsAG(m_bIsAg);
 
 	HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
 	HookHudMessage<&CHud::MsgFunc_ResetHUD>("ResetHUD");
@@ -230,6 +252,19 @@ void CHud::Init(void)
 	RegisterHudElem<CHudTimer>();
 
 	ClientVoiceMgr_Init();
+
+	// Create AG HUD elements
+	RegisterHudElem<AgHudGlobal>();
+	RegisterHudElem<AgHudCountdown>();
+	RegisterHudElem<AgHudCTF>();
+	RegisterHudElem<AgHudLocation>();
+	RegisterHudElem<AgHudLongjump>();
+	RegisterHudElem<AgHudNextmap>();
+	RegisterHudElem<AgHudPlayerId>();
+	RegisterHudElem<AgHudSettings>();
+	RegisterHudElem<AgHudSuddenDeath>();
+	RegisterHudElem<AgHudTimeout>();
+	RegisterHudElem<AgHudVote>();
 
 	// Init HUD elements
 	for (CHudElem *i : m_HudList)
@@ -388,6 +423,11 @@ void CHud::ApplyViewportSchemeSettings(vgui2::IScheme *pScheme)
 	}
 
 	vgui2::Label::SetDefaultColorCodeArray(m_ColorCodeColors);
+}
+
+bool CHud::IsAG()
+{
+	return m_bIsAg;
 }
 
 // GetSpriteIndex()

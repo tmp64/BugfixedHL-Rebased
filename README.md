@@ -131,6 +131,7 @@ Thanks
   - BubbleMod and Bigguy from hlpp.thewavelength.net for parts of spectator code.
   - Uncle Mike from hlfx.ru for his Xash3D engine which was very helpful in hard moments.
   - KORD_12.7 for constant helping and nice suggestions.
+  - Martin Webrant (BulliT) for releasing AG source code.
   - JetBrains company for free access to great developer tools.
 - SamVanheer for [Half-Life Enhanced](https://github.com/SoloKiller/HLEnhanced) and reverse engineering GoldSrc engine.
 - AGHL.RU community for bug reporting and suggestions.

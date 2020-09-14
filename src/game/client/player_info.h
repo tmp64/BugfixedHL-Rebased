@@ -91,6 +91,7 @@ private:
 	friend class CHud;
 	friend class CClientViewport;
 	friend class CSvcMessages;
+	friend class AgHudGlobal;
 };
 
 inline CPlayerInfo *GetPlayerInfo(int idx)

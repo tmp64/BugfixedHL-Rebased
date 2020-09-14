@@ -122,6 +122,11 @@ public:
 	void Shutdown();
 	void ApplyViewportSchemeSettings(vgui2::IScheme *pScheme);
 
+	/**
+	 * Returns whether DLL is installed onto AG mod.
+	 */
+	bool IsAG();
+
 	//-----------------------------------------------------
 	// HUD Updating (hud_redraw.cpp, hud_update.cpp)
 	//-----------------------------------------------------
@@ -239,6 +244,8 @@ private:
 
 	ColorCodeAction m_ColorCodeAction;
 
+	bool m_bIsAg = false;
+
 	void UpdateHudColors();
 
 	template <typename T>
@@ -257,7 +264,8 @@ inline HSPRITE CHud::GetSprite(int index)
 
 inline const wrect_t &CHud::GetSpriteRect(int index)
 {
-	return m_rgrcRects[index];
+	static wrect_t empty = wrect_t();
+	return (index < 0) ? empty : m_rgrcRects[index];
 }
 
 inline ColorCodeAction CHud::GetColorCodeAction()

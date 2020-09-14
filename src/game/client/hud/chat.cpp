@@ -22,6 +22,7 @@
 #include "parsemsg.h"
 #include "cl_voice_status.h"
 #include "results.h"
+#include "hud/ag/ag_location.h"
 
 ConVar hud_saytext_time("hud_saytext_time", "12", 0);
 ConVar cl_mute_all_comms("cl_mute_all_comms", "1", FCVAR_BHL_ARCHIVE, "If 1, then all communications from a player will be blocked when that player is muted, including chat messages.");
@@ -1088,6 +1089,9 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	{
 		msg[strlen(msg) - 1] = 0;
 	}
+
+	// Substitute location
+	AgHudLocation::Get()->ParseAndEditSayString(iPlayerIndex, msg, sizeof(msg));
 
 	// Strip leading \n characters ( or notify/color signifiers ) for empty string check
 	char *pmsg = msg;

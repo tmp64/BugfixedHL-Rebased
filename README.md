@@ -7,7 +7,7 @@ backwards-compatible with vanilla clients and servers.
 
 *BugfixedHL-Rebased* is port of [Lev's BugfixedHL](https://github.com/LevShisterov/BugfixedHL) on
 new [Half-Life SDK](https://github.com/ValveSoftware/halflife).
-It features improved UI using VGUI2 library and refactored source code for better maintainablity.
+It features improved UI using VGUI2 library, Linux support and refactored source code for better maintainablity.
 
 
 Features
@@ -17,8 +17,8 @@ The mod features a number of improvements over stock client. Please note: some o
 
 Client:
 - [x] Unlocked bunnyhopping
-- [ ] Colored HUD
-- [ ] Raw mouse input via DirectInput
+- [x] Colored HUD
+- [x] Raw mouse input via DirectInput
 - [x] Customizable crosshairs (like in CS:GO)
 - [ ] Improved user interface
   - [x] Scoreboard
@@ -26,10 +26,10 @@ Client:
   - [x] Chatbox
   - [x] Spectator UI
   - [x] Team selection
-  - [ ] Command menu
+  - [x] Command menu
   - [ ] Options dialog
   - [ ] Demo list dialog
-- [ ] Automatic demo recording
+- [x] Automatic demo recording
 - [x] Support for WeaponMod
 - [x] Slowhacking protection (for older game versions)
 
@@ -64,7 +64,7 @@ BugfixedHL has been integrated into Valve's latest HLSDK and has been refactored
   - HUD elements are no longer referenced in *hud.h* (improves compilation times when changing *hud/\*.h*.
   - Removed unused code.
 - Fixed include guards in common header files.
-- Documented engine APIs (thanks to [SoloKiller](https://github.com/SoloKiller)).
+- Documented engine APIs (thanks to [Solokiller](https://github.com/Solokiller)).
 
 
 Supported game versions
@@ -133,5 +133,5 @@ Thanks
   - KORD_12.7 for constant helping and nice suggestions.
   - Martin Webrant (BulliT) for releasing AG source code.
   - JetBrains company for free access to great developer tools.
-- SamVanheer for [Half-Life Enhanced](https://github.com/SoloKiller/HLEnhanced) and reverse engineering GoldSrc engine.
+- SamVanheer for [Half-Life Enhanced](https://github.com/SoloKiller/HLEnhanced) and GoldSrc engine research.
 - AGHL.RU community for bug reporting and suggestions.

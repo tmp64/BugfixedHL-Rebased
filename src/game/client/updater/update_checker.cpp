@@ -198,7 +198,7 @@ void CUpdateChecker::OnDataLoaded(CHttpClient::Response &resp)
 
 			if (version <= m_CurVersion)
 			{
-				// Versions are sorted. Break on dirst version older or equal to current.
+				// Versions are sorted. Break on first version older or equal to current.
 				break;
 			}
 

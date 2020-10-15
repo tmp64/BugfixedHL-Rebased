@@ -62,6 +62,7 @@ include( CTest )
 # Build options
 #-----------------------------------------------------------------
 option( AUTO_DEPLOY		"Whether to automatically deploy to deploy paths" )
+option( USE_UPDATER		"Enable update checked and downloader" )
 
 #-----------------------------------------------------------------
 # Compiler checks
@@ -334,6 +335,58 @@ set( GAME_COMMON_INCLUDE_PATHS
 add_subdirectory( source_sdk )
 
 #-----------------------------------------------------------------
+# Updater
+#-----------------------------------------------------------------
+set( UPDATER_LIBS "" )
+set( UPDATER_DEFINES "" )
+
+if( USE_UPDATER )
+	option( CURL_STATICLIB "Enable if cURL was built as a static library" 0 )
+
+	if( WIN32 )
+		option( CURL_REPO_LIBS "Use static curl from external/curl on Windows" 1 )
+		
+		if( CURL_REPO_LIBS )
+			set( CURL_STATICLIB 1 CACHE BOOL "" FORCE )
+			set( CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/include" CACHE PATH "" FORCE )
+			set( CURL_LIBRARY "" CACHE FILEPATH "" FORCE )
+			set( CURL_LIBRARY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/lib/libcurl_static_debug.lib" CACHE FILEPATH "" FORCE )
+			set( CURL_LIBRARY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/lib/libcurl_static.lib" CACHE FILEPATH "" FORCE )
+		endif()
+	endif()
+
+	find_package( CURL MODULE REQUIRED )
+	set( UPDATER_LIBS
+		${CURL_LIBRARIES}
+		nlohmann_json
+	)
+
+	set( UPDATER_INCLUDE_PATHS
+		${CURL_INCLUDE_DIRS}
+	)
+	
+	set( UPDATER_DEFINES
+		USE_UPDATER=1
+	)
+	
+	if( CURL_STATICLIB )
+		set( UPDATER_DEFINES
+			${UPDATER_DEFINES}
+			CURL_STATICLIB=1
+		)
+		if( WIN32 )
+			set( UPDATER_LIBS
+				${UPDATER_LIBS}
+				wldap32.lib
+				Crypt32.lib
+				Ws2_32.lib
+			)
+		endif()
+	endif()
+	
+endif()
+
+#-----------------------------------------------------------------
 # Client library
 #-----------------------------------------------------------------
 # Add in the shared sources
@@ -354,11 +407,13 @@ target_include_directories( client PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
 	${GAME_COMMON_INCLUDE_PATHS}
 	${SOURCE_SDK_INCLUDE_PATHS}
+	${UPDATER_INCLUDE_PATHS}
 )
 
 target_compile_definitions( client PRIVATE
 	${GAME_COMMON_DEFINES}
 	${SOURCE_SDK_DEFINES}
+	${UPDATER_DEFINES}
 	VERSION_SAFE_STEAM_API_INTERFACES
 	CLIENT_DLL
 )
@@ -392,9 +447,11 @@ endif()
 # Link with dependencies
 target_link_libraries( client 
 	${SOURCE_SDK_LIBS}
+	${UPDATER_LIBS}
 	lodepng
 	pcre
 	semver
+	nlohmann_json
 	${CLIENT_PLAT_LIBS}
 )
 

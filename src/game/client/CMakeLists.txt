@@ -97,4 +97,5 @@ endif()
 
 add_subdirectory( hl )
 add_subdirectory( hud )
+add_subdirectory( updater )
 add_subdirectory( vgui )

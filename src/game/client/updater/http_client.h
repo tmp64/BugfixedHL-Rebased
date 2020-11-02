@@ -17,7 +17,7 @@
 class CHttpClient
 {
 public:
-	static constexpr size_t BUF_CHUNK_SIZE = 16384;	// 16 KiB
+	static constexpr size_t BUF_CHUNK_SIZE = 16384; // 16 KiB
 
 	class Response;
 
@@ -61,6 +61,7 @@ public:
 		 * If not set, writes into the response buffer.
 		 */
 		void SetWriteCallback(const WriteCallback &cb);
+
 	private:
 		std::list<std::string> m_Headers;
 		std::string m_URL;

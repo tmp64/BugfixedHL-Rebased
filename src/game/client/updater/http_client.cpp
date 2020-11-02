@@ -39,7 +39,7 @@ void CHttpClient::RunFrame()
 		while (!m_LogQueue.empty())
 		{
 			auto &item = m_LogQueue.front();
-			
+
 			if (item.first.a() == 0)
 				ConPrintf("%s", item.second);
 			else if (item.first.a() == 1)
@@ -227,7 +227,7 @@ size_t CHttpClient::WriteData(const char *buffer, size_t size, size_t nmemb, voi
 		Assert(req.m_WriteCallback);
 		return req.m_WriteCallback(buffer, nmemb);
 	}
-    catch (const std::exception &e)
+	catch (const std::exception &e)
 	{
 		req.m_LastError = e.what();
 		return 0;

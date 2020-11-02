@@ -95,6 +95,7 @@ else()
 	)
 endif()
 
+add_subdirectory( gameui )
 add_subdirectory( hl )
 add_subdirectory( hud )
 add_subdirectory( updater )

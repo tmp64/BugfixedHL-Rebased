@@ -12,6 +12,7 @@
 #include "console.h"
 #include "client_vgui.h"
 #include "vgui/client_viewport.h"
+#include "gameui/gameui_viewport.h"
 
 EXPOSE_SINGLE_INTERFACE(CClientVGUI, IClientVGUI, ICLIENTVGUI_NAME);
 
@@ -30,6 +31,7 @@ void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 	g_pVGuiLocalize->AddFile(g_pFullFileSystem, VGUI2_ROOT_DIR "resource/language/bugfixedhl_%language%.txt");
 
 	new CClientViewport();
+	new CGameUIViewport();
 }
 
 void CClientVGUI::Start()

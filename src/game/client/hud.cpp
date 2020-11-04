@@ -42,7 +42,10 @@ extern "C"
 #include "cl_voice_status.h"
 #include "bhlcfg.h"
 #include "results.h"
+
+#ifdef USE_UPDATER
 #include "updater/update_checker.h"
+#endif
 
 // HUD Elements
 #include "hud/ammo.h"
@@ -278,7 +281,11 @@ void CHud::Init(void)
 
 	bhlcfg::Init();
 	CResults::Get().Init();
+
+#ifdef USE_UPDATER
+	CHttpClient::Get();
 	CUpdateChecker::Get().Init();
+#endif
 }
 
 void CHud::VidInit(void)
@@ -392,8 +399,11 @@ void CHud::Frame(double time)
 	g_pViewport->GetAllPlayersInfo();
 	CTeamInfo::UpdateAllTeams();
 	CResults::Get().Frame();
+
+#ifdef USE_UPDATER
 	CHttpClient::Get().RunFrame();
 	CUpdateChecker::Get().RunFrame();
+#endif
 
 	while (m_NextFrameQueue.size())
 	{

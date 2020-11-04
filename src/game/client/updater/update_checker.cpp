@@ -61,9 +61,6 @@ CUpdateChecker &CUpdateChecker::Get()
 
 void CUpdateChecker::Init()
 {
-	// Init HTTP
-	CHttpClient::Get();
-
 	const char *verstr = APP_VERSION;
 
 	char *overrideVer = nullptr;

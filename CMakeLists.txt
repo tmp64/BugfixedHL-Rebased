@@ -338,7 +338,7 @@ add_subdirectory( source_sdk )
 # Updater
 #-----------------------------------------------------------------
 set( UPDATER_LIBS "" )
-set( UPDATER_DEFINES "" )
+set( UPDATER_DEFINES USE_UPDATER=0 )
 
 if( USE_UPDATER )
 	option( CURL_STATICLIB "Enable if cURL was built as a static library" 0 )

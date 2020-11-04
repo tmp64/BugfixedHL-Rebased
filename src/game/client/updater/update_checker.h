@@ -32,6 +32,16 @@ public:
 	bool IsUpdateFound();
 
 	/**
+	 * Returns current version of the game.
+	 */
+	const CGameVersion &GetCurVersion();
+
+	/**
+	 * Returns latest version of the game.
+	 */
+	const CGameVersion &GetLatestVersion();
+
+	/**
 	 * Returns changelog string.
 	 */
 	const std::string &GetChangelog();

@@ -1,13 +1,14 @@
 #include <nlohmann/json.hpp>
 #include <bhl_urls.h>
 #include <appversion.h>
-#include "update_checker.h"
 #include "hud.h"
 #include "cl_util.h"
+#include "update_checker.h"
+#include "update_dialogs.h"
 
 static CUpdateChecker s_Instance;
 
-static ConVar cl_check_for_updates("cl_check_for_updates", "1", FCVAR_BHL_ARCHIVE, "Check for updates on game launch.");
+ConVar cl_check_for_updates("cl_check_for_updates", "1", FCVAR_BHL_ARCHIVE, "Check for updates on game launch.");
 
 CON_COMMAND(update_check, "Check for updates")
 {
@@ -18,7 +19,7 @@ CON_COMMAND(update_check, "Check for updates")
 	}
 
 	CUpdateChecker::Get().CheckForUpdates();
-	ConPrintf("Checking...\n");
+	ConPrintf("Checking... You will be notified if there is an update.\n");
 }
 
 CON_COMMAND(update_changelog, "Show update changelog")
@@ -104,6 +105,16 @@ bool CUpdateChecker::IsInProgress()
 bool CUpdateChecker::IsUpdateFound()
 {
 	return m_bUpdateFound;
+}
+
+const CGameVersion &CUpdateChecker::GetCurVersion()
+{
+	return m_CurVersion;
+}
+
+const CGameVersion &CUpdateChecker::GetLatestVersion()
+{
+	return m_LatestVersion;
 }
 
 const std::string &CUpdateChecker::GetChangelog()
@@ -242,4 +253,7 @@ void CUpdateChecker::OnUpdateFound()
 	ConPrintf("************************************************\n");
 	ConPrintf("\n");
 	console::ResetColor();
+
+	// Show dialog
+	CUpdateNotificationDialog::Get()->Activate();
 }

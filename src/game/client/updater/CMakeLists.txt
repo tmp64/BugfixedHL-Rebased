@@ -4,4 +4,6 @@ add_sources(
 	http_client.h
 	update_checker.cpp
 	update_checker.h
+	update_dialogs.cpp
+	update_dialogs.h
 )

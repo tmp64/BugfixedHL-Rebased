@@ -186,8 +186,8 @@ void AgHudLocation::Load()
 	if (!pFile)
 	{
 		// file error
-		char szMsg[128];
-		sprintf(szMsg, "Couldn't open location file %s.\n", szFile);
+		char szMsg[1024];
+		snprintf(szMsg, sizeof(szMsg), "Couldn't open location file %s.\n", szFile);
 		ConsolePrint(szMsg);
 		return;
 	}
@@ -261,8 +261,8 @@ void AgHudLocation::Save()
 	if (!pFile)
 	{
 		// file error
-		char szMsg[128];
-		sprintf(szMsg, "Couldn't create/save location file %s.\n", szFile);
+		char szMsg[1024];
+		snprintf(szMsg, sizeof(szMsg), "Couldn't create/save location file %s.\n", szFile);
 		ConsolePrint(szMsg);
 		return;
 	}

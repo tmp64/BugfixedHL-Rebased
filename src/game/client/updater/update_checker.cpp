@@ -18,7 +18,7 @@ CON_COMMAND(update_check, "Check for updates")
 	}
 
 	CUpdateChecker::Get().CheckForUpdates();
-	ConPrintf("Cheking...\n");
+	ConPrintf("Checking...\n");
 }
 
 CON_COMMAND(update_changelog, "Show update changelog")
@@ -31,7 +31,7 @@ CON_COMMAND(update_changelog, "Show update changelog")
 
 	if (!CUpdateChecker::Get().IsUpdateFound())
 	{
-		ConPrintf("No updates, client is on the latest version.\n");
+		ConPrintf("Client is on the latest version.\n");
 		return;
 	}
 

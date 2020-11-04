@@ -43,7 +43,7 @@ extern "C"
 #include "bhlcfg.h"
 #include "results.h"
 
-#ifdef USE_UPDATER
+#if USE_UPDATER
 #include "updater/update_checker.h"
 #endif
 
@@ -282,7 +282,7 @@ void CHud::Init(void)
 	bhlcfg::Init();
 	CResults::Get().Init();
 
-#ifdef USE_UPDATER
+#if USE_UPDATER
 	CHttpClient::Get();
 	CUpdateChecker::Get().Init();
 #endif
@@ -400,7 +400,7 @@ void CHud::Frame(double time)
 	CTeamInfo::UpdateAllTeams();
 	CResults::Get().Frame();
 
-#ifdef USE_UPDATER
+#if USE_UPDATER
 	CHttpClient::Get().RunFrame();
 	CUpdateChecker::Get().RunFrame();
 #endif

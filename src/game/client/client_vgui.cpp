@@ -16,6 +16,16 @@
 
 EXPOSE_SINGLE_INTERFACE(CClientVGUI, IClientVGUI, ICLIENTVGUI_NAME);
 
+namespace vgui2
+{
+
+HScheme VGui_GetDefaultScheme()
+{
+	return 0;
+}
+
+}
+
 void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 {
 	ConnectTier1Libraries(pFactories, iNumFactories);

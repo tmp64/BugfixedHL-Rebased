@@ -30,13 +30,13 @@ CUpdateNotificationDialog::CUpdateNotificationDialog()
 	SetMinimumSize(350, 290);
 
 	m_pOldVersionLabel = new vgui2::Label(this, "OldVersionLabel", "0.0.0");
-	m_pOldVersionTextLabel = new vgui2::Label(this, "OldVersionTextLabel", "");
+	m_pOldVersionTextLabel = new vgui2::Label(this, "OldVersionTextLabel", "#BHL_Update_Notif_OldVer");
 	m_pNewVersionLabel = new vgui2::Label(this, "NewVersionLabel", "0.0.0");
-	m_pNewVersionTextLabel = new vgui2::Label(this, "NewVersionTextLabel", "");
+	m_pNewVersionTextLabel = new vgui2::Label(this, "NewVersionTextLabel", "#BHL_Update_Notif_NewVer");
 	m_pChangelog = new vgui2::RichText(this, "Changelog");
-	m_pUpdatesCheckBtn = new vgui2::CheckButton(this, "UpdatesCheckBtn", "Automatically check for updates");
+	m_pUpdatesCheckBtn = new vgui2::CheckButton(this, "UpdatesCheckBtn", "#BHL_Update_Notif_AutoCheck");
 	m_pCloseBtn = new vgui2::Button(this, "CloseBtn", "#Close", this, "Close");
-	m_pUpdateBtn = new vgui2::Button(this, "UpdateBtn", "Install the update", this, "Update");
+	m_pUpdateBtn = new vgui2::Button(this, "UpdateBtn", "#BHL_Update_Notif_Install", this, "Update");
 
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/updater/UpdateNotificationDialog.res");
 	MoveToCenterOfScreen();

@@ -94,7 +94,7 @@ Scheme
 		ComboBoxButton.BgColor			"ListBG"
 		ComboBoxButton.DisabledBgColor	"ControlBG"
 
-		Frame.TitleTextInsetX			30
+		Frame.TitleTextInsetX			12
 		Frame.ClientInsetX				4
 		Frame.ClientInsetY				4
 		Frame.BgColor					"ControlBG"

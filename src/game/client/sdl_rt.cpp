@@ -50,6 +50,7 @@ void CSDLRuntime::InitWindows()
 
 	m_bIsGood = true;
 	m_bIsGood = m_bIsGood && fnLoadSym(GetRelativeMouseState, "SDL_GetRelativeMouseState");
+	m_bIsGood = m_bIsGood && fnLoadSym(SetRelativeMouseMode, "SDL_SetRelativeMouseMode");
 	m_bIsGood = m_bIsGood && fnLoadSym(NumJoysticks, "SDL_NumJoysticks");
 	m_bIsGood = m_bIsGood && fnLoadSym(IsGameController, "SDL_IsGameController");
 	m_bIsGood = m_bIsGood && fnLoadSym(GameControllerOpen, "SDL_GameControllerOpen");
@@ -69,6 +70,7 @@ void CSDLRuntime::InitOther()
 {
 #ifndef PLATFORM_WINDOWS
 	GetRelativeMouseState = &SDL_GetRelativeMouseState;
+	SetRelativeMouseMode = &SDL_SetRelativeMouseMode;
 	NumJoysticks = &SDL_NumJoysticks;
 	IsGameController = &SDL_IsGameController;
 	GameControllerOpen = &SDL_GameControllerOpen;

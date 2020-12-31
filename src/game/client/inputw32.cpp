@@ -421,6 +421,12 @@ void CL_DLLEXPORT IN_ActivateMouse(void)
 		}
 	}
 #endif
+
+	if (m_mode == MouseMode::RawInput)
+	{
+		GetSDL()->SetRelativeMouseMode(SDL_TRUE);
+	}
+
 	mouseactive = 1;
 }
 
@@ -446,6 +452,11 @@ void CL_DLLEXPORT IN_DeactivateMouse(void)
 
 	ClipCursor(NULL);
 #endif
+
+	if (m_mode == MouseMode::RawInput)
+	{
+		GetSDL()->SetRelativeMouseMode(SDL_FALSE);
+	}
 
 	mouseactive = 0;
 }

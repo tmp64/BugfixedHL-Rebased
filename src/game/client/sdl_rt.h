@@ -10,6 +10,7 @@ class CSDLRuntime
 {
 public:
 	decltype(SDL_GetRelativeMouseState) *GetRelativeMouseState = nullptr;
+	decltype(SDL_SetRelativeMouseMode) *SetRelativeMouseMode = nullptr;
 	decltype(SDL_NumJoysticks) *NumJoysticks = nullptr;
 	decltype(SDL_IsGameController) *IsGameController = nullptr;
 	decltype(SDL_GameControllerOpen) *GameControllerOpen = nullptr;

@@ -108,6 +108,7 @@ static int mouseactive = 0;
 int mouseinitialized;
 static int mouseparmsvalid;
 static int mouseshowtoggle = 1;
+static bool s_bIsRelativeMode = false;
 
 // joystick defines and variables
 // where should defines be moved?
@@ -180,6 +181,15 @@ static int dinput_mouse_acquired = 0;
 static DIMOUSESTATE dinput_mousestate;
 #endif
 
+void IN_SetRelativeMouseMode(bool state)
+{
+	if (s_bIsRelativeMode == state)
+		return;
+
+	s_bIsRelativeMode = state;
+	GetSDL()->SetRelativeMouseMode((SDL_bool)state);
+}
+
 /**
  * Updates m_mode based on value of m_input cvar.
  */
@@ -205,6 +215,12 @@ void IN_UpdateMouseMode()
 			{
 				newMode = MouseMode::Engine;
 			}
+		}
+
+		if (m_mode == MouseMode::RawInput)
+		{
+			// Disable relative mouse mode if switching off raw input
+			IN_SetRelativeMouseMode(false);
 		}
 
 		ConVarRef rawinput(m_rawinput);
@@ -424,7 +440,7 @@ void CL_DLLEXPORT IN_ActivateMouse(void)
 
 	if (m_mode == MouseMode::RawInput)
 	{
-		GetSDL()->SetRelativeMouseMode(SDL_TRUE);
+		IN_SetRelativeMouseMode(true);
 	}
 
 	mouseactive = 1;
@@ -455,7 +471,7 @@ void CL_DLLEXPORT IN_DeactivateMouse(void)
 
 	if (m_mode == MouseMode::RawInput)
 	{
-		GetSDL()->SetRelativeMouseMode(SDL_FALSE);
+		IN_SetRelativeMouseMode(false);
 	}
 
 	mouseactive = 0;
@@ -746,6 +762,7 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 		else if (m_mode == MouseMode::RawInput)
 #endif
 		{
+			IN_SetRelativeMouseMode(true);
 			GetSDL()->GetRelativeMouseState(&deltaX, &deltaY);
 			current_pos.x = deltaX;
 			current_pos.y = deltaY;
@@ -832,17 +849,22 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 			IN_ResetMouse();
 		}
 	}
-#ifdef _WIN32
 	else
 	{
+#ifdef _WIN32
 		if (m_mode == MouseMode::DirectInput && dinput_mouse_acquired)
 		{
 			// Discard any info when mouse is not active
 			DIMOUSESTATE state;
 			dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&state);
 		}
-	}
+		else if (m_mode == MouseMode::RawInput)
 #endif
+		{
+			// Disable realative mouse input
+			IN_SetRelativeMouseMode(false);
+		}
+	}
 
 	gEngfuncs.SetViewAngles((float *)viewangles);
 

@@ -86,6 +86,16 @@ public:
 	 */
 	UserMessage *GetUserMsgList();
 
+	/**
+	 * Disables commands that can quit the game (e.g. quit, _restart)
+	 */
+	void DisableExitCommands();
+
+	/**
+	 * Reenables commands disabled with DisableExitCommands.
+	 */
+	void EnableExitCommands();
+
 	//-------------------------------------------------------------------
 	// Utility functions
 	//-------------------------------------------------------------------
@@ -180,6 +190,10 @@ protected:
 	 * Finds user message list and puts first element in m_pUserMsgList.
 	 */
 	virtual void FindUserMessageList();
+
+private:
+	CmdFunction m_fnEngineQuitCmd = nullptr;
+	CmdFunction m_fnEngineRestartCmd = nullptr;
 };
 
 inline bool CEnginePatches::IsSDLEngine() { return m_bIsSDLEngine; }

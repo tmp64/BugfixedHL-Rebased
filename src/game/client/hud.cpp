@@ -45,6 +45,7 @@ extern "C"
 
 #if USE_UPDATER
 #include "updater/update_checker.h"
+#include "updater/update_installer.h"
 #endif
 
 // HUD Elements
@@ -403,6 +404,7 @@ void CHud::Frame(double time)
 #if USE_UPDATER
 	CHttpClient::Get().RunFrame();
 	CUpdateChecker::Get().RunFrame();
+	CUpdateInstaller::Get().RunFrame();
 #endif
 
 	while (m_NextFrameQueue.size())
@@ -415,6 +417,7 @@ void CHud::Frame(double time)
 
 void CHud::Shutdown()
 {
+	CUpdateInstaller::Get().Shutdown();
 	bhlcfg::Shutdown();
 	ClientVoiceMgr_Shutdown();
 

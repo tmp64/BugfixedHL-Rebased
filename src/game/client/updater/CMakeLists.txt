@@ -6,4 +6,16 @@ add_sources(
 	update_checker.h
 	update_dialogs.cpp
 	update_dialogs.h
+	update_installer.cpp
+	update_installer.h
 )
+
+if(PLATFORM_WINDOWS)
+	add_sources(
+		update_installer_windows.cpp
+	)
+else()
+	add_sources(
+		update_installer_linux.cpp
+	)
+endif()

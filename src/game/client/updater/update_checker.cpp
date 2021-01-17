@@ -122,6 +122,11 @@ const std::string &CUpdateChecker::GetChangelog()
 	return m_Changelog;
 }
 
+const std::string &CUpdateChecker::GetAssetURL()
+{
+	return m_ZipURL;
+}
+
 void CUpdateChecker::CheckForUpdates()
 {
 	FetchReleaseList();
@@ -177,6 +182,7 @@ void CUpdateChecker::OnDataLoaded(CHttpClient::Response &resp)
 		CGameVersion latestVersion;
 		std::string changelog;
 		bool updateFound = false;
+		nlohmann::json latestRelease;
 
 		for (const nlohmann::json &release : releases)
 		{
@@ -202,6 +208,7 @@ void CUpdateChecker::OnDataLoaded(CHttpClient::Response &resp)
 			{
 				// First non-draft release is the latest
 				latestVersion = version;
+				latestRelease = release;
 			}
 
 			if (version <= m_CurVersion)
@@ -218,6 +225,29 @@ void CUpdateChecker::OnDataLoaded(CHttpClient::Response &resp)
 		m_bUpdateFound = updateFound;
 		m_Changelog = std::move(changelog);
 		m_LatestVersion = latestVersion;
+
+		// Select asset
+		m_ZipURL.clear();
+		const nlohmann::json &assets = latestRelease.at("assets");
+
+		for (auto &asset : assets)
+		{
+			const char *platformName = nullptr;
+
+			if (IsWindows())
+				platformName = "windows";
+			else if (IsLinux())
+				platformName = "linux";
+			else
+				Assert(false);
+
+			const std::string &name = asset.at("name").get<std::string>();
+			if (name.find("client") != name.npos && name.find(platformName) != name.npos)
+			{
+				m_ZipURL = asset.at("browser_download_url").get<std::string>();
+				break;
+			}
+		}
 
 		if (updateFound)
 		{

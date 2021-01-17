@@ -23,12 +23,16 @@ CHttpClient::~CHttpClient()
 	m_WorkerThread.join();
 }
 
-void CHttpClient::Get(Request &req)
+std::shared_ptr<CHttpClient::DownloadStatus> CHttpClient::Get(Request &req)
 {
 	Assert(req.m_Callback);
 	std::unique_lock<std::mutex> lock(m_Mutex);
+	std::shared_ptr<DownloadStatus> res = req.m_pStatus = std::make_shared<DownloadStatus>();
+
 	m_RequestQueue.push(std::move(req));
 	m_CondVar.notify_all();
+
+	return res;
 }
 
 void CHttpClient::RunFrame()
@@ -64,6 +68,11 @@ void CHttpClient::RunFrame()
 			m_ResponseQueue.pop();
 		}
 	}
+}
+
+void CHttpClient::AbortCurrentDownload()
+{
+	m_bAbortCurrentDownload = true;
 }
 
 void CHttpClient::LogPrintf(Color color, const char *fmt, ...)
@@ -118,6 +127,8 @@ void CHttpClient::WorkerThreadFunc() noexcept
 	curl_easy_setopt(hCurl, CURLOPT_ERRORBUFFER, szCurlError);
 	curl_easy_setopt(hCurl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(hCurl, CURLOPT_WRITEFUNCTION, WriteData);
+	curl_easy_setopt(hCurl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
+	curl_easy_setopt(hCurl, CURLOPT_NOPROGRESS, 0);
 
 	if (gEngfuncs.CheckParm("-bhl_no_ssl_check", nullptr))
 	{
@@ -181,7 +192,10 @@ void CHttpClient::WorkerThreadFunc() noexcept
 			// Set options
 			curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
 			curl_easy_setopt(hCurl, CURLOPT_WRITEDATA, &req);
+			curl_easy_setopt(hCurl, CURLOPT_XFERINFODATA, &req);
 			curl_easy_setopt(hCurl, CURLOPT_URL, req.m_URL.c_str());
+
+			m_bAbortCurrentDownload = false;
 
 			// Run
 			CURLcode result = curl_easy_perform(hCurl);
@@ -232,6 +246,22 @@ size_t CHttpClient::WriteData(const char *buffer, size_t size, size_t nmemb, voi
 		req.m_LastError = e.what();
 		return 0;
 	}
+}
+
+int CHttpClient::ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
+{
+	Request &req = *static_cast<Request *>(clientp);
+
+	req.m_pStatus->iSize = dlnow;
+	req.m_pStatus->iTotalSize = dltotal;
+
+	if (Get().m_bAbortCurrentDownload || Get().m_bShutdown)
+	{
+		Get().m_bAbortCurrentDownload = false;
+		return 1; // Abort download
+	}
+
+	return CURL_PROGRESSFUNC_CONTINUE;
 }
 
 CHttpClient::Request::Request(const std::string &url)

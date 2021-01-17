@@ -26,11 +26,12 @@
 #define FCVAR_UNLOGGED         (1 << 8) // If this is a FCVAR_SERVER, don't log changes to the log file / console if we are creating a log
 #define FCVAR_NOEXTRAWHITEPACE (1 << 9) // strip trailing/leading white space from this cvar
 #define FCVAR_BHL_ARCHIVE      (1 << 15) // (Client only) Will be saved to bugfixedhl.cfg. 15 is just an arbitrary number chosen not to conflict with any future engine flags.
+#define FCVAR_DEVELOPMENTONLY  (1 << 16) // (Client only) Cvar won't be registered unless game is running with -dev flag.
 
 typedef struct cvar_s
 {
-	char *name;
-	char *string;
+	const char *name;
+	const char *string;
 	int flags;
 	float value;
 	struct cvar_s *next;

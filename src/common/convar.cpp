@@ -267,6 +267,14 @@ static std::map<cvar_t *, ConVar *> s_CvarMap;
 
 void CvarSystem::RegisterCvars()
 {
+	bool bInDevMode = false;
+
+#ifdef SERVER_DLL
+#else
+	if (gEngfuncs.CheckParm("-dev", nullptr))
+		bInDevMode = true;
+#endif
+
 	ConItemBase *item = ConItemBase::m_pFirstItem;
 	for (; item; item = item->m_pNextItem)
 	{
@@ -275,6 +283,21 @@ void CvarSystem::RegisterCvars()
 		if (item->GetType() == ConItemType::ConVar)
 		{
 			ConVar *cvar = static_cast<ConVar *>(item);
+
+			if (cvar->GetFlags() & FCVAR_DEVELOPMENTONLY && !bInDevMode)
+			{
+				// Do not register that cvar
+#ifndef SERVER_DLL
+				// On client create a dummy cvar_t
+				cvar->m_pCvar = new cvar_t();
+				cvar->m_pCvar->name = cvar->GetName();
+				cvar->m_pCvar->string = cvar->GetDefaultValue();
+				cvar->m_pCvar->flags = cvar->GetFlags();
+				cvar->m_pCvar->value = std::atof(cvar->GetDefaultValue());
+				cvar->m_pCvar->next = nullptr;
+#endif
+				continue;
+			}
 
 #ifdef SERVER_DLL
 			CVAR_REGISTER(cvar->GetCvar());

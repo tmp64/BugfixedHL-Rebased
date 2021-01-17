@@ -20,8 +20,8 @@ VERSIONS = [
 ]
 
 ASSET_NAMES = [
-    'client',
-    'server'
+    'client-windows',
+    'server-windows'
 ]
 
 

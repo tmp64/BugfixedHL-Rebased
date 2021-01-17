@@ -5,6 +5,7 @@
 #include "gameui/gameui_viewport.h"
 #include "client_vgui.h"
 #include "update_checker.h"
+#include "update_installer.h"
 
 extern ConVar cl_check_for_updates;
 
@@ -23,6 +24,9 @@ static const char *VerToString(const CGameVersion &ver)
 	return str.c_str();
 }
 
+//-------------------------------------------------------------
+// CUpdateNotificationDialog
+//-------------------------------------------------------------
 CUpdateNotificationDialog::CUpdateNotificationDialog()
     : BaseClass(CGameUIViewport::Get(), "UpdateNotificationDialog")
 {
@@ -91,7 +95,8 @@ void CUpdateNotificationDialog::OnCommand(const char *pszCmd)
 {
 	if (!strcmp(pszCmd, "Update"))
 	{
-		// TODO: Call updater
+		CUpdateInstaller::Get().StartUpdate();
+		Close();
 	}
 	else
 	{
@@ -118,4 +123,202 @@ void CUpdateNotificationDialog::OnClose()
 {
 	BaseClass::OnClose();
 	cl_check_for_updates.SetValue(m_pUpdatesCheckBtn->IsSelected());
+}
+
+//-------------------------------------------------------------
+// CUpdateDownloadStatusDialog
+//-------------------------------------------------------------
+CUpdateDownloadStatusDialog::CUpdateDownloadStatusDialog()
+    : BaseClass(CGameUIViewport::Get(), "UpdateDownloadStatusDialog")
+{
+	SetDeleteSelfOnClose(true);
+	SetSizeable(false);
+	SetCloseButtonVisible(false);
+
+	LoadControlSettings(VGUI2_ROOT_DIR "resource/updater/UpdateDownloadStatusDialog.res");
+	MoveToCenterOfScreen();
+
+	m_pProgress = FindControl<vgui2::ProgressBar>("Progress");
+	m_pProgressLabel = FindControl<vgui2::Label>("ProgressLabel");
+}
+
+void CUpdateDownloadStatusDialog::OnThink()
+{
+	if (m_pStatus.get())
+	{
+		size_t dl = m_pStatus->iSize;
+		size_t total = m_pStatus->iTotalSize;
+
+		if (total == 0)
+		{
+			m_pProgress->SetProgress(0);
+			m_pProgressLabel->SetText((FormatMemSize(dl) + "...").c_str());
+		}
+		else
+		{
+			char buf[128];
+			double precent = (double)dl / total;
+			snprintf(buf, sizeof(buf), "%.f%% - %s / %s", precent * 100,
+				FormatMemSize(dl).c_str(), FormatMemSize(total).c_str());
+			m_pProgress->SetProgress((float)precent);
+			m_pProgressLabel->SetText(buf);
+		}
+	}
+}
+
+void CUpdateDownloadStatusDialog::OnCommand(const char *pszCmd)
+{
+	if (!strcmp(pszCmd, "CancelDownload"))
+	{
+		CUpdateInstaller::Get().CancelInstallation();
+	}
+	else
+	{
+		BaseClass::OnCommand(pszCmd);
+	}
+}
+
+void CUpdateDownloadStatusDialog::SetStatus(std::shared_ptr<CHttpClient::DownloadStatus> &pStatus)
+{
+	m_pStatus = pStatus;
+}
+
+std::string CUpdateDownloadStatusDialog::FormatMemSize(size_t iTotalMem)
+{
+	char buf[128];
+
+	if (iTotalMem < 1024)
+	{
+		snprintf(buf, sizeof(buf), "%1 B", iTotalMem);
+	}
+	else if (iTotalMem < 1024L * 1024L)
+	{
+		double fMem = iTotalMem / 1024.0;
+		snprintf(buf, sizeof(buf), "%.2f KiB", fMem);
+	}
+	else if (iTotalMem < 1024L * 1024L * 1024L)
+	{
+		double fMem = iTotalMem / 1024.0 / 1024.0;
+		snprintf(buf, sizeof(buf), "%.2f MiB", fMem);
+	}
+	else /* if (iTotalMem < 1024L * 1024L * 1024L * 1024L)*/
+	{
+		double fMem = iTotalMem / 1024.0 / 1024.0 / 1024.0;
+		snprintf(buf, sizeof(buf), "%.2f GiB", fMem);
+	}
+
+	return buf;
+}
+
+//-------------------------------------------------------------
+// CUpdateFileProgressDialog
+//-------------------------------------------------------------
+CUpdateFileProgressDialog::CUpdateFileProgressDialog()
+    : BaseClass(CGameUIViewport::Get(), "UpdateFileProgressDialog")
+{
+	SetDeleteSelfOnClose(true);
+	SetSizeable(false);
+	SetCloseButtonVisible(false);
+
+	LoadControlSettings(VGUI2_ROOT_DIR "resource/updater/UpdateFileProgressDialog.res");
+	MoveToCenterOfScreen();
+
+	m_pProgress = FindControl<vgui2::ProgressBar>("Progress");
+	m_pProgressLabel = FindControl<vgui2::Label>("ProgressLabel");
+	m_pFileNameLabel = FindControl<vgui2::Label>("FileNameLabel");
+	m_pCancelButton = FindControl<vgui2::Button>("CancelButton");
+}
+
+void CUpdateFileProgressDialog::OnCommand(const char *pszCmd)
+{
+	if (!strcmp(pszCmd, "Cancel"))
+	{
+		CUpdateInstaller::Get().CancelInstallation();
+	}
+	else
+	{
+		BaseClass::OnCommand(pszCmd);
+	}
+}
+
+void CUpdateFileProgressDialog::UpdateProgress(const UpdateFileProgress &pr)
+{
+	double progress;
+
+	if (pr.iTotalFiles == 0)
+	{
+		progress = 0;
+	}
+	else
+	{
+		progress = (double)pr.iFinishedFiles / pr.iTotalFiles;
+	}
+
+	m_pProgress->SetProgress((float)progress);
+
+	char buf[128];
+	snprintf(buf, sizeof(buf), "%.f%% - %d / %d", progress * 100, pr.iFinishedFiles, pr.iTotalFiles);
+	m_pProgressLabel->SetText(buf);
+
+	size_t offset = pr.filename.find('/');
+	if (offset == pr.filename.npos)
+		offset = 0;
+	else
+		offset += 1;
+	m_pFileNameLabel->SetText(pr.filename.c_str() + offset);
+}
+
+void CUpdateFileProgressDialog::SetCancelButtonVisible(bool state)
+{
+	m_pCancelButton->SetVisible(state);
+}
+
+//-------------------------------------------------------------
+// CUpdateFileReplaceDialog
+//-------------------------------------------------------------
+CUpdateFileReplaceDialog::CUpdateFileReplaceDialog()
+    : BaseClass(CGameUIViewport::Get(), "UpdateFileReplaceDialog")
+{
+	SetDeleteSelfOnClose(true);
+	SetSizeable(false);
+	SetCloseButtonVisible(false);
+	SetTitle("#BHL_Update_FileConflict", true);
+
+	m_pFileNameLabel = new vgui2::Label(this, "FileNameLabel", "File name");
+	LoadControlSettings(VGUI2_ROOT_DIR "resource/updater/UpdateFileReplaceDialog.res");
+	MoveToCenterOfScreen();
+}
+
+void CUpdateFileReplaceDialog::OnCommand(const char *pszCmd)
+{
+	if (!strcmp(pszCmd, "Replace"))
+	{
+		CUpdateInstaller::Get().ShowNextReplaceDialog(true, false);
+	}
+	else if (!strcmp(pszCmd, "ReplaceAll"))
+	{
+		CUpdateInstaller::Get().ShowNextReplaceDialog(true, true);
+	}
+	else if (!strcmp(pszCmd, "Keep"))
+	{
+		CUpdateInstaller::Get().ShowNextReplaceDialog(false, false);
+	}
+	else if (!strcmp(pszCmd, "KeepAll"))
+	{
+		CUpdateInstaller::Get().ShowNextReplaceDialog(false, true);
+	}
+	else if (!strcmp(pszCmd, "Cancel"))
+	{
+		CUpdateInstaller::Get().CancelInstallation();
+	}
+	else
+	{
+		BaseClass::OnCommand(pszCmd);
+	}
+}
+
+void CUpdateFileReplaceDialog::Activate(const std::string &name)
+{
+	BaseClass::Activate();
+	m_pFileNameLabel->SetText(name.c_str());
 }

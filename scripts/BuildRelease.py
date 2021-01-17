@@ -101,7 +101,7 @@ class FileToCopy:
 
 
 COMMON_FILES_TO_COPY = [
-    FileToCopy('README.md', 'README.md')
+    FileToCopy('README.md', 'valve_addon/README_BugfixedHL.md')
 ]
 
 
@@ -450,7 +450,7 @@ class BuildScript:
 
                     meta['files'][path] = file_data
 
-            with open(self.paths.archive_files + 'valve_addon/bugfxiedhl_install_metadata.dat', "a") as f:
+            with open(self.paths.archive_files + 'valve_addon/bugfixedhl_install_metadata.dat', "a") as f:
                 f.write(json.dumps(meta, sort_keys=True, indent=4))
         except Exception as e:
             print('Failed to create metadata file: {}.'.format(str(e)))

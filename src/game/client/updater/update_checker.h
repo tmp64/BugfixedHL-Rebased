@@ -47,6 +47,11 @@ public:
 	const std::string &GetChangelog();
 
 	/**
+	 * Returns download URL for the asset or an empty string.
+	 */
+	const std::string &GetAssetURL();
+
+	/**
 	 * Check for updates.
 	 */
 	void CheckForUpdates();
@@ -55,6 +60,7 @@ private:
 	bool m_bInProgress = false;
 	bool m_bUpdateFound = false;
 	std::string m_Changelog;
+	std::string m_ZipURL;
 	CGameVersion m_LatestVersion;
 
 	// Version of installed game

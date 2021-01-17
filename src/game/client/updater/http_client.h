@@ -26,6 +26,13 @@ public:
 
 	static CHttpClient &Get();
 
+	class DownloadStatus
+	{
+	public:
+		size_t iSize = 0;
+		size_t iTotalSize = 0;
+	};
+
 	class Request
 	{
 	public:
@@ -68,6 +75,7 @@ public:
 		ResponseCallback m_Callback;
 		WriteCallback m_WriteCallback;
 		std::string m_LastError;
+		std::shared_ptr<DownloadStatus> m_pStatus;
 
 		friend class CHttpClient;
 	};
@@ -105,16 +113,22 @@ public:
 	 * Performs a GET request.
 	 * Request is invalidated by this call.
 	 */
-	void Get(Request &req);
+	std::shared_ptr<DownloadStatus> Get(Request &req);
 
 	/**
 	 * Processes callbacks and queues.
 	 */
 	void RunFrame();
 
+	/**
+	 * Download of currently downloading file will be aborted.
+	 */
+	void AbortCurrentDownload();
+
 private:
 	std::thread m_WorkerThread;
 	std::atomic_bool m_bShutdown = false;
+	std::atomic_bool m_bAbortCurrentDownload = false;
 	std::condition_variable m_CondVar;
 	std::queue<Request> m_RequestQueue;
 	std::queue<Response> m_ResponseQueue;
@@ -130,6 +144,7 @@ private:
 
 	void WorkerThreadFunc() noexcept;
 	static size_t WriteData(const char *buffer, size_t size, size_t nmemb, void *userp) noexcept;
+	static int ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow);
 };
 
 #endif

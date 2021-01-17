@@ -62,6 +62,56 @@ void CEnginePatches::HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT])
 	Assert(false);
 }
 
+void CEnginePatches::DisableExitCommands()
+{
+	CmdFunction fn = []() {
+		ConPrintf("Quiting has been temporarily disabled.\n");
+	};
+
+	for (cmd_function_t *pItem = gEngfuncs.GetFirstCmdFunctionHandle(); pItem; pItem = pItem->next)
+	{
+		if (!strcmp(pItem->name, "quit"))
+		{
+			if (!m_fnEngineQuitCmd)
+			{
+				m_fnEngineQuitCmd = pItem->function;
+				pItem->function = fn;
+			}
+		}
+		else if (!strcmp(pItem->name, "_restart"))
+		{
+			if (!m_fnEngineRestartCmd)
+			{
+				m_fnEngineRestartCmd = pItem->function;
+				pItem->function = fn;
+			}
+		}
+	}
+}
+
+void CEnginePatches::EnableExitCommands()
+{
+	for (cmd_function_t *pItem = gEngfuncs.GetFirstCmdFunctionHandle(); pItem; pItem = pItem->next)
+	{
+		if (!strcmp(pItem->name, "quit"))
+		{
+			if (m_fnEngineQuitCmd)
+			{
+				pItem->function = m_fnEngineQuitCmd;
+				m_fnEngineQuitCmd = nullptr;
+			}
+		}
+		else if (!strcmp(pItem->name, "_restart"))
+		{
+			if (!m_fnEngineRestartCmd)
+			{
+				pItem->function = m_fnEngineRestartCmd;
+				m_fnEngineRestartCmd = nullptr;
+			}
+		}
+	}
+}
+
 void CEnginePatches::PlatformPatchesInit()
 {
 }

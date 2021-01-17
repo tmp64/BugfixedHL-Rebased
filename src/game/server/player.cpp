@@ -2836,18 +2836,23 @@ edict_t *EntSelectSpawnPoint(CBasePlayer *pPlayer)
 		if (FNullEnt(pSpot)) // skip over the null point
 			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
 
-		if (g_pGameRules->IsTeamplay()) {
+		if (g_pGameRules->IsTeamplay())
+		{
 			// try to find team spawn
 			CBaseEntity *pFirstSpot = pSpot;
 
-			do {
-				if (pSpot) {
-					if (g_pGameRules->GetTeamIndex(pPlayer->TeamID()) != pSpot->pev->team) {
+			do
+			{
+				if (pSpot)
+				{
+					if (g_pGameRules->GetTeamIndex(pPlayer->TeamID()) != pSpot->pev->team)
+					{
 						pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
 						continue;
 					}
 
-					if (IsSpawnPointValid(pPlayer, pSpot) && pSpot->pev->origin != Vector(0, 0, 0)) {
+					if (IsSpawnPointValid(pPlayer, pSpot) && pSpot->pev->origin != Vector(0, 0, 0))
+					{
 						goto ReturnSpot;
 					}
 				}
@@ -2858,9 +2863,12 @@ edict_t *EntSelectSpawnPoint(CBasePlayer *pPlayer)
 
 		CBaseEntity *pFirstSpot = pSpot;
 
-		do {
-			if (pSpot) {
-				if (IsSpawnPointValid(pPlayer, pSpot) && pSpot->pev->origin != Vector(0, 0, 0)) {
+		do
+		{
+			if (pSpot)
+			{
+				if (IsSpawnPointValid(pPlayer, pSpot) && pSpot->pev->origin != Vector(0, 0, 0))
+				{
 					goto ReturnSpot;
 				}
 			}

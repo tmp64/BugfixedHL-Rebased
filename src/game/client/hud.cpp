@@ -417,7 +417,9 @@ void CHud::Frame(double time)
 
 void CHud::Shutdown()
 {
+#if USE_UPDATER
 	CUpdateInstaller::Get().Shutdown();
+#endif
 	bhlcfg::Shutdown();
 	ClientVoiceMgr_Shutdown();
 

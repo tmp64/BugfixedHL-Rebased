@@ -324,12 +324,13 @@ void CL_DLLEXPORT HUD_Shutdown(void)
 {
 	//	RecClShutdown();
 
+	console::HudShutdown();
 	gHUD.Shutdown();
 	ShutdownInput();
 	CL_UnloadParticleMan();
 	ClientSteamContext().Shutdown();
 	CEnginePatches::Get().Shutdown();
-	console::HudShutdown();
+	console::HudPostShutdown();
 }
 
 extern "C" CL_DLLEXPORT void *ClientFactory()

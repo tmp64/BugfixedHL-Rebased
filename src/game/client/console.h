@@ -9,6 +9,7 @@ void Initialize();
 void HudInit();
 void HudPostInit();
 void HudShutdown();
+void HudPostShutdown();
 
 /**
  * Returns current console color.

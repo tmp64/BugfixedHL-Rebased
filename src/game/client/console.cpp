@@ -145,6 +145,13 @@ void console::HudPostInit()
 
 void console::HudShutdown()
 {
+	// Pointers to GameUI are no longer valid since VGUI2 has been shutdown
+	s_ConColor = &s_StubColor;
+	s_ConDColor = &s_StubDColor;
+}
+
+void console::HudPostShutdown()
+{
 	DisableSpewOutputFunc();
 }
 

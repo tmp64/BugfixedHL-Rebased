@@ -152,7 +152,8 @@ std::vector<uint8_t> CalcFileSHA1(std::ifstream &file, unsigned long *pulFileSiz
 /**
  * Returns whether a path is in a subdirectory
  */
-bool IsPathInSubdir(fs::path path, fs::path subdir) {
+bool IsPathInSubdir(fs::path path, fs::path subdir)
+{
 	path = path.lexically_normal();
 	subdir = subdir.lexically_normal();
 	auto [rootEnd, nothing] = std::mismatch(subdir.begin(), subdir.end(), path.begin());
@@ -414,7 +415,7 @@ bool CUpdateInstaller::ReadMetadata()
 			return false;
 		}
 	}
-    catch (const std::exception &e)
+	catch (const std::exception &e)
 	{
 		ConPrintf("Update Installer: unexpected exception: %s\n", e.what());
 		ErrorOccured(g_pVGuiLocalize->Find("BHL_Update_InternalError"));
@@ -524,7 +525,7 @@ void CUpdateInstaller::DownloadZipFile()
 				return 0;
 
 			m_ZipDownloadFile.write(pBuf, iSize);
-			
+
 			if (!m_ZipDownloadFile.good())
 				return 0;
 
@@ -757,13 +758,13 @@ void CUpdateInstaller::ExtractZipFile()
 			if (isSuccess)
 			{
 				m_UpdateDir = unpackDir;
-			
+
 				if (!fs::is_directory(m_UpdateDir))
 					throw std::runtime_error(m_UpdateDir.u8string() + " is not a directory");
 
 				if (fs::is_empty(m_UpdateDir))
 					throw std::runtime_error(m_UpdateDir.u8string() + " is empty");
-				
+
 				fs::directory_iterator contents(m_UpdateDir);
 				m_UpdateDir = contents->path() / "valve_addon";
 
@@ -1414,7 +1415,7 @@ void CUpdateInstaller::CleanUp() noexcept
 	{
 		// Do nothing
 	}
-	
+
 	m_NewMetadata.clear();
 	m_CurrentMetadata.clear();
 

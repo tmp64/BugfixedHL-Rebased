@@ -29,7 +29,7 @@ void CUpdateInstaller::Plat_CopySpecialFile(const fs::path &from, const fs::path
 	// We firstly rename that file without copying
 	// Then copy the `from` file to `to` that no longer exists (it was renamed).
 	fs::path tempPath = fs::u8path(to.u8string() + ".old");
-	
+
 	if (!MoveFileExW(to.c_str(), tempPath.c_str(), MOVEFILE_REPLACE_EXISTING))
 	{
 		DWORD error = GetLastError();

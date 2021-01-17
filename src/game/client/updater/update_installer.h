@@ -11,7 +11,7 @@
 #define UPDATE_METADATA_FILE "bugfixedhl_install_metadata.dat"
 #define TEMP_DIR_NAME        "BugfixedHL-Update"
 
-constexpr size_t SHA1_HASH_SIZE = 160 / 8;	// 160 bits
+constexpr size_t SHA1_HASH_SIZE = 160 / 8; // 160 bits
 
 namespace fs = std::filesystem;
 

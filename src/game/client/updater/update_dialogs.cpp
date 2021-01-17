@@ -159,7 +159,7 @@ void CUpdateDownloadStatusDialog::OnThink()
 			char buf[128];
 			double precent = (double)dl / total;
 			snprintf(buf, sizeof(buf), "%.f%% - %s / %s", precent * 100,
-				FormatMemSize(dl).c_str(), FormatMemSize(total).c_str());
+			    FormatMemSize(dl).c_str(), FormatMemSize(total).c_str());
 			m_pProgress->SetProgress((float)precent);
 			m_pProgressLabel->SetText(buf);
 		}

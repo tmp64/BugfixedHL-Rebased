@@ -300,6 +300,8 @@ endif()
 #-----------------------------------------------------------------
 # Libraries
 #-----------------------------------------------------------------
+set( THREADS_PREFER_PTHREAD_FLAG ON )
+find_package( Threads REQUIRED )
 add_subdirectory( external )
 
 #-----------------------------------------------------------------
@@ -464,6 +466,7 @@ target_link_libraries( client
 	semver
 	nlohmann_json
 	${CLIENT_PLAT_LIBS}
+	Threads::Threads
 )
 
 # Linker flags
@@ -518,6 +521,7 @@ endif()
 target_link_libraries( hl 
 	${SERVER_PLAT_LIBS}
 	semver
+	Threads::Threads
 )
 
 # Linker flags

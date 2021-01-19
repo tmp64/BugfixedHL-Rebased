@@ -53,7 +53,7 @@ extern edict_t *EntSelectSpawnPoint(CBasePlayer *pPlayer);
 // the world node graph
 extern CGraph WorldGraph;
 
-ConVar mp_use_team_spawns("mp_use_team_spawns", "0", FCVAR_SERVER, "When teamplay is enabled, players will be spawned on team spawns if the map has them");
+ConVar mp_teamspawn("mp_teamspawn", "0", FCVAR_SERVER, "When teamplay is enabled, players will be spawned on team spawns if the map has them");
 
 #define TRAIN_ACTIVE  0x80
 #define TRAIN_NEW     0xc0
@@ -2838,7 +2838,7 @@ edict_t *EntSelectSpawnPoint(CBasePlayer *pPlayer)
 		if (FNullEnt(pSpot)) // skip over the null point
 			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
 
-		if (g_pGameRules->IsTeamplay() && mp_use_team_spawns.GetBool())
+		if (g_pGameRules->IsTeamplay() && mp_teamspawn.GetBool())
 		{
 			// try to find team spawn
 			CBaseEntity *pFirstSpot = pSpot;

@@ -282,8 +282,13 @@ class BuildScript:
             self.release_version = "{}+{}".format(self.release_version, args.v_meta)
 
         # Set output directory
-        self.out_dir_name = 'BugfixedHL-{}-{}-{}-{}'.format(self.release_version.replace('+', '-'),
-                                                       self.build_target_name, self.git_hash, self.date_code)
+        self.out_dir_name = 'BugfixedHL-{}-{}-{}-{}-{}'.format(
+            self.release_version.replace('+', '-'),
+            self.build_target_name, 
+            get_platform_type(), 
+            self.git_hash, 
+            self.date_code
+        )
 
         out_dir = args.out_dir
         if out_dir:

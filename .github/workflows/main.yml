@@ -48,4 +48,5 @@ jobs:
       - name: Upload build result
         uses: actions/upload-artifact@v2
         with:
+          name: BugfixedHL-CI-${GITHUB_SHA::8}
           path: ./_build_out/BugfixedHL-*.zip

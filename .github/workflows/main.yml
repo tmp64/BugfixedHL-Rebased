@@ -29,6 +29,13 @@ jobs:
         with:
           python-version: 3.7
       
+      - name: Save Git info into variables
+        id: vars
+        shell: bash
+        run: |
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      
       - name: Install Ubuntu packages
         if: matrix.runs-on == 'ubuntu-18.04'
         run: |
@@ -48,5 +55,5 @@ jobs:
       - name: Upload build result
         uses: actions/upload-artifact@v2
         with:
-          name: BugfixedHL-CI-${GITHUB_SHA::8}
+          name: BugfixedHL-CI-${{ steps.vars.outputs.sha_short }}
           path: ./_build_out/BugfixedHL-*.zip

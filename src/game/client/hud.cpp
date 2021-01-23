@@ -59,6 +59,7 @@ extern "C"
 #include "hud/battery.h"
 #include "hud/flashlight.h"
 #include "hud/message.h"
+#include "hud/scores.h"
 #include "hud/statusbar.h"
 #include "hud/death_notice.h"
 #include "hud/ammo_secondary.h"
@@ -245,6 +246,7 @@ void CHud::Init(void)
 	RegisterHudElem<CHudBattery>();
 	RegisterHudElem<CHudFlashlight>();
 	RegisterHudElem<CHudMessage>();
+	RegisterHudElem<CHudScores>();
 	RegisterHudElem<CHudStatusBar>();
 	RegisterHudElem<CHudDeathNotice>();
 	RegisterHudElem<CHudAmmoSecondary>();

@@ -129,6 +129,7 @@ int arrConsoleColors[16][3] = {
 	{ 70, 70, 70 },
 	{ 200, 200, 200 },
 };
+
 int GetColor(char cChar)
 {
 	int iColor = -1;
@@ -136,6 +137,7 @@ int GetColor(char cChar)
 		iColor = cChar - '0';
 	return iColor;
 }
+
 int AgDrawHudString(int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b)
 {
 	// calc center
@@ -184,6 +186,52 @@ int AgDrawHudString(int xpos, int ypos, int iMaxX, const char *szIt, int r, int 
 	}
 	return xpos;
 }
+
+int AgDrawHudString(int xpos, int ypos, int iMaxX, const wchar_t *wszIt, int r, int g, int b)
+{
+	wchar_t *pwszIt = (wchar_t *)wszIt;
+	int rx = r, gx = g, bx = b;
+
+	// draw the string until we hit the null character or a newline character
+	for (; *pwszIt != 0 && *pwszIt != '\n'; pwszIt++)
+	{
+		if (IsColorCode(pwszIt))
+		{
+			pwszIt++;
+			int iColor = GetColor(*pwszIt);
+			if (iColor < iNumConsoleColors && iColor >= 0)
+			{
+				if (0 >= iColor) // || 0 == g_pcl_show_colors->value)
+				{
+					rx = r;
+					gx = g;
+					bx = b;
+				}
+				else
+				{
+					rx = arrConsoleColors[iColor][0];
+					gx = arrConsoleColors[iColor][1];
+					bx = arrConsoleColors[iColor][2];
+				}
+				pwszIt++;
+				if (*pwszIt == 0 || *pwszIt == '\n')
+					break;
+			}
+			else
+				pwszIt--;
+		}
+
+		int next = xpos + gHUD.GetHudCharWidth(*pwszIt);
+		if (next > iMaxX)
+			return xpos;
+
+		TextMessageDrawChar(xpos, ypos, *pwszIt, rx, gx, bx);
+		xpos = next;
+	}
+
+	return xpos;
+}
+
 int AgDrawHudStringCentered(int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b)
 {
 	// calc center

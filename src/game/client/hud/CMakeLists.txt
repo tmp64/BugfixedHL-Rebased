@@ -26,6 +26,8 @@ add_sources(
 	menu.h
 	message.cpp
 	message.h
+	scores.cpp
+	scores.h
 	spectator.cpp
 	spectator.h
 	speedometer.cpp

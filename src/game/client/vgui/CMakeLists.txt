@@ -10,8 +10,6 @@ add_sources(
 	command_menu.h
 	crosshair_image.cpp
 	crosshair_image.h
-	png_image.cpp
-	png_image.h
 	score_panel.cpp
 	score_panel.h
 	spectator_panel.cpp

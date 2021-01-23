@@ -1,4 +1,3 @@
-add_subdirectory( lodepng )
 add_subdirectory( nlohmann_json )
 add_subdirectory( pcre )
 add_subdirectory( SDL2 )

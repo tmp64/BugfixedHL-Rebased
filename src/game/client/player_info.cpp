@@ -113,14 +113,25 @@ uint64 CPlayerInfo::GetSteamID64()
 
 	if (CEnginePatches::Get().IsSDLEngine())
 	{
-		player_info_t *info = GetEnginePlayerInfo();
+		uint64 sid = GetEnginePlayerInfo()->m_nSteamID;
 
-		// Check whether first digit is 7
-		if (info->m_nSteamID / 10000000000000000LL == 7)
-			return info->m_nSteamID;
+		// Valid SteamID must have type of account = 1 (Individual)
+		// See below for reference
+		if (((sid & 0x00F0000000000000ull) >> 52) != 1)
+			return 0;
+
+		return sid;
 	}
+	else
+	{
+		// Valid SteamID must begin with 0:Y:ZZZZZZZ
+		// "The value of X (Universe) is 0 in VALVe's GoldSrc and Source Orange Box Engine games"
+		// https://developer.valvesoftware.com/wiki/SteamID
+		if (strncmp(m_szSteamID, "0:", 2))
+			return 0;
 
-	return ParseSteamID(m_szSteamID);
+		return ParseSteamID(m_szSteamID);
+	}
 }
 
 int CPlayerInfo::GetFrags()

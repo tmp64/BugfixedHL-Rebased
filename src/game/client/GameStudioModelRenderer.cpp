@@ -267,7 +267,7 @@ model_t *CGameStudioModelRenderer::GetPlayerModel(int playerIndex)
 	// Check if local player changed the model
 	CPlayerInfo *pLocalPlayerInfo = GetPlayerInfo(m_iLocalPlayerIndex)->Update();
 
-	if (pLocalPlayerInfo->GetModel() != NULL && Q_stricmp(m_szPlayerActualModel[m_iLocalPlayerIndex - 1], pLocalPlayerInfo->GetModel()))
+	if (pLocalPlayerInfo->IsConnected() && pLocalPlayerInfo->GetModel() != NULL && Q_stricmp(m_szPlayerActualModel[m_iLocalPlayerIndex - 1], pLocalPlayerInfo->GetModel()))
 	{
 		// Clear out stale mappings
 		int maxClients = gEngfuncs.GetMaxClients();

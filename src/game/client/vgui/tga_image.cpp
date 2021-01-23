@@ -8,6 +8,7 @@ CTGAImage::CTGAImage()
 }
 
 CTGAImage::CTGAImage(const char *pFilePath)
+    : CTGAImage()
 {
 	LoadImage(pFilePath);
 }

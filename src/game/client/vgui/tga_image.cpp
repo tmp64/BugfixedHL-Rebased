@@ -15,7 +15,7 @@ CTGAImage::CTGAImage(const char *pFilePath)
 
 void CTGAImage::LoadImage(const char *pFilePath)
 {
-	vgui2::surface()->DrawSetTextureFile(m_iTextureID, pFilePath, false, false);
+	vgui2::surface()->DrawSetTextureFile(m_iTextureID, pFilePath, true, false);
 }
 
 CTGAImage::~CTGAImage()

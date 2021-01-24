@@ -211,7 +211,7 @@ CHudChatInputLine::CHudChatInputLine(vgui2::Panel *parent, char const *panelName
 	m_pPrompt = new vgui2::Label(this, "ChatInputPrompt", L"Enter text:");
 
 	m_pInput = new CHudChatEntry(this, "ChatInput", parent);
-	m_pInput->SetMaximumCharCount(127);
+	m_pInput->SetMaximumCharCount(MAX_CHAT_INPUT_STRING_LEN);
 }
 
 void CHudChatInputLine::ApplySchemeSettings(vgui2::IScheme *pScheme)
@@ -1000,11 +1000,11 @@ CHudChatLine *CHudChat::FindUnusedChatLine(void)
 
 void CHudChat::Send(void)
 {
-	wchar_t szTextbuf[128];
+	wchar_t szTextbuf[MAX_CHAT_INPUT_STRING_LEN + 1];
 
 	m_pChatInput->GetMessageText(szTextbuf, sizeof(szTextbuf));
 
-	char ansi[128];
+	char ansi[2 * MAX_CHAT_INPUT_STRING_LEN + 1];
 	g_pVGuiLocalize->ConvertUnicodeToANSI(szTextbuf, ansi, sizeof(ansi));
 
 	int len = Q_strlen(ansi);
@@ -1017,12 +1017,53 @@ This is a very long string that I am going to attempt to paste into the cs hud c
 	if (len > 0 && ansi[len - 1] == '\n')
 	{
 		ansi[len - 1] = '\0';
+		len--;
+	}
+
+	char *pstr = ansi;
+
+	while (len > MAX_CHAT_STRING_LEN)
+	{
+		char buf[MAX_CHAT_STRING_LEN + 1];
+
+		// Split ansi - take only MAX_CHAT_STRING_LEN chars
+		Q_strncpy(buf, pstr, MAX_CHAT_STRING_LEN + 1);
+		pstr += MAX_CHAT_STRING_LEN;
+		len -= MAX_CHAT_STRING_LEN;
+
+		// Check if we split a multibyte char
+		int mblen = 0;
+		if ((buf[MAX_CHAT_STRING_LEN - 1] & 0b11000000) == 0b11000000)
+		{
+			// Beginning of multibyte char
+			mblen = 1;
+		}
+		else if ((buf[MAX_CHAT_STRING_LEN - 1] & 0b11000000) == 0b10000000)
+		{
+			// Middle of multibyte char
+			mblen = 1;
+			for (; mblen <= 6 && (buf[MAX_CHAT_STRING_LEN - mblen] & 0b11000000) != 0b11000000; mblen++)
+				;
+		}
+
+		// Leave mblen chars for the next iteration
+		if (mblen > 0)
+		{
+			len += mblen;
+			pstr -= mblen;
+			buf[MAX_CHAT_STRING_LEN - mblen] = '\0';
+		}
+
+		// Say the string
+		char szbuf[144]; // more than 128
+		Q_snprintf(szbuf, sizeof(szbuf), "%s \"%s\"", m_nMessageMode == MM_SAY ? "say" : "say_team", buf);
+		gEngfuncs.pfnClientCmd(szbuf);
 	}
 
 	if (len > 0)
 	{
 		char szbuf[144]; // more than 128
-		Q_snprintf(szbuf, sizeof(szbuf), "%s \"%s\"", m_nMessageMode == MM_SAY ? "say" : "say_team", ansi);
+		Q_snprintf(szbuf, sizeof(szbuf), "%s \"%s\"", m_nMessageMode == MM_SAY ? "say" : "say_team", pstr);
 
 		gEngfuncs.pfnClientCmd(szbuf);
 	}

@@ -35,6 +35,16 @@ class IScheme;
 #define CHAT_HISTORY_IDLE_FADE_TIME 2.5f
 #define CHAT_HISTORY_ALPHA          64
 
+/**
+ * Maximum length of a chat input string in bytes that can be sent in one "say_team" command
+ */
+constexpr int MAX_CHAT_STRING_LEN = 101;
+
+/**
+ * Maximum number of wide chars that can me entered in the chat input.
+ */
+constexpr int MAX_CHAT_INPUT_STRING_LEN = 256;
+
 extern Color g_SdkColorBlue;
 extern Color g_SdkColorRed;
 extern Color g_SdkColorGreen;

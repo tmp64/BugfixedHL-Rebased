@@ -1240,7 +1240,12 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	time(&now);
 	current = localtime(&now);
 	sprintf(time_buf, "[%02i:%02i:%02i] ", current->tm_hour, current->tm_min, current->tm_sec);
-	ConPrintf(m_ConsoleMsgColor, "%s %s\n", time_buf, pmsg);
+
+	if (gHUD.GetColorCodeAction() == ColorCodeAction::Handle || gHUD.GetColorCodeAction() == ColorCodeAction::Strip)
+		ConPrintf(m_ConsoleMsgColor, "%s %s\n", time_buf, RemoveColorCodes(pmsg));
+	else
+		ConPrintf(m_ConsoleMsgColor, "%s %s\n", time_buf, pmsg);
+
 	CResults::Get().AddLog(time_buf, true);
 	CResults::Get().AddLog(pmsg, true);
 }

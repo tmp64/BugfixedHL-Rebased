@@ -41,7 +41,7 @@ class IScheme;
 constexpr int MAX_CHAT_STRING_LEN = 101;
 
 /**
- * Maximum number of wide chars that can me entered in the chat input.
+ * Maximum number of wide chars that can be entered in the chat input.
  */
 constexpr int MAX_CHAT_INPUT_STRING_LEN = 256;
 

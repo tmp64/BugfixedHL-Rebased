@@ -24,6 +24,7 @@
 #include "results.h"
 #include "hud/ag/ag_location.h"
 
+ConVar hud_saytext("hud_saytext", "1", FCVAR_BHL_ARCHIVE, "Enable/disable the chat");
 ConVar hud_saytext_time("hud_saytext_time", "12", 0);
 ConVar cl_mute_all_comms("cl_mute_all_comms", "1", FCVAR_BHL_ARCHIVE, "If 1, then all communications from a player will be blocked when that player is muted, including chat messages.");
 
@@ -513,6 +514,11 @@ void CHudChat::OnTick(void)
 
 		GetChatHistory()->SetBounds(iChatHistoryX, iChatHistoryY, iChatHistoryW, iChatHistoryH);
 	}
+
+	bool isVisible = hud_saytext.GetBool() || m_nMessageMode != MM_NONE;
+
+	if (IsVisible() != isVisible)
+		SetVisible(isVisible);
 
 	FadeChatHistory();
 }

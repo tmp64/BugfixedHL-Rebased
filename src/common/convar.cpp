@@ -57,6 +57,13 @@ ConVar::ConVar(const char *name, const char *def_val, int flags, const char *des
 {
 	m_pDefVal = def_val;
 	m_iFlags = flags;
+
+#ifdef SERVER_DLL
+	m_iFlags |= FCVAR_SERVER;
+	GetCvar()->name = GetName();
+	GetCvar()->string = GetDefaultValue();
+	GetCvar()->flags = GetFlags();
+#endif
 }
 
 ConItemType ConVar::GetType()

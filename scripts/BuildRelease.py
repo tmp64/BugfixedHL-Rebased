@@ -120,6 +120,7 @@ class TargetClient:
                                 'valve_addon/cl_dlls/client' + self.script.platform.get_dll_ext()))
         files.append(FileToCopy('gamedir/gfx', 'valve_addon/gfx'))
         files.append(FileToCopy('gamedir/ui', 'valve_addon/ui'))
+        files.append(FileToCopy('gamedir/commandmenu_default.txt', 'valve_addon/commandmenu_default.txt'))
 
         if get_platform_type() == 'windows':
             files.append(FileToCopy(self.script.paths.out_bin + 'client.pdb',

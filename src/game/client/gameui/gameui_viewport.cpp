@@ -18,7 +18,7 @@ CGameUIViewport::CGameUIViewport()
 	m_sInstance = this;
 
 	SetParent(g_pEngineVGui->GetPanel(PANEL_GAMEUIDLL));
-	SetScheme(vgui2::scheme()->LoadSchemeFromFile(VGUI2_ROOT_DIR "resource/ClientSourceScheme.res", "ClientSourceScheme"));
+	SetScheme(vgui2::scheme()->LoadSchemeFromFilePath(VGUI2_ROOT_DIR "resource/ClientSourceScheme.res", "GAME", "ClientSourceScheme"));
 	SetProportional(false);
 	SetSize(0, 0);
 }

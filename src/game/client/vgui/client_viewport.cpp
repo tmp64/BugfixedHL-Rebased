@@ -104,7 +104,7 @@ void CClientViewport::ReloadScheme(const char *fromFile)
 	if (fromFile != NULL)
 	{
 		// "ui/resource/ClientScheme.res"
-		vgui2::HScheme scheme = vgui2::scheme()->LoadSchemeFromFile(fromFile, "ClientScheme");
+		vgui2::HScheme scheme = vgui2::scheme()->LoadSchemeFromFilePath(fromFile, "GAME", "ClientScheme");
 
 		SetScheme(scheme);
 		SetProportional(true);

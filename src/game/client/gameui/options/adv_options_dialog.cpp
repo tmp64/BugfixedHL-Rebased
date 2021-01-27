@@ -1,4 +1,4 @@
-#include <IEngineVgui.h>
+#include <IEngineVGui.h>
 #include <vgui_controls/PropertySheet.h>
 #include "adv_options_dialog.h"
 #include "client_vgui.h"

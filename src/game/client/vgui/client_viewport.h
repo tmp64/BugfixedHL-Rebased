@@ -31,7 +31,9 @@ enum
 
 	MENU_REFRESH_RATE = 25,
 
-	MENU_VOICETWEAK = 50
+	MENU_VOICETWEAK = 50,
+
+	MENU_HTML_MOTD = 60,
 };
 
 class CScorePanel;
@@ -151,6 +153,7 @@ public:
 	void MsgFunc_Detpack(const char *pszName, int iSize, void *pbuf);
 	void MsgFunc_VGUIMenu(const char *pszName, int iSize, void *pbuf);
 	void MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf);
+	void MsgFunc_HtmlMOTD(const char *pszName, int iSize, void *pbuf);
 	void MsgFunc_BuildSt(const char *pszName, int iSize, void *pbuf);
 	void MsgFunc_RandomPC(const char *pszName, int iSize, void *pbuf);
 	void MsgFunc_ServerName(const char *pszName, int iSize, void *pbuf);

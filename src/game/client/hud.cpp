@@ -26,6 +26,7 @@
 
 #include <appversion.h>
 #include <bhl_urls.h>
+#include <ClientSupportsFlags.h>
 
 extern "C"
 {
@@ -93,6 +94,10 @@ ConVar hud_color1("hud_color1", "0 255 0", FCVAR_BHL_ARCHIVE, "HUD color when >=
 ConVar hud_color2("hud_color2", "255 160 0", FCVAR_BHL_ARCHIVE, "HUD color when [50%; 90%)");
 ConVar hud_color3("hud_color3", "255 96 0", FCVAR_BHL_ARCHIVE, "HUD color when (25%; 50%)");
 ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
+
+ConVar aghl_version("aghl_version", APP_VERSION, 0, "BugfixedHL version");
+ConVar aghl_supports("aghl_supports", "0", 0, "Bitfield of features supported by this client");
+ConVar cl_enable_html_motd("cl_enable_html_motd", "1", FCVAR_BHL_ARCHIVE, "Enables/disables support for HTML MOTDs");
 
 static Color s_DefaultColorCodeColors[10] = {
 	Color(0xFF, 0xAA, 0x00, 0xFF), // ^0 orange/reset
@@ -203,6 +208,7 @@ void CHud::Init(void)
 	HookViewportMessage<&CClientViewport::MsgFunc_Feign>("Feign");
 	HookViewportMessage<&CClientViewport::MsgFunc_Detpack>("Detpack");
 	HookViewportMessage<&CClientViewport::MsgFunc_MOTD>("MOTD");
+	HookViewportMessage<&CClientViewport::MsgFunc_HtmlMOTD>("HtmlMOTD");
 	HookViewportMessage<&CClientViewport::MsgFunc_BuildSt>("BuildSt");
 	HookViewportMessage<&CClientViewport::MsgFunc_RandomPC>("RandomPC");
 	HookViewportMessage<&CClientViewport::MsgFunc_ServerName>("ServerName");
@@ -291,6 +297,8 @@ void CHud::Init(void)
 	CHttpClient::Get();
 	CUpdateChecker::Get().Init();
 #endif
+
+	UpdateSupportsCvar();
 }
 
 void CHud::VidInit(void)
@@ -411,6 +419,13 @@ void CHud::Frame(double time)
 	CUpdateChecker::Get().RunFrame();
 	CUpdateInstaller::Get().RunFrame();
 #endif
+
+	// Update aghl_supports
+	if (cl_enable_html_motd.GetBool() != m_bIsHTMLEnabled)
+	{
+		m_bIsHTMLEnabled = cl_enable_html_motd.GetBool();
+		UpdateSupportsCvar();
+	}
 
 	while (m_NextFrameQueue.size())
 	{
@@ -538,6 +553,11 @@ BHopCap CHud::GetBHopCapState()
 	return (BHopCap)clamp(cl_bhopcap.GetInt(), (int)BHopCap::Disabled, (int)BHopCap::Auto);
 }
 
+bool CHud::IsHTMLEnabled()
+{
+	return m_bIsHTMLEnabled;
+}
+
 void CHud::CallOnNextFrame(std::function<void()> f)
 {
 	Assert(f);
@@ -631,6 +651,18 @@ void CHud::UpdateHudColors()
 	ParseColor(hud_color1.GetString(), m_HudColor1);
 	ParseColor(hud_color2.GetString(), m_HudColor2);
 	ParseColor(hud_color3.GetString(), m_HudColor3);
+}
+
+void CHud::UpdateSupportsCvar()
+{
+	bhl::E_ClientSupports supports = bhl::E_ClientSupports::UnicodeMotd;
+
+	if (IsHTMLEnabled())
+		SetEnumFlag(supports, bhl::E_ClientSupports::HtmlMotd);
+
+	char buf[64];
+	snprintf(buf, sizeof(buf), "aghl_supports %u", static_cast<unsigned int>(supports));
+	gEngfuncs.pfnClientCmd(buf);
 }
 
 CON_COMMAND(_toggle, "Switches cvar values from arguments.")

@@ -261,6 +261,9 @@ void CClientViewport::ShowVGUIMenu(int iMenu)
 	case MENU_MOTD:
 		m_pMOTD->Activate(m_szServerName, m_szMOTD);
 		break;
+	case MENU_HTML_MOTD:
+		m_pMOTD->ActivateHtml(m_szServerName, m_szMOTD);
+		break;
 
 	case MENU_CLASSHELP:
 	case MENU_SPECHELP:
@@ -499,6 +502,30 @@ void CClientViewport::MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
 	if (m_iGotAllMOTD && !gEngfuncs.IsSpectateOnly())
 	{
 		ShowVGUIMenu(MENU_MOTD);
+	}
+}
+
+void CClientViewport::MsgFunc_HtmlMOTD(const char *pszName, int iSize, void *pbuf)
+{
+	if (m_iGotAllMOTD)
+		m_szMOTD[0] = 0;
+
+	BEGIN_READ(pbuf, iSize);
+
+	m_iGotAllMOTD = READ_BYTE();
+
+	int roomInArray = sizeof(m_szMOTD) - strlen(m_szMOTD) - 1;
+
+	strncat(m_szMOTD, READ_STRING(), roomInArray >= 0 ? roomInArray : 0);
+	m_szMOTD[sizeof(m_szMOTD) - 1] = '\0';
+
+	// don't show MOTD for HLTV spectators
+	if (m_iGotAllMOTD && !gEngfuncs.IsSpectateOnly())
+	{
+		if (gHUD.IsHTMLEnabled())
+			ShowVGUIMenu(MENU_HTML_MOTD);
+		else
+			ShowVGUIMenu(MENU_MOTD);
 	}
 }
 

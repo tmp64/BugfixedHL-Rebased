@@ -171,6 +171,7 @@ public:
 
 	float GetSensitivity();
 	BHopCap GetBHopCapState();
+	bool IsHTMLEnabled();
 
 	/**
 	 * Runs function next time HUD_Frame is called.
@@ -245,8 +246,10 @@ private:
 	ColorCodeAction m_ColorCodeAction;
 
 	bool m_bIsAg = false;
+	bool m_bIsHTMLEnabled = false;
 
 	void UpdateHudColors();
+	void UpdateSupportsCvar();
 
 	template <typename T>
 	inline T *RegisterHudElem()

@@ -88,6 +88,7 @@ Scheme
 		CheckButton.Border1  			"Border.Dark" 		// the left checkbutton border
 		CheckButton.Border2  			"Border.Bright"		// the right checkbutton border
 		CheckButton.Check				"BrightControlText"	// color of the check itself
+		CheckButton.HighlightFgColor	"BrightBaseText"
 
 		ComboBoxButton.ArrowColor		"DimBaseText"
 		ComboBoxButton.ArmedArrowColor	"BrightBaseText"
@@ -184,7 +185,7 @@ Scheme
 		SectionedListPanel.OutOfFocusSelectedBgColor	"SelectionBG2"
 
 		Slider.NobColor				"ControlDarkBG"		
-		Slider.TextColor			"ControlBG"
+		Slider.TextColor			"DimBaseText"
 		Slider.TrackColor			"ControlDarkBG"
 //		Slider.DisabledTextColor1	"117 117 117 255"
 //		Slider.DisabledTextColor2	"30 30 30 255"

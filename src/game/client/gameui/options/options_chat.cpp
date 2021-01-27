@@ -8,7 +8,7 @@
 #include "cvar_text_entry.h"
 
 CChatSubOptions::CChatSubOptions(vgui2::Panel *parent)
-    : BaseClass(parent, nullptr)
+    : BaseClass(parent, "ChatSubOptions")
 {
 	m_pChatStyleLabel = new vgui2::Label(this, "ChatStyleLabel", "#BHL_AdvOptions_Chat_ChatStyle");
 	m_pChatStyleBox = new vgui2::ComboBox(this, "ChatStyleBox", 3, false);

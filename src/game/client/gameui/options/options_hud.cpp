@@ -11,7 +11,7 @@
 #include "hud.h"
 
 CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
-    : BaseClass(parent, nullptr)
+    : BaseClass(parent, "HudSubOptions")
 {
 	m_pOpacityLabel = new vgui2::Label(this, "OpacityLabel", "#BHL_AdvOptions_HUD_Opacity");
 	m_pOpacityValue = new CCvarTextEntry(this, "OpacityValue", "hud_draw", CCvarTextEntry::CvarType::Float);

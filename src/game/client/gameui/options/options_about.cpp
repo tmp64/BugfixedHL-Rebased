@@ -15,7 +15,7 @@
 #endif
 
 CAboutSubOptions::CAboutSubOptions(vgui2::Panel *parent)
-    : BaseClass(parent, nullptr)
+    : BaseClass(parent, "AboutSubOptions")
 {
 	m_pBHLLabel = new vgui2::Label(this, "BHLLabel", "#BHL_AdvOptions_About_BHL");
 	m_pVerTextLabel = new vgui2::Label(this, "VerTextLabel", "#BHL_AdvOptions_About_Version");

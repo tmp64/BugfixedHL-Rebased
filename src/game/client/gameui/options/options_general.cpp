@@ -9,7 +9,7 @@
 #include "hud.h"
 
 CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
-    : BaseClass(parent, nullptr)
+    : BaseClass(parent, "GeneralSubOptions")
 {
 	m_pFovLabel = new vgui2::Label(this, "FovLabel", "#BHL_AdvOptions_General_FOV");
 	m_pFovValue = new CCvarTextEntry(this, "FovValue", "default_fov", CCvarTextEntry::CvarType::Float);

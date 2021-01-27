@@ -111,7 +111,7 @@ protected:
 int CCrosshairPreview::m_sTexture = -1;
 
 CCrosshairSubOptions::CCrosshairSubOptions(vgui2::Panel *parent)
-    : BaseClass(parent, nullptr)
+    : BaseClass(parent, "CrosshairSubOptions")
 {
 	m_pEnableCvar = new CCvarCheckButton(this, "EnableCvar", "#BHL_AdvOptions_Cross_Enable", "cl_cross_enable");
 

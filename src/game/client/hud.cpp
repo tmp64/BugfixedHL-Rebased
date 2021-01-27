@@ -36,6 +36,7 @@ extern "C"
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "vgui/client_viewport.h"
+#include "gameui/options/colorpicker/texture_manager.h"
 
 #include "demo.h"
 #include "demo_api.h"
@@ -279,6 +280,7 @@ void CHud::Init(void)
 
 	m_HudList.shrink_to_fit();
 	MsgFunc_ResetHUD(0, 0, NULL);
+	colorpicker::gTexMgr.Init();
 
 	g_pViewport->ReloadLayout();
 
@@ -395,6 +397,7 @@ void CHud::VidInit(void)
 void CHud::Frame(double time)
 {
 	vgui2::GetAnimationController()->UpdateAnimations(gEngfuncs.GetClientTime());
+	colorpicker::gTexMgr.RunFrame();
 
 	IN_RunFrame();
 

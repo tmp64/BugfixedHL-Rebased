@@ -1,0 +1,11 @@
+add_sources(
+	CMakeLists.txt
+	bar_panel.cpp
+	bar_panel.h
+	picker_panel.cpp
+	picker_panel.h
+	sel_circle_panel.cpp
+	sel_circle_panel.h
+	texture_manager.cpp
+	texture_manager.h
+)

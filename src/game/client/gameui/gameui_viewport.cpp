@@ -5,6 +5,7 @@
 #include "client_vgui.h"
 #include "gameui_viewport.h"
 #include "gameui_test_panel.h"
+#include "options/adv_options_dialog.h"
 
 CON_COMMAND(gameui_cl_open_test_panel, "Opens a test panel for client GameUI")
 {
@@ -32,4 +33,9 @@ CGameUIViewport::~CGameUIViewport()
 void CGameUIViewport::OpenTestPanel()
 {
 	GetDialog(m_hTestPanel)->Activate();
+}
+
+CAdvOptionsDialog *CGameUIViewport::GetOptionsDialog()
+{
+	return GetDialog(m_hOptionsDialog);
 }

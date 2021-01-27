@@ -3,6 +3,7 @@
 #include <vgui_controls/EditablePanel.h>
 
 class CGameUITestPanel;
+class CAdvOptionsDialog;
 
 class CGameUIViewport : public vgui2::EditablePanel
 {
@@ -18,9 +19,11 @@ public:
 	~CGameUIViewport();
 
 	void OpenTestPanel();
+	CAdvOptionsDialog *GetOptionsDialog();
 
 private:
 	vgui2::DHANDLE<CGameUITestPanel> m_hTestPanel;
+	vgui2::DHANDLE<CAdvOptionsDialog> m_hOptionsDialog;
 
 	template <typename T>
 	inline T *GetDialog(vgui2::DHANDLE<T> &handle)

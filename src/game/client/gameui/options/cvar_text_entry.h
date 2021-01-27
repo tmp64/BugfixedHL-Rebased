@@ -7,10 +7,13 @@ typedef struct cvar_s cvar_t;
 class CCvarTextEntry : public vgui2::TextEntry
 {
 	DECLARE_CLASS_SIMPLE(CCvarTextEntry, vgui2::TextEntry);
+
 public:
 	enum class CvarType
 	{
-		String, Float, Int
+		String,
+		Float,
+		Int
 	};
 
 	CCvarTextEntry(vgui2::Panel *parent, const char *panelName, const char *cvarName, CvarType type = CvarType::String);

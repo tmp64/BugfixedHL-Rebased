@@ -19,6 +19,7 @@ typedef struct cvar_s cvar_t;
 class CCrosshairSubOptions : public vgui2::PropertyPage
 {
 	DECLARE_CLASS_SIMPLE(CCrosshairSubOptions, vgui2::PropertyPage);
+
 public:
 	CCrosshairSubOptions(vgui2::Panel *parent);
 	~CCrosshairSubOptions();

@@ -2,8 +2,8 @@
 #include "cvar_text_entry.h"
 #include "hud.h"
 
-CCvarTextEntry::CCvarTextEntry(vgui2::Panel *parent, const char *panelName, const char *cvarName, CvarType type) :
-	vgui2::TextEntry(parent, panelName)
+CCvarTextEntry::CCvarTextEntry(vgui2::Panel *parent, const char *panelName, const char *cvarName, CvarType type)
+    : vgui2::TextEntry(parent, panelName)
 {
 	m_pCvar = gEngfuncs.pfnGetCvarPointer(cvarName);
 	if (!m_pCvar)

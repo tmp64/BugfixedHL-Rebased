@@ -25,7 +25,7 @@ public:
 		void StopThread();
 
 		std::vector<unsigned char> &GetBarRgba();
-		std::vector< std::vector<unsigned char> > &GetPickerRgba();
+		std::vector<std::vector<unsigned char>> &GetPickerRgba();
 
 		void ClearRgba();
 
@@ -33,7 +33,7 @@ public:
 		CTextureManager *m_pParent = nullptr;
 		std::thread m_Thread;
 		std::vector<unsigned char> m_BarRgba;
-		std::vector< std::vector<unsigned char> > m_PickerRgba;
+		std::vector<std::vector<unsigned char>> m_PickerRgba;
 
 		void operator()();
 		void GenerateBarTexture();

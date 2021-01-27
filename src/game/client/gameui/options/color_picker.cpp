@@ -43,7 +43,7 @@ void colorpicker::HSVtoRGB(float h, float s, float v, Color &output)
 
 	h /= 60.0;
 	i = (int)floor(h); // sector 0 to 5
-	f = h - (float)i;  // factorial part of h
+	f = h - (float)i; // factorial part of h
 	p = (float)(v * (1.0 - s));
 	q = (float)(v * (1.0 - s * f));
 	t = (float)(v * (1.0 - s * (1 - f)));
@@ -147,15 +147,13 @@ public:
 
 		vgui2::surface()->DrawSetColor(m_OldColor);
 		vgui2::surface()->DrawFilledRect(
-			posX + BORDER_THICK, posY + BORDER_THICK,
-			posX + m_wide - BORDER_THICK, posY + m_tall / 2
-		);
+		    posX + BORDER_THICK, posY + BORDER_THICK,
+		    posX + m_wide - BORDER_THICK, posY + m_tall / 2);
 
 		vgui2::surface()->DrawSetColor(m_NewColor);
 		vgui2::surface()->DrawFilledRect(
-			posX + BORDER_THICK, posY + m_tall / 2,
-			posX + m_wide - BORDER_THICK, posY + m_tall - BORDER_THICK
-		);
+		    posX + BORDER_THICK, posY + m_tall / 2,
+		    posX + m_wide - BORDER_THICK, posY + m_tall - BORDER_THICK);
 	}
 
 	// Set the position of the image
@@ -206,12 +204,12 @@ public:
 		m_NewColor = col;
 	}
 
-	virtual int	GetWide()
+	virtual int GetWide()
 	{
 		return m_wide;
 	}
 
-	virtual int	GetTall()
+	virtual int GetTall()
 	{
 		return m_tall;
 	}
@@ -228,7 +226,8 @@ protected:
 //----------------------------------------------------------
 // CColorPicker
 //----------------------------------------------------------
-CColorPicker::CColorPicker(vgui2::Panel *parent, const char *panelName, const char *title) : vgui2::Frame(parent, panelName)
+CColorPicker::CColorPicker(vgui2::Panel *parent, const char *panelName, const char *title)
+    : vgui2::Frame(parent, panelName)
 {
 	SetTitle(title, true);
 	SetMaximizeButtonVisible(false);
@@ -252,9 +251,9 @@ CColorPicker::CColorPicker(vgui2::Panel *parent, const char *panelName, const ch
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/ColorPicker.res");
 	InvalidateLayout();
 	MakePopup();
-	SetVisible(false);	// Hide by default
+	SetVisible(false); // Hide by default
 
-	SetInitialColor(Color(127, 255, 0, 255));	// Reset color
+	SetInitialColor(Color(127, 255, 0, 255)); // Reset color
 }
 
 CColorPicker::~CColorPicker()
@@ -337,14 +336,13 @@ void CColorPicker::OnTextChanged(KeyValues *kv)
 {
 	if (kv->GetPtr("panel") == m_pRgbTextPanel)
 	{
-		char buf[128];	// RRR GGG BBB
+		char buf[128]; // RRR GGG BBB
 		char *ptr = buf;
 		m_pRgbTextPanel->GetText(buf, sizeof(buf));
 
 		Color col(0, 0, 0, 255);
 
-		auto fnParseNumber = [&](int colorIdx)
-		{
+		auto fnParseNumber = [&](int colorIdx) {
 			// Skip spaces
 			while (*ptr == ' ')
 				ptr++;
@@ -363,11 +361,11 @@ void CColorPicker::OnTextChanged(KeyValues *kv)
 			// Check chars of the number
 			for (char *i = begin; *i; i++)
 				if (!isdigit(*i))
-					return false;	// Invalid digit
+					return false; // Invalid digit
 
 			long val = strtol(begin, nullptr, 10);
 			if (val < 0 || val > 255)
-				return false;	// Invalid for color
+				return false; // Invalid for color
 			col[colorIdx] = val;
 
 			std::swap(*ptr, charToSwap);

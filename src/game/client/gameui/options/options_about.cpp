@@ -14,7 +14,8 @@
 #include "updater/update_checker.h"
 #endif
 
-CAboutSubOptions::CAboutSubOptions(vgui2::Panel *parent) : BaseClass(parent, nullptr)
+CAboutSubOptions::CAboutSubOptions(vgui2::Panel *parent)
+    : BaseClass(parent, nullptr)
 {
 	m_pBHLLabel = new vgui2::Label(this, "BHLLabel", "#BHL_AdvOptions_About_BHL");
 	m_pVerTextLabel = new vgui2::Label(this, "VerTextLabel", "#BHL_AdvOptions_About_Version");
@@ -58,8 +59,7 @@ void CAboutSubOptions::PerformLayout()
 	m_pGitHubLink->SetURL(BHL_GITHUB_URL);
 	m_pAghlLink->SetURL(BHL_FORUM_URL);
 
-	auto fnPositionAfter = [](vgui2::Label *left, vgui2::Label *right)
-	{
+	auto fnPositionAfter = [](vgui2::Label *left, vgui2::Label *right) {
 		int x, y, wide, tall;
 		left->GetPos(x, y);
 		left->GetContentSize(wide, tall);
@@ -126,7 +126,6 @@ void CAboutSubOptions::UpdateControls()
 
 		if (m_GameVer.IsDirtyBuild())
 			gameVer += ".m";
-
 
 		gameVer += ")";
 

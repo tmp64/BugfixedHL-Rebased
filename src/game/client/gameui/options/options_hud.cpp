@@ -10,7 +10,8 @@
 #include "cvar_check_button.h"
 #include "hud.h"
 
-CHudSubOptions::CHudSubOptions(vgui2::Panel *parent) : BaseClass(parent, nullptr)
+CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
+    : BaseClass(parent, nullptr)
 {
 	m_pOpacityLabel = new vgui2::Label(this, "OpacityLabel", "#BHL_AdvOptions_HUD_Opacity");
 	m_pOpacityValue = new CCvarTextEntry(this, "OpacityValue", "hud_draw", CCvarTextEntry::CvarType::Float);

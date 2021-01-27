@@ -90,12 +90,12 @@ public:
 		m_Color = col;
 	}
 
-	virtual int	GetWide()
+	virtual int GetWide()
 	{
 		return m_wide;
 	}
 
-	virtual int	GetTall()
+	virtual int GetTall()
 	{
 		return m_tall;
 	}
@@ -120,8 +120,8 @@ int colorpicker::CSelCircleImage::m_sFgTexture = -1;
 //----------------------------------------------------------
 // colorpicker::CSelCirclePanel
 //----------------------------------------------------------
-colorpicker::CSelCirclePanel::CSelCirclePanel(vgui2::Panel *pParent, const char *panelName) :
-	vgui2::ImagePanel(pParent, panelName)
+colorpicker::CSelCirclePanel::CSelCirclePanel(vgui2::Panel *pParent, const char *panelName)
+    : vgui2::ImagePanel(pParent, panelName)
 {
 	m_pImage = new CSelCircleImage();
 	SetImage(m_pImage);

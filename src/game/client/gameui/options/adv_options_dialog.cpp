@@ -53,7 +53,7 @@ void CAdvOptionsDialog::OnCommand(const char *command)
 	if (!stricmp(command, "Apply"))
 	{
 		BaseClass::OnCommand("Apply");
-		EnableApplyButton(true);	// Apply should always be enabled
+		EnableApplyButton(true); // Apply should always be enabled
 	}
 	else
 		BaseClass::OnCommand(command);

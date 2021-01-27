@@ -2,8 +2,8 @@
 #include "cvar_check_button.h"
 #include "hud.h"
 
-CCvarCheckButton::CCvarCheckButton(vgui2::Panel *parent, const char *panelName, const char *text, const char *cvarName, bool inverse) :
-	vgui2::CheckButton(parent, panelName, text)
+CCvarCheckButton::CCvarCheckButton(vgui2::Panel *parent, const char *panelName, const char *text, const char *cvarName, bool inverse)
+    : vgui2::CheckButton(parent, panelName, text)
 {
 	m_pCvar = gEngfuncs.pfnGetCvarPointer(cvarName);
 	m_bInverse = inverse;

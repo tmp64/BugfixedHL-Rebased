@@ -38,6 +38,7 @@ void RGBtoHSV(Color rgb, float &hue, float &sat, float &val);
 class CColorPicker : public vgui2::Frame
 {
 	DECLARE_CLASS_SIMPLE(CColorPicker, vgui2::Frame);
+
 public:
 	CColorPicker(vgui2::Panel *parent, const char *panelName, const char *title);
 	virtual ~CColorPicker();
@@ -58,7 +59,7 @@ private:
 	vgui2::Button *m_pOkButton = nullptr;
 	vgui2::Button *m_pCancelButton = nullptr;
 
-	void OnColorHSVChanged();	// Called from SetColor(), CPickerPanel, CBarPanel
+	void OnColorHSVChanged(); // Called from SetColor(), CPickerPanel, CBarPanel
 	MESSAGE_FUNC_PARAMS(OnTextChanged, "TextChanged", kv);
 
 	friend class colorpicker::CPickerPanel;

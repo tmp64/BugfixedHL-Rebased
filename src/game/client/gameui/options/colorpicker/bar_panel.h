@@ -19,6 +19,7 @@ class CBarMousePanel;
 class CBarPanel : public vgui2::EditablePanel
 {
 	DECLARE_CLASS_SIMPLE(CBarPanel, vgui2::EditablePanel);
+
 public:
 	CBarPanel(vgui2::Panel *pParent, const char *panelName);
 	virtual ~CBarPanel();

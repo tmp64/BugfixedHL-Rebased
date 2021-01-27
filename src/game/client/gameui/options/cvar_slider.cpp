@@ -2,8 +2,8 @@
 #include "cvar_slider.h"
 #include "hud.h"
 
-CCvarSlider::CCvarSlider(vgui2::Panel *parent, const char *panelName, const char *cvarName) :
-	vgui2::Slider(parent, panelName)
+CCvarSlider::CCvarSlider(vgui2::Panel *parent, const char *panelName, const char *cvarName)
+    : vgui2::Slider(parent, panelName)
 {
 	m_pCvar = gEngfuncs.pfnGetCvarPointer(cvarName);
 	if (!m_pCvar)

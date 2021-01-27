@@ -5,9 +5,9 @@
 
 namespace vgui2
 {
-	class Label;
-	class Button;
-	class URLLabel;
+class Label;
+class Button;
+class URLLabel;
 }
 
 class CCvarCheckButton;

@@ -4,8 +4,8 @@
 
 namespace vgui2
 {
-	class Label;
-	class Slider;
+class Label;
+class Slider;
 }
 
 class CCvarTextEntry;

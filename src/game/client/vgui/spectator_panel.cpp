@@ -109,7 +109,7 @@ private:
 CSpectatorPanel::CSpectatorPanel()
     : BaseClass(nullptr, VIEWPORT_PANEL_SPECTATOR)
 {
-	SetSize(100, 100);	// Silence "parent not sized yet" warning
+	SetSize(100, 100); // Silence "parent not sized yet" warning
 	SetProportional(true);
 
 	m_pInfoPanel = new CSpectatorInfoPanel(this);

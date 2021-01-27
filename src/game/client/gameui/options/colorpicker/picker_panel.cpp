@@ -77,12 +77,12 @@ public:
 		m_Color = col;
 	}
 
-	virtual int	GetWide()
+	virtual int GetWide()
 	{
 		return m_wide;
 	}
 
-	virtual int	GetTall()
+	virtual int GetTall()
 	{
 		return m_tall;
 	}
@@ -103,11 +103,12 @@ protected:
 class CPickerImagePanel : public vgui2::ImagePanel
 {
 	DECLARE_CLASS_SIMPLE(CPickerImagePanel, vgui2::ImagePanel);
+
 public:
 	CPickerImage *m_pPickerImg = nullptr;
 
-	CPickerImagePanel(colorpicker::CPickerPanel *parent, const char *panelname) :
-		vgui2::ImagePanel(parent, panelname)
+	CPickerImagePanel(colorpicker::CPickerPanel *parent, const char *panelname)
+	    : vgui2::ImagePanel(parent, panelname)
 	{
 		m_pParent = parent;
 		m_pPickerImg = new CPickerImage();
@@ -133,9 +134,10 @@ private:
 class CPickerMousePanel : public vgui2::Panel
 {
 	DECLARE_CLASS_SIMPLE(CPickerImagePanel, vgui2::Panel);
+
 public:
-	CPickerMousePanel(colorpicker::CPickerPanel *parent, const char *panelname) :
-		vgui2::Panel(parent, panelname)
+	CPickerMousePanel(colorpicker::CPickerPanel *parent, const char *panelname)
+	    : vgui2::Panel(parent, panelname)
 	{
 		m_pParent = parent;
 	}
@@ -189,8 +191,8 @@ private:
 
 }
 
-colorpicker::CPickerPanel::CPickerPanel(vgui2::Panel *pParent, const char *panelName) :
-	vgui2::EditablePanel(pParent, panelName)
+colorpicker::CPickerPanel::CPickerPanel(vgui2::Panel *pParent, const char *panelName)
+    : vgui2::EditablePanel(pParent, panelName)
 {
 	m_pImagePanel = new CPickerImagePanel(this, "PickerImage");
 	m_pCircle = new CSelCirclePanel(this, "CirclePanel");

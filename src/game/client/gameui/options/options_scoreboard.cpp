@@ -7,7 +7,8 @@
 #include "cvar_check_button.h"
 #include "cvar_text_entry.h"
 
-CScoreboardSubOptions::CScoreboardSubOptions(vgui2::Panel *parent) : BaseClass(parent, nullptr)
+CScoreboardSubOptions::CScoreboardSubOptions(vgui2::Panel *parent)
+    : BaseClass(parent, nullptr)
 {
 	m_pShowAvatars = new CCvarCheckButton(this, "ShowAvatars", "#BHL_AdvOptions_Scores_ShowAvatars", "hud_scoreboard_showavatars");
 	m_pShowSteamId = new CCvarCheckButton(this, "ShowSteamId", "#BHL_AdvOptions_Scores_ShowSteamId", "hud_scoreboard_showsteamid");
@@ -18,7 +19,7 @@ CScoreboardSubOptions::CScoreboardSubOptions(vgui2::Panel *parent) : BaseClass(p
 	m_pEffTypeBox = new vgui2::ComboBox(this, "EffTypeBox", 2, false);
 	m_EffTypeItems[0] = m_pEffTypeBox->AddItem("#BHL_AdvOptions_Scores_EffType0", new KeyValues("Type0", "value", 0));
 	m_EffTypeItems[1] = m_pEffTypeBox->AddItem("#BHL_AdvOptions_Scores_EffType1", new KeyValues("Type1", "value", 1));
-	
+
 	m_pMouseLabel = new vgui2::Label(this, "MouseLabel", "#BHL_AdvOptions_Scores_Mouse");
 	m_pMouseBox = new vgui2::ComboBox(this, "MouseBox", 3, false);
 	m_MouseItems[0] = m_pMouseBox->AddItem("#BHL_AdvOptions_Scores_Mouse0", new KeyValues("None", "value", 0));

@@ -7,6 +7,7 @@ typedef struct cvar_s cvar_t;
 class CCvarCheckButton : public vgui2::CheckButton
 {
 	DECLARE_CLASS_SIMPLE(CCvarCheckButton, vgui2::CheckButton);
+
 public:
 	CCvarCheckButton(vgui2::Panel *parent, const char *panelName, const char *text, const char *cvarName, bool inverse = false);
 	void ResetData();

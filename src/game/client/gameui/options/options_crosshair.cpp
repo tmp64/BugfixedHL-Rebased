@@ -89,12 +89,12 @@ public:
 		m_Color = col;
 	}
 
-	virtual int	GetWide()
+	virtual int GetWide()
 	{
 		return m_wide;
 	}
 
-	virtual int	GetTall()
+	virtual int GetTall()
 	{
 		return m_tall;
 	}
@@ -110,28 +110,28 @@ protected:
 
 int CCrosshairPreview::m_sTexture = -1;
 
-CCrosshairSubOptions::CCrosshairSubOptions(vgui2::Panel *parent) :
-	BaseClass(parent, nullptr)
+CCrosshairSubOptions::CCrosshairSubOptions(vgui2::Panel *parent)
+    : BaseClass(parent, nullptr)
 {
 	m_pEnableCvar = new CCvarCheckButton(this, "EnableCvar", "#BHL_AdvOptions_Cross_Enable", "cl_cross_enable");
-	
+
 	m_pColorLabel = new vgui2::Label(this, "ColorLabel", "#BHL_AdvOptions_Cross_Color");
 	m_pColorCvar = new CCvarColor(this, "ColorCvar", nullptr, "#BHL_AdvOptions_Cross_Color_Title");
-	
+
 	m_pGapLabel = new vgui2::Label(this, "GapLabel", "#BHL_AdvOptions_Cross_Gap");
 	m_pGapCvar = new CCvarTextEntry(this, "GapCvar", "cl_cross_gap", CCvarTextEntry::CvarType::Int);
-	
+
 	m_pSizeLabel = new vgui2::Label(this, "SizeLabel", "#BHL_AdvOptions_Cross_Size");
 	m_pSizeCvar = new CCvarTextEntry(this, "SizeCvar", "cl_cross_size", CCvarTextEntry::CvarType::Int);
-	
+
 	m_pThicknessLabel = new vgui2::Label(this, "ThicknessLabel", "#BHL_AdvOptions_Cross_Thickness");
 	m_pThicknessCvar = new CCvarTextEntry(this, "ThicknessCvar", "cl_cross_thickness", CCvarTextEntry::CvarType::Int);
-	
+
 	m_pOutlineThicknessLabel = new vgui2::Label(this, "OutlineThickness", "#BHL_AdvOptions_Cross_OutThickness");
 	m_pOutlineThicknessCvar = new CCvarTextEntry(this, "OutlineThicknessCvar", "cl_cross_outline_thickness", CCvarTextEntry::CvarType::Int);
-	
+
 	m_pDotCvar = new CCvarCheckButton(this, "DotCvar", "#BHL_AdvOptions_Cross_Dot", "cl_cross_dot");
-	
+
 	m_pTCvar = new CCvarCheckButton(this, "TCvar", "#BHL_AdvOptions_Cross_T", "cl_cross_t");
 
 	m_pColors[0] = gEngfuncs.pfnGetCvarPointer("cl_cross_red");
@@ -194,7 +194,7 @@ void CCrosshairSubOptions::OnApplyChanges()
 	char buf[128];
 	Color color = m_pColorCvar->GetSelectedColor();
 	m_pColorCvar->SetInitialColor(color);
-	
+
 	for (int i = 0; i < 3; i++)
 	{
 		snprintf(buf, sizeof(buf), "%s \"%d\"", m_pColors[i]->name, color[i]);

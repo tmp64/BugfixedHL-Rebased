@@ -7,7 +7,8 @@
 #include "cvar_check_button.h"
 #include "cvar_text_entry.h"
 
-CChatSubOptions::CChatSubOptions(vgui2::Panel *parent) : BaseClass(parent, nullptr)
+CChatSubOptions::CChatSubOptions(vgui2::Panel *parent)
+    : BaseClass(parent, nullptr)
 {
 	m_pChatStyleLabel = new vgui2::Label(this, "ChatStyleLabel", "#BHL_AdvOptions_Chat_ChatStyle");
 	m_pChatStyleBox = new vgui2::ComboBox(this, "ChatStyleBox", 3, false);
@@ -31,15 +32,15 @@ void CChatSubOptions::OnResetData()
 	bool oldchat = !!gEngfuncs.pfnGetCvarFloat("hud_saytext_oldchat");
 	bool oldpos = !!gEngfuncs.pfnGetCvarFloat("hud_saytext_oldpos");
 
-	if (!oldchat)	// VGUI2
+	if (!oldchat) // VGUI2
 	{
 		m_pChatStyleBox->ActivateItem(m_ChatStyleItems[1]);
 	}
 	else
 	{
-		if (oldpos)	// Old (top)
+		if (oldpos) // Old (top)
 			m_pChatStyleBox->ActivateItem(m_ChatStyleItems[3]);
-		else	// Old (bottom)
+		else // Old (bottom)
 			m_pChatStyleBox->ActivateItem(m_ChatStyleItems[2]);
 	}
 
@@ -56,21 +57,21 @@ void CChatSubOptions::OnApplyChanges()
 
 	char buf[128];
 
-	if (sel == 1)		// VGUI2
+	if (sel == 1) // VGUI2
 	{
 		snprintf(buf, sizeof(buf), "hud_saytext_oldchat 0");
 		gEngfuncs.pfnClientCmd(buf);
 		snprintf(buf, sizeof(buf), "hud_saytext_oldpos 0");
 		gEngfuncs.pfnClientCmd(buf);
 	}
-	else if (sel == 2)	// Old (bottom)
+	else if (sel == 2) // Old (bottom)
 	{
 		snprintf(buf, sizeof(buf), "hud_saytext_oldchat 1");
 		gEngfuncs.pfnClientCmd(buf);
 		snprintf(buf, sizeof(buf), "hud_saytext_oldpos 0");
 		gEngfuncs.pfnClientCmd(buf);
 	}
-	else if (sel == 3)	// Old (top)
+	else if (sel == 3) // Old (top)
 	{
 		snprintf(buf, sizeof(buf), "hud_saytext_oldchat 1");
 		gEngfuncs.pfnClientCmd(buf);

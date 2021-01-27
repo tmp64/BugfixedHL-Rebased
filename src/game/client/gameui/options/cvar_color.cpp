@@ -5,8 +5,8 @@
 #include "cl_util.h"
 #include "color_picker.h"
 
-CCvarColor::CCvarColor(vgui2::Panel *parent, const char *panelName, const char *cvarName, const char *cvarTitle) :
-	vgui2::EditablePanel(parent, panelName)
+CCvarColor::CCvarColor(vgui2::Panel *parent, const char *panelName, const char *cvarName, const char *cvarTitle)
+    : vgui2::EditablePanel(parent, panelName)
 {
 	m_pPreview = new vgui2::Panel(this, "ColorPreview");
 	m_pBtn = new vgui2::Button(this, "PickColorBtn", "#BHL_PickColor", this, "pickcolor");

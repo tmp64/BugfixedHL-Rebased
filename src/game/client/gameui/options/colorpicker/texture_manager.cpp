@@ -7,13 +7,12 @@ colorpicker::CTextureManager colorpicker::gTexMgr(colorpicker::PICKER_WIDE, colo
 //----------------------------------------------------------
 // colorpicker::CTextureManager
 //----------------------------------------------------------
-colorpicker::CTextureManager::CTextureManager(int wide, int tall) :
-	m_iWide(wide),
-	m_iTall(tall),
-	m_Worker(this)
+colorpicker::CTextureManager::CTextureManager(int wide, int tall)
+    : m_iWide(wide)
+    , m_iTall(tall)
+    , m_Worker(this)
 {
 }
-
 
 void colorpicker::CTextureManager::Init()
 {
@@ -35,11 +34,10 @@ void colorpicker::CTextureManager::RunFrame()
 
 		m_iBarTexture = vgui2::surface()->CreateNewTextureID(true);
 		vgui2::surface()->DrawSetTextureRGBA(
-			m_iBarTexture,
-			m_Worker.GetBarRgba().data(),
-			texwide,
-			1, false, false
-		);
+		    m_iBarTexture,
+		    m_Worker.GetBarRgba().data(),
+		    texwide,
+		    1, false, false);
 
 		auto picker = m_Worker.GetPickerRgba();
 		m_PickerTextures.resize(picker.size());
@@ -47,12 +45,11 @@ void colorpicker::CTextureManager::RunFrame()
 		{
 			m_PickerTextures[i] = vgui2::surface()->CreateNewTextureID(true);
 			vgui2::surface()->DrawSetTextureRGBA(
-				m_PickerTextures[i],
-				picker[i].data(),
-				texwide,
-				textall,
-				false, false
-			);
+			    m_PickerTextures[i],
+			    picker[i].data(),
+			    texwide,
+			    textall,
+			    false, false);
 		}
 
 		m_Worker.ClearRgba();
@@ -166,7 +163,7 @@ void colorpicker::CTextureManager::CWorker::operator()()
 void colorpicker::CTextureManager::CWorker::GenerateBarTexture()
 {
 	int size = m_pParent->GetTextureWide();
-	m_BarRgba.resize(size * 1 * PIXEL_SIZE);	// wide * tall * (4 bytes RGBA)
+	m_BarRgba.resize(size * 1 * PIXEL_SIZE); // wide * tall * (4 bytes RGBA)
 
 	for (int i = 0; i < size; i++)
 	{
@@ -190,7 +187,7 @@ void colorpicker::CTextureManager::CWorker::GeneratePickerTexture()
 	for (int i = 0; i < xsize; i++)
 	{
 		std::vector<unsigned char> &data = m_PickerRgba[i];
-		data.resize(xsize * ysize * PIXEL_SIZE);	// wide * tall * (4 bytes RGBA)
+		data.resize(xsize * ysize * PIXEL_SIZE); // wide * tall * (4 bytes RGBA)
 		float h = 360.f * static_cast<float>(i) / static_cast<float>(xsize + 1);
 
 		for (int y = 0; y < ysize; y++)

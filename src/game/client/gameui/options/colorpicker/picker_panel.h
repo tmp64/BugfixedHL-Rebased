@@ -19,6 +19,7 @@ class CPickerMousePanel;
 class CPickerPanel : public vgui2::EditablePanel
 {
 	DECLARE_CLASS_SIMPLE(CPickerPanel, vgui2::EditablePanel);
+
 public:
 	CPickerPanel(vgui2::Panel *pParent, const char *panelName);
 	virtual ~CPickerPanel();

@@ -8,7 +8,8 @@
 #include "options_general.h"
 #include "hud.h"
 
-CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent) : BaseClass(parent, nullptr)
+CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
+    : BaseClass(parent, nullptr)
 {
 	m_pFovLabel = new vgui2::Label(this, "FovLabel", "#BHL_AdvOptions_General_FOV");
 	m_pFovValue = new CCvarTextEntry(this, "FovValue", "default_fov", CCvarTextEntry::CvarType::Float);
@@ -25,7 +26,7 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent) : BaseClass(parent,
 
 	m_pMOTD = new CCvarCheckButton(this, "MOTD", "#BHL_AdvOptions_General_HTML", "cl_enable_html_motd");
 	m_pMOTDLabel = new vgui2::Label(this, "MOTDLabel", "#BHL_AdvOptions_General_HTML2");
-	
+
 	m_pAutoDemo = new CCvarCheckButton(this, "AutoDemo", "#BHL_AdvOptions_General_AutoDemo", "results_demo_autorecord");
 	m_pAutoDemoLabel = new vgui2::Label(this, "AutoDemoLabel", "#BHL_AdvOptions_General_AutoDemo2");
 	m_pKeepFor = new CCvarTextEntry(this, "KeepFor", "results_demo_keepdays", CCvarTextEntry::CvarType::Int);

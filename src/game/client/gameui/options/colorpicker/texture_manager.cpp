@@ -125,7 +125,8 @@ void colorpicker::CTextureManager::CWorker::StartThread()
 
 void colorpicker::CTextureManager::CWorker::StopThread()
 {
-	m_Thread.join();
+	if (m_Thread.joinable())
+		m_Thread.join();
 }
 
 std::vector<unsigned char> &colorpicker::CTextureManager::CWorker::GetBarRgba()

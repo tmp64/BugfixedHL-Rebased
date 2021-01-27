@@ -442,6 +442,7 @@ void CHud::Shutdown()
 #endif
 	bhlcfg::Shutdown();
 	ClientVoiceMgr_Shutdown();
+	colorpicker::gTexMgr.Shutdown();
 
 	for (CHudElem *i : m_HudList)
 	{

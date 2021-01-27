@@ -13,6 +13,8 @@
 CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
     : BaseClass(parent, "HudSubOptions")
 {
+	SetSize(100, 100); // Silence "parent not sized yet" warning
+
 	m_pOpacityLabel = new vgui2::Label(this, "OpacityLabel", "#BHL_AdvOptions_HUD_Opacity");
 	m_pOpacityValue = new CCvarTextEntry(this, "OpacityValue", "hud_draw", CCvarTextEntry::CvarType::Float);
 	m_pOpacitySlider = new vgui2::Slider(this, "OpacitySlider");

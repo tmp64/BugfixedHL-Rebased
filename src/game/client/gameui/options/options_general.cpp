@@ -11,6 +11,8 @@
 CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
     : BaseClass(parent, "GeneralSubOptions")
 {
+	SetSize(100, 100);	// Silence "parent not sized yet" warning
+
 	m_pFovLabel = new vgui2::Label(this, "FovLabel", "#BHL_AdvOptions_General_FOV");
 	m_pFovValue = new CCvarTextEntry(this, "FovValue", "default_fov", CCvarTextEntry::CvarType::Float);
 	m_pFovSlider = new vgui2::Slider(this, "FovSlider");

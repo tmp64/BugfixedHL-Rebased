@@ -17,6 +17,8 @@
 CAboutSubOptions::CAboutSubOptions(vgui2::Panel *parent)
     : BaseClass(parent, "AboutSubOptions")
 {
+	SetSize(100, 100); // Silence "parent not sized yet" warning
+
 	m_pBHLLabel = new vgui2::Label(this, "BHLLabel", "#BHL_AdvOptions_About_BHL");
 	m_pVerTextLabel = new vgui2::Label(this, "VerTextLabel", "#BHL_AdvOptions_About_Version");
 	m_pVerLabel = new vgui2::Label(this, "VerLabel", "?");

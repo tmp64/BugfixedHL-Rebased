@@ -10,6 +10,8 @@
 CChatSubOptions::CChatSubOptions(vgui2::Panel *parent)
     : BaseClass(parent, "ChatSubOptions")
 {
+	SetSize(100, 100); // Silence "parent not sized yet" warning
+
 	m_pChatStyleLabel = new vgui2::Label(this, "ChatStyleLabel", "#BHL_AdvOptions_Chat_ChatStyle");
 	m_pChatStyleBox = new vgui2::ComboBox(this, "ChatStyleBox", 3, false);
 	m_ChatStyleItems[1] = m_pChatStyleBox->AddItem("#BHL_AdvOptions_Chat_ChatStyle1", new KeyValues("VGUI2", "value", 1));

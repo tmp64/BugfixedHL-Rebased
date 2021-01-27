@@ -8,6 +8,7 @@
 CCvarColor::CCvarColor(vgui2::Panel *parent, const char *panelName, const char *cvarName, const char *cvarTitle)
     : vgui2::EditablePanel(parent, panelName)
 {
+	SetSize(128, 24);
 	m_pPreview = new vgui2::Panel(this, "ColorPreview");
 	m_pBtn = new vgui2::Button(this, "PickColorBtn", "#BHL_PickColor", this, "pickcolor");
 	m_pColorPicker = new CColorPicker(this, "ColorPicker", cvarTitle);

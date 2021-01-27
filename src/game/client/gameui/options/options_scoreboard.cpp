@@ -10,6 +10,8 @@
 CScoreboardSubOptions::CScoreboardSubOptions(vgui2::Panel *parent)
     : BaseClass(parent, "ScoreboardSubOptions")
 {
+	SetSize(100, 100); // Silence "parent not sized yet" warning
+
 	m_pShowAvatars = new CCvarCheckButton(this, "ShowAvatars", "#BHL_AdvOptions_Scores_ShowAvatars", "hud_scoreboard_showavatars");
 	m_pShowSteamId = new CCvarCheckButton(this, "ShowSteamId", "#BHL_AdvOptions_Scores_ShowSteamId", "hud_scoreboard_showsteamid");
 	m_pShowPacketLoss = new CCvarCheckButton(this, "ShowPacketLoss", "#BHL_AdvOptions_Scores_ShowLoss", "hud_scoreboard_showloss");

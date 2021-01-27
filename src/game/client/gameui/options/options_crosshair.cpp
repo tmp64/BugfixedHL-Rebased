@@ -113,6 +113,8 @@ int CCrosshairPreview::m_sTexture = -1;
 CCrosshairSubOptions::CCrosshairSubOptions(vgui2::Panel *parent)
     : BaseClass(parent, "CrosshairSubOptions")
 {
+	SetSize(100, 100); // Silence "parent not sized yet" warning
+
 	m_pEnableCvar = new CCvarCheckButton(this, "EnableCvar", "#BHL_AdvOptions_Cross_Enable", "cl_cross_enable");
 
 	m_pColorLabel = new vgui2::Label(this, "ColorLabel", "#BHL_AdvOptions_Cross_Color");

@@ -75,7 +75,7 @@ cvar_t *m_filter;
 cvar_t *sensitivity;
 
 static cvar_t *m_rawinput = nullptr;
-static ConVar m_input("m_input", "-1", FCVAR_BHL_ARCHIVE,
+ConVar m_input("m_input", "-1", FCVAR_BHL_ARCHIVE,
     "Mouse input mode\n"
     "- 0: Engine\n"
     "- 1: DirectInput (Windows-only)\n"

@@ -7,11 +7,15 @@
 #include "cvar_check_button.h"
 #include "options_general.h"
 #include "hud.h"
+#include "cl_util.h"
+#include "engine_patches.h"
+
+extern ConVar m_input;
 
 CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
     : BaseClass(parent, "GeneralSubOptions")
 {
-	SetSize(100, 100);	// Silence "parent not sized yet" warning
+	SetSize(100, 100); // Silence "parent not sized yet" warning
 
 	m_pFovLabel = new vgui2::Label(this, "FovLabel", "#BHL_AdvOptions_General_FOV");
 	m_pFovValue = new CCvarTextEntry(this, "FovValue", "default_fov", CCvarTextEntry::CvarType::Float);
@@ -20,8 +24,11 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
 	m_pFovSlider->SetValue(m_pFovValue->GetFloat());
 	m_pFovSlider->AddActionSignalTarget(this);
 
-	m_pRawInput = new vgui2::CheckButton(this, "RawInput", "__RawInput");
 	m_pRawInputLabel = new vgui2::Label(this, "RawInputLabel", "#BHL_AdvOptions_General_Input");
+	m_pInputMethodBox = new vgui2::ComboBox(this, "InputMethodBox", 3, false);
+	m_InputMethodItems[0] = m_pInputMethodBox->AddItem("#BHL_AdvOptions_General_InputEng", new KeyValues("Item", "value", 0));
+	m_InputMethodItems[1] = m_pInputMethodBox->AddItem(GetItemText("BHL_AdvOptions_General_InputDX", IsWindows()), new KeyValues("Item", "value", 1));
+	m_InputMethodItems[2] = m_pInputMethodBox->AddItem(GetItemText("BHL_AdvOptions_General_InputSDL", !IsWindows()), new KeyValues("Item", "value", 2));
 
 	m_pKillSnd = new CCvarCheckButton(this, "KillSnd", "#BHL_AdvOptions_General_KillSnd", "cl_killsound");
 	m_pKillSndLabel = new vgui2::Label(this, "KillSndLabel", "#BHL_AdvOptions_General_KillSnd2");
@@ -36,20 +43,24 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
 	m_pDaysLabel = new vgui2::Label(this, "DaysLabel", "#BHL_AdvOptions_General_Days");
 
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/GeneralSubOptions.res");
+
+	// Disable unsupported input methods
+	if (!IsWindows())
+		m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[1], false);
+
+	if (!CEnginePatches::Get().IsSDLEngine())
+		m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[2], false);
 }
 
 void CGeneralSubOptions::PerformLayout()
 {
 	BaseClass::PerformLayout();
-
-	// Overwrite text from .res file
-	m_pRawInput->SetText(GetRawInputText());
 }
 
 void CGeneralSubOptions::OnResetData()
 {
 	m_pFovValue->ResetData();
-	m_pRawInput->SetSelected(GetRawInputVal());
+	m_pInputMethodBox->ActivateItem(m_InputMethodItems[clamp(m_input.GetInt(), 0, 2)]);
 	m_pKillSnd->ResetData();
 	m_pMOTD->ResetData();
 	m_pAutoDemo->ResetData();
@@ -59,11 +70,19 @@ void CGeneralSubOptions::OnResetData()
 void CGeneralSubOptions::OnApplyChanges()
 {
 	m_pFovValue->ApplyChanges();
-	SetRawInputVal(m_pRawInput->IsSelected());
 	m_pKillSnd->ApplyChanges();
 	m_pMOTD->ApplyChanges();
 	m_pAutoDemo->ApplyChanges();
 	m_pKeepFor->ApplyChanges();
+
+	for (int i = 0; i <= 2; i++)
+	{
+		if (m_pInputMethodBox->GetActiveItem() == m_InputMethodItems[i])
+		{
+			m_input.SetValue(i);
+			break;
+		}
+	}
 }
 
 void CGeneralSubOptions::OnSliderMoved(KeyValues *kv)
@@ -86,56 +105,15 @@ void CGeneralSubOptions::OnCvarTextChanged(KeyValues *kv)
 	}
 }
 
-#ifdef _WIN32
-
-// Windows
-void CGeneralSubOptions::SetRawInputVal(bool state)
+const wchar_t *CGeneralSubOptions::GetItemText(const char *token, bool isRecommended)
 {
-	const char *str;
-	if (state)
-		str = "m_input 2";
-	else
-		str = "m_input 1";
-	gEngfuncs.pfnClientCmd((char *)str);
+	wchar_t *text = g_pVGuiLocalize->Find(token);
 
-#ifndef VGUI2_BUILD_4554
-	gEngfuncs.pfnClientCmd("m_rawinput 0");
-#endif
+	if (!isRecommended)
+		return text;
+
+	static wchar_t wbuf[256];
+	wchar_t *rec = g_pVGuiLocalize->Find("BHL_AdvOptions_General_InputRec");
+	V_snwprintf(wbuf, std::size(wbuf), L"%s %s", text, rec);
+	return wbuf;
 }
-
-bool CGeneralSubOptions::GetRawInputVal()
-{
-	float val = gEngfuncs.pfnGetCvarFloat("m_input");
-	return (val == 2);
-}
-
-const char *CGeneralSubOptions::GetRawInputText()
-{
-	return "#BHL_AdvOptions_General_InputWin";
-}
-
-#else
-
-// Linux
-void CGeneralSubOptions::SetRawInputVal(bool state)
-{
-	const char *str;
-	if (state)
-		str = "m_rawinput 1";
-	else
-		str = "m_rawinput 0";
-	gEngfuncs.pfnClientCmd((char *)str);
-}
-
-bool CGeneralSubOptions::GetRawInputVal()
-{
-	float val = gEngfuncs.pfnGetCvarFloat("m_input");
-	return (val == 1);
-}
-
-const char *CGeneralSubOptions::GetRawInputText()
-{
-	return "#BHL_AdvOptions_General_InputLin";
-}
-
-#endif

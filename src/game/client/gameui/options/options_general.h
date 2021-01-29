@@ -4,6 +4,7 @@
 
 namespace vgui2
 {
+class ComboBox;
 class Label;
 class Slider;
 }
@@ -28,8 +29,10 @@ private:
 	vgui2::Slider *m_pFovSlider = nullptr;
 	CCvarTextEntry *m_pFovValue = nullptr;
 
-	vgui2::CheckButton *m_pRawInput = nullptr;
+	int m_InputMethodItems[3];
+	vgui2::ComboBox *m_pInputMethodBox = nullptr;
 	vgui2::Label *m_pRawInputLabel = nullptr;
+
 	CCvarCheckButton *m_pKillSnd = nullptr;
 	vgui2::Label *m_pKillSndLabel = nullptr;
 	CCvarCheckButton *m_pMOTD = nullptr;
@@ -44,9 +47,7 @@ private:
 	MESSAGE_FUNC_PARAMS(OnSliderMoved, "SliderMoved", kv);
 	MESSAGE_FUNC_PARAMS(OnCvarTextChanged, "CvarTextChanged", kv);
 
-	void SetRawInputVal(bool state);
-	bool GetRawInputVal();
-	const char *GetRawInputText();
+	const wchar_t *GetItemText(const char *token, bool isRecommended);
 };
 
 #endif

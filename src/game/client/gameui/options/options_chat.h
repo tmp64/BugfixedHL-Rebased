@@ -22,12 +22,6 @@ public:
 	virtual void OnApplyChanges();
 
 private:
-	vgui2::Label *m_pChatStyleLabel = nullptr;
-	vgui2::ComboBox *m_pChatStyleBox = nullptr;
-	int m_ChatStyleItems[3 + 1];
-
-	vgui2::Label *m_pVgui2Label = nullptr;
-
 	CCvarTextEntry *m_pTime = nullptr;
 	vgui2::Label *m_pTimeLabel = nullptr;
 

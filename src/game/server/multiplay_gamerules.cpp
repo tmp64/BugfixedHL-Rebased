@@ -332,9 +332,15 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon(CBasePlayer *pPlayer, CBasePlayerIt
 		return TRUE;
 	}
 
-	if (!(pPlayer->m_iAutoWeaponSwitch & (1 << 0)))
+	if (pPlayer->m_iAutoWeaponSwitch == 0)
 	{
 		// player disabled auto weapon switching
+		return FALSE;
+	}
+
+	if (pPlayer->m_iAutoWeaponSwitch == 2 && pPlayer->m_afButtonLast & (IN_ATTACK | IN_ATTACK2))
+	{
+		// player disabled auto weapon switching when firing
 		return FALSE;
 	}
 

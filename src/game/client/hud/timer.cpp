@@ -31,6 +31,11 @@
 #define CUSTOM_TIMER_G      160
 #define CUSTOM_TIMER_B      0
 
+CON_COMMAND(customtimer, "Sets a timer to count down from N secs to zero")
+{
+	CHudTimer::Get()->CustomTimerCommand();
+}
+
 enum RulesRequestStatus
 {
 	SOCKET_NONE = 0,

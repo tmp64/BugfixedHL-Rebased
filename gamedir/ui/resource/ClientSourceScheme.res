@@ -586,46 +586,9 @@ Scheme
 			"backgroundtype" "0"
 		}
 
-
-		ScrollBarButtonBorder
-		{
-			"inset" "1 0 0 0"
-			Left
-			{
-				"1"
-				{
-					"color" "BorderBright"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "BorderDark"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "BorderBright"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "BorderDark"
-					"offset" "0 0"
-				}
-			}
-		}
+		ScrollBarSliderBorder RaisedBorder
+		ScrollBarButtonDepressedBorder InsetBorder
+		ScrollBarButtonBorder RaisedBorder
 
 		InsetBorder
 		{
@@ -706,6 +669,7 @@ Scheme
 				}
 			}
 		}
+		
 		RaisedBorder
 		{
 			"inset" "0 0 1 1"
@@ -741,86 +705,6 @@ Scheme
 				"1"
 				{
 					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-		}
-		
-		ScrollBarButtonBorder
-		{
-			"inset" "2 2 0 0"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
-		}
-		
-		ScrollBarButtonDepressedBorder
-		{
-			"inset" "2 2 0 0"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Bright"
 					"offset" "0 0"
 				}
 			}

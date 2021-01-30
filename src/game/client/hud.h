@@ -104,6 +104,7 @@ public:
 	cvar_t *m_pCvarStealMouse;
 	cvar_t *m_pCvarDraw;
 	cvar_t *default_fov;
+	cvar_t *sv_version;
 
 	// sprite indexes
 	int m_HUD_number_0;

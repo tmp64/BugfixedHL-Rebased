@@ -138,12 +138,13 @@ void HookHudMessage(const char *name)
 
 static void AboutCommand(void)
 {
-	ConsolePrint("BugfixedHL-NG\n");
-	ConsolePrint("Bugfixed and improved Half-Life Client\n");
-	ConsolePrint("Version: " APP_VERSION "\n");
-	ConsolePrint("\n");
-	ConsolePrint("Github: " BHL_GITHUB_URL "\n");
-	ConsolePrint("Discussion forum: " BHL_FORUM_URL "\n");
+	ConPrintf("BugfixedHL-Rebased\n");
+	ConPrintf("Bugfixed and improved Half-Life Client\n");
+	ConPrintf("Version: " APP_VERSION "%s\n", IsDebug() ? " [Debug Build]" : "");
+	ConPrintf("Engine: %s\n", gHUD.sv_version->string);
+	ConPrintf("\n");
+	ConPrintf("Github: " BHL_GITHUB_URL "\n");
+	ConPrintf("Discussion forum: " BHL_FORUM_URL "\n");
 }
 
 CHud::CHud()
@@ -233,6 +234,7 @@ void CHud::Init(void)
 	m_pCvarStealMouse = CVAR_CREATE("hud_capturemouse", "1", FCVAR_ARCHIVE);
 	m_pCvarDraw = CVAR_CREATE("hud_draw", "1", FCVAR_ARCHIVE);
 	cl_lw = gEngfuncs.pfnGetCvarPointer("cl_lw");
+	sv_version = gEngfuncs.pfnGetCvarPointer("sv_version");
 
 	m_pSpriteList = NULL;
 

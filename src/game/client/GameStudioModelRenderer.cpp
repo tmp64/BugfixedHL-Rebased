@@ -46,6 +46,16 @@ extern engine_studio_api_t IEngineStudio;
 // The renderer object, created on the stack.
 CGameStudioModelRenderer g_StudioRenderer;
 
+CON_COMMAND(forcemodel, "Force changes a model of a player")
+{
+	g_StudioRenderer.ForceModelCommand();
+}
+
+CON_COMMAND(forcecolor, "Force changes colors of a player")
+{
+	g_StudioRenderer.ForceColorsCommand();
+}
+
 /*
 ====================
 CGameStudioModelRenderer

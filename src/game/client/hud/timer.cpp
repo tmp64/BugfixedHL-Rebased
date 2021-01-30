@@ -187,6 +187,8 @@ void CHudTimer::SyncTimerLocal(float fTime)
 				float endtime = timeleft + fTime;
 				if (fabs(m_flEndTime - endtime) > 1.5)
 					m_flEndTime = endtime;
+
+				m_flSynced = true;
 			}
 		}
 		if (m_flEndTime != prevEndtime)

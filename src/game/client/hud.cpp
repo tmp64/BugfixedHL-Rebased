@@ -141,7 +141,7 @@ static void AboutCommand(void)
 	ConPrintf("BugfixedHL-Rebased\n");
 	ConPrintf("Bugfixed and improved Half-Life Client\n");
 	ConPrintf("Version: " APP_VERSION "%s\n", IsDebug() ? " [Debug Build]" : "");
-	ConPrintf("Engine: %s\n", gHUD.sv_version->string);
+	ConPrintf("Engine: %s\n", gHUD.GetEngineVersion());
 	ConPrintf("\n");
 	ConPrintf("Github: " BHL_GITHUB_URL "\n");
 	ConPrintf("Discussion forum: " BHL_FORUM_URL "\n");
@@ -235,7 +235,13 @@ void CHud::Init(void)
 	m_pCvarStealMouse = CVAR_CREATE("hud_capturemouse", "1", FCVAR_ARCHIVE);
 	m_pCvarDraw = CVAR_CREATE("hud_draw", "1", FCVAR_ARCHIVE);
 	cl_lw = gEngfuncs.pfnGetCvarPointer("cl_lw");
-	sv_version = gEngfuncs.pfnGetCvarPointer("sv_version");
+
+	// Save engine version
+	cvar_t *sv_version = sv_version = gEngfuncs.pfnGetCvarPointer("sv_version");
+	if (sv_version)
+		Q_strncpy(m_szEngineVersion, sv_version->string, sizeof(m_szEngineVersion));
+	else
+		Q_strncpy(m_szEngineVersion, "< sv_version not found >", sizeof(m_szEngineVersion));
 
 	m_pSpriteList = NULL;
 

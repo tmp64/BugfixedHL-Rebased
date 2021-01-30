@@ -104,7 +104,6 @@ public:
 	cvar_t *m_pCvarStealMouse;
 	cvar_t *m_pCvarDraw;
 	cvar_t *default_fov;
-	cvar_t *sv_version;
 
 	// sprite indexes
 	int m_HUD_number_0;
@@ -201,6 +200,7 @@ public:
 
 	ColorCodeAction GetColorCodeAction();
 	Color GetColorCodeColor(int code);
+	const char *GetEngineVersion();
 
 	/**
 	 * Returns a color for client.
@@ -229,6 +229,7 @@ private:
 	int m_iConcussionEffect;
 	std::vector<CHudElem *> m_HudList;
 	std::unordered_map<int, int> m_CharWidths;
+	char m_szEngineVersion[128];
 
 	// the memory for these arrays are allocated in the first call
 	// to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
@@ -281,6 +282,11 @@ inline Color CHud::GetColorCodeColor(int code)
 {
 	Assert(code >= 0 && code <= 9);
 	return m_ColorCodeColors[code];
+}
+
+inline const char *CHud::GetEngineVersion()
+{
+	return m_szEngineVersion;
 }
 
 extern CHud gHUD;

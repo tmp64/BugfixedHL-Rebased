@@ -30,7 +30,7 @@ public:
 		SetTitle("#BHL_AdvOptions_About_OSSCredits", true);
 		SetSize(640, 480);
 		m_pText = new vgui2::RichText(this, "Text");
-		
+
 		// Fill m_pText with file contents
 		FileHandle_t fh = g_pFullFileSystem->Open(VGUI2_ROOT_DIR "resource/open_source_software.txt", "r");
 

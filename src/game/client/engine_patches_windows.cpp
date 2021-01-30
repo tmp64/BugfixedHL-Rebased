@@ -1,11 +1,17 @@
+#include <ctime>
+
 #include <winsani_in.h>
 #include <windows.h>
+#include <Dbghelp.h>
 #include <psapi.h>
 #include <tlhelp32.h>
 #include <Winternl.h>
 #include <winsani_out.h>
 
+#include <StackWalker.h>
 #include <tier1/strtools.h>
+#include <appversion.h>
+#include <bhl_urls.h>
 #include "hud.h"
 #include "cl_util.h"
 #include "engine_patches.h"
@@ -661,6 +667,335 @@ void CEnginePatchesWindows::ExchangeMemoryBytes(uintptr_t *origAddr, size_t *dat
 	VirtualProtect(origAddr, size, oldProtect, &oldProtect);
 }
 
+//---------------------------------------------------------------
+// Vectored Exceptions Handler
+//---------------------------------------------------------------
+static LONG NTAPI CrashHandlerCaller(PEXCEPTION_POINTERS pExceptionInfo);
+
+class CWindowsCrashHandler
+{
+public:
+	void OnDLLAttach()
+	{
+		if (!m_hHandler)
+		{
+			m_hHandler = AddVectoredExceptionHandler(TRUE, CrashHandlerCaller);
+		}
+	}
+
+	void OnDLLDetach()
+	{
+		m_bIsDetaching = true;
+
+		if (m_hHandler)
+		{
+			RemoveVectoredExceptionHandler(m_hHandler);
+			m_hHandler = nullptr;
+		}
+	}
+
+	LONG VectoredExceptionsHandler(PEXCEPTION_POINTERS pExceptionInfo) noexcept
+	{
+		DWORD exceptionCode = pExceptionInfo->ExceptionRecord->ExceptionCode;
+		DWORD exceptionAddress = (long)pExceptionInfo->ExceptionRecord->ExceptionAddress;
+
+		if (exceptionCode == 0xE06D7363u) // SEH
+			return EXCEPTION_CONTINUE_SEARCH;
+
+		// We will handle all fatal unexpected exceptions, like STATUS_ACCESS_VIOLATION
+		// But skip DLL Not Found exception, which happen on old non-steam when steam is running
+		// Also skip while detach is in process, cos we can't write files (not sure about message boxes, but anyway...)
+		if ((exceptionCode & 0xF0000000L) == 0xC0000000L && exceptionCode != 0xC0000139 && !m_bIsDetaching)
+		{
+			time_t timestamp = time(nullptr);
+			localtime_s(&m_CrashTime, &timestamp);
+			strftime(m_szCrashFileName, sizeof(m_szCrashFileName), "crash-%Y-%m-%d-%H-%M-%S", &m_CrashTime);
+
+			CreateCrashReport(pExceptionInfo);
+			CreateMiniDump(pExceptionInfo);
+			ShowCrashDialog(pExceptionInfo);
+
+			// Application will die anyway, so futher exceptions are not interesting to us
+			RemoveVectoredExceptionHandler(m_hHandler);
+		}
+
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+	void CreateCrashReport(PEXCEPTION_POINTERS pExceptionInfo) noexcept
+	{
+		char filename[MAX_PATH];
+		snprintf(filename, sizeof(filename), "%s.txt", m_szCrashFileName);
+
+		FILE *file = fopen(filename, "w");
+
+		if (file)
+		{
+			DWORD exceptionCode = pExceptionInfo->ExceptionRecord->ExceptionCode;
+			DWORD exceptionAddress = (DWORD)pExceptionInfo->ExceptionRecord->ExceptionAddress;
+
+			fprintf(file, "BugfixedHL Crash Log\n");
+			fprintf(file, "  Exception %s (0x%08X) at address 0x%08X.\n", ExceptionCodeString(exceptionCode), exceptionCode, exceptionAddress);
+			fprintf(file, "\n");
+
+			PrintGameInfo(file);
+			PrintStackTrace(file, pExceptionInfo);
+			PrintModuleList(file, pExceptionInfo);
+
+			fclose(file);
+
+			char buf[512];
+			snprintf(buf, sizeof(buf), "notepad %s", filename);
+
+			STARTUPINFO si;
+			PROCESS_INFORMATION pi;
+			ZeroMemory(&si, sizeof(si));
+			si.cb = sizeof(si);
+			ZeroMemory(&pi, sizeof(pi));
+
+			CreateProcess(NULL, // No module name (use command line)
+			    buf, // Command line
+			    NULL, // Process handle not inheritable
+			    NULL, // Thread handle not inheritable
+			    FALSE, // Set handle inheritance to FALSE
+			    0, // No creation flags
+			    NULL, // Use parent's environment block
+			    NULL, // Use parent's starting directory
+			    &si, // Pointer to STARTUPINFO structure
+			    &pi); // Pointer to PROCESS_INFORMATION structure
+
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
+		}
+	}
+
+	void PrintGameInfo(FILE *file) noexcept
+	{
+		fprintf(file, "Version: " APP_VERSION "%s\n", IsDebug() ? " [Debug Build]" : "");
+
+		// Copy engine version in case it was corrupted
+		char engineVersion[128];
+		Q_strncpy(engineVersion, gHUD.GetEngineVersion(), sizeof(engineVersion));
+		fprintf(file, "Engine version: %s\n", engineVersion);
+
+		char buffer[128];
+		strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &m_CrashTime);
+		fprintf(file, "Local time: %s\n", buffer);
+
+		// OS version
+		OSVERSIONINFOEXA ver;
+		ZeroMemory(&ver, sizeof(OSVERSIONINFOEXA));
+		ver.dwOSVersionInfoSize = sizeof(ver);
+		if (GetVersionExA((OSVERSIONINFOA *)&ver) != FALSE)
+		{
+			fprintf(file, "OS version: %d.%d.%d (%s) 0x%x-0x%x\n", ver.dwMajorVersion,
+			    ver.dwMinorVersion, ver.dwBuildNumber, ver.szCSDVersion, ver.wSuiteMask,
+			    ver.wProductType);
+		}
+		else
+		{
+			fprintf(file, "OS version: GetVersionExA failed\n");
+		}
+
+		fprintf(file, "\n");
+	}
+
+	void PrintStackTrace(FILE *file, PEXCEPTION_POINTERS pExceptionInfo) noexcept
+	{
+		fprintf(file, "Stack trace (may be incorrect since no engine PDBs are available):\n");
+
+		int options = StackWalker::RetrieveSymbol | StackWalker::RetrieveLine | StackWalker::SymAll;
+		StackWalkerToFile sw(file, StackWalker::OptionsAll, nullptr, GetCurrentProcessId(), GetCurrentProcess());
+		sw.ShowCallstack(GetCurrentThread(), pExceptionInfo->ContextRecord);
+
+		fprintf(file, "\n");
+	}
+
+	void PrintModuleList(FILE *file, PEXCEPTION_POINTERS pExceptionInfo) noexcept
+	{
+		DWORD exceptionCode = pExceptionInfo->ExceptionRecord->ExceptionCode;
+		DWORD exceptionAddress = (DWORD)pExceptionInfo->ExceptionRecord->ExceptionAddress;
+
+		// Get modules info
+		HMODULE hMods[1024];
+		HANDLE hProcess = GetCurrentProcess();
+		MODULEINFO moduleInfo;
+		DWORD cbNeeded;
+		EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded);
+		int count = cbNeeded / sizeof(HMODULE);
+
+		fprintf(file, "Modules:\n");
+		fprintf(file, "  Base     Size     Path (Exception Offset)\n");
+		for (int i = 0; i < count; i++)
+		{
+			GetModuleInformation(hProcess, hMods[i], &moduleInfo, sizeof(moduleInfo));
+			DWORD moduleBase = (long)moduleInfo.lpBaseOfDll;
+			DWORD moduleSize = (long)moduleInfo.SizeOfImage;
+
+			// Get the full path to the module's file.
+			TCHAR szModName[MAX_PATH];
+			if (GetModuleFileNameEx(hProcess, hMods[i], szModName, sizeof(szModName) / sizeof(TCHAR)))
+			{
+				if (moduleBase <= exceptionAddress && exceptionAddress <= (moduleBase + moduleSize))
+					fprintf(file, "=>%08X %08X %s  <==  %08X\n", moduleBase, moduleSize, szModName, exceptionAddress - moduleBase);
+				else
+					fprintf(file, "  %08X %08X %s\n", moduleBase, moduleSize, szModName);
+			}
+			else
+			{
+				if (moduleBase <= exceptionAddress && exceptionAddress <= (moduleBase + moduleSize))
+					fprintf(file, "=>%08X %08X  <==  %08X\n", moduleBase, moduleSize, exceptionAddress - moduleBase);
+				else
+					fprintf(file, "  %08X %08X\n", moduleBase, moduleSize);
+			}
+		}
+	}
+
+	void CreateMiniDump(PEXCEPTION_POINTERS pExceptionInfo)
+	{
+		char filename[MAX_PATH];
+		snprintf(filename, sizeof(filename), "%s.dmp", m_szCrashFileName);
+		HANDLE hProcess = GetCurrentProcess();
+		HANDLE hMiniDumpFile = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, NULL);
+
+		if (hMiniDumpFile != INVALID_HANDLE_VALUE)
+		{
+			MINIDUMP_EXCEPTION_INFORMATION eInfo;
+			eInfo.ThreadId = GetCurrentThreadId();
+			eInfo.ExceptionPointers = pExceptionInfo;
+			eInfo.ClientPointers = FALSE;
+			MiniDumpWriteDump(hProcess, GetCurrentProcessId(), hMiniDumpFile, MiniDumpNormal, &eInfo, NULL, NULL);
+			CloseHandle(hMiniDumpFile);
+		}
+	}
+
+	void ShowCrashDialog(PEXCEPTION_POINTERS pExceptionInfo)
+	{
+		char buf[1024];
+		snprintf(buf, sizeof(buf),
+		    "Game has crashed (%s).\n"
+		    "\n"
+		    "A crash log file was opened in Notepad.\n"
+		    "Please report its contents as well as file named %s.dmp on GitHub.\n"
+		    "\n" BHL_GITHUB_URL "/issues",
+		    ExceptionCodeString(pExceptionInfo->ExceptionRecord->ExceptionCode),
+		    m_szCrashFileName);
+
+		MessageBoxA(GetActiveWindow(), buf, "Error!", MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST);
+	}
+
+	const char *ExceptionCodeString(DWORD exceptionCode)
+	{
+		switch (exceptionCode)
+		{
+		case STATUS_ACCESS_VIOLATION:
+			return "EXCEPTION_ACCESS_VIOLATION";
+		case STATUS_ARRAY_BOUNDS_EXCEEDED:
+			return "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
+		case STATUS_BREAKPOINT:
+			return "EXCEPTION_BREAKPOINT";
+		case STATUS_DATATYPE_MISALIGNMENT:
+			return "EXCEPTION_DATATYPE_MISALIGNMENT";
+		case STATUS_FLOAT_DENORMAL_OPERAND:
+			return "EXCEPTION_FLT_DENORMAL_OPERAND";
+		case STATUS_FLOAT_DIVIDE_BY_ZERO:
+			return "EXCEPTION_FLT_DIVIDE_BY_ZERO";
+		case STATUS_FLOAT_INEXACT_RESULT:
+			return "EXCEPTION_FLT_INEXACT_RESULT";
+		case STATUS_FLOAT_INVALID_OPERATION:
+			return "EXCEPTION_FLT_INVALID_OPERATION";
+		case STATUS_FLOAT_OVERFLOW:
+			return "EXCEPTION_FLT_OVERFLOW";
+		case STATUS_FLOAT_STACK_CHECK:
+			return "EXCEPTION_FLT_STACK_CHECK";
+		case STATUS_FLOAT_UNDERFLOW:
+			return "EXCEPTION_FLT_UNDERFLOW";
+		case EXCEPTION_ILLEGAL_INSTRUCTION:
+			return "STATUS_ILLEGAL_INSTRUCTION";
+		case STATUS_IN_PAGE_ERROR:
+			return "EXCEPTION_IN_PAGE_ERROR";
+		case STATUS_INTEGER_DIVIDE_BY_ZERO:
+			return "EXCEPTION_INT_DIVIDE_BY_ZERO";
+		case STATUS_INTEGER_OVERFLOW:
+			return "EXCEPTION_INT_OVERFLOW";
+		case STATUS_INVALID_DISPOSITION:
+			return "EXCEPTION_INVALID_DISPOSITION";
+		case STATUS_INVALID_HANDLE:
+			return "EXCEPTION_INVALID_HANDLE";
+		case STATUS_NONCONTINUABLE_EXCEPTION:
+			return "EXCEPTION_NONCONTINUABLE_EXCEPTION";
+		case STATUS_PRIVILEGED_INSTRUCTION:
+			return "EXCEPTION_PRIV_INSTRUCTION";
+		case STATUS_SINGLE_STEP:
+			return "EXCEPTION_SINGLE_STEP";
+		case STATUS_STACK_OVERFLOW:
+			return "EXCEPTION_STACK_OVERFLOW";
+		case STATUS_UNWIND_CONSOLIDATE:
+			return "STATUS_UNWIND_CONSOLIDATE";
+		default:
+			return "< unknown >";
+		}
+	}
+
+private:
+	class StackWalkerToFile : public StackWalker
+	{
+	public:
+		StackWalkerToFile(FILE *pFile, int options = OptionsAll,
+		    LPCSTR szSymPath = NULL,
+		    DWORD dwProcessId = GetCurrentProcessId(),
+		    HANDLE hProcess = GetCurrentProcess())
+		    : StackWalker(options, szSymPath, dwProcessId, hProcess)
+		{
+			m_pFile = pFile;
+		}
+
+		virtual void OnOutput(LPCSTR szText) override
+		{
+			fputs("  ", m_pFile);
+			fputs(szText, m_pFile);
+		}
+
+		virtual void OnLoadModule(LPCSTR img,
+		    LPCSTR mod,
+		    DWORD64 baseAddr,
+		    DWORD size,
+		    DWORD result,
+		    LPCSTR symType,
+		    LPCSTR pdbName,
+		    ULONGLONG fileVersion) override
+		{
+		}
+
+		virtual void OnDbgHelpErr(LPCSTR szFuncName, DWORD gle, DWORD64 addr) override
+		{
+			// Silence symbol errors (PDBs for engine modules are not available)
+			if (!strcmp(szFuncName, "SymGetSymFromAddr64") || !strcmp(szFuncName, "SymGetLineFromAddr64"))
+				return;
+			StackWalker::OnDbgHelpErr(szFuncName, gle, addr);
+		}
+
+		virtual void OnSymInit(LPCSTR szSearchPath, DWORD symOptions, LPCSTR szUserName) override
+		{
+		}
+
+	private:
+		FILE *m_pFile = nullptr;
+	};
+
+	bool m_bIsDetaching = false;
+	PVOID m_hHandler = nullptr;
+	tm m_CrashTime;
+	char m_szCrashFileName[MAX_PATH]; // Name of crash log and dump without extention
+};
+
+static CWindowsCrashHandler s_CrashHandler;
+
+static LONG NTAPI CrashHandlerCaller(PEXCEPTION_POINTERS pExceptionInfo)
+{
+	return s_CrashHandler.VectoredExceptionsHandler(pExceptionInfo);
+}
+
 //-------------------------------------------------------------------
 // DLL Entry Point
 //-------------------------------------------------------------------
@@ -668,9 +1003,11 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
 	if (fdwReason == DLL_PROCESS_ATTACH)
 	{
+		s_CrashHandler.OnDLLAttach();
 	}
 	else if (fdwReason == DLL_PROCESS_DETACH)
 	{
+		s_CrashHandler.OnDLLDetach();
 		s_EnginePatchesInstance.StopServerBrowserThreads();
 	}
 

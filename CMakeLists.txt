@@ -444,6 +444,8 @@ if( WIN32 )
 		psapi
 		DInput
 		DXGUID
+		Dbghelp
+		stackwalker
     )
 
 	target_include_directories( client PRIVATE

@@ -4,6 +4,25 @@
 
 static CEnginePatches *s_pInstance = nullptr;
 
+#ifdef _DEBUG
+
+#ifdef _MSC_VER
+#pragma warning(push, 3)
+#pragma warning(disable : 6011) // Dereferencing NULL pointer
+#endif
+
+CON_COMMAND(crash_client, "Crashes the client by dereferencing a null pointer")
+{
+	volatile int *volatile ptr = nullptr;
+	*ptr = 0;
+}
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+#endif
+
 CEnginePatches &CEnginePatches::Get()
 {
 	Assert(s_pInstance);

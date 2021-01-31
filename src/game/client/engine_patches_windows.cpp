@@ -1,5 +1,9 @@
 #include <ctime>
 
+#pragma warning(push, 3)
+#pragma warning(disable : 4091) // 'typedef ': ignored on left of '...' when no variable is declared
+// Of course Windows SDK headers will have warnings in them, why wouldn't they
+
 #include <winsani_in.h>
 #include <windows.h>
 #include <Dbghelp.h>
@@ -7,6 +11,8 @@
 #include <tlhelp32.h>
 #include <Winternl.h>
 #include <winsani_out.h>
+
+#pragma warning(pop)
 
 #include <StackWalker.h>
 #include <tier1/strtools.h>

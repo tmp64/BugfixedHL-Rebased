@@ -723,6 +723,7 @@ public:
 
 			// Application will die anyway, so futher exceptions are not interesting to us
 			RemoveVectoredExceptionHandler(m_hHandler);
+			m_hHandler = nullptr;
 		}
 
 		return EXCEPTION_CONTINUE_SEARCH;

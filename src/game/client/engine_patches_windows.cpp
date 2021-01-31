@@ -741,7 +741,18 @@ public:
 			DWORD exceptionAddress = (DWORD)pExceptionInfo->ExceptionRecord->ExceptionAddress;
 
 			fprintf(file, "BugfixedHL Crash Log\n");
-			fprintf(file, "  Exception %s (0x%08X) at address 0x%08X.\n", ExceptionCodeString(exceptionCode), exceptionCode, exceptionAddress);
+			fprintf(file, "  Exception %s (0x%08X) at address 0x%08X (%s).\n",
+			    ExceptionCodeString(exceptionCode),
+			    exceptionCode,
+			    exceptionAddress,
+			    GetModuleNameForAddress(exceptionAddress));
+			fprintf(file, "\n");
+
+			fprintf(file, "Please post contents of this log file and file %s.dmp on\n", m_szCrashFileName);
+			fprintf(file, "%s/issues\n", BHL_GITHUB_URL);
+			fprintf(file, "\n\n\n\n\n");
+			fprintf(file, "-------------------------------------------------------------------------\n");
+			fprintf(file, "Technical information\n");
 			fprintf(file, "\n");
 
 			PrintGameInfo(file);
@@ -789,18 +800,57 @@ public:
 		fprintf(file, "Local time: %s\n", buffer);
 
 		// OS version
-		OSVERSIONINFOEXA ver;
-		ZeroMemory(&ver, sizeof(OSVERSIONINFOEXA));
-		ver.dwOSVersionInfoSize = sizeof(ver);
-		if (GetVersionExA((OSVERSIONINFOA *)&ver) != FALSE)
+		fprintf(file, "OS version: ");
 		{
-			fprintf(file, "OS version: %d.%d.%d (%s) 0x%x-0x%x\n", ver.dwMajorVersion,
-			    ver.dwMinorVersion, ver.dwBuildNumber, ver.szCSDVersion, ver.wSuiteMask,
-			    ver.wProductType);
-		}
-		else
-		{
-			fprintf(file, "OS version: GetVersionExA failed\n");
+			DWORD handle;
+			DWORD size = GetFileVersionInfoSizeA("kernel32.dll", &handle);
+
+			if (size != 0)
+			{
+				char *verBuf = (char *)malloc(size);
+
+				if (verBuf)
+				{
+					if (GetFileVersionInfoA("kernel32.dll", 0, size, verBuf))
+					{
+						VS_FIXEDFILEINFO *info = nullptr;
+						UINT infoSize;
+
+						if (VerQueryValueA(verBuf, "\\", (LPVOID *)&info, &infoSize))
+						{
+
+							if (infoSize != 0)
+							{
+								fprintf(file, "%u.%u.%u.%u\n",
+								    HIWORD(info->dwFileVersionMS),
+								    LOWORD(info->dwFileVersionMS),
+								    HIWORD(info->dwFileVersionLS),
+								    LOWORD(info->dwFileVersionLS));
+							}
+							else
+							{
+								fprintf(file, "infoSize = 0\n");
+							}
+						}
+						else
+						{
+							fprintf(file, "VerQueryValueA failed\n");
+						}
+					}
+					else
+					{
+						fprintf(file, "GetFileVersionInfoA failed\n");
+					}
+				}
+				else
+				{
+					fprintf(file, "malloc(%u) failed\n", size);
+				}
+			}
+			else
+			{
+				fprintf(file, "GetFileVersionInfoSizeA failed\n");
+			}
 		}
 
 		fprintf(file, "\n");
@@ -835,8 +885,8 @@ public:
 		for (int i = 0; i < count; i++)
 		{
 			GetModuleInformation(hProcess, hMods[i], &moduleInfo, sizeof(moduleInfo));
-			DWORD moduleBase = (long)moduleInfo.lpBaseOfDll;
-			DWORD moduleSize = (long)moduleInfo.SizeOfImage;
+			DWORD moduleBase = (DWORD)moduleInfo.lpBaseOfDll;
+			DWORD moduleSize = (DWORD)moduleInfo.SizeOfImage;
 
 			// Get the full path to the module's file.
 			TCHAR szModName[MAX_PATH];
@@ -941,6 +991,41 @@ public:
 		default:
 			return "< unknown >";
 		}
+	}
+
+	const char *GetModuleNameForAddress(DWORD address)
+	{
+		// Get modules info
+		HMODULE hMods[1024];
+		HANDLE hProcess = GetCurrentProcess();
+		MODULEINFO moduleInfo;
+		DWORD cbNeeded;
+		EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded);
+		int count = cbNeeded / sizeof(HMODULE);
+
+		static char outbuf[MAX_PATH];
+
+		for (int i = 0; i < count; i++)
+		{
+			GetModuleInformation(hProcess, hMods[i], &moduleInfo, sizeof(moduleInfo));
+			DWORD moduleBase = (DWORD)moduleInfo.lpBaseOfDll;
+			DWORD moduleSize = (DWORD)moduleInfo.SizeOfImage;
+
+			if (moduleBase <= address && address < (moduleBase + moduleSize))
+			{
+				// Get the full path to the module's file.
+				if (GetModuleFileNameEx(hProcess, hMods[i], outbuf, sizeof(outbuf)))
+				{
+					return V_GetFileName(outbuf);
+				}
+				else
+				{
+					return "< unknown module name >";
+				}
+			}
+		}
+
+		return "< module not found >";
 	}
 
 private:

@@ -1076,7 +1076,7 @@ int USENTENCEG_PickSequential(int isentenceg, char *szfound, int ipick, int fres
 {
 	char *szgroupname;
 	unsigned char count;
-	char sznum[8];
+	char sznum[16];
 
 	if (!fSentencesInit)
 		return -1;
@@ -1095,7 +1095,7 @@ int USENTENCEG_PickSequential(int isentenceg, char *szfound, int ipick, int fres
 
 	strcpy(szfound, "!");
 	strcat(szfound, szgroupname);
-	sprintf(sznum, "%d", ipick);
+	snprintf(sznum, sizeof(sznum), "%d", ipick);
 	strcat(szfound, sznum);
 
 	if (ipick >= count)
@@ -1124,7 +1124,7 @@ int USENTENCEG_Pick(int isentenceg, char *szfound)
 	unsigned char *plru;
 	unsigned char i;
 	unsigned char count;
-	char sznum[8];
+	char sznum[16];
 	unsigned char ipick;
 	int ffound = FALSE;
 
@@ -1155,7 +1155,7 @@ int USENTENCEG_Pick(int isentenceg, char *szfound)
 		{
 			strcpy(szfound, "!");
 			strcat(szfound, szgroupname);
-			sprintf(sznum, "%d", ipick);
+			snprintf(sznum, sizeof(sznum), "%d", ipick);
 			strcat(szfound, sznum);
 			return ipick;
 		}
@@ -1268,7 +1268,7 @@ int SENTENCEG_PlaySequentialSz(edict_t *entity, const char *szgroupname,
 void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick)
 {
 	char buffer[64];
-	char sznum[8];
+	char sznum[16];
 
 	if (!fSentencesInit)
 		return;
@@ -1278,7 +1278,7 @@ void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick)
 
 	strcpy(buffer, "!");
 	strcat(buffer, rgsentenceg[isentenceg].szgroupname);
-	sprintf(sznum, "%d", ipick);
+	snprintf(sznum, sizeof(sznum), "%d", ipick);
 	strcat(buffer, sznum);
 
 	STOP_SOUND(entity, CHAN_VOICE, buffer);
@@ -1411,7 +1411,7 @@ void SENTENCEG_Init()
 
 int SENTENCEG_Lookup(const char *sample, char *sentencenum)
 {
-	char sznum[8];
+	char sznum[16];
 
 	int i;
 	// this is a sentence name; lookup sentence number
@@ -1422,7 +1422,7 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum)
 			if (sentencenum)
 			{
 				strcpy(sentencenum, "!");
-				sprintf(sznum, "%d", i);
+				snprintf(sznum, sizeof(sznum), "%d", i);
 				strcat(sentencenum, sznum);
 			}
 			return i;

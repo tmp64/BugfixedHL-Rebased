@@ -7,6 +7,8 @@
 
 #include <string.h>
 #include <stdio.h>
+#include "hud.h"
+#include "cl_util.h"
 #include "voice_banmgr.h"
 
 #define BANMGR_FILEVERSION 1
@@ -45,7 +47,13 @@ bool CVoiceBanMgr::Init(char const *pGameDir)
 	if (fp)
 	{
 		int version;
-		fread(&version, 1, sizeof(version), fp);
+		if (fread(&version, sizeof(version), 1, fp) != 1)
+		{
+			ConPrintf(ConColor::Red, "CVoiceBanMgr: Squelch file corrupted\n");
+			fclose(fp);
+			return true;
+		}
+
 		if (version == BANMGR_FILEVERSION)
 		{
 			fseek(fp, 0, SEEK_END);
@@ -55,7 +63,14 @@ bool CVoiceBanMgr::Init(char const *pGameDir)
 			for (int i = 0; i < nIDs; i++)
 			{
 				char playerID[16];
-				fread(playerID, 1, 16, fp);
+
+				if (fread(playerID, 1, 16, fp) != 16)
+				{
+					ConPrintf(ConColor::Red, "CVoiceBanMgr: Squelch file corrupted\n");
+					fclose(fp);
+					return true;
+				}
+
 				AddBannedPlayer(playerID);
 			}
 		}

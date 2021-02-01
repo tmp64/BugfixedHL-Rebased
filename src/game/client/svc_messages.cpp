@@ -562,14 +562,20 @@ void CSvcMessages::SvcStuffText()
 		// Some commands were removed, put cleaned command line back to stream
 		int l1 = strlen(commands);
 		int l2 = strlen(str);
-		if (l2 == 0)
+
+		Assert(l2 <= l1);
+
+		if (l2 == 0 || l2 > l1)
 		{
 			// Suppress commands if they are all removed
+			// Or if SanitizeCommands made the string bigger (failsafe in case of a bug)
 			GetMsgBuf().GetReadPos() += l1 + 1;
 			return;
 		}
+
+		// strcpy is safe since strlen(str) <= strlen(commands)
 		int diff = l1 - l2;
-		strncpy(commands + diff, str, l2);
+		strcpy(commands + diff, str);
 		GetMsgBuf().GetReadPos() += diff;
 	}
 

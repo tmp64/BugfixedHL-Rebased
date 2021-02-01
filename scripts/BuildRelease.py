@@ -79,7 +79,7 @@ class PlatformLinux:
         return args
 
     def need_cmake_build_type_var(self):
-        return False
+        return True
 
     def update_bin_path(self):
         self.script.paths.out_bin = self.script.paths.build + '/'

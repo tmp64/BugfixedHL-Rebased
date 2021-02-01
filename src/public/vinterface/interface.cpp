@@ -146,13 +146,15 @@ CSysModule *Sys_LoadModule(const char *pModuleName)
 		char szCwd[1024];
 		char szAbsoluteModuleName[1024];
 
-		getcwd(szCwd, sizeof(szCwd));
-		if (szCwd[strlen(szCwd) - 1] == '/')
-			szCwd[strlen(szCwd) - 1] = 0;
+		if (getcwd(szCwd, sizeof(szCwd)))
+		{
+			if (szCwd[strlen(szCwd) - 1] == '/')
+				szCwd[strlen(szCwd) - 1] = 0;
 
-		_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", szCwd, pModuleName);
+			_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", szCwd, pModuleName);
 
-		hDLL = dlopen(szAbsoluteModuleName, RTLD_NOW);
+			hDLL = dlopen(szAbsoluteModuleName, RTLD_NOW);
+		}
 	}
 	else
 	{

@@ -1791,8 +1791,12 @@ void UpdateClientData(const struct edict_s *ent, int sendweapons, struct clientd
 
 					cd->vuser3.z = gun->m_iSecondaryAmmoType;
 					cd->vuser4.x = gun->m_iPrimaryAmmoType;
-					cd->vuser4.y = pl->m_rgAmmo[gun->m_iPrimaryAmmoType];
-					cd->vuser4.z = pl->m_rgAmmo[gun->m_iSecondaryAmmoType];
+
+					if (gun->m_iPrimaryAmmoType > 0)
+						cd->vuser4.y = pl->m_rgAmmo[gun->m_iPrimaryAmmoType];
+
+					if (gun->m_iSecondaryAmmoType > 0)
+						cd->vuser4.z = pl->m_rgAmmo[gun->m_iSecondaryAmmoType];
 
 					if (pl->m_pActiveItem->m_iId == WEAPON_RPG)
 					{

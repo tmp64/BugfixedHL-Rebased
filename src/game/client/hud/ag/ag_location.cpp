@@ -353,7 +353,7 @@ void AgHudLocation::ParseAndEditSayString(int iPlayer, char *pszSay, int pszSayS
 	}
 	*pszSay = '\0';
 
-	free(pszText);
+	delete[] pszText;
 }
 
 int AgHudLocation::MsgFunc_Location(const char *pszName, int iSize, void *pbuf)

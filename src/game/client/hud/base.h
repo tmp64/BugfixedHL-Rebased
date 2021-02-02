@@ -42,7 +42,7 @@ public:
 
 	CHudElemBase()
 	{
-		m_sInstance = static_cast<ELEM *>(this);
+		m_sInstance = this;
 	}
 
 	virtual void Init()
@@ -68,15 +68,15 @@ public:
 
 	static ELEM *Get()
 	{
-		return m_sInstance;
+		return static_cast<ELEM *>(m_sInstance);
 	}
 
 private:
-	static ELEM *m_sInstance;
+	static BaseHudClass *m_sInstance;
 };
 
 #define DEFINE_HUD_ELEM(className) \
 	template <>                    \
-	className *className::BaseHudClass::m_sInstance = nullptr;
+	CHudElemBase<className> *className::BaseHudClass::m_sInstance = nullptr;
 
 #endif

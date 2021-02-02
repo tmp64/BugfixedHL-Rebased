@@ -797,8 +797,12 @@ void HUD_WeaponsPostThink(local_state_s *from, local_state_s *to, usercmd_t *cmd
 
 		pCurrent->m_iSecondaryAmmoType = (int)from->client.vuser3[2];
 		pCurrent->m_iPrimaryAmmoType = (int)from->client.vuser4[0];
-		player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType] = (int)from->client.vuser4[1];
-		player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType] = (int)from->client.vuser4[2];
+
+		if (pCurrent->m_iPrimaryAmmoType > 0 && pCurrent->m_iPrimaryAmmoType < MAX_AMMO_SLOTS)
+			player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType] = (int)from->client.vuser4[1];
+
+		if (pCurrent->m_iSecondaryAmmoType > 0 && pCurrent->m_iSecondaryAmmoType < MAX_AMMO_SLOTS)
+			player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType] = (int)from->client.vuser4[2];
 	}
 
 	// For random weapon events, use this seed to seed random # generator
@@ -975,8 +979,12 @@ void HUD_WeaponsPostThink(local_state_s *from, local_state_s *to, usercmd_t *cmd
 
 		to->client.vuser3[2] = pCurrent->m_iSecondaryAmmoType;
 		to->client.vuser4[0] = pCurrent->m_iPrimaryAmmoType;
-		to->client.vuser4[1] = player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType];
-		to->client.vuser4[2] = player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType];
+
+		if (pCurrent->m_iPrimaryAmmoType > 0 && pCurrent->m_iPrimaryAmmoType < MAX_AMMO_SLOTS)
+			to->client.vuser4[1] = player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType];
+
+		if (pCurrent->m_iSecondaryAmmoType > 0 && pCurrent->m_iSecondaryAmmoType < MAX_AMMO_SLOTS)
+			to->client.vuser4[2] = player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType];
 
 		/*		if ( pto->m_flPumpTime != -9999 )
 		{

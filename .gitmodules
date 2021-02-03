@@ -1,3 +1,6 @@
 [submodule "source_sdk"]
 	path = source_sdk
 	url = https://github.com/tmp64/hl1_source_sdk.git
+[submodule "external/metamod"]
+	path = external/metamod
+	url = https://github.com/alliedmodders/metamod-hl1.git

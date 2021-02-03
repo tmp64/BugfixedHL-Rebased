@@ -1013,7 +1013,7 @@ typedef struct enginefuncs_s
 	*	@param key Key whose value to retrieve.
 	*	@return The requested value, or an empty string.
 	*/
-	char *(*pfnInfoKeyValue)(char *infobuffer, char *key);
+	char *(*pfnInfoKeyValue)(char *infobuffer, const char *key);
 
 	/**
 	*	Sets the value of the given key in the given buffer.
@@ -1022,7 +1022,7 @@ typedef struct enginefuncs_s
 	*	@param key Key whose value to set.
 	*	@param value Value to set.
 	*/
-	void (*pfnSetKeyValue)(char *infobuffer, char *key, char *value);
+	void (*pfnSetKeyValue)(char *infobuffer, const char *key, const char *value);
 
 	/**
 	*	Sets the value of the given key in the given buffer.
@@ -1032,7 +1032,7 @@ typedef struct enginefuncs_s
 	*	@param key Key whose value to set.
 	*	@param value Value to set.
 	*/
-	void (*pfnSetClientKeyValue)(int clientIndex, char *infobuffer, char *key, char *value);
+	void (*pfnSetClientKeyValue)(int clientIndex, char *infobuffer, const char *key, const char *value);
 
 	/**
 	*	Checks if the given filename is a valid map.

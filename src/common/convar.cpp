@@ -3,6 +3,10 @@
 #include <string>
 #include "convar.h"
 
+#ifdef USE_METAMOD
+#define SERVER_DLL
+#endif
+
 #ifdef SERVER_DLL
 #include "extdll.h"
 #include "eiface.h"

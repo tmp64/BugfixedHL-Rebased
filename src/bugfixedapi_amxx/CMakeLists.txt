@@ -1,0 +1,14 @@
+add_sources(
+	CMakeLists.txt
+	../game/server/globals.cpp
+	../public/vinterface/interface.cpp
+	amxxmodule.cpp
+	amxxmodule.h
+	moduleconfig.h
+	IGameConfigs.h
+	ITextParsers.h
+	bugfixedapi_amxx.cpp
+	bugfixedapi_amxx.def
+	bhl_api.h
+	bhl_api.cpp
+)

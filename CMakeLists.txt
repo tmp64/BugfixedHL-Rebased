@@ -408,7 +408,7 @@ add_sources( "${GAME_COMMON_SRCS}" )
 # Add in the library headers
 add_sources( "${SDL2_INCLUDE_FILES}" )
 
-# Add in the client sources
+# Add in the sources
 add_subdirectory( src/game/client )
 
 preprocess_sources()
@@ -491,7 +491,7 @@ clear_sources()
 # Add in the shared sources
 add_sources( "${GAME_COMMON_SRCS}" )
 
-# Add in the client sources
+# Add in the sources
 add_subdirectory( src/game/server )
 
 preprocess_sources()
@@ -536,6 +536,68 @@ set_target_properties( hl PROPERTIES
 
 # Remove "lib" prefix
 set_target_properties( hl PROPERTIES PREFIX "" )
+
+create_source_groups( "${CMAKE_SOURCE_DIR}" )
+clear_sources()
+
+#-----------------------------------------------------------------
+# AMXX module
+#-----------------------------------------------------------------
+# Add in the shared sources
+add_sources( "${HL_COMMON_SRCS}" )
+add_sources( "${HL_ENGINE_SRCS}" )
+add_sources( "${HL_PUBLIC_SRCS}" )
+
+# Add in the sources
+add_subdirectory( src/bugfixedapi_amxx )
+
+preprocess_sources()
+add_library( bugfixedapi_amxx SHARED ${PREP_SRCS} )
+check_winxp_support( bugfixedapi_amxx )
+add_auto_deploy( bugfixedapi_amxx PublishPathAMXX.txt )
+
+target_include_directories( bugfixedapi_amxx PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/src/bugfixedapi_amxx
+	${GAME_COMMON_INCLUDE_PATHS}
+	${CMAKE_CURRENT_SOURCE_DIR}/external/metamod/metamod
+)
+
+target_compile_definitions( bugfixedapi_amxx PRIVATE
+	${GAME_COMMON_DEFINES}
+	USE_METAMOD
+	HAVE_STDINT_H
+)
+
+# Dependencies
+if( WIN32 )
+	set( AMXX_PLAT_LIBS )
+else()
+	set( AMXX_PLAT_LIBS
+		dl
+	)
+endif()
+
+# Link with dependencies
+target_link_libraries( bugfixedapi_amxx 
+	${AMXX_PLAT_LIBS}
+	Threads::Threads
+)
+
+# Linker flags
+set( SERVER_LINK_FLAGS "")
+set( SERVER_COMPILE_FLAGS "")
+
+set_target_properties( bugfixedapi_amxx PROPERTIES
+	COMPILE_FLAGS "${SERVER_COMPILE_FLAGS}" 
+	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS}"
+)
+
+# Remove "lib" prefix
+set_target_properties( bugfixedapi_amxx PROPERTIES PREFIX "" )
+if ( NOT MSVC )
+	# Add i386 to the file name
+	set_target_properties( bugfixedapi_amxx PROPERTIES OUTPUT_NAME "bugfixedapi_amxx_i386" )
+endif()
 
 create_source_groups( "${CMAKE_SOURCE_DIR}" )
 clear_sources()

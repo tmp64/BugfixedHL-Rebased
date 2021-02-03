@@ -392,17 +392,30 @@ void CBaseToggle ::LinearMove(Vector vecDest, float flSpeed)
 
 	// set destdelta to the vector needed to move
 	Vector vecDestDelta = vecDest - pev->origin;
+
 	// divide vector length by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / flSpeed;
+
 	// scale the destdelta vector by the time spent traveling to get velocity
 	pev->velocity = vecDestDelta / flTravelTime;
-	// store destination arrive time
-	pev->fuser1 = pev->ltime + flTravelTime;
 
-	// think each frame to do speed corrections
-	pev->flags |= FL_ALWAYSTHINK;
-	pev->nextthink = pev->fuser1;
-	SetThink(&CBaseToggle::LinearMoveDone);
+	if (gpGlobals->deathmatch)
+	{
+		// This code is used DM since it gives better accuracy but breaks saves in SP
+		// store destination arrive time
+		pev->fuser1 = pev->ltime + flTravelTime;
+
+		// think each frame to do speed corrections
+		pev->flags |= FL_ALWAYSTHINK;
+		pev->nextthink = pev->fuser1;
+		SetThink(&CBaseToggle::LinearMoveDone);
+	}
+	else
+	{
+		// set nextthink to trigger a call to LinearMoveDone when dest is reached
+		pev->nextthink = pev->ltime + flTravelTime;
+		SetThink(&CBaseToggle::LinearMoveDone);
+	}
 }
 
 /*
@@ -412,19 +425,36 @@ After moving, set origin to exact final destination, call "move done" function
 */
 void CBaseToggle ::LinearMoveDone(void)
 {
-	// Correct velocity to remove fps dependence and get well accuracy on destination
-	float flTravelTime = pev->fuser1 - pev->ltime;
-	if (flTravelTime > 0)
+	if (gpGlobals->deathmatch)
 	{
-		Vector vecDestDelta = m_vecFinalDest - pev->origin;
-		pev->velocity = vecDestDelta / flTravelTime;
-		pev->nextthink = pev->fuser1;
-		return;
+		// This code is used DM since it gives better accuracy but breaks saves in SP
+		// Correct velocity to remove fps dependence and get well accuracy on destination
+		float flTravelTime = pev->fuser1 - pev->ltime;
+		if (flTravelTime > 0)
+		{
+			Vector vecDestDelta = m_vecFinalDest - pev->origin;
+			pev->velocity = vecDestDelta / flTravelTime;
+			pev->nextthink = pev->fuser1;
+			return;
+		}
+
+		pev->flags &= ~FL_ALWAYSTHINK;
+	}
+	else
+	{
+		Vector delta = m_vecFinalDest - pev->origin;
+		float error = delta.Length();
+		if (error > 0.03125)
+		{
+			LinearMove(m_vecFinalDest, 100);
+			return;
+		}
+
+		// setting origin could lead to stuck of other entities (OK in singleplayer)
+		UTIL_SetOrigin(pev, m_vecFinalDest);
 	}
 
 	// trigger a call to MoveDone when dest is reached
-	//UTIL_SetOrigin(pev, m_vecFinalDest);	// setting origin could lead to stuck of other entities
-	pev->flags &= ~FL_ALWAYSTHINK;
 	pev->velocity = g_vecZero;
 	pev->nextthink = -1;
 	pev->fuser1 = 0;
@@ -466,17 +496,30 @@ void CBaseToggle ::AngularMove(Vector vecDestAngle, float flSpeed)
 
 	// set destdelta to the vector needed to move
 	Vector vecDestDelta = vecDestAngle - pev->angles;
+
 	// divide by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / flSpeed;
+
 	// scale the destdelta vector by the time spent traveling to get velocity
 	pev->avelocity = vecDestDelta / flTravelTime;
-	// store destination arrive time
-	pev->fuser1 = pev->ltime + flTravelTime;
 
-	// think each frame to do speed corrections
-	pev->flags |= FL_ALWAYSTHINK;
-	pev->nextthink = pev->fuser1;
-	SetThink(&CBaseToggle::AngularMoveDone);
+	if (gpGlobals->deathmatch)
+	{
+		// This code is used DM since it gives better accuracy but breaks saves in SP
+		// store destination arrive time
+		pev->fuser1 = pev->ltime + flTravelTime;
+
+		// think each frame to do speed corrections
+		pev->flags |= FL_ALWAYSTHINK;
+		pev->nextthink = pev->fuser1;
+		SetThink(&CBaseToggle::AngularMoveDone);
+	}
+	else
+	{
+		// set nextthink to trigger a call to AngularMoveDone when dest is reached
+		pev->nextthink = pev->ltime + flTravelTime;
+		SetThink(&CBaseToggle::AngularMoveDone);
+	}
 }
 
 /*
@@ -486,18 +529,23 @@ After rotating, set angle to exact final angle, call "move done" function
 */
 void CBaseToggle ::AngularMoveDone(void)
 {
-	// Correct velocity to remove fps dependence and get well accuracy on destination
-	float flTravelTime = pev->fuser1 - pev->ltime;
-	if (flTravelTime > 0)
+	if (gpGlobals->deathmatch)
 	{
-		Vector vecDestDelta = m_vecFinalAngle - pev->angles;
-		pev->avelocity = vecDestDelta / flTravelTime;
-		pev->nextthink = pev->fuser1;
-		return;
+		// This code is used DM since it gives better accuracy but breaks saves in SP
+		// Correct velocity to remove fps dependence and get well accuracy on destination
+		float flTravelTime = pev->fuser1 - pev->ltime;
+		if (flTravelTime > 0)
+		{
+			Vector vecDestDelta = m_vecFinalAngle - pev->angles;
+			pev->avelocity = vecDestDelta / flTravelTime;
+			pev->nextthink = pev->fuser1;
+			return;
+		}
+
+		pev->flags &= ~FL_ALWAYSTHINK;
 	}
 
 	// trigger a call to MoveDone when dest is reached
-	pev->flags &= ~FL_ALWAYSTHINK;
 	pev->angles = m_vecFinalAngle;
 	pev->avelocity = g_vecZero;
 	pev->nextthink = -1;

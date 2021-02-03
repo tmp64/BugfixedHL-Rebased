@@ -48,10 +48,12 @@ BOOL gInitHUD = TRUE;
 
 extern void CopyToBodyQue(entvars_t *pev);
 extern Vector VecBModelOrigin(entvars_t *pevBModel);
-extern edict_t *EntSelectSpawnPoint(CBaseEntity *pPlayer);
+extern edict_t *EntSelectSpawnPoint(CBasePlayer *pPlayer);
 
 // the world node graph
 extern CGraph WorldGraph;
+
+ConVar mp_teamspawn("mp_teamspawn", "0", FCVAR_SERVER, "When teamplay is enabled, players will be spawned on team spawns if the map has them");
 
 #define TRAIN_ACTIVE  0x80
 #define TRAIN_NEW     0xc0
@@ -2809,7 +2811,7 @@ Returns the entity to spawn at
 USES AND SETS GLOBAL g_pLastSpawn
 ============
 */
-edict_t *EntSelectSpawnPoint(CBaseEntity *pPlayer)
+edict_t *EntSelectSpawnPoint(CBasePlayer *pPlayer)
 {
 	CBaseEntity *pSpot;
 	edict_t *player;
@@ -2832,8 +2834,34 @@ edict_t *EntSelectSpawnPoint(CBaseEntity *pPlayer)
 		// Randomize the start spot
 		for (int i = RANDOM_LONG(1, 5); i > 0; i--)
 			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+
 		if (FNullEnt(pSpot)) // skip over the null point
 			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+
+		if (g_pGameRules->IsTeamplay() && mp_teamspawn.GetBool())
+		{
+			// try to find team spawn
+			CBaseEntity *pFirstSpot = pSpot;
+
+			do
+			{
+				if (pSpot)
+				{
+					if (g_pGameRules->GetTeamIndex(pPlayer->TeamID()) != pSpot->pev->team)
+					{
+						pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+						continue;
+					}
+
+					if (IsSpawnPointValid(pPlayer, pSpot) && pSpot->pev->origin != Vector(0, 0, 0))
+					{
+						goto ReturnSpot;
+					}
+				}
+
+				pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+			} while (pSpot != pFirstSpot);
+		}
 
 		CBaseEntity *pFirstSpot = pSpot;
 
@@ -2841,22 +2869,14 @@ edict_t *EntSelectSpawnPoint(CBaseEntity *pPlayer)
 		{
 			if (pSpot)
 			{
-				// check if pSpot is valid
-				if (IsSpawnPointValid(pPlayer, pSpot))
+				if (IsSpawnPointValid(pPlayer, pSpot) && pSpot->pev->origin != Vector(0, 0, 0))
 				{
-					if (pSpot->pev->origin == Vector(0, 0, 0))
-					{
-						pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
-						continue;
-					}
-
-					// if so, go to pSpot
 					goto ReturnSpot;
 				}
 			}
-			// increment pSpot
+
 			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
-		} while (pSpot != pFirstSpot); // loop if we're not back to the start
+		} while (pSpot != pFirstSpot);
 
 		// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
 		if (!FNullEnt(pSpot))

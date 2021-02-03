@@ -54,7 +54,7 @@ void IN_Commands(void);
 void CheckWorkingDirectory()
 {
 	namespace fs = std::filesystem;
-	
+
 	try
 	{
 		char buf[MAX_PATH];
@@ -62,7 +62,7 @@ void CheckWorkingDirectory()
 		fs::path liblistPath = fs::u8path(buf);
 		if (liblistPath.empty())
 			throw std::logic_error("liblist.gam not found: " + liblistPath.u8string());
-		
+
 		if (!liblistPath.has_relative_path())
 			throw std::logic_error("liblist.gam has no parent path: " + liblistPath.u8string());
 
@@ -87,14 +87,14 @@ void CheckWorkingDirectory()
 			exit(-1);
 		}
 	}
-    catch (const std::exception &e)
+	catch (const std::exception &e)
 	{
 		char buf[1024];
 		snprintf(buf, sizeof(buf),
 		    "An unexpected error has occured while checking working directory.\n\n"
 		    "%s\n\n"
 		    "Please report this error on GitHub.\n"
-			"Game will continue launching but may work incorrectly.",
+		    "Game will continue launching but may work incorrectly.",
 		    e.what());
 
 		GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Internal error", buf);

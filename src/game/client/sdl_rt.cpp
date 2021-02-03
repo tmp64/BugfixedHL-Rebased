@@ -6,9 +6,44 @@
 #include <winsani_in.h>
 #include <Windows.h>
 #include <winsani_out.h>
+#include <tier1/strtools.h>
 #endif
 
 static CSDLRuntime s_SDLRuntime;
+
+void CSDLRuntime::ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message)
+{
+#ifdef PLATFORM_WINDOWS
+	UINT type = MB_OK;
+
+	switch (flags)
+	{
+	case SDL_MESSAGEBOX_ERROR:
+		type |= MB_ICONERROR;
+		break;
+	case SDL_MESSAGEBOX_WARNING:
+		type |= MB_ICONWARNING;
+		break;
+	case SDL_MESSAGEBOX_INFORMATION:
+		type |= MB_ICONINFORMATION;
+		break;
+	default:
+		Assert(false);
+		type |= MB_ICONERROR;
+		break;
+	}
+
+	std::vector<wchar_t> wtitle(256);
+	std::vector<wchar_t> wmsg(256);
+
+	Q_UTF8ToWString(title, wtitle.data(), wtitle.size() * sizeof(wchar_t));
+	Q_UTF8ToWString(message, wmsg.data(), wmsg.size() * sizeof(wchar_t));
+
+	MessageBoxExW(NULL, wmsg.data(), wtitle.data(), type, 0);
+#else
+	SDL_ShowSimpleMessageBox(flags, title, message, nullptr);
+#endif
+}
 
 void CSDLRuntime::Init()
 {

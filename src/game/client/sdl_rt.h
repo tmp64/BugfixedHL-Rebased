@@ -20,6 +20,14 @@ public:
 	decltype(SDL_JoystickUpdate) *JoystickUpdate = nullptr;
 
 	/**
+	 * Custom ShowSimpleMessageBox, works on Windows without SDL.
+	 * @param	flags	An SDL_MessageBoxFlag that selects dialog type
+	 * @param	title	Title of the dialog, UTF-8 formatted
+	 * @param	message	Message text, UTF-8 formatted
+	 */
+	void ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message);
+
+	/**
 	 * Sets SDL_ function pointers.
 	 */
 	void Init();

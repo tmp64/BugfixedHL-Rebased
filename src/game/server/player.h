@@ -243,7 +243,7 @@ public:
 	void DeathSound(void);
 
 	int Classify(void);
-	void SetAnimation(PLAYER_ANIM playerAnim);
+	void EXPORT SetAnimation(PLAYER_ANIM playerAnim);
 	void SetWeaponAnimType(const char *szExtention);
 	char m_szAnimExtention[32];
 
@@ -275,7 +275,7 @@ public:
 	void SelectItem(const char *pstr);
 	void ItemPreFrame(void);
 	void ItemPostFrame(void);
-	void GiveNamedItem(const char *szName);
+	void EXPORT GiveNamedItem(const char *szName);
 	void EnableControl(BOOL fControl);
 
 	int GiveAmmo(int iAmount, char *szName, int iMax);
@@ -293,7 +293,7 @@ public:
 	BOOL FBecomeProne(void);
 	void BarnacleVictimBitten(entvars_t *pevBarnacle);
 	void BarnacleVictimReleased(void);
-	static int GetAmmoIndex(const char *psz);
+	static int EXPORT GetAmmoIndex(const char *psz);
 	int AmmoInventory(int iAmmoIndex);
 	int Illumination(void);
 

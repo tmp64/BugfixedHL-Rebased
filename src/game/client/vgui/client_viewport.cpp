@@ -1,6 +1,7 @@
 #include <KeyValues.h>
 #include <vgui_controls/AnimationController.h>
 #include <IEngineVGui.h>
+#include <client_steam_context.h>
 
 #include "client_viewport.h"
 #include "client_vgui.h"
@@ -522,7 +523,7 @@ void CClientViewport::MsgFunc_HtmlMOTD(const char *pszName, int iSize, void *pbu
 	// don't show MOTD for HLTV spectators
 	if (m_iGotAllMOTD && !gEngfuncs.IsSpectateOnly())
 	{
-		if (gHUD.IsHTMLEnabled())
+		if (SteamAPI_IsAvailable() && gHUD.IsHTMLEnabled())
 			ShowVGUIMenu(MENU_HTML_MOTD);
 		else
 			ShowVGUIMenu(MENU_MOTD);

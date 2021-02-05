@@ -3,6 +3,7 @@
 #include <vgui_controls/ComboBox.h>
 #include <KeyValues.h>
 #include "client_vgui.h"
+#include "client_steam_context.h"
 #include "cvar_text_entry.h"
 #include "cvar_check_button.h"
 #include "options_general.h"
@@ -50,6 +51,10 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
 
 	if (!CEnginePatches::Get().IsSDLEngine())
 		m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[2], false);
+
+	// Disable HTML MOTD if SteamAPI not available
+	if (!SteamAPI_IsAvailable())
+		m_pMOTD->SetEnabled(false);
 }
 
 void CGeneralSubOptions::PerformLayout()

@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
 
+import argparse
 import datetime
 import distutils
 import distutils.dir_util
-import hashlib
-import json
 import os
 import shutil
 import subprocess
 import sys
-import argparse
+import zipfile
+from CreateMetadata import create_metadata
 
 
 # ---------------------------------------------
 # Platform stuff
 # ---------------------------------------------
-import zipfile
-
-
 def get_platform_type() -> str:
     if sys.platform.startswith('linux'):
         return 'linux'
@@ -430,36 +427,7 @@ class BuildScript:
     def create_install_metadata(self):
         print("---------------- Creating metadata")
         try:
-            meta = {
-                'version': self.release_version,
-                'files': {}
-            }
-
-            for root, dirs, files in os.walk(self.paths.archive_root):
-                for file in files:
-                    fullpath = os.path.join(root, file)
-                    path = os.path.relpath(fullpath, self.paths.archive_files + 'valve_addon').replace('\\', '/')
-
-                    # Skip files outside of valve_addon
-                    if path.startswith('..'):
-                        continue
-
-                    file_data = {
-                        'size': os.path.getsize(fullpath),
-                        'hash_sha1': ''
-                    }
-
-                    hasher = hashlib.sha1()
-                    with open(fullpath, 'rb') as infile:
-                        buf = infile.read()
-                        hasher.update(buf)
-
-                    file_data['hash_sha1'] = hasher.hexdigest()
-
-                    meta['files'][path] = file_data
-
-            with open(self.paths.archive_files + 'valve_addon/bugfixedhl_install_metadata.dat', "a") as f:
-                f.write(json.dumps(meta, sort_keys=True, indent=4))
+            create_metadata(self.release_version, self.paths.archive_files + 'valve_addon')
         except Exception as e:
             print('Failed to create metadata file: {}.'.format(str(e)))
             exit(1)

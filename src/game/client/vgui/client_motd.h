@@ -68,12 +68,12 @@ private:
 	void RemoveTempFile();
 
 private:
-	vgui2::RichText *m_pMessage;
-	vgui2::HTML *m_pMessageHtml;
-	vgui2::Label *m_pServerName;
-	bool m_bFileWritten;
+	vgui2::RichText *m_pMessage = nullptr;
+	vgui2::HTML *m_pMessageHtml = nullptr;
+	vgui2::Label *m_pServerName = nullptr;
+	bool m_bFileWritten = false;
 	char m_szTempFileName[MAX_HTML_FILENAME_LENGTH];
-	int m_iScoreBoardKey;
+	int m_iScoreBoardKey = 0;
 };
 
 #endif

@@ -7,6 +7,7 @@
 
 #include "IGameUIFuncs.h"
 #include "client_vgui.h"
+#include "client_steam_context.h"
 
 #include "client_motd.h"
 
@@ -34,7 +35,9 @@ CClientMOTD::CClientMOTD()
 	SetSizeable(false);
 
 	m_pMessage = new vgui2::RichText(this, "TextMessage");
-	m_pMessageHtml = new CClientMOTDHTML(this, "Message");
+
+	if (SteamAPI_IsAvailable())
+		m_pMessageHtml = new CClientMOTDHTML(this, "Message");
 
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/MOTD.res");
 	InvalidateLayout();
@@ -177,7 +180,8 @@ void CClientMOTD::ActivateHtml(const char *title, const char *msg)
 
 void CClientMOTD::Reset()
 {
-	m_pMessageHtml->OpenURL("", nullptr);
+	if (m_pMessageHtml)
+		m_pMessageHtml->OpenURL("", nullptr);
 	m_pMessage->SetText("");
 
 	RemoveTempFile();

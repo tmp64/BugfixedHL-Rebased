@@ -618,7 +618,8 @@ void IN_ResetMouse(void)
 	if (gpGlobals && gpGlobals->time - s_flRawInputUpdateTime > 1.0f)
 	{
 		s_flRawInputUpdateTime = gpGlobals->time;
-		m_bRawInput = m_rawinput->value != 0;
+		if (m_bRawInput)
+			m_bRawInput = m_rawinput->value != 0;
 	}
 #endif
 }
@@ -1408,7 +1409,10 @@ void IN_Init(void)
 	}
 
 #ifdef _WIN32
-	m_bRawInput = m_rawinput->value != 0;
+	if (m_rawinput)
+		m_bRawInput = m_rawinput->value != 0;
+	else
+		m_bRawInput = false;
 	m_bMouseThread = gEngfuncs.CheckParm("-mousethread", NULL) != NULL;
 	m_mousethread_sleep = gEngfuncs.pfnRegisterVariable("m_mousethread_sleep", "10", FCVAR_ARCHIVE);
 

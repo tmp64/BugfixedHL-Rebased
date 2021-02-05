@@ -25,7 +25,8 @@
 #include "hud/ag/ag_location.h"
 
 ConVar hud_saytext("hud_saytext", "1", FCVAR_BHL_ARCHIVE, "Enable/disable the chat");
-ConVar hud_saytext_time("hud_saytext_time", "12", 0);
+ConVar hud_saytext_time("hud_saytext_time", "12", FCVAR_BHL_ARCHIVE, "How long for new messages should stay on the screen");
+ConVar hud_saytext_sound("hud_saytext_sound", "1", FCVAR_BHL_ARCHIVE, "Play sound on new chat message");
 ConVar cl_mute_all_comms("cl_mute_all_comms", "1", FCVAR_BHL_ARCHIVE, "If 1, then all communications from a player will be blocked when that player is muted, including chat messages.");
 
 //-----------------------------------------------------------------------------
@@ -1230,7 +1231,7 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 		line->InsertAndColorizeText(wbuf, iPlayerIndex);
 	}
 
-	if (hud_saytext.GetBool())
+	if (hud_saytext.GetBool() && hud_saytext_sound.GetBool())
 		PlaySound("misc/talk.wav", 1);
 
 	// Print to console

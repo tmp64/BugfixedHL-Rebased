@@ -120,6 +120,7 @@ class TargetClient:
                                 'valve_addon/cl_dlls/client' + self.script.platform.get_dll_ext()))
         files.append(FileToCopy('gamedir/gfx', 'valve_addon/gfx'))
         files.append(FileToCopy('gamedir/resource', 'valve_addon/resource'))
+        files.append(FileToCopy('gamedir/sprites', 'valve_addon/sprites'))
         files.append(FileToCopy('gamedir/ui', 'valve_addon/ui'))
         files.append(FileToCopy('gamedir/commandmenu_default.txt', 'valve_addon/commandmenu_default.txt'))
 

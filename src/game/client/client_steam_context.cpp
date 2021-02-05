@@ -2,6 +2,7 @@
 #include <tier0/platform.h>
 #include "hud.h"
 #include "client_steam_context.h"
+#include "engine_patches.h"
 
 static CClientSteamContext g_ClientSteamContext;
 CClientSteamContext &ClientSteamContext()
@@ -54,9 +55,11 @@ void CClientSteamContext::Activate()
 
 	m_bActive = true;
 
+	if (!SteamAPI_IsAvailable())
+		return;
+
 #if !defined(NO_STEAM)
 	SteamAPI_InitSafe(); // ignore failure, that will fall out later when they don't get a valid logon cookie
-	SteamAPI_SetTryCatchCallbacks(false); // We don't use exceptions, so tell steam not to use try/catch in callback handlers
 	Init(); // Steam API context init
 
 	UpdateLoggedOnState();

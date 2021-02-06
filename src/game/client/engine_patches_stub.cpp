@@ -9,7 +9,7 @@ protected:
 	{
 		// All non-Windows versions of HL use SDL.
 		m_bIsSDLEngine = true;
-		ConPrintf("Engine patch: unsupported platform.");
+		ConPrintf("Engine patch: unsupported platform.\n");
 	}
 };
 

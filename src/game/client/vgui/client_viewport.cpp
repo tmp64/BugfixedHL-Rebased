@@ -646,4 +646,5 @@ bool CClientViewport::AllowedToPrintText(void)
 
 void CClientViewport::DeathMsg(int killer, int victim)
 {
+	m_pScorePanel->DeathMsg(killer, victim);
 }

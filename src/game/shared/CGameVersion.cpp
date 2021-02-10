@@ -2,6 +2,15 @@
 #include <cstring>
 #include "CGameVersion.h"
 
+static int binary_comparison(int x, int y)
+{
+	if (x == y)
+		return 0;
+	if (x > y)
+		return 1;
+	return -1;
+}
+
 CGameVersion::CGameVersion()
 {
 	memset(&m_SemVer, 0, sizeof(m_SemVer));
@@ -198,50 +207,103 @@ bool CGameVersion::IsDirtyBuild() const
 	return m_bIsDirty;
 }
 
+int CGameVersion::Compare(const CGameVersion &rhs) const
+{
+	int c = 0;
+	bool xyzIdentical = false;
+
+	// Compare version as in semver specs
+	{
+		c = binary_comparison(m_SemVer.major, rhs.m_SemVer.major);
+
+		if (c == 0)
+		{
+			c = binary_comparison(m_SemVer.minor, rhs.m_SemVer.minor);
+			if (c == 0)
+			{
+				c = binary_comparison(m_SemVer.patch, rhs.m_SemVer.patch);
+				if (c == 0)
+				{
+					xyzIdentical = true;
+
+					if (m_SemVer.prerelease && !rhs.m_SemVer.prerelease)
+					{
+						c = -1;
+					}
+					else if (!m_SemVer.prerelease && rhs.m_SemVer.prerelease)
+					{
+						c = 1;
+					}
+					else if (m_SemVer.prerelease && rhs.m_SemVer.prerelease)
+					{
+						c = strcmp(m_SemVer.prerelease, rhs.m_SemVer.prerelease);
+
+						// strcmp is not guranteed to return -1, 0, 1
+						if (c < 0)
+							c = -1;
+						else if (c > 0)
+							c = 1;
+					}
+					else
+					{
+						c = 0;
+					}
+				}
+			}
+		}
+	}
+
+	if (c == 0)
+		return 0;
+
+	// If x.y.z equals, check "dev" tag
+	if (xyzIdentical)
+	{
+		bool lhsIsDev = m_SemVer.prerelease && !strcmp("dev", m_SemVer.prerelease);
+		bool rhsIsDev = rhs.m_SemVer.prerelease && !strcmp("dev", rhs.m_SemVer.prerelease);
+
+		// If both/neither are "dev", return semver compare result
+		if (lhsIsDev == rhsIsDev)
+			return c;
+
+		// Otherwise, "dev" version is newer.
+		if (lhsIsDev)
+			return 1;
+		else
+			return -1;
+	}
+
+	return c;
+}
+
 bool CGameVersion::operator==(const CGameVersion &rhs) const
 {
-	return semver_eq(m_SemVer, rhs.m_SemVer);
+	return Compare(rhs) == 0;
 }
 
 bool CGameVersion::operator!=(const CGameVersion &rhs) const
 {
-	return semver_neq(m_SemVer, rhs.m_SemVer);
+	return Compare(rhs) != 0;
 }
 
 bool CGameVersion::operator>(const CGameVersion &rhs) const
 {
-	bool res = semver_gt(m_SemVer, rhs.m_SemVer);
-	if (res)
-		return true;
-
-	if (semver_compare_version(rhs.m_SemVer, m_SemVer) == 1)
-		return false;
-
-	// Check for "dev" tag. "dev" is always >
-	return (m_SemVer.prerelease && strcmp("dev", m_SemVer.prerelease) == 0);
+	return Compare(rhs) == 1;
 }
 
 bool CGameVersion::operator<(const CGameVersion &rhs) const
 {
-	return semver_lt(m_SemVer, rhs.m_SemVer);
+	return Compare(rhs) == -1;
 }
 
 bool CGameVersion::operator>=(const CGameVersion &rhs) const
 {
-	bool res = semver_gte(m_SemVer, rhs.m_SemVer);
-	if (res)
-		return true;
-
-	if (semver_compare_version(rhs.m_SemVer, m_SemVer) == 1)
-		return false;
-
-	// Check for "dev" tag. "dev" is always >
-	return (m_SemVer.prerelease && strcmp("dev", m_SemVer.prerelease) == 0);
+	return Compare(rhs) != -1;
 }
 
 bool CGameVersion::operator<=(const CGameVersion &rhs) const
 {
-	return semver_lte(m_SemVer, rhs.m_SemVer);
+	return Compare(rhs) != 1;
 }
 
 void CGameVersion::CopyFrom(const IGameVersion *copy)

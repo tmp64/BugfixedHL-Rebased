@@ -20,6 +20,8 @@ if( BUILD_TESTING )
 	set( TESTS_CLIENT
 		client/cl_exports.h
 		client/main.cpp
+		../game/shared/CGameVersion.cpp
+		../game/shared/CGameVersion.h
 	)
 
 	set( TESTS_SERVER
@@ -50,6 +52,7 @@ if( BUILD_TESTING )
 		tier1
 		vstdlib
 		tier0
+		semver
 	)
 	
 	if( PLATFORM_LINUX )

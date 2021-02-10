@@ -4,6 +4,7 @@
 #include <tier0/dbg.h>
 #include <cl_dll/IGameClientExports.h>
 #include <IClientVGUI.h>
+#include <CGameVersion.h>
 #include "plat.h"
 #include "cl_exports.h"
 
@@ -39,6 +40,11 @@ private:
 	 * Checks that all required interfaces (tier1/interface.h) are exported.
 	 */
 	void CheckInterfaces();
+
+	/**
+	 * Test that versions compare correctly.
+	 */
+	void TestVersionCompare();
 };
 
 int main(int argc, char **argv)
@@ -77,6 +83,7 @@ int CClientTest::Run(int argc, char **argv)
 		LoadClientLib(argv[1]);
 		LoadClientExports();
 		CheckInterfaces();
+		TestVersionCompare();
 	}
 	catch (const std::exception &e)
 	{
@@ -190,4 +197,46 @@ void CClientTest::CheckInterfaces()
 	}
 
 	fprintf(stderr, "\n");
+}
+
+void CClientTest::TestVersionCompare()
+{
+#define ASSERT(cond)                                                                                         \
+	do                                                                                                       \
+	{                                                                                                        \
+		if (!(cond))                                                                                         \
+		{                                                                                                    \
+			FatalError(                                                                                      \
+			    std::string("\nAssertion failed:\n\t") + (#cond) + "\n\tLine: " + std::to_string(__LINE__)); \
+		}                                                                                                    \
+	} while (false)
+
+	// Check that numbers compare correctly
+	ASSERT(CGameVersion("1.0.0") < CGameVersion("1.1.0"));
+	ASSERT(CGameVersion("2.0.0") > CGameVersion("1.1.0"));
+	ASSERT(CGameVersion("2.1.10") > CGameVersion("2.1.9"));
+
+	// Check tag compare
+	ASSERT(CGameVersion("1.2.3-alpha") < CGameVersion("1.2.3-beta"));
+	ASSERT(CGameVersion("1.2.3-beta") < CGameVersion("1.2.3-beta.2"));
+	ASSERT(CGameVersion("1.2.3-beta") < CGameVersion("1.2.3-rc.1"));
+	ASSERT(CGameVersion("1.2.3-rc.1") < CGameVersion("1.2.3-rc.2"));
+	ASSERT(CGameVersion("1.2.3-rc.2") < CGameVersion("1.2.3"));
+
+	// Check comparison with "dev" tag.
+	// dev is always newer when x.y.z equals
+	ASSERT(CGameVersion("1.2.3-dev") > CGameVersion("1.2.3"));
+	ASSERT(CGameVersion("1.2.3-dev") > CGameVersion("1.2.3-alpha.1"));
+	ASSERT(CGameVersion("1.2.3-dev") > CGameVersion("1.2.3-beta.1"));
+	ASSERT(CGameVersion("1.2.3-dev") > CGameVersion("1.2.3-rc.1"));
+	ASSERT(CGameVersion("1.2.4") > CGameVersion("1.2.3-dev"));
+
+	// Check equals operator
+	ASSERT(CGameVersion("1.2.3") == CGameVersion("1.2.3"));
+	ASSERT(CGameVersion("1.2.3-alpha") == CGameVersion("1.2.3-alpha"));
+	ASSERT(CGameVersion("1.2.3-beta") == CGameVersion("1.2.3-beta"));
+	ASSERT(CGameVersion("1.2.3-rc") == CGameVersion("1.2.3-rc"));
+	ASSERT(CGameVersion("1.2.3-dev") == CGameVersion("1.2.3-dev"));
+
+#undef ASSERT
 }

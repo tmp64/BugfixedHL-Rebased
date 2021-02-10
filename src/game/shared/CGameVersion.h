@@ -40,6 +40,7 @@ public:
 	virtual bool IsDirtyBuild() const override;
 
 	// Comparison operators
+	int Compare(const CGameVersion &rhs) const;
 	bool operator==(const CGameVersion &rhs) const;
 	bool operator!=(const CGameVersion &rhs) const;
 	bool operator>(const CGameVersion &rhs) const;

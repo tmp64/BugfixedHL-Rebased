@@ -83,6 +83,9 @@ void CEnginePatchesLinux::HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT])
 
 void CEnginePatchesLinux::PlatformPatchesInit()
 {
+	// All non-Windows version of HL use SDL
+	m_bIsSDLEngine = true;
+
 	if (!LoadProtectFromProc())
 		return;
 

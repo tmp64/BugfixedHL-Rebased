@@ -221,13 +221,13 @@ void CCommandMenu::RecursiveLoadItems(KeyValues *kv, vgui2::Menu *pParentMenu, s
 		vgui2::StringIndex_t tokenIdx = vgui2::INVALID_STRING_INDEX;
 		if (name[0] == '#' && (tokenIdx = g_pVGuiLocalize->FindIndex(name + 1)) != vgui2::INVALID_STRING_INDEX)
 		{
-			V_snwprintf(itemName, std::size(itemName), L"%c  %s", indexChar, g_pVGuiLocalize->GetValueByIndex(tokenIdx));
+			V_snwprintf(itemName, std::size(itemName), L"%lc  %ls", indexChar, g_pVGuiLocalize->GetValueByIndex(tokenIdx));
 		}
 		else
 		{
 			wchar_t wbuf[256];
 			g_pVGuiLocalize->ConvertANSIToUnicode(name, wbuf, sizeof(wbuf));
-			V_snwprintf(itemName, std::size(itemName), L"%c  %s", indexChar, wbuf);
+			V_snwprintf(itemName, std::size(itemName), L"%lc  %ls", indexChar, wbuf);
 		}
 
 		// Read submenu

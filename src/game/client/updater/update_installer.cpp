@@ -31,6 +31,7 @@ static ConVar update_dry_run("update_dry_run", "0", FCVAR_DEVELOPMENTONLY, "Don'
 static ConVar update_no_quit("update_no_quit", "0", FCVAR_DEVELOPMENTONLY, "Don't quit the game after update");
 static ConVar update_move_sleep("update_move_sleep", "0", FCVAR_DEVELOPMENTONLY, "Waits for N ms when moving files");
 static ConVar update_move_error("update_move_error", "0", FCVAR_DEVELOPMENTONLY, "Throws an error when moving files");
+static ConVar update_keep_temp("update_keep_temp", "0", FCVAR_DEVELOPMENTONLY, "Don't delete temp directory after update");
 
 namespace
 {
@@ -361,12 +362,12 @@ bool CUpdateInstaller::ReadMetadata()
 		fs::path modNamePath = path.parent_path().filename();
 		std::string modName = modNamePath.u8string();
 
-		const std::string ADDONS_SUFFIX = "_addons";
+		const std::string ADDON_SUFFIX = "_addon";
 
-		if (modName.size() >= ADDONS_SUFFIX.size() && modName.substr(modName.size() - ADDONS_SUFFIX.size()) == ADDONS_SUFFIX)
+		if (modName.size() >= ADDON_SUFFIX.size() && modName.substr(modName.size() - ADDON_SUFFIX.size()) == ADDON_SUFFIX)
 		{
 			// Strip _addons
-			modName = modName.substr(0, modName.size() - ADDONS_SUFFIX.size());
+			modName = modName.substr(0, modName.size() - ADDON_SUFFIX.size());
 		}
 
 		gEngfuncs.Con_DPrintf("Update Installer: mod name: %s\n", modName.c_str());
@@ -395,6 +396,7 @@ bool CUpdateInstaller::ReadMetadata()
 
 		if (metadataFile == FILESYSTEM_INVALID_HANDLE)
 		{
+			g_pFullFileSystem->Close(metadataFile);
 			ConPrintf("Update Installer: failed to open metadata file " UPDATE_METADATA_FILE "\n");
 			ErrorOccured(g_pVGuiLocalize->Find("BHL_Update_InternalError"));
 			return false;
@@ -403,6 +405,7 @@ bool CUpdateInstaller::ReadMetadata()
 		std::vector<char> metadataContents(g_pFullFileSystem->Size(metadataFile) + 1);
 		int bytesRead = g_pFullFileSystem->Read(metadataContents.data(), metadataContents.size() - 1, metadataFile);
 		metadataContents[bytesRead] = '\0';
+		g_pFullFileSystem->Close(metadataFile);
 
 		try
 		{
@@ -1419,7 +1422,7 @@ void CUpdateInstaller::CleanUp() noexcept
 	m_NewMetadata.clear();
 	m_CurrentMetadata.clear();
 
-	if (!m_TempDir.empty())
+	if (!m_TempDir.empty() && !update_keep_temp.GetBool())
 	{
 		try
 		{

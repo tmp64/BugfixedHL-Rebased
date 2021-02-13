@@ -194,6 +194,7 @@ void CHttpClient::WorkerThreadFunc() noexcept
 			curl_easy_setopt(hCurl, CURLOPT_WRITEDATA, &req);
 			curl_easy_setopt(hCurl, CURLOPT_XFERINFODATA, &req);
 			curl_easy_setopt(hCurl, CURLOPT_URL, req.m_URL.c_str());
+			curl_easy_setopt(hCurl, CURLOPT_FAILONERROR, 1L);
 
 			m_bAbortCurrentDownload = false;
 

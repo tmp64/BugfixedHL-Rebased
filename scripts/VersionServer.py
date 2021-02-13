@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -------------------------------------------------------------
 # VersionServer.py
 # This script emulates GitHub API to list specific releases.
@@ -21,7 +22,9 @@ VERSIONS = [
 
 ASSET_NAMES = [
     'client-windows',
-    'server-windows'
+    'server-windows',
+    'client-linux',
+    'server-linux'
 ]
 
 

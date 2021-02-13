@@ -26,7 +26,7 @@ E_ApiInitResult InitServerApi()
 	const char *pModNames[] = {
 		"hl.dll"
 	};
-#elif defined(LINUX)
+#elif defined(LINUX) || defined(PLATFORM_LINUX)
 	const char *pModNames[] = {
 		"hl.so", "hl_i386.so"
 	};

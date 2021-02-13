@@ -1243,7 +1243,7 @@ void CUpdateInstaller::BeginFileUpdating()
 			try
 			{
 				fs::path metadataFileName = fs::u8path(UPDATE_METADATA_FILE);
-				fs::rename(m_UpdateDir / metadataFileName, m_InstallationPath / metadataFileName);
+				fs::copy_file(m_UpdateDir / metadataFileName, m_InstallationPath / metadataFileName, fs::copy_options::overwrite_existing);
 			}
 			catch (const std::exception &e)
 			{
@@ -1278,7 +1278,7 @@ void CUpdateInstaller::BeginFileUpdating()
 						}
 						else
 						{
-							fs::rename(hash.newPath, oldPath);
+							fs::copy_file(hash.newPath, oldPath, fs::copy_options::overwrite_existing);
 						}
 					}
 

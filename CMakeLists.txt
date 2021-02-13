@@ -365,6 +365,7 @@ if( USE_UPDATER )
 		
 		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/libzip/lib/cmake" NO_DEFAULT_PATH )
 	else()
+		find_package( ZLIB REQUIRED )
 		find_package( libzip REQUIRED )
 	endif()
 

@@ -303,6 +303,7 @@ void CScorePanel::ShowPanel(bool state)
 	if (state)
 	{
 		FullUpdate();
+		Activate();
 	}
 	else
 	{

@@ -77,10 +77,7 @@ public:
 		m_pAvatar->SetImage(data.pInfoAvatar);
 
 		char buf[512];
-		wchar_t wbuf[512];
-
-		g_pVGuiLocalize->ConvertANSIToUnicode(data.pi->GetDisplayName(false), wbuf, sizeof(wbuf));
-		m_pNameLabel->SetText(wbuf);
+		m_pNameLabel->SetColorCodedText(data.pi->GetDisplayName());
 		m_pNameLabel->SetFgColor(g_pViewport->GetTeamColor(data.pi->GetTeamNumber()));
 
 		snprintf(buf, sizeof(buf), "K: %d", data.pi->GetFrags());

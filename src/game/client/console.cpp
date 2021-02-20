@@ -380,7 +380,9 @@ CON_COMMAND(find, "Searches cvars and commands for a string.")
 	struct FindResult
 	{
 		const char *name;
-		cvar_t *cvar;
+		ConItemBase *pItem = nullptr;
+		cvar_t *cvar = nullptr;
+		cmd_function_t *cmd = nullptr;
 	};
 
 	if (ConCommand::ArgC() != 2)
@@ -390,39 +392,52 @@ CON_COMMAND(find, "Searches cvars and commands for a string.")
 		return;
 	}
 
-	const char *str_orig = ConCommand::ArgV(1);
-	char str[128];
-	Q_strncpy(str, str_orig, sizeof(str));
-	for (char *c = str; *c; c++)
-		*c = tolower(*c);
-
+	const char *str = ConCommand::ArgV(1);
 	std::vector<FindResult> found;
 
 	// Iterate all cvars
 	{
-		char buf[128];
 		cvar_t *item = gEngfuncs.GetFirstCvarPtr();
 		for (; item; item = item->next)
 		{
-			Q_strncpy(buf, item->name, sizeof(buf));
-			for (char *c = buf; *c; c++)
-				*c = tolower(*c);
-			if (strstr(buf, str))
-				found.push_back(FindResult { item->name, item });
+			if (!str[0] || Q_stristr(item->name, str))
+			{
+				// Found in the name of the cvar
+				found.push_back(FindResult { item->name, nullptr, item });
+			}
+			else
+			{
+				// Check description of the cvar
+				ConVar *pCvar = CvarSystem::FindCvar(item);
+
+				if (pCvar && Q_stristr(pCvar->GetDescription(), str))
+				{
+					found.push_back(FindResult { item->name, pCvar, item });
+				}
+			}
 		}
 	}
 
 	// Iterate all commands
 	{
-		char buf[128];
 		cmd_function_t *item = gEngfuncs.GetFirstCmdFunctionHandle();
 		for (; item; item = item->next)
 		{
-			Q_strncpy(buf, item->name, sizeof(buf));
-			for (char *c = buf; *c; c++)
-				*c = tolower(*c);
-			if (strstr(buf, str))
-				found.push_back(FindResult { item->name, nullptr });
+			if (!str[0] || Q_stristr(item->name, str))
+			{
+				// Found in the name of the command
+				found.push_back(FindResult { item->name, nullptr, nullptr, item });
+			}
+			else
+			{
+				// Check description of the command
+				ConItemBase *pItem = CvarSystem::FindItem(item->name);
+
+				if (pItem && Q_stristr(pItem->GetDescription(), str))
+				{
+					found.push_back(FindResult { item->name, pItem, nullptr, item });
+				}
+			}
 		}
 	}
 
@@ -433,35 +448,82 @@ CON_COMMAND(find, "Searches cvars and commands for a string.")
 		return strcmp(lhs->name, rhs->name);
 	});
 
+	auto fnPrintFlags = [](int flags) {
+		constexpr const char *flagName[32] = {
+			"archive", // 0
+			"userinfo", // 1
+			"server", // 2
+			"extdll", // 3
+			"client", // 4
+			"protected", // 5
+			"sponly", // 6
+			"printonly", // 7
+			"unlogged", // 8
+			"noextraws", // 9
+			nullptr, // 10
+			nullptr, // 11
+			nullptr, // 12
+			nullptr, // 13
+			nullptr, // 14
+			"bhl_archive", // 15
+			"devonly", // 16
+			nullptr, // 17...
+		};
+
+		bool isFirstPrinted = false;
+
+		for (unsigned i = 0; i < 32; i++)
+		{
+			unsigned flag = 1 << i;
+
+			if (flags & flag)
+			{
+				if (isFirstPrinted)
+					ConPrintf(" ");
+
+				isFirstPrinted = true;
+
+				if (flagName[i])
+					ConPrintf("%s", flagName[i]);
+				else
+					ConPrintf("unknown_%d", i);
+			}
+		}
+
+		return isFirstPrinted;
+	};
+
 	// Display results
 	for (FindResult &i : found)
 	{
 		if (i.cvar)
 		{
-			ConVar *cv = CvarSystem::FindCvar(i.cvar);
+			ConVar *cv = i.pItem ? static_cast<ConVar *>(i.pItem) : CvarSystem::FindCvar(i.cvar);
 
-			ConPrintf("%s = \"%s\"", i.name, i.cvar->string);
+			ConPrintf(ConColor::Yellow, "\"%s\" = \"%s\"", i.name, i.cvar->string);
 
 			if (cv)
-			{
-				ConPrintf(" (def. \"%s\")\n", cv->GetDefaultValue());
-				ConPrintf("        %s\n", cv->GetDescription());
-			}
+				ConPrintf(ConColor::Yellow, " (def. \"%s\")\n", cv->GetDefaultValue());
 			else
-			{
 				ConPrintf("\n");
-			}
+
+			if (fnPrintFlags(i.cvar->flags))
+				ConPrintf("\n");
+
+			if (cv && cv->GetDescription()[0])
+				ConPrintf("- %s\n", cv->GetDescription());
 		}
 		else
 		{
-			ConCommand *cv = static_cast<ConCommand *>(CvarSystem::FindItem(i.name));
+			ConCommand *cv = i.pItem ? static_cast<ConCommand *>(i.pItem) : static_cast<ConCommand *>(CvarSystem::FindItem(i.name));
 
-			ConPrintf("%s (command)\n", i.name);
+			ConPrintf(ConColor::Yellow, "\"%s\"\n", i.name);
+
+			if (fnPrintFlags(i.cmd->flags))
+				ConPrintf("\n");
 
 			if (cv)
-			{
-				ConPrintf("        %s\n", cv->GetDescription());
-			}
+				ConPrintf("- %s\n", cv->GetDescription());
 		}
 	}
 }

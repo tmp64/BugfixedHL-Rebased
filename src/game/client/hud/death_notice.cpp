@@ -40,7 +40,8 @@ struct DeathNoticeItem
 	bool bVictimHasColor;
 };
 
-static ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE);
+static ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE, "Play a bell sound on kill");
+static ConVar hud_deathnotice_time("hud_deathnotice_time", "6", FCVAR_BHL_ARCHIVE, "How long should death notice stay up for");
 
 #define MAX_DEATHNOTICES 4
 static int DEATHNOTICE_DISPLAY_TIME = 6;
@@ -56,8 +57,6 @@ void CHudDeathNotice::Init(void)
 	BaseHudClass::Init();
 
 	HookMessage<&CHudDeathNotice::MsgFunc_DeathMsg>("DeathMsg");
-
-	CVAR_CREATE("hud_deathnotice_time", "6", 0);
 }
 
 void CHudDeathNotice::InitHudData()
@@ -246,7 +245,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 
 	rgDeathNoticeList[i].iId = spr;
 
-	DEATHNOTICE_DISPLAY_TIME = CVAR_GET_FLOAT("hud_deathnotice_time");
+	DEATHNOTICE_DISPLAY_TIME = hud_deathnotice_time.GetInt();
 	rgDeathNoticeList[i].flDisplayTime = gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME;
 
 	// Play kill sound

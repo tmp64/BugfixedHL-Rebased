@@ -311,7 +311,7 @@ void CClientViewport::UpdateSpectatorPanel()
 	m_iUser2 = g_iUser2;
 	m_iUser3 = g_iUser3;
 
-	if (g_iUser1 && gHUD.m_pCvarDraw->value && !gHUD.m_iIntermission)
+	if (g_iUser1 && hud_draw.GetFloat() > 0 && !gHUD.m_iIntermission)
 	{
 		// check if spectator combinations are still valid
 		CHudSpectator::Get()->CheckSettings();

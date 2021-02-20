@@ -34,6 +34,8 @@
 #define STATUSBAR_ID_LINE 1
 #endif
 
+ConVar hud_centerid("hud_centerid", "0", FCVAR_ARCHIVE, "");
+
 DEFINE_HUD_ELEM(CHudStatusBar);
 
 void CHudStatusBar::ResetLineColor(int line)
@@ -51,8 +53,6 @@ void CHudStatusBar::Init(void)
 	HookMessage<&CHudStatusBar::MsgFunc_StatusValue>("StatusValue");
 
 	Reset();
-
-	CVAR_CREATE("hud_centerid", "0", FCVAR_ARCHIVE);
 }
 
 void CHudStatusBar::VidInit(void)
@@ -202,10 +202,10 @@ void CHudStatusBar::Draw(float fTime)
 		int y = Y_START - (4 + TextHeight * i); // draw along bottom of screen
 
 		// let user set status ID bar centering
-		if ((i == STATUSBAR_ID_LINE) && CVAR_GET_FLOAT("hud_centerid"))
+		if ((i == STATUSBAR_ID_LINE) && hud_centerid.GetBool())
 		{
 			x = max(0, max(2, (ScreenWidth - TextWidth)) / 2);
-			y = (ScreenHeight / 2) + (TextHeight * CVAR_GET_FLOAT("hud_centerid"));
+			y = (ScreenHeight / 2) + (TextHeight * hud_centerid.GetFloat());
 		}
 
 		DrawConsoleString(x, y, m_szStatusBar[i], m_pflNameColors[i]);

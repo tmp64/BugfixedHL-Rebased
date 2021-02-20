@@ -32,6 +32,9 @@
 #include "menu.h"
 #include "vgui/client_viewport.h"
 
+ConVar hud_fastswitch("hud_fastswitch", "0", FCVAR_ARCHIVE, "Controls whether or not weapons can be selected in one keypress");
+ConVar hud_weapon("hud_weapon", "0", FCVAR_BHL_ARCHIVE, "Controls displaying sprite of currently selected weapon");
+
 WEAPON *gpActiveSel; // NULL means off, 1 means just the menu bar, otherwise
     // this points to the active weapon menu item
 WEAPON *gpLastSel; // Last weapon menu selection
@@ -274,10 +277,6 @@ void CHudAmmo::Init()
 
 	Reset();
 
-	CVAR_CREATE("hud_drawhistory_time", HISTORY_DRAW_TIME, 0);
-	CVAR_CREATE("hud_fastswitch", "0", FCVAR_ARCHIVE); // controls whether or not weapons can be selected in one keypress
-	m_pCvarHudWeapon = CVAR_CREATE("hud_weapon", "0", FCVAR_BHL_ARCHIVE); // controls displaying sprite of currently selected weapon
-
 	m_iFlags |= HUD_ACTIVE; //!!!
 
 	gWR.Init();
@@ -422,7 +421,7 @@ void WeaponsResource::SelectSlot(int iSlot, int fAdvance, int iDirection)
 		return;
 
 	WEAPON *p = NULL;
-	bool fastSwitch = CVAR_GET_FLOAT("hud_fastswitch") != 0;
+	bool fastSwitch = hud_fastswitch.GetBool();
 
 	if ((gpActiveSel == NULL) || (gpActiveSel == (WEAPON *)1) || (iSlot != gpActiveSel->iSlot))
 	{
@@ -877,7 +876,7 @@ void CHudAmmo::Draw(float flTime)
 	ScaleColors(r, g, b, a);
 
 	// Draw weapon sprite
-	if (m_pCvarHudWeapon->value > 0)
+	if (hud_weapon.GetBool())
 	{
 		y = ScreenHeight - (m_pWeapon->rcInactive.bottom - m_pWeapon->rcInactive.top);
 		x = ScreenWidth - (8.5 * AmmoWidth) - (m_pWeapon->rcInactive.right - m_pWeapon->rcInactive.left);

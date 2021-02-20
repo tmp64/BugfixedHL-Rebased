@@ -93,11 +93,17 @@ ConVar hud_color("hud_color", "255 160 0", FCVAR_BHL_ARCHIVE, "Main color of HUD
 ConVar hud_color1("hud_color1", "0 255 0", FCVAR_BHL_ARCHIVE, "HUD color when >= 90%");
 ConVar hud_color2("hud_color2", "255 160 0", FCVAR_BHL_ARCHIVE, "HUD color when [50%; 90%)");
 ConVar hud_color3("hud_color3", "255 96 0", FCVAR_BHL_ARCHIVE, "HUD color when (25%; 50%)");
+ConVar hud_draw("hud_draw", "1", FCVAR_ARCHIVE, "Opacity of the HUD");
 ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
+ConVar hud_capturemouse("hud_capturemouse", "1", FCVAR_ARCHIVE);
+ConVar hud_classautokill("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Whether or not to suicide immediately on TF class switch");
+ConVar cl_autowepswitch("cl_autowepswitch", "1", FCVAR_BHL_ARCHIVE | FCVAR_USERINFO, "Controls autoswitching to best weapon on pickup\n  0 - never, 1 - always, 2 - unless firing");
 
 ConVar aghl_version("aghl_version", APP_VERSION, 0, "BugfixedHL version");
 ConVar aghl_supports("aghl_supports", "0", 0, "Bitfield of features supported by this client");
 ConVar cl_enable_html_motd("cl_enable_html_motd", "1", FCVAR_BHL_ARCHIVE, "Enables/disables support for HTML MOTDs");
+
+ConVar zoom_sensitivity_ratio("zoom_sensitivity_ratio", "1.2", 0);
 
 static Color s_DefaultColorCodeColors[10] = {
 	Color(0xFF, 0xAA, 0x00, 0xFF), // ^0 orange/reset
@@ -223,17 +229,9 @@ void CHud::Init(void)
 	// VGUI Menus
 	HookViewportMessage<&CClientViewport::MsgFunc_VGUIMenu>("VGUIMenu");
 
-	CVAR_CREATE("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO); // controls whether or not to suicide immediately on TF class switch
-	CVAR_CREATE("hud_takesshots", "0", FCVAR_ARCHIVE); // controls whether or not to automatically take screenshots at the end of a round
-	CVAR_CREATE("cl_autowepswitch", "1", FCVAR_BHL_ARCHIVE | FCVAR_USERINFO); // controls autoswitching to best weapon on pickup
-
 	m_iLogo = 0;
 	m_iFOV = 0;
 
-	CVAR_CREATE("zoom_sensitivity_ratio", "1.2", 0);
-	default_fov = CVAR_CREATE("default_fov", "90", FCVAR_ARCHIVE);
-	m_pCvarStealMouse = CVAR_CREATE("hud_capturemouse", "1", FCVAR_ARCHIVE);
-	m_pCvarDraw = CVAR_CREATE("hud_draw", "1", FCVAR_ARCHIVE);
 	cl_lw = gEngfuncs.pfnGetCvarPointer("cl_lw");
 
 	// Save engine version
@@ -634,7 +632,7 @@ void CHud::GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b)
 
 float CHud::GetHudTransparency()
 {
-	return clamp(m_pCvarDraw->value, 0.f, 1.f);
+	return clamp(hud_draw.GetFloat(), 0.f, 1.f);
 }
 
 Color CHud::GetClientColor(int idx, Color noTeamColor)

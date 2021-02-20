@@ -39,8 +39,11 @@ int grgLogoFrame[MAX_LOGO_FRAMES] = {
 float HUD_GetFOV(void);
 
 extern cvar_t *sensitivity;
+extern ConVar zoom_sensitivity_ratio;
 
 ConVar hud_colortext("hud_colortext", "1", FCVAR_BHL_ARCHIVE);
+ConVar hud_takesshots("hud_takesshots", "0", FCVAR_ARCHIVE, "Whether or not to automatically take screenshots at the end of a round");
+ConVar default_fov("default_fov", "90", FCVAR_BHL_ARCHIVE, "Default horizontal field of view");
 
 // Think
 void CHud::Think(void)
@@ -61,7 +64,7 @@ void CHud::Think(void)
 	newfov = HUD_GetFOV();
 	if (newfov == 0)
 	{
-		m_iFOV = default_fov->value;
+		m_iFOV = default_fov.GetInt();
 	}
 	else
 	{
@@ -71,7 +74,7 @@ void CHud::Think(void)
 	// the clients fov is actually set in the client data update section of the hud
 
 	// Set a new sensitivity
-	if (m_iFOV == default_fov->value)
+	if (m_iFOV == default_fov.GetInt())
 	{
 		// reset to saved sensitivity
 		m_flMouseSensitivity = 0;
@@ -79,13 +82,13 @@ void CHud::Think(void)
 	else
 	{
 		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)default_fov->value) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
+		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)default_fov.GetInt()) * zoom_sensitivity_ratio.GetFloat();
 	}
 
 	// think about default fov
 	if (m_iFOV == 0)
 	{ // only let players adjust up in fov,  and only if they are not overriden by something else
-		m_iFOV = max(default_fov->value, 90.f);
+		m_iFOV = max(default_fov.GetInt(), 90);
 	}
 
 	if (gEngfuncs.IsSpectateOnly())
@@ -158,7 +161,7 @@ int CHud::Redraw(float flTime, int intermission)
 	// return 0;
 
 	// draw all registered HUD elements
-	if (m_pCvarDraw->value)
+	if (hud_draw.GetFloat() > 0)
 	{
 		for (CHudElem *i : m_HudList)
 		{

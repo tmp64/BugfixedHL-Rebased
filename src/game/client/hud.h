@@ -100,11 +100,6 @@ public:
 	int m_fPlayerDead;
 	int m_iIntermission;
 
-	// Cvars
-	cvar_t *m_pCvarStealMouse;
-	cvar_t *m_pCvarDraw;
-	cvar_t *default_fov;
-
 	// sprite indexes
 	int m_HUD_number_0;
 
@@ -291,7 +286,9 @@ inline const char *CHud::GetEngineVersion()
 
 extern CHud gHUD;
 
+extern ConVar hud_draw;
 extern ConVar hud_dim;
+extern ConVar default_fov;
 
 extern int g_iPlayerClass;
 extern int g_iTeamNumber;

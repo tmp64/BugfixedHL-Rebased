@@ -36,6 +36,7 @@ extern BEAM *pBeam2;
 void ClearEventList(void);
 #endif
 
+extern ConVar zoom_sensitivity_ratio;
 extern cvar_t *sensitivity;
 extern float g_lastFOV;
 
@@ -137,7 +138,7 @@ int CHud::MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
 	BEGIN_READ(pbuf, iSize);
 
 	int newfov = READ_BYTE();
-	int def_fov = CVAR_GET_FLOAT("default_fov");
+	int def_fov = default_fov.GetInt();
 
 	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
 	if (cl_lw && cl_lw->value)
@@ -165,7 +166,7 @@ int CHud::MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
 	else
 	{
 		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)def_fov) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
+		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)def_fov) * zoom_sensitivity_ratio.GetFloat();
 	}
 
 	return 1;

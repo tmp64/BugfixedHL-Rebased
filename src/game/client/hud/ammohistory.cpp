@@ -25,6 +25,8 @@
 
 #include "ammohistory.h"
 
+ConVar hud_drawhistory_time("hud_drawhistory_time", "5", FCVAR_BHL_ARCHIVE, "How long should ammo history stay up for in seconds");
+
 HistoryResource gHR;
 
 #define AMMO_PICKUP_GAP         (gHR.iHistoryGap + 5)
@@ -54,7 +56,7 @@ void HistoryResource::AddToHistory(int iType, int iId, int iCount)
 	}
 
 	HIST_ITEM *freeslot = &rgAmmoHistory[iCurrentHistorySlot++]; // default to just writing to the first slot
-	HISTORY_DRAW_TIME = CVAR_GET_FLOAT("hud_drawhistory_time");
+	HISTORY_DRAW_TIME = hud_drawhistory_time.GetInt();
 
 	freeslot->type = iType;
 	freeslot->iId = iId;
@@ -85,7 +87,7 @@ void HistoryResource::AddToHistory(int iType, const char *szName, int iCount)
 	freeslot->type = iType;
 	freeslot->iCount = iCount;
 
-	HISTORY_DRAW_TIME = CVAR_GET_FLOAT("hud_drawhistory_time");
+	HISTORY_DRAW_TIME = hud_drawhistory_time.GetInt();
 	freeslot->DisplayTime = gHUD.m_flTime + HISTORY_DRAW_TIME;
 }
 

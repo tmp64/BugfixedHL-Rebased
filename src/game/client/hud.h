@@ -150,7 +150,7 @@ public:
 	HSPRITE GetSprite(int index);
 	const wrect_t &GetSpriteRect(int index); // Don't keep the reference! It may become invalid.
 	int GetSpriteIndex(const char *SpriteName); // gets a sprite index, for use in the m_rghSprites[] array
-	void AddSprite(client_sprite_t *p);
+	void AddSprite(const client_sprite_t &p);
 
 	//-----------------------------------------------------
 	// User messages (hud_msg.cpp)

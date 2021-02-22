@@ -378,6 +378,19 @@ void CHud::VidInit(void)
 
 				p++;
 			}
+
+			// Add AG CTF sprites on non-AG clients
+			// AG has them in hud.txt
+			if (!IsAG())
+			{
+				AddSprite({ "item_flag_team1", "ag_ctf", 0, 640, { 120, 160, 0, 40 } });
+				AddSprite({ "item_flag_team2", "ag_ctf", 0, 640, { 120, 160, 0, 40 } });
+				AddSprite({ "icon_ctf_home", "ag_ctf", 0, 640, { 0, 40, 0, 40 } });
+				AddSprite({ "icon_ctf_stolen", "ag_ctf", 0, 640, { 40, 80, 0, 40 } });
+				AddSprite({ "icon_ctf_lost", "ag_ctf", 0, 640, { 80, 120, 0, 40 } });
+				AddSprite({ "icon_ctf_carry", "ag_ctf", 0, 640, { 120, 160, 0, 40 } });
+				AddSprite({ "icon_ctf_score", "ag_ctf_score", 0, 640, { 0, 16, 0, 16 } });
+			}
 		}
 	}
 	else
@@ -493,25 +506,25 @@ int CHud::GetSpriteIndex(const char *SpriteName)
 	return -1; // invalid sprite
 }
 
-void CHud::AddSprite(client_sprite_t *p)
+void CHud::AddSprite(const client_sprite_t &p)
 {
 	// Search for existing sprite
 	int i = 0;
 	for (i = 0; i < m_iSpriteCount; i++)
 	{
-		if (!Q_stricmp(m_rgszSpriteNames[i].name, p->szName))
+		if (!Q_stricmp(m_rgszSpriteNames[i].name, p.szName))
 			return;
 	}
 
 	char sz[256];
-	snprintf(sz, sizeof(sz), "sprites/%s.spr", p->szSprite);
+	snprintf(sz, sizeof(sz), "sprites/%s.spr", p.szSprite);
 
 	m_rghSprites.push_back(SPR_Load(sz));
-	m_rgrcRects.push_back(p->rc);
+	m_rgrcRects.push_back(p.rc);
 
 	// Copy sprite name
 	m_rgszSpriteNames.push_back({});
-	Q_strncpy(m_rgszSpriteNames[m_iSpriteCount].name, p->szName, MAX_SPRITE_NAME_LENGTH);
+	Q_strncpy(m_rgszSpriteNames[m_iSpriteCount].name, p.szName, MAX_SPRITE_NAME_LENGTH);
 
 	m_iSpriteCount++;
 

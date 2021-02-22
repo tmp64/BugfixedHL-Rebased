@@ -198,7 +198,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON *pWeapon)
 	p = GetSpriteFromList(pList, "d_", iRes, i);
 	while (p != NULL)
 	{
-		gHUD.AddSprite(p);
+		gHUD.AddSprite(*p);
 		p++;
 		p = GetSpriteFromList(p, "d_", iRes, i - (p - pList));
 	}

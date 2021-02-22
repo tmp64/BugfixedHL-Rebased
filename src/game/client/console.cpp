@@ -527,3 +527,65 @@ CON_COMMAND(find, "Searches cvars and commands for a string.")
 		}
 	}
 }
+
+#ifdef _DEBUG
+
+CON_COMMAND(dump_client_cvars, "Dumps all client convars and concommands to clcvars.csv in Excel format")
+{
+	FILE *f = fopen("clcvars.csv", "w");
+
+	if (!f)
+	{
+		ConPrintf("Failed to open clcvars.csv\n");
+		return;
+	}
+
+	// Iterate all cvars
+	{
+		cvar_t *item = gEngfuncs.GetFirstCvarPtr();
+		for (; item; item = item->next)
+		{
+			if (!(item->flags & FCVAR_CLIENTDLL))
+				continue;
+
+			ConVar *pCvar = CvarSystem::FindCvar(item);
+
+			if (pCvar)
+			{
+				fprintf(f, "%s;%s;%s\n", pCvar->GetName(), pCvar->GetDefaultValue(), pCvar->GetDescription());
+			}
+			else
+			{
+				fprintf(f, "%s;%s;\n", item->name, item->string);
+			}
+		}
+	}
+
+	fprintf(f, ";;\n");
+
+	// Iterate all commands
+	{
+		cmd_function_t *item = gEngfuncs.GetFirstCmdFunctionHandle();
+		for (; item; item = item->next)
+		{
+			// Client commands have flags = 1
+			if (item->flags != 1)
+				continue;
+
+			ConCommand *pCvar = static_cast<ConCommand *>(CvarSystem::FindItem(item->name));
+
+			if (pCvar)
+			{
+				fprintf(f, " %s;%s\n", pCvar->GetName(), pCvar->GetDescription());
+			}
+			else
+			{
+				fprintf(f, " %s;\n", item->name);
+			}
+		}
+	}
+
+	fclose(f);
+}
+
+#endif

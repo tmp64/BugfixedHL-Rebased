@@ -383,13 +383,13 @@ void CHud::VidInit(void)
 			// AG has them in hud.txt
 			if (!IsAG())
 			{
-				AddSprite({ "item_flag_team1", "ag_ctf", 0, 640, { 120, 160, 0, 40 } });
-				AddSprite({ "item_flag_team2", "ag_ctf", 0, 640, { 120, 160, 0, 40 } });
-				AddSprite({ "icon_ctf_home", "ag_ctf", 0, 640, { 0, 40, 0, 40 } });
-				AddSprite({ "icon_ctf_stolen", "ag_ctf", 0, 640, { 40, 80, 0, 40 } });
-				AddSprite({ "icon_ctf_lost", "ag_ctf", 0, 640, { 80, 120, 0, 40 } });
-				AddSprite({ "icon_ctf_carry", "ag_ctf", 0, 640, { 120, 160, 0, 40 } });
-				AddSprite({ "icon_ctf_score", "ag_ctf_score", 0, 640, { 0, 16, 0, 16 } });
+				AddSprite(client_sprite_t { "item_flag_team1", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
+				AddSprite(client_sprite_t { "item_flag_team2", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
+				AddSprite(client_sprite_t { "icon_ctf_home", "ag_ctf", 0, 640, wrect_t { 0, 40, 0, 40 } });
+				AddSprite(client_sprite_t { "icon_ctf_stolen", "ag_ctf", 0, 640, wrect_t { 40, 80, 0, 40 } });
+				AddSprite(client_sprite_t { "icon_ctf_lost", "ag_ctf", 0, 640, wrect_t { 80, 120, 0, 40 } });
+				AddSprite(client_sprite_t { "icon_ctf_carry", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
+				AddSprite(client_sprite_t { "icon_ctf_score", "ag_ctf_score", 0, 640, wrect_t { 0, 16, 0, 16 } });
 			}
 		}
 	}

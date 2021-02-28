@@ -9,37 +9,41 @@ backwards-compatible with vanilla clients and servers.
 new [Half-Life SDK](https://github.com/ValveSoftware/halflife).
 It features improved UI using VGUI2 library, Linux support and refactored source code for better maintainablity.
 
+- [Screenshots](https://github.com/tmp64/BugfixedHL-Rebased/wiki/Screenshots)
+- [How to install](https://github.com/tmp64/BugfixedHL-Rebased/wiki/Installation)
+- [Commands](https://github.com/tmp64/BugfixedHL-Rebased/wiki/Client-command-reference)
+
 
 Features
 --------
 
-The mod features a number of improvements over stock client. Please note: some of them may not be available at the time.
+The mod features a number of improvements over stock client and server.
 
 Client:
-- [x] Unlocked bunnyhopping
-- [x] Colored HUD
-- [x] Raw mouse input via DirectInput
-- [x] Customizable crosshairs (like in CS:GO)
-- [ ] Improved user interface
-  - [x] Scoreboard
-  - [x] MOTD
-  - [x] Chatbox
-  - [x] Spectator UI
-  - [x] Team selection
-  - [x] Command menu
-  - [ ] Options dialog
-  - [ ] Demo list dialog
-- [x] Automatic demo recording
-- [x] Support for WeaponMod
-- [x] Slowhacking protection (for older game versions)
+- Bunnyhopping (for servers that have it enabled)
+- Colored HUD
+- Raw mouse input via DirectInput
+- Customizable crosshairs (like in CS:GO)
+- Improved user interface
+  - Scoreboard
+  - Unicode and HTML MOTD (requires server support)
+  - Chat with history, input editing and automatic splitting of long messages
+  - Spectator UI
+  - Team selection (used by some servers)
+  - Command menu
+  - Options dialog
+- Automatic demo recording
+- HUD support for WeaponMod
+- Slowhacking protection (for old engine versions)
+- Ability to disable custom player models completely
 
 
 Server:
-- Bugfixes, crash fixes
+- Bugfixes and crash fixes
 - Selfgauss can be disabled
 - Welcome camera mode - after connecting, player is put into semi-spectator mode and can spawn with MOUSE1
-- HTML and Unicode MOTD for client that support them
-- Working spectator mode
+- HTML and Unicode MOTD for clients that support them
+- Fixed spectator mode
 - Invisible model fix
 - UTF-8 support
 
@@ -55,13 +59,14 @@ BugfixedHL has been integrated into Valve's latest HLSDK and has been refactored
   - HLSDK sources moved to */src/*.
   - */cl_dll*, */dlls* and */game_shared* moved to */src/game/*.
   - */game_shared* cleaned up from unused code.
-  - removed */utils* completely (used to contain utilities like map and sprite compilers).
+  - Removed */utils* completely (used to contain utilities like map and sprite compilers).
 - Client sources refactoring:
   - VGUI1 replaced by VGUI2 (like in CS1.6).
   - Moved all VGUI code to *client/vgui*.
   - Moved all HUD elements to *client/hud*, each of them now has its own *.h* file.
   - Replaced HUD messages and commands macros with templates.
   - HUD elements are no longer referenced in *hud.h* (improves compilation times when changing *hud/\*.h*.
+  - Added `ConVar` class for easier convar creating with description support (like in Source SDK).
   - Removed unused code.
 - Fixed include guards in common header files.
 - Documented engine APIs (thanks to [Solokiller](https://github.com/Solokiller)).
@@ -84,9 +89,8 @@ Exe build: 15:17:55 Jul 24 2019 (8308)
 | Engine version | Status          |
 | :------------: | --------------  |
 | 3xxx           | Not supported   |
-| 4554           | Being worked on |
+| 4554           | Supported       |
 | 8xxx+          | Supported       |
-| Anything else  | Not supported   |
 
 
 Reporting Issues
@@ -125,7 +129,7 @@ discussions.  While this is generally a relaxed environment, please remember the
 Thanks
 ------
 
-- Lev for creating [the original BFAIHLSDK](https://github.com/LevShisterov/BugfixedHL).
+- Lev for creating [the original BugfixedHL](https://github.com/LevShisterov/BugfixedHL) that this project is based on.
   - Valve for HLSDK release.
   - Willday for his HLSDK patch.
   - BubbleMod and Bigguy from hlpp.thewavelength.net for parts of spectator code.
@@ -133,5 +137,5 @@ Thanks
   - KORD_12.7 for constant helping and nice suggestions.
   - Martin Webrant (BulliT) for releasing AG source code.
   - JetBrains company for free access to great developer tools.
-- SamVanheer for [Half-Life Enhanced](https://github.com/SoloKiller/HLEnhanced) and GoldSrc engine research.
+- Solokiller for [Half-Life Enhanced](https://github.com/Solokiller/HLEnhanced) and GoldSrc engine research.
 - AGHL.RU community for bug reporting and suggestions.

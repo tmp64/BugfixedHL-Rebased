@@ -135,7 +135,7 @@ class TargetServer:
         self.script = scr
 
     def get_build_target_names(self):
-        return ['hl', 'test_server']
+        return ['hl', 'test_server', 'bugfixedapi_amxx']
 
     def get_file_list(self):
         files = COMMON_FILES_TO_COPY
@@ -145,6 +145,11 @@ class TargetServer:
         if get_platform_type() == 'windows':
             files.append(FileToCopy(self.script.paths.out_bin + 'hl.pdb',
                                     'valve_addon/dlls/hl.pdb'))
+            files.append(FileToCopy(self.script.paths.out_bin + 'bugfixedapi_amxx.dll',
+                                    'valve_addon/addons/amxmodx/modules/bugfixedapi_amxx.dll'))
+        elif get_platform_type() == 'linux':
+            files.append(FileToCopy(self.script.paths.out_bin + 'bugfixedapi_amxx_i386.so',
+                                    'valve_addon/addons/amxmodx/modules/bugfixedapi_amxx_i386.so'))
 
         return files
 

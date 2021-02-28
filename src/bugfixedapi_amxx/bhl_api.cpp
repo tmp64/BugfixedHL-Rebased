@@ -1,50 +1,47 @@
 #include <cassert>
 #include "bhl_api.h"
 
-static bhl::IBugfixedServer *g_pServerApi;
-static int g_iServerMajor = 0, g_iServerMinor = 0;
+namespace
+{
 
-static CSysModule *g_pServerModule = nullptr;
-static CreateInterfaceFn g_fnServerFactory = nullptr;
+bhl::IBugfixedServer *g_pServerApi;
+int g_iServerMajor = 0, g_iServerMinor = 0;
 
-bhl::IBugfixedServer *serverapi()
+CSysModule *g_pServerModule = nullptr;
+CreateInterfaceFn g_fnServerFactory = nullptr;
+
+}
+
+bhl::IBugfixedServer *bhl::serverapi()
 {
 	return g_pServerApi;
 }
 
-bool IsServerApiReady()
+bool bhl::IsServerApiReady()
 {
 	return (g_pServerApi != nullptr);
 }
 
-E_ApiInitResult InitServerApi()
+bhl::E_ApiInitResult bhl::InitServerApi()
 {
 	assert(!IsServerApiReady());
 
 	// Load module
 #if defined(_WIN32)
-	const char *pModNames[] = {
-		"hl.dll"
-	};
+	const char *pszModule = "hl.dll";
 #elif defined(LINUX) || defined(PLATFORM_LINUX)
-	const char *pModNames[] = {
-		"hl.so", "hl_i386.so"
-	};
+	const char *pszModule = "hl.so";
 #else
 #error Platform not supported: no module name
 #endif
-	int constexpr MOD_NAME_COUNT = sizeof(pModNames) / sizeof(pModNames[0]);
 
-	//g_pServerModule = Sys_LoadModule(pszModName);
-	for (int i = 0; i < MOD_NAME_COUNT; i++)
-	{
-		g_pServerModule = Sys_LoadModule(pModNames[i]);
-		if (g_pServerModule)
-			break;
-	}
+	g_pServerModule = Sys_LoadModule(pszModule);
 
 	if (!g_pServerModule)
 		return E_ApiInitResult::ModuleNotFound;
+
+	// Decrease reference count - module should still be loaded by the engine
+	Sys_UnloadModule(g_pServerModule);
 
 	// Get factory
 	g_fnServerFactory = Sys_GetFactory(g_pServerModule);
@@ -65,7 +62,7 @@ E_ApiInitResult InitServerApi()
 	return E_ApiInitResult::OK;
 }
 
-void DeinitServerApi()
+void bhl::ShutdownServerApi()
 {
 	g_pServerApi = nullptr;
 	g_iServerMajor = 0;
@@ -74,7 +71,7 @@ void DeinitServerApi()
 	g_fnServerFactory = nullptr;
 }
 
-void GetServerApiVersion(int &major, int &minor)
+void bhl::GetServerApiVersion(int &major, int &minor)
 {
 	major = g_iServerMajor;
 	minor = g_iServerMinor;

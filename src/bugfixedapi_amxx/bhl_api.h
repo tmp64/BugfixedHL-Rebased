@@ -4,6 +4,9 @@
 #include <IBugfixedServer.h>
 #include <IGameVersion.h>
 
+namespace bhl
+{
+
 enum class E_ApiInitResult
 {
 	OK = 0,
@@ -32,15 +35,16 @@ bool IsServerApiReady();
 E_ApiInitResult InitServerApi();
 
 /**
- * Deinitializes server API.
+ * Shutdowns server API.
  */
-void DeinitServerApi();
+void ShutdownServerApi();
 
 /**
  * Sets major and minor to the oversion of the server.
  * Only works if IsServerApiReady() == true or InitServerApi() returned VersionMismatch.
- * Othervise variables are not changed.
+ * Othervise variables are in an undefined state.
  */
 void GetServerApiVersion(int &major, int &minor);
 
+}
 #endif

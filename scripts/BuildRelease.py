@@ -3,6 +3,7 @@
 import argparse
 import datetime
 import distutils
+import distutils.dir_util
 import os
 import shutil
 import subprocess

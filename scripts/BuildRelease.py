@@ -147,6 +147,8 @@ class TargetServer:
                                     'valve_addon/dlls/hl.pdb'))
             files.append(FileToCopy(self.script.paths.out_bin + 'bugfixedapi_amxx.dll',
                                     'valve_addon/addons/amxmodx/modules/bugfixedapi_amxx.dll'))
+            files.append(FileToCopy(self.script.paths.out_bin + 'bugfixedapi_amxx.pdb',
+                                    'valve_addon/addons/amxmodx/modules/bugfixedapi_amxx.pdb'))
         elif get_platform_type() == 'linux':
             files.append(FileToCopy(self.script.paths.out_bin + 'bugfixedapi_amxx_i386.so',
                                     'valve_addon/addons/amxmodx/modules/bugfixedapi_amxx_i386.so'))

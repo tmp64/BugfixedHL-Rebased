@@ -302,6 +302,10 @@ void CClientViewport::ShowScoreBoard()
 
 void CClientViewport::HideScoreBoard()
 {
+	// Prevent removal of scoreboard during intermission
+	if (gHUD.m_iIntermission)
+		return;
+
 	m_pScorePanel->ShowPanel(false);
 }
 

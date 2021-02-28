@@ -254,6 +254,10 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 		PlaySound("buttons/bell1.wav", 1.0f);
 	}
 
+	// Set color of own kills/deaths to yellow
+	if (killer == GetThisPlayerInfo()->GetIndex() || victim == GetThisPlayerInfo()->GetIndex())
+		console::SetColor(ConColor::Yellow);
+
 	// Print to console
 	if (rgDeathNoticeList[i].iNonPlayerKill)
 	{
@@ -306,6 +310,8 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 
 		ConsolePrint("\n");
 	}
+
+	console::ResetColor();
 
 	return 1;
 }

@@ -14,10 +14,11 @@
 #include <vgui/IInputInternal.h>
 #include <vgui/ISystem.h>
 #include <KeyValues.h>
-#include "client_vgui.h"
-#include "vgui/client_viewport.h"
 #include "hud.h"
 #include "cl_util.h"
+#include "client_vgui.h"
+#include "vgui/client_viewport.h"
+#include "vgui/score_panel.h"
 #include "chat.h"
 #include "parsemsg.h"
 #include "cl_voice_status.h"
@@ -644,6 +645,9 @@ void CHudChat::StartMessageMode(int iMessageModeType)
 	GetChatHistory()->GetBounds(x, y, w, h);
 	vgui2::input()->SetCursorPos(chatx + x + (w / 2), chaty + y + (h / 2));
 
+	// Move chat to front so it isn't obscured by the scoreboard in intermission
+	MoveToFront();
+
 	m_flHistoryFadeTime = gEngfuncs.GetAbsoluteTime() + CHAT_HISTORY_FADE_TIME;
 }
 
@@ -670,6 +674,10 @@ void CHudChat::StopMessageMode(void)
 	m_pChatInput->SetVisible(false);
 	m_pChatInput->SetKeyBoardInputEnabled(false);
 	m_pChatInput->SetMouseInputEnabled(false);
+
+	// Move scoreboard to front if it is active so it isn't obscured by chat text
+	if (g_pViewport->GetScoreBoard()->IsVisible())
+		g_pViewport->GetScoreBoard()->MoveToFront();
 
 	m_flHistoryFadeTime = gEngfuncs.GetAbsoluteTime() + CHAT_HISTORY_FADE_TIME;
 

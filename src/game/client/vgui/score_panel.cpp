@@ -303,7 +303,11 @@ void CScorePanel::ShowPanel(bool state)
 	if (state)
 	{
 		FullUpdate();
-		Activate();
+
+		// Make active unless chat is visible
+		// (possible if scoreboard is activated by intermission when chat is open)
+		if (CHudChat::Get()->GetMessageMode() == MM_NONE)
+			Activate();
 	}
 	else
 	{

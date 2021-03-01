@@ -41,7 +41,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update
-          sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib libcurl4-openssl-dev:i386
+          sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib libcurl4-openssl-dev:i386 zlib1g-dev:i386
 
       - name: Build release
         run: |

@@ -339,6 +339,7 @@ class BuildScript:
             args.extend(['-S', self.repo_root])
             args.extend(['-B', self.paths.build])
             args.extend(self.platform.get_cmake_args())
+            args.extend(['-DUSE_UPDATER=TRUE'])
             args.extend(self.cmake_args)
 
             if self.platform.need_cmake_build_type_var():

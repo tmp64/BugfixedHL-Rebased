@@ -262,7 +262,7 @@ int CHttpClient::ProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t 
 		return 1; // Abort download
 	}
 
-	return CURL_PROGRESSFUNC_CONTINUE;
+	return 0; // Continue download
 }
 
 CHttpClient::Request::Request(const std::string &url)

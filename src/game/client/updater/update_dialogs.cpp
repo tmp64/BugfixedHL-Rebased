@@ -189,7 +189,7 @@ std::string CUpdateDownloadStatusDialog::FormatMemSize(size_t iTotalMem)
 
 	if (iTotalMem < 1024)
 	{
-		snprintf(buf, sizeof(buf), "%1 B", iTotalMem);
+		snprintf(buf, sizeof(buf), "%d B", iTotalMem);
 	}
 	else if (iTotalMem < 1024L * 1024L)
 	{

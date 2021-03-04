@@ -214,14 +214,7 @@ bool CClientViewport::KeyInput(int down, int keynum, const char *pszCurrentBindi
 
 void CClientViewport::OnThink()
 {
-	m_pAnimController->UpdateAnimations(gEngfuncs.GetClientTime());
-
-	// See if the Spectator Menu needs to be updated
-	if ((g_iUser1 != m_iUser1 || g_iUser2 != m_iUser2) || (m_flSpectatorPanelLastUpdated < gHUD.m_flTime))
-	{
-		UpdateSpectatorPanel();
-	}
-
+	// Fill the whole screen
 	int wide, tall;
 	int rootWide, rootTall;
 	GetSize(wide, tall);
@@ -235,6 +228,14 @@ void CClientViewport::OnThink()
 	}
 
 	BaseClass::OnThink();
+
+	m_pAnimController->UpdateAnimations(gEngfuncs.GetClientTime());
+
+	// See if the Spectator Menu needs to be updated
+	if ((g_iUser1 != m_iUser1 || g_iUser2 != m_iUser2) || (m_flSpectatorPanelLastUpdated < gHUD.m_flTime))
+	{
+		UpdateSpectatorPanel();
+	}
 }
 
 void CClientViewport::ApplySchemeSettings(vgui2::IScheme *pScheme)

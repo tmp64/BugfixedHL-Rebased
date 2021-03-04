@@ -15,6 +15,8 @@
 //
 // cl_util.h
 //
+#ifndef CL_UTIL_H
+#define CL_UTIL_H
 
 #ifndef TRUE
 #define TRUE  1
@@ -240,3 +242,5 @@ void RemoveColorCodes(const char *string, char *buf, size_t bufSize);
  * @return	Pointer to a static buffer.
  */
 const char *RemoveColorCodes(const char *string);
+
+#endif

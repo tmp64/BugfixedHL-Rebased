@@ -5,11 +5,13 @@
 // $NoKeywords: $
 //=============================================================================
 
-#if !defined(STUDIOMODELRENDERER_H)
+#ifndef STUDIOMODELRENDERER_H
 #define STUDIOMODELRENDERER_H
-#if defined(_WIN32)
-#pragma once
-#endif
+#include "hud.h"
+#include "cl_util.h"
+#include "const.h"
+#include "com_model.h"
+#include "studio.h"
 
 /*
 ====================

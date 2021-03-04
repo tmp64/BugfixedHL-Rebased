@@ -39,6 +39,7 @@ extern "C"
 #include "engine_patches.h"
 #include "svc_messages.h"
 #include "sdl_rt.h"
+#include "GameStudioModelRenderer.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -309,6 +310,7 @@ void CL_DLLEXPORT HUD_Reset(void)
 	//	RecClHudReset();
 
 	gHUD.VidInit();
+	g_StudioRenderer.InitOnConnect();
 }
 
 /*

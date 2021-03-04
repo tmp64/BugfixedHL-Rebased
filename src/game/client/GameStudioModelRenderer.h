@@ -5,11 +5,9 @@
 // $NoKeywords: $
 //=============================================================================
 
-#if !defined(GAMESTUDIOMODELRENDERER_H)
+#ifndef GAMESTUDIOMODELRENDERER_H
 #define GAMESTUDIOMODELRENDERER_H
-#if defined(_WIN32)
-#pragma once
-#endif
+#include "StudioModelRenderer.h"
 
 /*
 ====================
@@ -73,5 +71,7 @@ private:
 	// Returns next enemy model from the list
 	char *GetNextEnemyModel(void);
 };
+
+extern CGameStudioModelRenderer g_StudioRenderer;
 
 #endif // GAMESTUDIOMODELRENDERER_H

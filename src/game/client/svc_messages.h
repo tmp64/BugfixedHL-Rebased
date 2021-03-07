@@ -118,9 +118,14 @@ public:
 	void VidInit();
 
 	/**
-	 * Sends 'status' commend to the server to update SteamIDs.
+	 * Sends 'status' command to the server to update SteamIDs.
 	 */
 	void SendStatusRequest();
+
+	/**
+	 * Sends 'status' command if it was delayed by previous call to SendStatusRequest.
+	 */
+	void CheckDelayedSendStatusRequest();
 
 	/**
 	 * Removes unsafe commands from specified buffer.

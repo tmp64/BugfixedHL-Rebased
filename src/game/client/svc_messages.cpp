@@ -64,6 +64,11 @@ CON_COMMAND(cl_protect_help, "Prints info about client proctection configuration
 	ConPrintf("Cvar requests: %s\n", s_BlockListCvar);
 }
 
+CON_COMMAND(dev_send_status, "Sends a status command to update SteamIDs")
+{
+	CSvcMessages::Get().SendStatusRequest();
+}
+
 /**
  * A template function that calls a member function of CSvcMessages.
  */
@@ -118,7 +123,7 @@ void CSvcMessages::VidInit()
 	m_flStatusRequestLastTime = 0;
 
 	// Delayed request on level start
-	m_flStatusRequestNextTime = gHUD.m_flTime + 0.5;
+	m_flStatusRequestNextTime = gEngfuncs.GetAbsoluteTime() + 0.5;
 }
 
 void CSvcMessages::SendStatusRequest()
@@ -127,27 +132,39 @@ void CSvcMessages::SendStatusRequest()
 	if (!CEnginePatches::Get().GetSvcArray())
 		return;
 
-	if (m_flStatusRequestLastTime > gHUD.m_flTime)
+	if (m_flStatusRequestLastTime > gEngfuncs.GetAbsoluteTime())
 	{
 		// Time was reset: changelevel, etc...
 		m_flStatusRequestLastTime = 0;
 	}
 
-	if (m_iStatusRequestState != StatusRequestState::Idle && m_flStatusRequestLastTime + 1.0 > gHUD.m_flTime)
+	if (m_iStatusRequestState != StatusRequestState::Idle && m_flStatusRequestLastTime + 1.0 > gEngfuncs.GetAbsoluteTime())
 	{
-		// Request is in progress
+		// Request is in progress, delay it
+		m_flStatusRequestNextTime = m_flStatusRequestLastTime + 1.1;
 		return;
 	}
 
-	if (m_flStatusRequestLastTime + 1.0 > gHUD.m_flTime)
+	if (m_flStatusRequestLastTime + 1.0 > gEngfuncs.GetAbsoluteTime())
 	{
-		m_flStatusRequestNextTime = m_flStatusRequestLastTime + 1.0;
+		// Delay request if it was called recently (to not spam the server)
+		m_flStatusRequestNextTime = m_flStatusRequestLastTime + 1.1;
 		return;
 	}
 
 	m_iStatusRequestState = StatusRequestState::Sent;
-	m_flStatusRequestLastTime = gHUD.m_flTime;
+	m_flStatusRequestLastTime = gEngfuncs.GetAbsoluteTime();
 	ServerCmd("status");
+	gEngfuncs.Con_DPrintf("%.3f status request sent\n", gEngfuncs.GetAbsoluteTime());
+}
+
+void CSvcMessages::CheckDelayedSendStatusRequest()
+{
+	if (m_flStatusRequestNextTime > 0 && m_flStatusRequestNextTime <= gEngfuncs.GetAbsoluteTime())
+	{
+		m_flStatusRequestNextTime = 0;
+		SendStatusRequest();
+	}
 }
 
 bool CSvcMessages::SanitizeCommands(char *str)
@@ -362,7 +379,7 @@ void CSvcMessages::SvcPrint()
 				GetMsgBuf().GetReadPos() += strlen(str) + 1;
 				return;
 			}
-			else if (m_flStatusRequestLastTime + 1.0 > gHUD.m_flTime)
+			else if (m_flStatusRequestLastTime + 1.0 > gEngfuncs.GetAbsoluteTime())
 			{
 				// No answer
 				m_iStatusRequestState = StatusRequestState::Idle;
@@ -464,6 +481,7 @@ void CSvcMessages::SvcPrint()
 			{
 				// end of the table
 				m_iStatusRequestState = StatusRequestState::Idle;
+				gEngfuncs.Con_DPrintf("%.3f status request received\n", gEngfuncs.GetAbsoluteTime());
 			}
 			// Suppress status output
 			GetMsgBuf().GetReadPos() += strlen(str) + 1;

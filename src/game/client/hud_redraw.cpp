@@ -27,6 +27,7 @@ extern "C"
 #include "hud/spectator.h"
 #include "vgui/client_viewport.h"
 #include "results.h"
+#include "svc_messages.h"
 
 #define MAX_LOGO_FRAMES 56
 
@@ -106,6 +107,9 @@ void CHud::Think(void)
 	m_ColorCodeAction = (ColorCodeAction)colorText;
 	if (hud_colortext.GetInt() != colorText)
 		hud_colortext.SetValue(colorText);
+
+	// Update status requests
+	CSvcMessages::Get().CheckDelayedSendStatusRequest();
 }
 
 // Redraw

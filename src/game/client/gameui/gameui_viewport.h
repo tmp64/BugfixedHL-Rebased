@@ -31,7 +31,7 @@ public:
 
 private:
 	bool m_bPreventEscape = false;
-	bool m_bDelayedPreventEscape = false;
+	int m_iDelayedPreventEscapeFrame = 0;
 	vgui2::DHANDLE<CGameUITestPanel> m_hTestPanel;
 	vgui2::DHANDLE<CAdvOptionsDialog> m_hOptionsDialog;
 

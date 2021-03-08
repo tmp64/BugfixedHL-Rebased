@@ -37,12 +37,15 @@ void CGameUIViewport::PreventEscapeToShow(bool state)
 	if (state)
 	{
 		m_bPreventEscape = true;
-		m_bDelayedPreventEscape = false;
+		m_iDelayedPreventEscapeFrame = 0;
 	}
 	else
 	{
+		// PreventEscapeToShow(false) may be called the same frame that ESC was pressed
+		// and CGameUIViewport::OnThink won't hide GameUI
+		// So the change is delayed by one frame
 		m_bPreventEscape = false;
-		m_bDelayedPreventEscape = true;
+		m_iDelayedPreventEscapeFrame = gHUD.GetFrameCount() + 1;
 	}
 }
 
@@ -60,17 +63,11 @@ void CGameUIViewport::OnThink()
 {
 	BaseClass::OnThink();
 
-	if (m_bPreventEscape || m_bDelayedPreventEscape)
+	if (m_bPreventEscape || m_iDelayedPreventEscapeFrame == gHUD.GetFrameCount())
 	{
 		g_pBaseUI->HideGameUI();
 
 		// Hiding GameUI doesn't update the mouse cursor
 		g_pVGuiSurface->CalculateMouseVisible();
-
-		// PreventEscapeToShow(false) may be called the same frame that ESC was pressed
-		// and CGameUIViewport::OnThink won't hide GameUI
-		// So the change is delayed by one frame
-		if (m_bDelayedPreventEscape)
-			m_bDelayedPreventEscape = false;
 	}
 }

@@ -211,6 +211,11 @@ public:
 	 */
 	void GetClientColorAsFloat(int idx, float out[3], Color noTeamColor);
 
+	/**
+	 * Returns number of frames since game start up.
+	 */
+	inline int GetFrameCount() { return m_iFrameCount; }
+
 private:
 	struct SpriteName
 	{
@@ -246,6 +251,7 @@ private:
 
 	bool m_bIsAg = false;
 	bool m_bIsHTMLEnabled = false;
+	int m_iFrameCount = 0;
 
 	void UpdateHudColors();
 	void UpdateSupportsCvar();

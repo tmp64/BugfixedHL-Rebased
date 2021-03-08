@@ -424,6 +424,8 @@ void CHud::VidInit(void)
 
 void CHud::Frame(double time)
 {
+	m_iFrameCount++;
+
 	vgui2::GetAnimationController()->UpdateAnimations(gEngfuncs.GetClientTime());
 	colorpicker::gTexMgr.RunFrame();
 

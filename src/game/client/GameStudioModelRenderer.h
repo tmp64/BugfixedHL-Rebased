@@ -24,6 +24,9 @@ public:
 	virtual void Init(void);
 	void InitOnConnect(void);
 
+	// Prints debug info to the console
+	void PrintDebugInfo();
+
 	// Returns player model for rendering
 	virtual model_t *GetPlayerModel(int playerIndex);
 

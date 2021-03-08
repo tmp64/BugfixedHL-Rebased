@@ -56,6 +56,11 @@ CON_COMMAND(forcecolor, "Force changes colors of a player")
 	g_StudioRenderer.ForceColorsCommand();
 }
 
+CON_COMMAND(dev_model_debug, "Prints debug info for model enforcement")
+{
+	g_StudioRenderer.PrintDebugInfo();
+}
+
 /*
 ====================
 CGameStudioModelRenderer
@@ -254,6 +259,27 @@ char *CGameStudioModelRenderer::GetNextEnemyModel(void)
 	return m_szEnemyModels[m_iLastUsedEnemyModel];
 }
 
+void CGameStudioModelRenderer::PrintDebugInfo()
+{
+	CPlayerInfo *actuallocalpi = GetThisPlayerInfo();
+	int localplayer = (actuallocalpi->IsSpectator() && g_iUser2 > 0) ? g_iUser2 : m_iLocalPlayerIndex;
+	CPlayerInfo *localpi = GetPlayerInfo(localplayer);
+	ConPrintf("Local player: %s [%d]\n", localpi->GetName(), localpi->GetIndex());
+
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		CPlayerInfo *pi = GetPlayerInfo(i + 1);
+
+		if (!pi->IsConnected())
+			continue;
+
+		ConPrintf("%s [%d]\n", pi->GetName(), pi->GetIndex());
+		ConPrintf("    Real Model: %s\n", pi->GetModel());
+		ConPrintf("    Is teammate: %d\n", (int)AreTeammates(i + 1, localplayer));
+		ConPrintf("    Replaced model: %s\n", GetPlayerModel(i)->name);
+	}
+}
+
 ///
 /// Returns player model to render that is remapped if needed.
 ///  :playerIndex is zero based
@@ -298,7 +324,7 @@ model_t *CGameStudioModelRenderer::GetPlayerModel(int playerIndex)
 	// Return teammates override model or actual model for local player teammates if this is a teamplay
 	// We will not check for gHUD.m_Teamplay because customized sever dll send us "teamplay 1" to enable teams in scoreboard
 	// note: if we are spectating someone, then use his team to show forcemodels.
-	if (AreTeammates(playerIndex + 1, pLocalPlayerInfo->IsSpectator() && g_iUser2 > 0 ? g_iUser2 : m_iLocalPlayerIndex))
+	if (AreTeammates(playerIndex + 1, (pLocalPlayerInfo->IsSpectator() && g_iUser2 > 0) ? g_iUser2 : m_iLocalPlayerIndex))
 	{
 		if (m_pTeammatesModel)
 			return m_pTeammatesModel;

@@ -6,7 +6,6 @@
 //=============================================================================//
 
 #include <ctime>
-#include <IBaseUI.h>
 #include <vgui/IScheme.h>
 #include <vgui/IVGui.h>
 #include <vgui/ILocalize.h>
@@ -24,6 +23,7 @@
 #include "cl_voice_status.h"
 #include "results.h"
 #include "hud/ag/ag_location.h"
+#include "gameui/gameui_viewport.h"
 
 ConVar hud_saytext("hud_saytext", "1", FCVAR_BHL_ARCHIVE, "Enable/disable the chat");
 ConVar hud_saytext_time("hud_saytext_time", "12", FCVAR_BHL_ARCHIVE, "How long for new messages should stay on the screen");
@@ -649,6 +649,8 @@ void CHudChat::StartMessageMode(int iMessageModeType)
 	MoveToFront();
 
 	m_flHistoryFadeTime = gEngfuncs.GetAbsoluteTime() + CHAT_HISTORY_FADE_TIME;
+
+	CGameUIViewport::Get()->PreventEscapeToShow(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -656,6 +658,8 @@ void CHudChat::StartMessageMode(int iMessageModeType)
 //-----------------------------------------------------------------------------
 void CHudChat::StopMessageMode(void)
 {
+	CGameUIViewport::Get()->PreventEscapeToShow(false);
+
 	SetKeyBoardInputEnabled(false);
 	SetMouseInputEnabled(false);
 
@@ -1270,11 +1274,6 @@ void CHudChatEntry::OnKeyCodeTyped(vgui2::KeyCode code)
 				PostMessage(m_pHudChat, new KeyValues("ChatEntrySend"));
 			}
 		}
-		else
-		{
-			// Escape shows GameUI
-			g_pBaseUI->HideGameUI();
-		}
 
 		// End message mode.
 		if (m_pHudChat)
@@ -1286,15 +1285,6 @@ void CHudChatEntry::OnKeyCodeTyped(vgui2::KeyCode code)
 	{
 		// Ignore tab, otherwise vgui will screw up the focus.
 		return;
-	}
-	else if (code == vgui2::KEY_BACKQUOTE)
-	{
-		// Pressing tilde key (~ or `) opens the console.
-		g_pBaseUI->HideGameUI();
-
-		// After GameUI was hidden, mouse input is broken
-		m_pHudChat->SetKeyBoardInputEnabled(true);
-		m_pHudChat->SetMouseInputEnabled(true);
 	}
 	else
 	{

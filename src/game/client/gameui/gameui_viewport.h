@@ -18,10 +18,20 @@ public:
 	CGameUIViewport();
 	~CGameUIViewport();
 
+	/**
+	 * If enabled, prevents ESC key from showing GameUI.
+	 * In reality, hides GameUI whenever it is enabled.
+	 */
+	void PreventEscapeToShow(bool state);
+
 	void OpenTestPanel();
 	CAdvOptionsDialog *GetOptionsDialog();
 
+	virtual void OnThink() override;
+
 private:
+	bool m_bPreventEscape = false;
+	bool m_bDelayedPreventEscape = false;
 	vgui2::DHANDLE<CGameUITestPanel> m_hTestPanel;
 	vgui2::DHANDLE<CAdvOptionsDialog> m_hOptionsDialog;
 

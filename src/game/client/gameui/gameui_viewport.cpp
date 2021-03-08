@@ -1,4 +1,6 @@
+#include <IBaseUI.h>
 #include <IEngineVGui.h>
+#include <vgui/ISurface.h>
 #include <tier2/tier2.h>
 #include "hud.h"
 #include "cl_util.h"
@@ -30,6 +32,20 @@ CGameUIViewport::~CGameUIViewport()
 	m_sInstance = nullptr;
 }
 
+void CGameUIViewport::PreventEscapeToShow(bool state)
+{
+	if (state)
+	{
+		m_bPreventEscape = true;
+		m_bDelayedPreventEscape = false;
+	}
+	else
+	{
+		m_bPreventEscape = false;
+		m_bDelayedPreventEscape = true;
+	}
+}
+
 void CGameUIViewport::OpenTestPanel()
 {
 	GetDialog(m_hTestPanel)->Activate();
@@ -38,4 +54,23 @@ void CGameUIViewport::OpenTestPanel()
 CAdvOptionsDialog *CGameUIViewport::GetOptionsDialog()
 {
 	return GetDialog(m_hOptionsDialog);
+}
+
+void CGameUIViewport::OnThink()
+{
+	BaseClass::OnThink();
+
+	if (m_bPreventEscape || m_bDelayedPreventEscape)
+	{
+		g_pBaseUI->HideGameUI();
+
+		// Hiding GameUI doesn't update the mouse cursor
+		g_pVGuiSurface->CalculateMouseVisible();
+
+		// PreventEscapeToShow(false) may be called the same frame that ESC was pressed
+		// and CGameUIViewport::OnThink won't hide GameUI
+		// So the change is delayed by one frame
+		if (m_bDelayedPreventEscape)
+			m_bDelayedPreventEscape = false;
+	}
 }

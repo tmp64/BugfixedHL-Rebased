@@ -304,6 +304,19 @@ void CHudChatHistory::ApplySchemeSettings(vgui2::IScheme *pScheme)
 	SetAlpha(255);
 }
 
+void CHudChatHistory::OnKeyCodeTyped(vgui2::KeyCode code)
+{
+	if (code == vgui2::KEY_ESCAPE)
+	{
+		// Hide the chatbox
+		static_cast<CHudChat *>(GetParent())->StopMessageMode();
+	}
+	else
+	{
+		BaseClass::OnKeyCodeTyped(code);
+	}
+}
+
 int CHudChat::m_nLineCounter = 1;
 
 //-----------------------------------------------------------------------------

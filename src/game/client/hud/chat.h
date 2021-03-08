@@ -173,6 +173,7 @@ public:
 	CHudChatHistory(vgui2::Panel *pParent, const char *panelName);
 
 	virtual void ApplySchemeSettings(vgui2::IScheme *pScheme);
+	virtual void OnKeyCodeTyped(vgui2::KeyCode code) override;
 };
 
 //-----------------------------------------------------------------------------

@@ -45,7 +45,7 @@ void CGameUIViewport::PreventEscapeToShow(bool state)
 		// and CGameUIViewport::OnThink won't hide GameUI
 		// So the change is delayed by one frame
 		m_bPreventEscape = false;
-		m_iDelayedPreventEscapeFrame = gHUD.GetFrameCount() + 1;
+		m_iDelayedPreventEscapeFrame = gHUD.GetFrameCount();
 	}
 }
 

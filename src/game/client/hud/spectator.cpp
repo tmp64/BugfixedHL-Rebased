@@ -26,10 +26,12 @@
 #include "studio_util.h"
 #include "screenfade.h"
 
+#include "ammo.h"
 #include "spectator.h"
 #include "chat.h"
 #include "text_message.h"
 #include "message.h"
+#include "timer.h"
 
 #include "svc_messages.h"
 
@@ -1085,7 +1087,10 @@ void CHudSpectator::SetModes(int iNewMainMode, int iNewInsetMode)
 		{
 			char cmdstring[32];
 			// forward command to server
-			sprintf(cmdstring, "specmode %i", iNewMainMode);
+			if (CHudTimer::Get()->GetAgVersion() == CHudTimer::SV_AG_MINI || CHudTimer::Get()->GetAgVersion() == CHudTimer::SV_AG_FULL)
+				sprintf(cmdstring, "spec_mode %i", iNewMainMode);
+			else
+				sprintf(cmdstring, "specmode %i", iNewMainMode);
 			gEngfuncs.pfnServerCmd(cmdstring);
 			return;
 		}
@@ -1141,7 +1146,7 @@ void CHudSpectator::SetModes(int iNewMainMode, int iNewInsetMode)
 			break;
 		}
 
-		if ((g_iUser1 == OBS_IN_EYE) || (g_iUser1 == OBS_ROAMING))
+		if (g_iUser1 == OBS_IN_EYE)
 		{
 			m_crosshairRect.left = 24;
 			m_crosshairRect.top = 0;
@@ -1456,7 +1461,7 @@ void CHudSpectator::DrawOverviewLayer()
 
 void CHudSpectator::DrawOverviewEntities()
 {
-	int i, ir, ig, ib;
+	int i;
 	struct model_s *hSpriteModel;
 	vec3_t origin, angles, point, forward, right, left, up, world, screen, offset;
 	float x, y, z, r, g, b, sizeScale = 4.0f;
@@ -1466,11 +1471,11 @@ void CHudSpectator::DrawOverviewEntities()
 	float zScale = (90.0f - v_angles[0]) / 90.0f;
 
 	z = m_OverviewData.layersHeights[0] * zScale;
-	// get yellow/brown HUD color
-	UnpackRGB(ir, ig, ib, RGB_YELLOWISH);
-	r = (float)ir / 255.0f;
-	g = (float)ig / 255.0f;
-	b = (float)ib / 255.0f;
+	// get HUD color
+	Color color = gHUD.GetHudColor(HudPart::Common, 0);
+	r = (float)color.r() / 255.0f;
+	g = (float)color.g() / 255.0f;
+	b = (float)color.b() / 255.0f;
 
 	gEngfuncs.pTriAPI->CullFace(TRI_NONE);
 
@@ -1771,20 +1776,35 @@ void CHudSpectator::CheckSettings()
 	if (gHUD.m_iIntermission)
 		m_pip->value = INSET_OFF;
 
-	// HL/TFC has no oberserver corsshair, so set it client side
-	if ((g_iUser1 == OBS_IN_EYE) || (g_iUser1 == OBS_ROAMING))
-	{
-		m_crosshairRect.left = 24;
-		m_crosshairRect.top = 0;
-		m_crosshairRect.right = 48;
-		m_crosshairRect.bottom = 24;
+	static wrect_t nullrc;
 
-		SetCrosshair(m_hCrosshair, m_crosshairRect, 255, 255, 255);
+	if (gEngfuncs.IsSpectateOnly())
+	{
+		// HL/TFC has no observer corsshair, so set it client side
+		if (g_iUser1 == OBS_IN_EYE)
+		{
+			m_crosshairRect.left = 24;
+			m_crosshairRect.top = 0;
+			m_crosshairRect.right = 48;
+			m_crosshairRect.bottom = 24;
+			SetCrosshair(m_hCrosshair, m_crosshairRect, 255, 255, 255);
+		}
+		else
+		{
+			SetCrosshair(0, nullrc, 0, 0, 0);
+		}
 	}
 	else
 	{
-		memset(&m_crosshairRect, 0, sizeof(m_crosshairRect));
-		SetCrosshair(0, m_crosshairRect, 0, 0, 0);
+		// Show crosshair only for First Person mode
+		if (g_iUser1 == OBS_IN_EYE)
+		{
+			CHudAmmo::Get()->UpdateCrosshair();
+		}
+		else
+		{
+			SetCrosshair(0, nullrc, 0, 0, 0);
+		}
 	}
 
 	// if we are a real player on server don't allow inset window

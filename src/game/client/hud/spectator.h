@@ -80,7 +80,6 @@ public:
 	void CheckOverviewEntities();
 	void DrawOverview();
 	void DrawOverviewEntities();
-	void GetMapPosition(float *returnvec);
 	void DrawOverviewLayer();
 	void LoadMapSprites();
 	bool ParseOverviewFile();

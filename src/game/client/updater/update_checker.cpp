@@ -127,6 +127,11 @@ const std::string &CUpdateChecker::GetAssetURL()
 	return m_ZipURL;
 }
 
+bool CUpdateChecker::IsUpdaterDisabled()
+{
+	return m_bDisableInstaller;
+}
+
 void CUpdateChecker::CheckForUpdates()
 {
 	FetchReleaseList();
@@ -193,6 +198,13 @@ void CUpdateChecker::OnDataLoaded(CHttpClient::Response &resp)
 			CGameVersion version;
 			const std::string &name = release.at("name").get<std::string>();
 			const std::string &tag = release.at("tag_name").get<std::string>();
+
+			// If update has "[no auto-update]" in its title, it means that
+			// a critical bug was found in the update installer and it needs to be disabled.
+			if (name.find("[no auto-update]") != name.npos)
+			{
+				m_bDisableInstaller = true;
+			}
 
 			// tag_name: 'v1.0.0'
 			// substr to remove 'v' prefix.

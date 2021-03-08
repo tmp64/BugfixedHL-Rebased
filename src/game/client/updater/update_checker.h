@@ -52,6 +52,11 @@ public:
 	const std::string &GetAssetURL();
 
 	/**
+	 * Returns true if updater can't be used to update to the new version.
+	 */
+	bool IsUpdaterDisabled();
+
+	/**
 	 * Check for updates.
 	 */
 	void CheckForUpdates();
@@ -62,6 +67,7 @@ private:
 	std::string m_Changelog;
 	std::string m_ZipURL;
 	CGameVersion m_LatestVersion;
+	bool m_bDisableInstaller = false;
 
 	// Version of installed game
 	CGameVersion m_CurVersion;

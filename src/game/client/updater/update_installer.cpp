@@ -258,6 +258,12 @@ void CUpdateInstaller::StartUpdate()
 	m_FilesToUpdate.clear();
 	m_iFileToAskIdx = 0;
 
+	if (CUpdateChecker::Get().IsUpdaterDisabled())
+	{
+		ErrorOccured(g_pVGuiLocalize->Find("BHL_Update_UpdaterDisabled"));
+		return;
+	}
+
 	if (!ReadMetadata())
 		return;
 

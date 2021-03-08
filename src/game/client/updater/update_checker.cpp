@@ -199,13 +199,6 @@ void CUpdateChecker::OnDataLoaded(CHttpClient::Response &resp)
 			const std::string &name = release.at("name").get<std::string>();
 			const std::string &tag = release.at("tag_name").get<std::string>();
 
-			// If update has "[no auto-update]" in its title, it means that
-			// a critical bug was found in the update installer and it needs to be disabled.
-			if (name.find("[no auto-update]") != name.npos)
-			{
-				m_bDisableInstaller = true;
-			}
-
 			// tag_name: 'v1.0.0'
 			// substr to remove 'v' prefix.
 			// Minimum size is 6: v1.0.0
@@ -232,6 +225,13 @@ void CUpdateChecker::OnDataLoaded(CHttpClient::Response &resp)
 			updateFound = true;
 			changelog += name + "\n\n";
 			changelog += release.at("body").get<std::string>() + "\n\n\n";
+
+			// If update has "[no auto-update]" in its title, it means that
+			// a critical bug was found in the update installer and it needs to be disabled.
+			if (name.find("[no auto-update]") != name.npos)
+			{
+				m_bDisableInstaller = true;
+			}
 		}
 
 		m_bUpdateFound = updateFound;

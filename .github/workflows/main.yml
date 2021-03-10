@@ -29,13 +29,6 @@ jobs:
         with:
           python-version: 3.7
       
-      - name: Save Git info into variables
-        id: vars
-        shell: bash
-        run: |
-          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-      
       - name: Install Ubuntu packages
         if: matrix.runs-on == 'ubuntu-18.04'
         run: |
@@ -44,8 +37,9 @@ jobs:
           sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib libcurl4-openssl-dev:i386 zlib1g-dev:i386
 
       - name: Build release
+        id: build
         run: |
-          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2019 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON"
+          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2019 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON" --github-actions
 
       - name: Run tests
         run: |
@@ -55,5 +49,5 @@ jobs:
       - name: Upload build result
         uses: actions/upload-artifact@v2
         with:
-          name: BugfixedHL-CI-${{ steps.vars.outputs.sha_short }}
+          name: ${{ steps.build.outputs.artifact_name }}
           path: ./_build_out/BugfixedHL-*.zip

@@ -246,6 +246,8 @@ class BuildScript:
                             help='path to cmake binary (PATH used instead)')
         parser.add_argument('--cmake-args', action='store',
                             help='additional CMake arguments')
+        parser.add_argument('--github-actions', dest='ci', action='store_true',
+                            help='build for GitHub Actions')
 
         # Version override
         parser.add_argument('--v-major', action='store', type=int, default=self.DEFAULT_VERSION[0],
@@ -296,6 +298,15 @@ class BuildScript:
             self.git_hash, 
             self.date_code
         )
+
+        # Set artifact name
+        if args.ci:
+            print('::set-output name=artifact_name::BugfixedHL-{}-{}-{}-{}'.format(
+                self.release_version.replace('+', '-'),
+                self.build_target_name,
+                get_platform_type(),
+                self.git_hash
+            ))
 
         out_dir = args.out_dir
         if out_dir:

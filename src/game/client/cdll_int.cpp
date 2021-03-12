@@ -24,7 +24,11 @@ extern "C"
 }
 
 #include <cstring>
+// Another caveat of compiling for for i386 with a 10.13 SDK, no access to filesystem - they're very slow to adapt
+#ifndef PLATFORM_MACOS
 #include <filesystem>
+#else
+#endif
 #include <tier1/interface.h>
 #include <cl_dll/IGameClientExports.h>
 #include "hud.h"
@@ -54,6 +58,7 @@ void IN_Commands(void);
  */
 void CheckWorkingDirectory()
 {
+#ifndef PLATFORM_MACOS
 	namespace fs = std::filesystem;
 
 	try
@@ -100,6 +105,8 @@ void CheckWorkingDirectory()
 
 		GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Internal error", buf);
 	}
+#else
+#endif
 }
 
 /*

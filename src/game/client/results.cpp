@@ -80,7 +80,10 @@ void CResults::Init()
 	}
 #endif
 
+#ifndef PLATFORM_MACOS
 	m_fsFullGameDirPath = std::filesystem::u8path(m_szFullGameDirPath);
+#else
+#endif
 
 	// Get temporary demos file list name and purge old demos
 	snprintf(m_szTempDemoList, sizeof(m_szTempDemoList), "%stempdemolist.txt", m_szFullGameDirPath);
@@ -277,7 +280,10 @@ void CResults::PurgeDemos()
 						snprintf(fileName, sizeof(fileName), "%s%s", m_szFullGameDirPath, fname);
 						try
 						{
+#ifndef PLATFORM_MACOS
 							std::filesystem::remove(std::filesystem::u8path(fileName));
+#else
+#endif
 						}
 						catch (const std::exception &e)
 						{
@@ -316,7 +322,10 @@ void CResults::PurgeDemos()
 		}
 		fseek(file, writePos, SEEK_SET);
 		fclose(file);
+#ifndef PLATFORM_MACOS
 		std::filesystem::resize_file(std::filesystem::u8path(m_szTempDemoList), writePos);
+#else
+#endif
 	}
 }
 
@@ -339,24 +348,36 @@ bool CResults::GetResultsFilename(const char *extension, char *filename, char *f
 	strftime(filenameBuf, sizeof(filenameBuf), format, pTm);
 
 	char szRelPath[MAX_PATH];
+#ifndef PLATFORM_MACOS
 	std::filesystem::path fsRelPath;
+#else
+#endif
 
 	try
 	{
 		snprintf(szRelPath, sizeof(szRelPath), "%s.%s", filenameBuf, extension);
+#ifndef PLATFORM_MACOS
 		fsRelPath = std::filesystem::u8path(szRelPath);
+#else
+#endif
 
+#ifndef PLATFORM_MACOS
 		if (std::filesystem::exists(m_fsFullGameDirPath / fsRelPath))
+#else
+#endif
 		{
 			// File fount - append counter
 			int count = 1;
 
+#ifndef PLATFORM_MACOS
 			do
 			{
 				snprintf(szRelPath, sizeof(szRelPath), "%s-%03d.%s", filenameBuf, count, extension);
 				fsRelPath = std::filesystem::u8path(szRelPath);
 				count++;
 			} while (count < 999 && std::filesystem::exists(m_fsFullGameDirPath / fsRelPath));
+#else
+#endif
 
 			if (count >= 1000)
 			{
@@ -371,6 +392,7 @@ bool CResults::GetResultsFilename(const char *extension, char *filename, char *f
 		return false;
 	}
 
+#ifndef PLATFORM_MACOS
 	try
 	{
 		CreateDirectoryStructure(fsRelPath.parent_path());
@@ -380,6 +402,8 @@ bool CResults::GetResultsFilename(const char *extension, char *filename, char *f
 		ConPrintf(ConColor::Red, "Results: Couldn't create directories: %s\n", e.what());
 		return false;
 	}
+#else
+#endif
 
 	if (filename)
 		Q_strncpy(filename, szRelPath, MAX_PATH);
@@ -389,6 +413,7 @@ bool CResults::GetResultsFilename(const char *extension, char *filename, char *f
 	return true;
 }
 
+#ifndef PLATFORM_MACOS
 void CResults::CreateDirectoryStructure(std::filesystem::path relPath)
 {
 	std::filesystem::path p = m_fsFullGameDirPath;
@@ -419,3 +444,5 @@ void CResults::CreateDirectoryStructure(std::filesystem::path relPath)
 		}
 	}
 }
+#else
+#endif

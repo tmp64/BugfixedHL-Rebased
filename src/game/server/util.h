@@ -96,7 +96,9 @@ typedef int EOFFSET;
 typedef int BOOL;
 
 // In case this ever changes
+#ifndef M_PI
 #define M_PI 3.14159265358979323846
+#endif
 
 // This is the glue that hooks .MAP entity class names to our CPP classes
 // The _declspec forces them to be exported by name so we can do a lookup with GetProcAddress()

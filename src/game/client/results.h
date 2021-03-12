@@ -10,7 +10,11 @@
 //
 #ifndef RESULTS_H
 #define RESULTS_H
+// Another caveat of compiling for for i386 with a 10.13 SDK, no access to filesystem - they're very slow to adapt
+#ifndef PLATFORM_MACOS
 #include <filesystem>
+#else
+#endif
 #include <tier0/platform.h>
 
 class CResults
@@ -44,7 +48,10 @@ private:
 	// Contains path to gamedir with a trailing path separator
 	// e.g. "d:\\games\\half-life\\valve\\"
 	char m_szFullGameDirPath[MAX_PATH] = "";
+#ifndef PLATFORM_MACOS
 	std::filesystem::path m_fsFullGameDirPath;
+#else
+#endif
 
 	char m_szTempDemoList[MAX_PATH] = "";
 	char m_szCurrentResultsDemo[MAX_PATH] = "";
@@ -98,7 +105,10 @@ private:
 	 * Creates directories up to and including relPath in gamedir.
 	 * @param	relPath		Relative path from gamedir.
 	 */
+#ifndef PLATFORM_MACOS
 	void CreateDirectoryStructure(std::filesystem::path relPath);
+#else
+#endif
 };
 
 #endif

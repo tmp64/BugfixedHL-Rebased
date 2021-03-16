@@ -21,7 +21,7 @@
 #
 ###########################################################################
 
-prefix=/home/ezicman/proga_work/curl-7.75.0/out
+prefix=/home/tmp64/software/curl-7.75.0/_out
 exec_prefix=${prefix}
 includedir=${prefix}/include
 cppflag_curl_staticlib=
@@ -76,7 +76,7 @@ while test $# -gt 0; do
         ;;
 
     --cc)
-        echo "/usr/bin/gcc"
+        echo "/usr/bin/gcc-9"
         ;;
 
     --prefix)
@@ -155,13 +155,13 @@ while test $# -gt 0; do
         ;;
 
     --libs)
-        if test "X/home/ezicman/proga_work/curl-7.75.0/out/lib" != "X/usr/lib" -a "X/home/ezicman/proga_work/curl-7.75.0/out/lib" != "X/usr/lib64"; then
-           CURLLIBDIR="-L/home/ezicman/proga_work/curl-7.75.0/out/lib "
+        if test "X/home/tmp64/software/curl-7.75.0/_out/lib" != "X/usr/lib" -a "X/home/tmp64/software/curl-7.75.0/_out/lib" != "X/usr/lib64"; then
+           CURLLIBDIR="-L/home/tmp64/software/curl-7.75.0/_out/lib "
         else
            CURLLIBDIR=""
         fi
         if test "Xno" = "Xno"; then
-          echo ${CURLLIBDIR}-lcurl  -lgcc -lgcc_s -lc -lgcc -lgcc_s -ldl -lpthread /usr/lib32/libssl.so /usr/lib32/libcrypto.so /usr/lib32/libz.so
+          echo ${CURLLIBDIR}-lcurl  -lgcc -lgcc_s -lc -lgcc -lgcc_s -ldl -lpthread /usr/lib/i386-linux-gnu/libssl.so /usr/lib/i386-linux-gnu/libcrypto.so /usr/lib/i386-linux-gnu/libz.so
         else
           echo ${CURLLIBDIR}-lcurl
         fi
@@ -172,7 +172,7 @@ while test $# -gt 0; do
 
     --static-libs)
         if test "Xyes" != "Xno" ; then
-          echo /home/ezicman/proga_work/curl-7.75.0/out/lib/libcurl.a   -lgcc -lgcc_s -lc -lgcc -lgcc_s -ldl -lpthread /usr/lib32/libssl.so /usr/lib32/libcrypto.so /usr/lib32/libz.so
+          echo /home/tmp64/software/curl-7.75.0/_out/lib/libcurl.a   -lgcc -lgcc_s -lc -lgcc -lgcc_s -ldl -lpthread /usr/lib/i386-linux-gnu/libssl.so /usr/lib/i386-linux-gnu/libcrypto.so /usr/lib/i386-linux-gnu/libz.so
         else
           echo "curl was built with static libraries disabled" >&2
           exit 1

@@ -29,6 +29,8 @@ bhl::E_ApiInitResult bhl::InitServerApi()
 	// Load module
 #if defined(_WIN32)
 	const char *pszModule = "hl.dll";
+#elif defined(__APPLE__) || defined(PLATFORM_MACOS)
+	const char *pszModule = "hl.dylib";
 #elif defined(LINUX) || defined(PLATFORM_LINUX)
 	const char *pszModule = "hl.so";
 #else

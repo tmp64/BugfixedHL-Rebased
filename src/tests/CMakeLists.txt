@@ -10,7 +10,7 @@ if( BUILD_TESTING )
 			${TESTS_COMMON}
 			common/plat_windows.cpp
 		)
-	elseif( PLATFORM_LINUX )
+	elseif( PLATFORM_UNIX )
 		set( TESTS_COMMON
 			${TESTS_COMMON}
 			common/plat_linux.cpp
@@ -49,6 +49,7 @@ if( BUILD_TESTING )
 	)
 
 	target_link_libraries( test_client PRIVATE
+		${GAME_COMMON_LIBS}
 		tier1
 		vstdlib
 		tier0
@@ -78,6 +79,7 @@ if( BUILD_TESTING )
 	)
 
 	target_link_libraries( test_server PRIVATE
+		${GAME_COMMON_LIBS}
 		tier1
 		vstdlib
 		tier0

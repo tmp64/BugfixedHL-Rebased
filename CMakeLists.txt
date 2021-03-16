@@ -160,6 +160,18 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_CXX_COMPILER_FLAGS}" )
 
 unset( C_CXX_COMPILER_FLAGS )
 
+if (NOT HAS_STD_FILESYSTEM)
+	if( PLATFORM_MACOS )
+		# macOS 10.13 SDK doesn't have <filesystem>
+		set( HAS_STD_FILESYSTEM FALSE )
+		add_compile_definitions( HAS_STD_FILESYSTEM=0 )
+	else()
+		# MSVC 2017 and GCC 8+ support std::filesystem
+		set( HAS_STD_FILESYSTEM TRUE )
+		add_compile_definitions( HAS_STD_FILESYSTEM=1 )
+	endif()
+endif()
+
 #-----------------------------------------------------------------
 # Preprocessor definitions
 #-----------------------------------------------------------------
@@ -313,6 +325,15 @@ add_subdirectory( src/pm_shared )	# Sets HL_PM_SHARED_SRCS
 add_subdirectory( src/public )		# Sets HL_PUBLIC_SRCS
 add_subdirectory( src/game/shared )	# Sets GAME_SHARED_SRCS
 
+# This is a strange one. The rationale behind this is that the libiconv.tbd included with the 10.13 SDK provides _libiconv* symbols while the corresponding headers provides _iconv* definitions instead,
+# the reason this happens is that libiconv.tbd (in the SDK) references /usr/lib/libiconv.dylib (which is macOS version-dependent) and that copy of libiconv.dylib (on 10.13.6) provides _iconv*. The issue should be clear.
+# There probably should be a Findlibiconv.cmake eventually that resolves these issues. Until then, this solution works and should always force the right library to be used in any library that links against tier1 (and uses it).
+if( PLATFORM_MACOS )
+	set( GAME_COMMON_LIBS "/usr/lib/libiconv.dylib" )
+else()
+	set( GAME_COMMON_LIBS "" )
+endif()
+
 set( GAME_COMMON_SRCS
 	${HL_COMMON_SRCS}
 	${HL_ENGINE_SRCS}
@@ -351,6 +372,10 @@ set( UPDATER_LIBS "" )
 set( UPDATER_DEFINES USE_UPDATER=0 )
 
 if( USE_UPDATER )
+	if( NOT HAS_STD_FILESYSTEM )
+		message( FATAL_ERROR "Updater requires support for std::filesystem." )
+	endif()
+
 	option( CURL_STATICLIB "Enable if cURL was built as a static library" 0 )
 
 	if( WIN32 )
@@ -463,7 +488,8 @@ else()
 endif()
 
 # Link with dependencies
-target_link_libraries( client 
+target_link_libraries( client
+	${GAME_COMMON_LIBS}
 	${SOURCE_SDK_LIBS}
 	${UPDATER_LIBS}
 	pcre

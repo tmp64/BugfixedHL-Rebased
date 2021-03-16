@@ -10,7 +10,9 @@
 //
 #ifndef RESULTS_H
 #define RESULTS_H
+#if HAS_STD_FILESYSTEM
 #include <filesystem>
+#endif
 #include <tier0/platform.h>
 
 class CResults
@@ -41,6 +43,7 @@ public:
 	void AddLog(const char *text, bool chat);
 
 private:
+#if HAS_STD_FILESYSTEM
 	// Contains path to gamedir with a trailing path separator
 	// e.g. "d:\\games\\half-life\\valve\\"
 	char m_szFullGameDirPath[MAX_PATH] = "";
@@ -99,6 +102,7 @@ private:
 	 * @param	relPath		Relative path from gamedir.
 	 */
 	void CreateDirectoryStructure(std::filesystem::path relPath);
+#endif
 };
 
 #endif

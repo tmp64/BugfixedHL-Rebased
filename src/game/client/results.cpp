@@ -32,6 +32,7 @@
 
 static CResults s_Results;
 
+#if HAS_STD_FILESYSTEM
 // File format passed to strftime
 // <map> will be replaced with mapname
 static constexpr char FILENAME_FORMAT[] = "results\\%Y-%m\\<map>-%Y%m%d-%H%M%S";
@@ -40,6 +41,7 @@ static ConVar results_demo_autorecord("results_demo_autorecord", "0", FCVAR_BHL_
 static ConVar results_demo_keepdays("results_demo_keepdays", "14", FCVAR_BHL_ARCHIVE, "Days to keep automatically recorded demos");
 static ConVar results_log_chat("results_log_chat", "0", FCVAR_BHL_ARCHIVE, "Enable chat logging into a file");
 static ConVar results_log_other("results_log_other", "0", FCVAR_BHL_ARCHIVE, "Enable other messages (like kill messages and others in the console) logging into a file");
+#endif
 
 CResults &CResults::Get()
 {
@@ -48,6 +50,7 @@ CResults &CResults::Get()
 
 void CResults::Init()
 {
+#if HAS_STD_FILESYSTEM
 	HookCommand("agrecord", []() { CResults::Get().StartDemoRecording(); });
 
 	char buf[MAX_PATH];
@@ -85,10 +88,12 @@ void CResults::Init()
 	// Get temporary demos file list name and purge old demos
 	snprintf(m_szTempDemoList, sizeof(m_szTempDemoList), "%stempdemolist.txt", m_szFullGameDirPath);
 	PurgeDemos();
+#endif
 }
 
 void CResults::Frame()
 {
+#if HAS_STD_FILESYSTEM
 	int maxClients = gEngfuncs.GetMaxClients();
 	if (maxClients != m_iLastMaxClients)
 	{
@@ -117,10 +122,12 @@ void CResults::Frame()
 			m_bDemoRecording = false;
 		}
 	}
+#endif
 }
 
 void CResults::Think()
 {
+#if HAS_STD_FILESYSTEM
 	// Do start, but not in single-player and only once
 	if (m_iLastMaxClients > 1 && !m_bDemoRecordingStartIssued && !gHUD.m_iIntermission)
 	{
@@ -132,10 +139,12 @@ void CResults::Think()
 			StartDemoRecording();
 		}
 	}
+#endif
 }
 
 void CResults::AddLog(const char *text, bool chat)
 {
+#if HAS_STD_FILESYSTEM
 	// Check that we need to log this type of event
 	if (chat && !results_log_chat.GetBool() || !chat && !results_log_other.GetBool())
 		return;
@@ -162,7 +171,10 @@ void CResults::AddLog(const char *text, bool chat)
 		fprintf(m_pLogFile, "%s", text);
 	}
 	fflush(m_pLogFile);
+#endif
 }
+
+#if HAS_STD_FILESYSTEM
 
 void CResults::Start()
 {
@@ -419,3 +431,4 @@ void CResults::CreateDirectoryStructure(std::filesystem::path relPath)
 		}
 	}
 }
+#endif

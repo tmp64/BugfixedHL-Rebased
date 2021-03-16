@@ -87,7 +87,11 @@ int CServerTest::Run(int argc, char **argv)
 void CServerTest::FatalError(const std::string &msg)
 {
 	fprintf(stderr, "Fatal Error: %s\n", msg.c_str());
+#ifdef _LIBCPP_HAS_QUICK_EXIT
 	std::quick_exit(1);
+#else
+	exit(1);
+#endif
 }
 
 void CServerTest::LoadServerLib(const char *serverPath)

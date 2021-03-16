@@ -53,7 +53,7 @@ typedef char *LPSTR;
 #define MAX_PATH PATH_MAX
 #endif
 
-#ifdef PLATFORM_LINUX
+#ifdef PLATFORM_UNIX
 typedef struct POINT_s
 {
 	int x;

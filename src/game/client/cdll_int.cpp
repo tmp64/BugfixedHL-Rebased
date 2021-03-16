@@ -24,7 +24,11 @@ extern "C"
 }
 
 #include <cstring>
+
+#if HAS_STD_FILESYSTEM
 #include <filesystem>
+#endif
+
 #include <tier1/interface.h>
 #include <cl_dll/IGameClientExports.h>
 #include "hud.h"
@@ -54,6 +58,7 @@ void IN_Commands(void);
  */
 void CheckWorkingDirectory()
 {
+#if HAS_STD_FILESYSTEM
 	namespace fs = std::filesystem;
 
 	try
@@ -100,6 +105,7 @@ void CheckWorkingDirectory()
 
 		GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Internal error", buf);
 	}
+#endif
 }
 
 /*

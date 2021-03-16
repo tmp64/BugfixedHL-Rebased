@@ -375,13 +375,13 @@ if( USE_UPDATER )
 		find_package( OpenSSL REQUIRED )
 		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/libzip_linux/lib/cmake" NO_DEFAULT_PATH )
 
-		set( UPDATER_LIBS OpenSSL::SSL )
+		set( UPDATER_LIBS OpenSSL::Crypto OpenSSL::SSL OpenSSL::Crypto OpenSSL::SSL )
 	endif()
 
 	find_package( CURL MODULE REQUIRED )
 	set( UPDATER_LIBS
-		${UPDATER_LIBS}
 		${CURL_LIBRARIES}
+		${UPDATER_LIBS}
 		nlohmann_json
 		libzip::zip
 	)

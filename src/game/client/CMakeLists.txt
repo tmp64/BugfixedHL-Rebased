@@ -91,7 +91,7 @@ if( WIN32 )
 else()
 	add_sources(
 		engine_patches_linux.cpp
-		net_stub.cpp
+		net_linux.cpp
 	)
 endif()
 

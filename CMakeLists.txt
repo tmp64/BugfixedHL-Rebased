@@ -352,10 +352,9 @@ set( UPDATER_DEFINES USE_UPDATER=0 )
 
 if( USE_UPDATER )
 	option( CURL_STATICLIB "Enable if cURL was built as a static library" 0 )
+	option( CURL_REPO_LIBS "Use static curl from external/curl" 1 )
 
 	if( WIN32 )
-		option( CURL_REPO_LIBS "Use static curl from external/curl on Windows" 1 )
-		
 		if( CURL_REPO_LIBS )
 			set( CURL_STATICLIB 1 CACHE BOOL "" FORCE )
 			set( CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/include" CACHE PATH "" FORCE )
@@ -366,12 +365,22 @@ if( USE_UPDATER )
 		
 		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/libzip/lib/cmake" NO_DEFAULT_PATH )
 	else()
+		if( CURL_REPO_LIBS )
+			set( CURL_STATICLIB 1 CACHE BOOL "" FORCE )
+			set( CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/curl_linux/include" CACHE PATH "" FORCE )
+			set( CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/external/curl_linux/lib/libcurl.a" CACHE FILEPATH "" FORCE )
+		endif()
+
 		find_package( ZLIB REQUIRED )
+		find_package( OpenSSL REQUIRED )
 		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/libzip_linux/lib/cmake" NO_DEFAULT_PATH )
+
+		set( UPDATER_LIBS OpenSSL::SSL )
 	endif()
 
 	find_package( CURL MODULE REQUIRED )
 	set( UPDATER_LIBS
+		${UPDATER_LIBS}
 		${CURL_LIBRARIES}
 		nlohmann_json
 		libzip::zip

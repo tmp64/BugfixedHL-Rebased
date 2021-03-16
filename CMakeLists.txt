@@ -160,6 +160,18 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_CXX_COMPILER_FLAGS}" )
 
 unset( C_CXX_COMPILER_FLAGS )
 
+if (NOT HAS_STD_FILESYSTEM)
+	if( PLATFORM_MACOS )
+		# macOS 10.13 SDK doesn't have <filesystem>
+		set( HAS_STD_FILESYSTEM FALSE )
+		add_compile_definitions( HAS_STD_FILESYSTEM=0 )
+	else()
+		# MSVC 2017 and GCC 8+ support std::filesystem
+		set( HAS_STD_FILESYSTEM TRUE )
+		add_compile_definitions( HAS_STD_FILESYSTEM=1 )
+	endif()
+endif()
+
 #-----------------------------------------------------------------
 # Preprocessor definitions
 #-----------------------------------------------------------------
@@ -360,6 +372,10 @@ set( UPDATER_LIBS "" )
 set( UPDATER_DEFINES USE_UPDATER=0 )
 
 if( USE_UPDATER )
+	if( NOT HAS_STD_FILESYSTEM )
+		message( FATAL_ERROR "Updater requires support for std::filesystem." )
+	endif()
+
 	option( CURL_STATICLIB "Enable if cURL was built as a static library" 0 )
 
 	if( WIN32 )

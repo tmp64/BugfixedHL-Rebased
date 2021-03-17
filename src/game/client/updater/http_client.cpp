@@ -25,7 +25,8 @@ void CHttpClient::Shutdown()
 	m_bShutdown = true;
 	m_CondVar.notify_all();
 	lock.unlock();
-	if (m_WorkerThread.joinable()) {
+	if (m_WorkerThread.joinable())
+	{
 		m_WorkerThread.join();
 	}
 }

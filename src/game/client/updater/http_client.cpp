@@ -25,7 +25,9 @@ void CHttpClient::Shutdown()
 	m_bShutdown = true;
 	m_CondVar.notify_all();
 	lock.unlock();
-	m_WorkerThread.join();
+	if (m_WorkerThread.joinable()) {
+		m_WorkerThread.join();
+	}
 }
 
 std::shared_ptr<CHttpClient::DownloadStatus> CHttpClient::Get(Request &req)

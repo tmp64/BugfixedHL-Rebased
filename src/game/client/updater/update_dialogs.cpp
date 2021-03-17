@@ -112,8 +112,10 @@ void CUpdateNotificationDialog::Activate()
 	m_pNewVersionLabel->SizeToContents();
 
 	const std::string &changelog = CUpdateChecker::Get().GetChangelog();
+	std::vector<char> buf(changelog.size() + 1);
+	V_StrSubst(changelog.data(), "\r\n", "\n", buf.data(), buf.size());
 	std::vector<wchar_t> wbuf(changelog.size() + 1);
-	Q_UTF8ToWString(changelog.c_str(), wbuf.data(), wbuf.size() * sizeof(wchar_t), STRINGCONVERT_REPLACE);
+	Q_UTF8ToWString(buf.data(), wbuf.data(), wbuf.size() * sizeof(wchar_t), STRINGCONVERT_REPLACE);
 	m_pChangelog->SetText(wbuf.data());
 
 	m_pUpdatesCheckBtn->SetSelected(cl_check_for_updates.GetBool());

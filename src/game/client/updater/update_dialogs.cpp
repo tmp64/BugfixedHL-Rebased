@@ -107,7 +107,9 @@ void CUpdateNotificationDialog::OnCommand(const char *pszCmd)
 void CUpdateNotificationDialog::Activate()
 {
 	m_pOldVersionLabel->SetText(VerToString(CUpdateChecker::Get().GetCurVersion()));
+	m_pOldVersionLabel->SizeToContents();
 	m_pNewVersionLabel->SetText(VerToString(CUpdateChecker::Get().GetLatestVersion()));
+	m_pNewVersionLabel->SizeToContents();
 
 	const std::string &changelog = CUpdateChecker::Get().GetChangelog();
 	std::vector<wchar_t> wbuf(changelog.size() + 1);

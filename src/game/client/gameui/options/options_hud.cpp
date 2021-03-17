@@ -47,6 +47,7 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_TimerItems[3] = m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer3", new KeyValues("LocalTime", "value", 3));
 
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/HudSubOptions.res");
+	m_pOpacityLabel->MoveToFront();	// Obscured by the slider
 }
 
 void CHudSubOptions::OnResetData()

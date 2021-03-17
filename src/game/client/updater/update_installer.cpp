@@ -1392,6 +1392,8 @@ void CUpdateInstaller::ErrorOccured(const wchar_t *str)
 		str = g_pVGuiLocalize->Find("#BHL_Update_InternalError");
 	}
 
+	m_Status = Status::None;
+
 	if (m_bIsInProcess)
 		CleanUp();
 

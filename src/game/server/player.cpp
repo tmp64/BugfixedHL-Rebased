@@ -2643,7 +2643,7 @@ void CBasePlayer::PostThink()
 	// of maximum safe distance will make no sound. Falling farther than max safe distance will play a
 	// fallpain sound, and damage will be inflicted based on how far the player fell
 
-	if ((FBitSet(pev->flags, FL_ONGROUND)) && (pev->health > 0) && m_flFallVelocity >= PLAYER_FALL_PUNCH_THRESHHOLD && falldamage.value != 2.f)
+	if ((FBitSet(pev->flags, FL_ONGROUND)) && (pev->health > 0) && m_flFallVelocity >= PLAYER_FALL_PUNCH_THRESHHOLD)
 	{
 		// ALERT ( at_console, "%f\n", m_flFallVelocity );
 

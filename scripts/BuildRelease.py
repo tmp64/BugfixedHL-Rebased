@@ -186,6 +186,7 @@ class BuildScript:
     vs_toolset = ''
     linux_compiler = ''
     release_version = ''
+    release_version_array = []
 
     cmake_binary = ''
     cmake_args = []
@@ -292,6 +293,8 @@ class BuildScript:
         if args.v_meta:
             self.release_version = "{}+{}".format(self.release_version, args.v_meta)
 
+        self.release_version_array = [args.v_major, args.v_minor, args.v_patch, args.v_tag]
+
         # Set output directory
         self.out_dir_name = 'BugfixedHL-{}-{}-{}-{}-{}'.format(
             self.release_version.replace('+', '-'),
@@ -353,6 +356,15 @@ class BuildScript:
             args.extend(['-B', self.paths.build])
             args.extend(self.platform.get_cmake_args())
             args.extend(['-DUSE_UPDATER=TRUE'])
+            args.extend(['-DBHL_VERSION_MAJOR=' + str(self.release_version_array[0])])
+            args.extend(['-DBHL_VERSION_MINOR=' + str(self.release_version_array[1])])
+            args.extend(['-DBHL_VERSION_PATCH=' + str(self.release_version_array[2])])
+
+            if self.release_version_array[3] == '':
+                args.extend(['-DBHL_VERSION_TAG=no_tag'])
+            else:
+                args.extend(['-DBHL_VERSION_TAG=' + self.release_version_array[3]])
+
             args.extend(self.cmake_args)
 
             if self.platform.need_cmake_build_type_var():

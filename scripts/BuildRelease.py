@@ -252,15 +252,15 @@ class BuildScript:
                             help='build for GitHub Actions')
 
         # Version override
-        parser.add_argument('--v-major', action='store', type=int, default=self.DEFAULT_VERSION[0],
+        parser.add_argument('--v-major', action='store', type=int, default=DEFAULT_VERSION[0],
                             help='sets major version number')
-        parser.add_argument('--v-minor', action='store', type=int, default=self.DEFAULT_VERSION[1],
+        parser.add_argument('--v-minor', action='store', type=int, default=DEFAULT_VERSION[1],
                             help='sets minor version number')
-        parser.add_argument('--v-patch', action='store', type=int, default=self.DEFAULT_VERSION[2],
+        parser.add_argument('--v-patch', action='store', type=int, default=DEFAULT_VERSION[2],
                             help='sets patch version number')
-        parser.add_argument('--v-tag', action='store', default=self.DEFAULT_VERSION[3],
+        parser.add_argument('--v-tag', action='store', default=DEFAULT_VERSION[3],
                             help='sets version tag')
-        parser.add_argument('--v-meta', action='store', default=self.DEFAULT_VERSION[4],
+        parser.add_argument('--v-meta', action='store', default=DEFAULT_VERSION[4],
                             help='sets version metadata')
 
         # Parse arguments

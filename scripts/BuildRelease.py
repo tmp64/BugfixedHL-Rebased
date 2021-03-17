@@ -12,6 +12,10 @@ import zipfile
 from CreateMetadata import create_metadata
 
 
+# Also needs to be changed in CMakeLists.txt
+DEFAULT_VERSION = [1, 6, 0, 'dev', '']
+
+
 # ---------------------------------------------
 # Platform stuff
 # ---------------------------------------------
@@ -166,7 +170,6 @@ class BuildScript:
         archive_root = ''
         archive_files = ''
 
-    DEFAULT_VERSION = [0, 1, 0, 'dev', '']
     allowed_targets = ['client', 'server']
     allowed_build_types = ['debug', 'release']
 

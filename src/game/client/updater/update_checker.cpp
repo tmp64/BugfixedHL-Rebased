@@ -253,11 +253,24 @@ void CUpdateChecker::OnDataLoaded(CHttpClient::Response &resp)
 			else
 				Assert(false);
 
-			const std::string &name = asset.at("name").get<std::string>();
-			if (name.find("client") != name.npos && name.find(platformName) != name.npos)
+			const std::string name = asset.at("name").get<std::string>();
+
+			if (name.find("client") != name.npos)
 			{
-				m_ZipURL = asset.at("browser_download_url").get<std::string>();
-				break;
+				const std::string url = asset.at("browser_download_url").get<std::string>();
+
+				if (name.find(platformName) != name.npos)
+				{
+					// If has platform name, it's definitely the right one
+					m_ZipURL = url;
+					break;
+				}
+				else
+				{
+					// If doesn't have platform name, use if no other found
+					if (m_ZipURL.empty())
+						m_ZipURL = url;
+				}
 			}
 		}
 

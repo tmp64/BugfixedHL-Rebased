@@ -461,6 +461,7 @@ void CHud::Shutdown()
 {
 #if USE_UPDATER
 	CUpdateInstaller::Get().Shutdown();
+	CHttpClient::Get().Shutdown();
 #endif
 	bhlcfg::Shutdown();
 	ClientVoiceMgr_Shutdown();

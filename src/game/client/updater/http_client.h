@@ -110,6 +110,11 @@ public:
 	~CHttpClient();
 
 	/**
+	 * Stops worker thread.
+	 */
+	void Shutdown();
+
+	/**
 	 * Performs a GET request.
 	 * Request is invalidated by this call.
 	 */

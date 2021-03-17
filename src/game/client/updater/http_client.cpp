@@ -16,6 +16,11 @@ CHttpClient::CHttpClient()
 
 CHttpClient::~CHttpClient()
 {
+	Shutdown();
+}
+
+void CHttpClient::Shutdown()
+{
 	std::unique_lock<std::mutex> lock(m_Mutex);
 	m_bShutdown = true;
 	m_CondVar.notify_all();

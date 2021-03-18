@@ -54,6 +54,8 @@ extern edict_t *EntSelectSpawnPoint(CBasePlayer *pPlayer);
 extern CGraph WorldGraph;
 
 ConVar mp_teamspawn("mp_teamspawn", "0", FCVAR_SERVER, "When teamplay is enabled, players will be spawned on team spawns if the map has them");
+ConVar mp_weaponbox_time("mp_weaponbox_time", "120", FCVAR_SERVER, "Dead player's weapons will stay for this many seconds, 0 disables them, -1 forever");
+ConVar mp_weapondrop_time("mp_weapondrop_time", "0", FCVAR_SERVER, "Manually dropped weapons will stay for this many seconds, 0 forever");
 
 #define TRAIN_ACTIVE  0x80
 #define TRAIN_NEW     0xc0
@@ -716,7 +718,7 @@ void CBasePlayer::PackDeadPlayerItems(void)
 	iWeaponRules = g_pGameRules->DeadPlayerWeapons(this);
 	iAmmoRules = g_pGameRules->DeadPlayerAmmo(this);
 
-	if (iWeaponRules == GR_PLR_DROP_GUN_NO && iAmmoRules == GR_PLR_DROP_AMMO_NO)
+	if (mp_weaponbox_time.GetFloat() == 0 || (iWeaponRules == GR_PLR_DROP_GUN_NO && iAmmoRules == GR_PLR_DROP_AMMO_NO))
 	{
 		// nothing to pack. Remove the weapons and return. Don't call create on the box!
 		RemoveAllItems(TRUE);
@@ -796,8 +798,16 @@ void CBasePlayer::PackDeadPlayerItems(void)
 	pWeaponBox->pev->angles.x = 0; // don't let weaponbox tilt.
 	pWeaponBox->pev->angles.z = 0;
 
-	pWeaponBox->SetThink(&CWeaponBox::Kill);
-	pWeaponBox->pev->nextthink = gpGlobals->time + 120;
+	if (mp_weaponbox_time.GetFloat() > 0)
+	{
+		pWeaponBox->SetThink(&CWeaponBox::Kill);
+		pWeaponBox->pev->nextthink = gpGlobals->time + mp_weaponbox_time.GetFloat();
+	}
+	else
+	{
+		// Stays forever
+		pWeaponBox->pev->nextthink = 0;
+	}
 
 	// back these two lists up to their first elements
 	iPA = 0;
@@ -4729,6 +4739,17 @@ void CBasePlayer::DropPlayerItem(char *pszItemName)
 	pWeaponBox->pev->angles.z = 0;
 	pWeaponBox->PackWeapon(pWeapon);
 	pWeaponBox->pev->velocity = gpGlobals->v_forward * 300 + gpGlobals->v_forward * 100;
+
+	if (mp_weapondrop_time.GetFloat() > 0)
+	{
+		pWeaponBox->SetThink(&CWeaponBox::Kill);
+		pWeaponBox->pev->nextthink = gpGlobals->time + mp_weapondrop_time.GetFloat();
+	}
+	else
+	{
+		// Stays forever
+		pWeaponBox->pev->nextthink = 0;
+	}
 
 	// drop half of the ammo for this weapon.
 	int iAmmoIndex = GetAmmoIndex(pWeapon->pszAmmo1()); // ???

@@ -291,7 +291,7 @@ void UTIL_PrecacheOtherWeapon(const char *szClassname)
 }
 
 // called by worldspawn
-void W_Precache(void)
+void EXPORT W_Precache(void)
 {
 	memset(CBasePlayerItem::ItemInfoArray, 0, sizeof(CBasePlayerItem::ItemInfoArray));
 	memset(CBasePlayerItem::AmmoInfoArray, 0, sizeof(CBasePlayerItem::AmmoInfoArray));

@@ -260,8 +260,8 @@ public:
 
 	virtual CBasePlayerItem *GetWeaponPtr(void) { return NULL; };
 
-	static ItemInfo ItemInfoArray[MAX_WEAPONS];
-	static AmmoInfo AmmoInfoArray[MAX_AMMO_SLOTS];
+	static EXPORT ItemInfo ItemInfoArray[MAX_WEAPONS];
+	static EXPORT AmmoInfo AmmoInfoArray[MAX_AMMO_SLOTS];
 
 	CBasePlayer *m_pPlayer;
 	CBasePlayerItem *m_pNext;
@@ -364,7 +364,7 @@ protected:
 class CBasePlayerAmmo : public CBaseEntity
 {
 public:
-	virtual void Spawn(void);
+	virtual void EXPORT Spawn(void);
 	void EXPORT DefaultTouch(CBaseEntity *pOther); // default weapon touch
 	virtual BOOL AddAmmo(CBaseEntity *pOther) { return TRUE; };
 

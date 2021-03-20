@@ -87,7 +87,7 @@ Collects multiple small damages into a single damage
 //
 // ClearMultiDamage - resets the global multi damage accumulator
 //
-void EXPORT ClearMultiDamage(void)
+void ClearMultiDamage(void)
 {
 	gMultiDamage.pEntity = NULL;
 	gMultiDamage.amount = 0;
@@ -100,7 +100,7 @@ void EXPORT ClearMultiDamage(void)
 // GLOBALS USED:
 //		gMultiDamage
 
-void EXPORT ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker)
+void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker)
 {
 	Vector vecSpot1; //where blood comes from
 	Vector vecDir; //direction blood should go

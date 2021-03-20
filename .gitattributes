@@ -1,0 +1,2 @@
+# Checkout gamedir files with LF line endings on all platforms
+/gamedir/* text eol=lf

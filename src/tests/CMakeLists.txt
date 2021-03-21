@@ -67,7 +67,7 @@ if( BUILD_TESTING )
 		${TESTS_SERVER}
 	)
 
-	add_dependencies( test_client hl )
+	add_dependencies( test_server hl )
 
 	target_include_directories( test_server PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/common

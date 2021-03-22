@@ -10,6 +10,6 @@ Name: libzip
 Description: library for handling zip archives
 Version: 1.7.3
 Libs:  -L${libdir} -lzip
-Libs.private:  -ladvapi32 -lbcrypt -lz
+Libs.private:  -ladvapi32 -lz
 Cflags: -I${includedir}
 

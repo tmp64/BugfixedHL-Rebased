@@ -633,7 +633,7 @@ void CL_DLLEXPORT IN_MouseEvent(int mstate)
 {
 	int i;
 
-	if (iMouseInUse || g_pVGuiSurface->IsCursorVisible())
+	if (iMouseInUse || (g_pVGuiSurface && g_pVGuiSurface->IsCursorVisible()))
 	{
 		// Allow to release keys if they were pressed before mouse became used
 		for (int i = 0; i < mouse_buttons; i++)

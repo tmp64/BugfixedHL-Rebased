@@ -122,7 +122,10 @@ void CClientMOTD::Close()
 void CClientMOTD::Activate(const char *title, const char *msg)
 {
 	m_pMessage->SetVisible(true);
-	m_pMessageHtml->SetVisible(false);
+
+	if (m_pMessageHtml)
+		m_pMessageHtml->SetVisible(false);
+
 	BaseClass::Activate();
 
 	SetTitle(title, false);
@@ -135,6 +138,10 @@ void CClientMOTD::Activate(const char *title, const char *msg)
 
 void CClientMOTD::ActivateHtml(const char *title, const char *msg)
 {
+	AssertMsg(m_pMessageHtml, "CClientMOTD::ActivateHtml on unsupported client");
+	if (!m_pMessageHtml)
+		return;
+
 	char localURL[MAX_HTML_FILENAME_LENGTH + 7];
 
 	m_pMessage->SetVisible(false);

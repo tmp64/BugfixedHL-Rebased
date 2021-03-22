@@ -1,6 +1,10 @@
+#include <FileSystem.h>
+#include <tier2/tier2.h>
 #include "hud.h"
 #include "cl_util.h"
 #include "http_client.h"
+
+constexpr char CA_FILE_PATH[] = "ui/resource/ca-certificates.crt";
 
 CHttpClient &CHttpClient::Get()
 {
@@ -137,6 +141,30 @@ void CHttpClient::WorkerThreadFunc() noexcept
 	curl_easy_setopt(hCurl, CURLOPT_WRITEFUNCTION, WriteData);
 	curl_easy_setopt(hCurl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
 	curl_easy_setopt(hCurl, CURLOPT_NOPROGRESS, 0);
+
+	// Set SSL cert path
+#ifdef PLATFORM_WINDOWS
+	{
+		char buf[MAX_PATH];
+		wchar_t wbuf[MAX_PATH];
+
+		// filesystem_stdio is thread safe -- see CFileSystem_Stdio::IsThreadSafe
+		if (g_pFullFileSystem->GetLocalPath(CA_FILE_PATH, buf, sizeof(buf)))
+		{
+			// Convert path to ANSI
+			int count = MultiByteToWideChar(CP_UTF8, 0, buf, -1, wbuf, std::size(wbuf));
+			WideCharToMultiByte(CP_ACP, 0, wbuf, count, buf, sizeof(buf), nullptr, nullptr);
+
+			// Set CAINFO
+			curl_easy_setopt(hCurl, CURLOPT_CAINFO, buf);
+		}
+		else
+		{
+			// File not found
+			LogPrintf(ConColor::Red, "HTTP Client: %s not found\n", CA_FILE_PATH);
+		}
+	}
+#endif
 
 	if (gEngfuncs.CheckParm("-bhl_no_ssl_check", nullptr))
 	{

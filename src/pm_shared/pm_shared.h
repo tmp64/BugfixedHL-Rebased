@@ -46,4 +46,13 @@ void PM_SetBHopCapEnabled(int state);
 #define OBS_MAP_FREE     5
 #define OBS_MAP_CHASE    6
 
+#ifdef CLIENT_DLL
+// Spectator Mode
+extern int pm_iJumpSpectator;
+#ifndef DISABLE_JUMP_ORIGIN
+extern float pm_vJumpOrigin[3];
+extern float pm_vJumpAngles[3];
+#endif
+#endif
+
 #endif

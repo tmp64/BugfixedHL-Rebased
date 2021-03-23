@@ -27,14 +27,12 @@
 #include <stdlib.h> // atoi
 #include <ctype.h> // isspace
 
-static Vector vec3_origin = { 0, 0, 0 };
-
 #ifdef CLIENT_DLL
 // Spectator Mode
-int iJumpSpectator;
+int pm_iJumpSpectator;
 #ifndef DISABLE_JUMP_ORIGIN
-float vJumpOrigin[3];
-float vJumpAngles[3];
+float pm_vJumpOrigin[3];
+float pm_vJumpAngles[3];
 #endif
 #endif
 
@@ -380,7 +378,7 @@ void PM_PlayStepSound(int step, float fvol)
 	VectorCopy(pmove->velocity, hvel);
 	hvel[2] = 0.0;
 
-	if (pmove->multiplayer && (!g_onladder && Length(hvel) <= 220))
+	if (pmove->multiplayer && (!g_onladder && hvel.Length() <= 220))
 		return;
 
 	// irand - 0,1 for right foot, 2,3 for left foot
@@ -666,7 +664,7 @@ void PM_UpdateStepSound(void)
 
 	PM_CatagorizeTextureType();
 
-	speed = Length(pmove->velocity);
+	speed = pmove->velocity.Length();
 
 	// determine if we are on a ladder
 	fLadder = (pmove->movetype == MOVETYPE_FLY); // IsOnLadder();
@@ -688,7 +686,7 @@ void PM_UpdateStepSound(void)
 	// If we're on a ladder or on the ground, and we're moving fast enough,
 	//  play step sound.  Also, if pmove->flTimeStepSound is zero, get the new
 	//  sound right away - we just started moving in new level.
-	if ((fLadder || (pmove->onground != -1)) && (Length(pmove->velocity) > 0.0) && (speed >= velwalk || !pmove->flTimeStepSound))
+	if ((fLadder || (pmove->onground != -1)) && (pmove->velocity.Length() > 0.0) && (speed >= velwalk || !pmove->flTimeStepSound))
 	{
 		fWalking = speed < velrun;
 
@@ -1236,7 +1234,7 @@ void PM_WalkMove()
 	// Add in any base velocity to the current velocity.
 	VectorAdd(pmove->velocity, pmove->basevelocity, pmove->velocity);
 
-	spd = Length(pmove->velocity);
+	spd = pmove->velocity.Length();
 
 	if (spd < 1.0f)
 	{
@@ -1927,21 +1925,21 @@ void PM_SpectatorMove(void)
 
 #ifdef CLIENT_DLL
 		// jump only in roaming mode
-		if (iJumpSpectator)
+		if (pm_iJumpSpectator)
 		{
-			VectorCopy(vJumpOrigin, pmove->origin);
-			VectorCopy(vJumpAngles, pmove->angles);
+			VectorCopy(pm_vJumpOrigin, pmove->origin);
+			VectorCopy(pm_vJumpAngles, pmove->angles);
 			VectorCopy(vec3_origin, pmove->velocity);
-			iJumpSpectator = 0;
+			pm_iJumpSpectator = 0;
 			return;
 		}
 #endif // CLIENT_DLL
 
 		// Move around in normal spectator method
-		speed = Length(pmove->velocity);
+		speed = pmove->velocity.Length();
 		if (speed < 1)
 		{
-			VectorCopy(vec3_origin, pmove->velocity)
+			VectorCopy(vec3_origin, pmove->velocity);
 		}
 		else
 		{
@@ -2249,7 +2247,7 @@ void PM_LadderMove(physent_t *pLadder)
 		if (!s_iIsAg && (pmove->flags & FL_DUCKING))
 			climbSpeed *= PLAYER_DUCKING_MULTIPLIER;
 
-		AngleVectors(pmove->angles, vpn, v_right, NULL);
+		AngleVectors(pmove->angles, &vpn, &v_right, nullptr);
 
 		if (pmove->cmd.buttons & IN_BACK)
 			forward -= climbSpeed;
@@ -2512,7 +2510,7 @@ void PM_Physics_Toss()
 			VectorScale(pmove->velocity, (1.0 - trace.fraction) * pmove->frametime * 0.9, move);
 			trace = PM_PushEntity(move);
 		}
-		VectorSubtract(pmove->velocity, base, pmove->velocity)
+		VectorSubtract(pmove->velocity, base, pmove->velocity);
 	}
 
 	// check for in water
@@ -2576,7 +2574,7 @@ void PM_PreventMegaBunnyJumping(void)
 	if (maxscaledspeed <= 0.0f)
 		return;
 
-	spd = Length(pmove->velocity);
+	spd = pmove->velocity.Length();
 
 	if (spd <= maxscaledspeed)
 		return;
@@ -2697,7 +2695,7 @@ void PM_Jump(void)
 	{
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.
-		if (cansuperjump && (pmove->cmd.buttons & IN_DUCK) && (pmove->flDuckTime > 0) && Length(pmove->velocity) > 50)
+		if (cansuperjump && (pmove->cmd.buttons & IN_DUCK) && (pmove->flDuckTime > 0) && (pmove->velocity.Length() > 50))
 		{
 			pmove->punchangle[0] = -5;
 
@@ -2920,7 +2918,7 @@ float PM_CalcRoll(Vector angles, Vector velocity, float rollangle, float rollspe
 	float value;
 	Vector forward, right, up;
 
-	AngleVectors(angles, forward, right, up);
+	AngleVectors(angles, &forward, &right, &up);
 
 	side = DotProduct(velocity, right);
 
@@ -3082,7 +3080,7 @@ void PM_PlayerMove(qboolean server)
 	PM_ReduceTimers();
 
 	// Convert view angles to vectors
-	AngleVectors(pmove->angles, pmove->forward, pmove->right, pmove->up);
+	AngleVectors(pmove->angles, &pmove->forward, &pmove->right, &pmove->up);
 
 	// PM_ShowClipBox();
 

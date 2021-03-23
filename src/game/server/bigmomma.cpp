@@ -1120,7 +1120,7 @@ void CBMortar::Animate(void)
 	if (gpGlobals->time > pev->dmgtime)
 	{
 		pev->dmgtime = gpGlobals->time + 0.2;
-		MortarSpray(pev->origin, -pev->velocity.Normalize(), gSpitSprite, 3);
+		MortarSpray(pev->origin, -pev->velocity.Normalized(), gSpitSprite, 3);
 	}
 	if (pev->frame++)
 	{
@@ -1176,7 +1176,7 @@ void CBMortar::Touch(CBaseEntity *pOther)
 	else
 	{
 		tr.vecEndPos = pev->origin;
-		tr.vecPlaneNormal = -1 * pev->velocity.Normalize();
+		tr.vecPlaneNormal = -1 * pev->velocity.Normalized();
 	}
 	// make some flecks
 	MortarSpray(tr.vecEndPos, tr.vecPlaneNormal, gSpitSprite, 24);

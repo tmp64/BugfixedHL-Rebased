@@ -94,7 +94,7 @@ CStomp *CStomp::StompCreate(const Vector &origin, const Vector &end, float speed
 	pStomp->pev->origin = origin;
 	Vector dir = (end - origin);
 	pStomp->pev->scale = dir.Length();
-	pStomp->pev->movedir = dir.Normalize();
+	pStomp->pev->movedir = dir.Normalized();
 	pStomp->pev->speed = speed;
 	pStomp->Spawn();
 
@@ -575,7 +575,7 @@ void CGargantua ::FlameDamage(Vector vecStart, Vector vecEnd, entvars_t *pevInfl
 
 	float searchRadius = (vecStart - vecMid).Length();
 
-	Vector vecAim = (vecEnd - vecStart).Normalize();
+	Vector vecAim = (vecEnd - vecStart).Normalized();
 
 	// iterate on all entities in the vicinity.
 	while ((pEntity = UTIL_FindEntityInSphere(pEntity, vecMid, searchRadius)) != NULL)
@@ -620,7 +620,7 @@ void CGargantua ::FlameDamage(Vector vecStart, Vector vecEnd, entvars_t *pevInfl
 				if (tr.flFraction != 1.0)
 				{
 					ClearMultiDamage();
-					pEntity->TraceAttack(pevInflictor, flAdjustedDamage, (tr.vecEndPos - vecSrc).Normalize(), &tr, bitsDamageType);
+					pEntity->TraceAttack(pevInflictor, flAdjustedDamage, (tr.vecEndPos - vecSrc).Normalized(), &tr, bitsDamageType);
 					ApplyMultiDamage(pevInflictor, pevAttacker);
 				}
 				else
@@ -1261,7 +1261,7 @@ void CSpiral::Think(void)
 		pev->angles.y = (pev->health * 360 * 8) * fraction;
 		UTIL_MakeVectors(pev->angles);
 		position = position + gpGlobals->v_forward * radius;
-		direction = (direction + gpGlobals->v_forward).Normalize();
+		direction = (direction + gpGlobals->v_forward).Normalized();
 
 		StreakSplash(position, Vector(0, 0, 1), RANDOM_LONG(8, 11), 20, RANDOM_LONG(50, 150), 400);
 

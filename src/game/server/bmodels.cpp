@@ -509,7 +509,7 @@ void CFuncRotating ::HurtTouch(CBaseEntity *pOther)
 
 	pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
 
-	pevOther->velocity = (pevOther->origin - VecBModelOrigin(pev)).Normalize() * pev->dmg;
+	pevOther->velocity = (pevOther->origin - VecBModelOrigin(pev)).Normalized() * pev->dmg;
 }
 
 //
@@ -893,7 +893,7 @@ void CPendulum ::Touch(CBaseEntity *pOther)
 
 	pOther->TakeDamage(pev, pev, damage, DMG_CRUSH);
 
-	pevOther->velocity = (pevOther->origin - VecBModelOrigin(pev)).Normalize() * damage;
+	pevOther->velocity = (pevOther->origin - VecBModelOrigin(pev)).Normalized() * damage;
 }
 
 void CPendulum ::RopeTouch(CBaseEntity *pOther)

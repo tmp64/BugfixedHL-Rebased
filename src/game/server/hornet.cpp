@@ -275,12 +275,12 @@ void CHornet ::TrackTarget(void)
 		m_vecEnemyLKP = m_vecEnemyLKP + pev->velocity * m_flFlySpeed * 0.1;
 	}
 
-	vecDirToEnemy = (m_vecEnemyLKP - pev->origin).Normalize();
+	vecDirToEnemy = (m_vecEnemyLKP - pev->origin).Normalized();
 
 	if (pev->velocity.Length() < 0.1)
 		vecFlightDir = vecDirToEnemy;
 	else
-		vecFlightDir = pev->velocity.Normalize();
+		vecFlightDir = pev->velocity.Normalized();
 
 	// measure how far the turn is, the wider the turn, the slow we'll go this time.
 	flDelta = DotProduct(vecFlightDir, vecDirToEnemy);
@@ -306,7 +306,7 @@ void CHornet ::TrackTarget(void)
 		flDelta = 0.25;
 	}
 
-	pev->velocity = (vecFlightDir + vecDirToEnemy).Normalize();
+	pev->velocity = (vecFlightDir + vecDirToEnemy).Normalized();
 
 	if (pev->owner && (pev->owner->v.flags & FL_MONSTER))
 	{
@@ -385,7 +385,7 @@ void CHornet ::TrackTouch(CBaseEntity *pOther)
 	{
 		// hit something we don't want to hurt, so turn around.
 
-		pev->velocity = pev->velocity.Normalize();
+		pev->velocity = pev->velocity.Normalized();
 
 		pev->velocity.x *= -1;
 		pev->velocity.y *= -1;

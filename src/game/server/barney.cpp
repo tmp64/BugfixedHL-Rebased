@@ -443,7 +443,7 @@ static BOOL IsFacing(entvars_t *pevTest, const Vector &reference)
 {
 	Vector vecDir = (reference - pevTest->origin);
 	vecDir.z = 0;
-	vecDir = vecDir.Normalize();
+	vecDir = vecDir.Normalized();
 	Vector forward, angle;
 	angle = pevTest->v_angle;
 	angle.x = 0;

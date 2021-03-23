@@ -2281,7 +2281,7 @@ void PM_LadderMove(physent_t *pLadder)
 
 				// Perpendicular in the ladder plane
 				//Vector perp = CrossProduct( Vector(0,0,1), trace.vecPlaneNormal );
-				//perp = perp.Normalize();
+				//perp = perp.Normalized();
 				VectorClear(tmp);
 				tmp[2] = 1;
 				CrossProduct(tmp, trace.plane.normal, perp);

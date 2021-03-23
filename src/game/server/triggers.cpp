@@ -2320,7 +2320,7 @@ void CTriggerCamera::Move()
 
 			Vector delta = m_pentPath->pev->origin - pev->origin;
 			m_moveDistance = delta.Length();
-			pev->movedir = delta.Normalize();
+			pev->movedir = delta.Normalized();
 			m_flStopTime = gpGlobals->time + m_pentPath->GetDelay();
 		}
 	}

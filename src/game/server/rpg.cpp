@@ -223,7 +223,7 @@ void CRpgRocket ::FollowThink(void)
 		{
 			vecDir = pOther->pev->origin - pev->origin;
 			flDist = vecDir.Length();
-			vecDir = vecDir.Normalize();
+			vecDir = vecDir.Normalized();
 			flDot = DotProduct(gpGlobals->v_forward, vecDir);
 			if ((flDot > 0) && (flDist * (1 - flDot) < flMax))
 			{
@@ -245,7 +245,7 @@ void CRpgRocket ::FollowThink(void)
 			// go slow underwater
 			if (pev->velocity.Length() > 300)
 			{
-				pev->velocity = pev->velocity.Normalize() * 300;
+				pev->velocity = pev->velocity.Normalized() * 300;
 			}
 			UTIL_BubbleTrail(pev->origin - pev->velocity * 0.1, pev->origin, 4);
 		}
@@ -253,7 +253,7 @@ void CRpgRocket ::FollowThink(void)
 		{
 			if (pev->velocity.Length() > 2000)
 			{
-				pev->velocity = pev->velocity.Normalize() * 2000;
+				pev->velocity = pev->velocity.Normalized() * 2000;
 			}
 		}
 	}

@@ -1305,7 +1305,7 @@ void CBasePlayer::PlayerDeathThink(void)
 		if (flForward <= 0)
 			pev->velocity = g_vecZero;
 		else
-			pev->velocity = flForward * pev->velocity.Normalize();
+			pev->velocity = flForward * pev->velocity.Normalized();
 	}
 
 	if (HasWeapons())
@@ -4596,7 +4596,7 @@ Vector CBasePlayer ::AutoaimDeflection(Vector &vecSrc, float flDist, float flDel
 
 		center = pEntity->BodyTarget(vecSrc);
 
-		dir = (center - vecSrc).Normalize();
+		dir = (center - vecSrc).Normalized();
 
 		// make sure it's in front of the player
 		if (DotProduct(dir, gpGlobals->v_forward) < 0)
@@ -5045,7 +5045,7 @@ void CInfoIntermission::Think(void)
 
 	if (!FNullEnt(pTarget))
 	{
-		pev->v_angle = UTIL_VecToAngles((pTarget->v.origin - pev->origin).Normalize());
+		pev->v_angle = UTIL_VecToAngles((pTarget->v.origin - pev->origin).Normalized());
 		pev->v_angle.x = -pev->v_angle.x;
 	}
 }

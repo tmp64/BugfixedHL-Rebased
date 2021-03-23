@@ -460,7 +460,7 @@ void CIchthyosaur ::Spawn()
 
 	Vector Forward;
 	UTIL_MakeVectorsPrivate(pev->angles, Forward, 0, 0);
-	pev->velocity = m_flightSpeed * Forward.Normalize();
+	pev->velocity = m_flightSpeed * Forward.Normalized();
 	m_SaveVelocity = pev->velocity;
 }
 
@@ -594,8 +594,8 @@ void CIchthyosaur ::RunTask(Task_t *pTask)
 		{
 			Vector vecFrom = m_hEnemy->EyePosition();
 
-			Vector vecDelta = (pev->origin - vecFrom).Normalize();
-			Vector vecSwim = CrossProduct(vecDelta, Vector(0, 0, 1)).Normalize();
+			Vector vecDelta = (pev->origin - vecFrom).Normalized();
+			Vector vecSwim = CrossProduct(vecDelta, Vector(0, 0, 1)).Normalized();
 
 			if (DotProduct(vecSwim, m_SaveVelocity) < 0)
 				vecSwim = vecSwim * -1.0;
@@ -611,7 +611,7 @@ void CIchthyosaur ::RunTask(Task_t *pTask)
 			if (tr.flFraction > 0.5)
 				vecPos = tr.vecEndPos;
 
-			m_SaveVelocity = m_SaveVelocity * 0.8 + 0.2 * (vecPos - pev->origin).Normalize() * m_flightSpeed;
+			m_SaveVelocity = m_SaveVelocity * 0.8 + 0.2 * (vecPos - pev->origin).Normalized() * m_flightSpeed;
 
 			// ALERT( at_console, "m_SaveVelocity %.2f %.2f %.2f\n", m_SaveVelocity.x, m_SaveVelocity.y, m_SaveVelocity.z );
 
@@ -895,7 +895,7 @@ void CIchthyosaur::Swim()
 	d = DoProbe(start + PROBE_LENGTH / 3 * Forward - Up);
 
 	Vector SteeringVector = f + r + l + u + d;
-	m_SaveVelocity = (m_SaveVelocity + SteeringVector / 2).Normalize();
+	m_SaveVelocity = (m_SaveVelocity + SteeringVector / 2).Normalized();
 
 	Angles = Vector(-pev->angles.x, pev->angles.y, pev->angles.z);
 	UTIL_MakeVectorsPrivate(Angles, Forward, Right, Up);
@@ -1046,12 +1046,12 @@ Vector CIchthyosaur::DoProbe(const Vector &Probe)
 		Vector NormalToProbeAndWallNormal = CrossProduct(ProbeDir, WallNormal);
 		Vector SteeringVector = CrossProduct(NormalToProbeAndWallNormal, ProbeDir);
 
-		float SteeringForce = m_flightSpeed * (1 - frac) * (DotProduct(WallNormal.Normalize(), m_SaveVelocity.Normalize()));
+		float SteeringForce = m_flightSpeed * (1 - frac) * (DotProduct(WallNormal.Normalized(), m_SaveVelocity.Normalized()));
 		if (SteeringForce < 0.0)
 		{
 			SteeringForce = -SteeringForce;
 		}
-		SteeringVector = SteeringForce * SteeringVector.Normalize();
+		SteeringVector = SteeringForce * SteeringVector.Normalized();
 
 		return SteeringVector;
 	}

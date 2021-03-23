@@ -109,11 +109,11 @@ void CCrossbowBolt::BoltTouch(CBaseEntity *pOther)
 
 		if (pOther->IsPlayer())
 		{
-			pOther->TraceAttack(pevOwner, gSkillData.plrDmgCrossbowClient, pev->velocity.Normalize(), &tr, DMG_NEVERGIB);
+			pOther->TraceAttack(pevOwner, gSkillData.plrDmgCrossbowClient, pev->velocity.Normalized(), &tr, DMG_NEVERGIB);
 		}
 		else
 		{
-			pOther->TraceAttack(pevOwner, gSkillData.plrDmgCrossbowMonster, pev->velocity.Normalize(), &tr, DMG_BULLET | DMG_NEVERGIB);
+			pOther->TraceAttack(pevOwner, gSkillData.plrDmgCrossbowMonster, pev->velocity.Normalized(), &tr, DMG_BULLET | DMG_NEVERGIB);
 		}
 
 		ApplyMultiDamage(pev, pevOwner);
@@ -144,7 +144,7 @@ void CCrossbowBolt::BoltTouch(CBaseEntity *pOther)
 		if (FClassnameIs(pOther->pev, "worldspawn"))
 		{
 			// if what we hit is static architecture, can stay around for a while.
-			Vector vecDir = pev->velocity.Normalize();
+			Vector vecDir = pev->velocity.Normalized();
 			UTIL_SetOrigin(pev, pev->origin - vecDir * 12);
 			pev->angles = UTIL_VecToAngles(vecDir);
 			pev->avelocity.z = 0;

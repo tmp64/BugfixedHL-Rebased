@@ -212,7 +212,7 @@ void CSqueakGrenade::HuntThink(void)
 	// explode when ready
 	if (gpGlobals->time >= m_flDie)
 	{
-		g_vecAttackDir = pev->velocity.Normalize();
+		g_vecAttackDir = pev->velocity.Normalized();
 		pev->health = -1;
 		Killed(pev, 0);
 		return;
@@ -245,7 +245,7 @@ void CSqueakGrenade::HuntThink(void)
 
 	Vector vecFlat = pev->velocity;
 	vecFlat.z = 0;
-	vecFlat = vecFlat.Normalize();
+	vecFlat = vecFlat.Normalized();
 
 	UTIL_MakeVectors(pev->angles);
 
@@ -273,7 +273,7 @@ void CSqueakGrenade::HuntThink(void)
 		if (FVisible(m_hEnemy))
 		{
 			vecDir = m_hEnemy->EyePosition() - pev->origin;
-			m_vecTarget = vecDir.Normalize();
+			m_vecTarget = vecDir.Normalized();
 		}
 
 		float flVel = pev->velocity.Length();

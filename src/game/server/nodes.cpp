@@ -47,7 +47,13 @@ CGraph WorldGraph;
 
 LINK_ENTITY_TO_CLASS(info_node, CNodeEnt);
 LINK_ENTITY_TO_CLASS(info_node_air, CNodeEnt);
-#ifdef PLATFORM_UNIX
+#ifdef PLATFORM_WINDOWS
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include "winsani_in.h"
+#include "windows.h"
+#include "winsani_out.h"
+#else
 #include <unistd.h>
 #define CreateDirectory(p, n) mkdir(p, 0777)
 #endif

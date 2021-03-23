@@ -16,6 +16,7 @@
 // sound.cpp
 //=========================================================
 
+#include <cctype>
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -23,10 +24,6 @@
 #include "player.h"
 #include "talkmonster.h"
 #include "gamerules.h"
-
-#if !defined(_WIN32)
-#include <ctype.h>
-#endif
 
 static char *memfgets(byte *pMemFile, int fileSize, int &filePos, char *pBuffer, int bufferSize);
 

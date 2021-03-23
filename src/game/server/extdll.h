@@ -31,11 +31,10 @@
 #pragma warning(disable : 4514) // unreferenced inline function removed
 #pragma warning(disable : 4100) // unreferenced formal parameter
 
-#include "archtypes.h" // DAL
+#if defined(_WIN32) && defined(USE_METAMOD)
 
-// Prevent tons of unused windows definitions
-#ifdef _WIN32
-
+// Metamod requires windows.h on Windows
+// Defines prevent tons of unused windows definitions
 #define WIN32_LEAN_AND_MEAN
 #define NOWINRES
 #define NOSERVICE
@@ -46,21 +45,10 @@
 #include "windows.h"
 #include "winsani_out.h"
 
-#else // _WIN32
+#endif
 
-#define FALSE 0
-#define TRUE  (!FALSE)
-
-typedef uint32 ULONG;
-typedef unsigned char BYTE;
-typedef int BOOL;
-
-#define MAX_PATH PATH_MAX
-#include <limits.h>
-#include <stdarg.h>
-#include <string.h> // memset
-
-#endif //_WIN32
+#include "archtypes.h" // DAL
+#include <tier0/platform.h>
 
 // Misc C-runtime library headers
 #include "stdio.h"

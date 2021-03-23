@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#include <pm_shared.h>
 #include "hud.h"
 #include "cl_util.h"
 #include "const.h"
@@ -40,11 +41,6 @@
 extern engine_studio_api_t IEngineStudio;
 
 static int tracerCount[32];
-
-extern "C"
-{
-#include "pm_shared.h"
-}
 
 #define IS_FIRSTPERSON_SPEC (g_iUser1 == OBS_IN_EYE || (g_iUser1 && (CHudSpectator::Get()->m_pip->value == INSET_IN_EYE)))
 

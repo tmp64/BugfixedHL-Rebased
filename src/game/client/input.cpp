@@ -10,12 +10,8 @@
 #include "cl_util.h"
 #include "camera.h"
 
-extern "C"
-{
-#include <pm_shared.h>
 #include "kbutton.h"
-}
-
+#include "pm_shared.h"
 #include "cvardef.h"
 #include "usercmd.h"
 #include "const.h"

@@ -16,12 +16,8 @@
 // hud_redraw.cpp
 //
 
-extern "C"
-{
-#include <pm_shared.h>
-}
-
 #include <math.h>
+#include <pm_shared.h>
 #include "hud.h"
 #include "cl_util.h"
 #include "hud/spectator.h"

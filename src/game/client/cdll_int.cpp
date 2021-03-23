@@ -18,10 +18,6 @@
 // this implementation handles the linking of the engine to the DLL
 //
 
-extern "C"
-{
-#include <pm_shared.h>
-}
 
 #include <cstring>
 
@@ -31,6 +27,7 @@ extern "C"
 
 #include <tier1/interface.h>
 #include <cl_dll/IGameClientExports.h>
+#include <pm_shared.h>
 #include "hud.h"
 #include "cl_util.h"
 #include "tri.h"

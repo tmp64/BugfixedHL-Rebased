@@ -33,14 +33,10 @@ void CL_DLLEXPORT V_CalcRefdef(struct ref_params_s *pparams);
 
 void PM_ParticleLine(float *start, float *end, int pcolor, float life, float vert);
 int PM_GetVisEntInfo(int ent);
-extern "C" int PM_GetPhysEntInfo(int ent);
+int PM_GetPhysEntInfo(int ent);
 void InterpolateAngles(float *start, float *end, float *output, float frac);
 void NormalizeAngles(float *angles);
-extern "C" float Distance(const float *v1, const float *v2);
 float AngleBetweenVectors(const float *v1, const float *v2);
-
-extern "C" float vJumpOrigin[3];
-extern "C" float vJumpAngles[3];
 
 void V_DropPunchAngle(float frametime, float *ev_punchangle);
 void VectorAngles(const float *forward, float *angles);
@@ -158,6 +154,13 @@ void V_InterpolateAngles( float *start, float *end, float *output, float frac )
 
 	V_NormalizeAngles( output );
 } */
+
+static float Distance(const vec3_t v1, const vec3_t v2)
+{
+	vec3_t d;
+	VectorSubtract(v2, v1, d);
+	return Length(d);
+}
 
 // Quakeworld bob code, this fixes jitters in the mutliplayer since the clock (pparams->time) isn't quite linear
 float V_CalcBob(struct ref_params_s *pparams)
@@ -1239,8 +1242,8 @@ void V_GetChasePos(int target, float *cl_angles, float *origin, float *angles)
 	if (!ent)
 	{
 		// just copy a save in-map position
-		VectorCopy(vJumpAngles, angles);
-		VectorCopy(vJumpOrigin, origin);
+		VectorCopy(pm_vJumpAngles, angles);
+		VectorCopy(pm_vJumpOrigin, origin);
 		return;
 	}
 
@@ -1283,8 +1286,8 @@ void V_GetInEyePos(int target, float *origin, float *angles)
 	if (!target)
 	{
 		// just copy a save in-map position
-		VectorCopy(vJumpAngles, angles);
-		VectorCopy(vJumpOrigin, origin);
+		VectorCopy(pm_vJumpAngles, angles);
+		VectorCopy(pm_vJumpOrigin, origin);
 		return;
 	};
 

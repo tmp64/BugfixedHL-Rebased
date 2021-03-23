@@ -27,11 +27,7 @@
 #include <appversion.h>
 #include <bhl_urls.h>
 #include <ClientSupportsFlags.h>
-
-extern "C"
-{
 #include <pm_shared.h>
-}
 
 #include "hud.h"
 #include "cl_util.h"

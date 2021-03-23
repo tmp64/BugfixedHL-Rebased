@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#include <pm_shared.h>
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -22,10 +23,6 @@
 #include "game.h"
 
 void EntvarsKeyvalue(entvars_t *pev, KeyValueData *pkvd);
-
-extern "C" void PM_Move(struct playermove_s *ppmove, int server);
-extern "C" void PM_Init(struct playermove_s *ppmove);
-extern "C" char PM_FindTextureType(char *name);
 
 extern Vector VecBModelOrigin(entvars_t *pevBModel);
 extern DLL_GLOBAL Vector g_vecAttackDir;

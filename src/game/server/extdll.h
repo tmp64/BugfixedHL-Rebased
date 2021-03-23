@@ -77,10 +77,11 @@ typedef unsigned int func_t; //
 typedef unsigned int string_t; // from engine's pr_comp.h;
 typedef float vec_t; // needed before including progdefs.h
 
-// Vector class
-#include <mathlib/vector.h>
+// Source SDK mathlib
+#include <mathlib/mathlib.h>
 
 // Defining it as a (bogus) struct helps enforce type-checking
+// TODO: Remove, replace with Vector
 #define vec3_t Vector
 
 // Shared engine/DLL constants

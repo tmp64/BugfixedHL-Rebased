@@ -137,7 +137,6 @@ add_sources(
 	turret.cpp
 	util.cpp
 	util.h
-	vector.h
 	voice_gamemgr.cpp
 	voice_gamemgr.h
 	weapons.cpp

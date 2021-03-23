@@ -544,6 +544,7 @@ add_auto_deploy( hl PublishPathServer.txt )
 target_include_directories( hl PRIVATE
 	#${CMAKE_CURRENT_SOURCE_DIR}/src/game/server	# Already in GAME_COMMON_INCLUDE_PATHS
 	${GAME_COMMON_INCLUDE_PATHS}
+	${SOURCE_SDK_INCLUDE_PATHS} # For mathlib
 )
 
 target_compile_definitions( hl PRIVATE
@@ -602,6 +603,7 @@ target_include_directories( bugfixedapi_amxx PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/bugfixedapi_amxx
 	${GAME_COMMON_INCLUDE_PATHS}
 	${CMAKE_CURRENT_SOURCE_DIR}/external/metamod/metamod
+	${SOURCE_SDK_INCLUDE_PATHS} # For mathlib
 )
 
 target_compile_definitions( bugfixedapi_amxx PRIVATE

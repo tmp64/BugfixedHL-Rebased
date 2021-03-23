@@ -41,10 +41,10 @@ extern void V_GetInEyePos(int entity, float *origin, float *angles);
 extern void V_ResetChaseCam();
 extern void V_GetChasePos(int target, float *cl_angles, float *origin, float *angles);
 
-extern vec3_t v_origin; // last view origin
-extern vec3_t v_angles; // last view angle
-extern vec3_t v_cl_angles; // last client/mouse angle
-extern vec3_t v_sim_org; // last sim origin
+extern Vector v_origin; // last view origin
+extern Vector v_angles; // last view angle
+extern Vector v_cl_angles; // last client/mouse angle
+extern Vector v_sim_org; // last sim origin
 
 DEFINE_HUD_ELEM(CHudSpectator);
 
@@ -66,7 +66,7 @@ void SpectatorMode(void)
 
 void SpectatorSpray(void)
 {
-	vec3_t forward;
+	Vector forward;
 	char string[128];
 
 	if (!gEngfuncs.IsSpectateOnly())
@@ -337,7 +337,7 @@ void CHudSpectator::SetSpectatorStartPosition()
 	pm_iJumpSpectator = 1; // jump anyway
 }
 
-void CHudSpectator::SetCameraView(vec3_t pos, vec3_t angle, float fov)
+void CHudSpectator::SetCameraView(Vector pos, Vector angle, float fov)
 {
 	m_FOV = fov;
 	VectorCopy(pos, pm_vJumpOrigin);
@@ -346,7 +346,7 @@ void CHudSpectator::SetCameraView(vec3_t pos, vec3_t angle, float fov)
 	pm_iJumpSpectator = 1; // jump anyway
 }
 
-void CHudSpectator::AddWaypoint(float time, vec3_t pos, vec3_t angle, float fov, int flags)
+void CHudSpectator::AddWaypoint(float time, Vector pos, Vector angle, float fov, int flags)
 {
 	if (!flags == 0 && time == 0.0f)
 	{
@@ -399,7 +399,7 @@ void CHudSpectator::SetWayInterpolation(cameraWayPoint_t *prev, cameraWayPoint_t
 	}
 }
 
-bool CHudSpectator::GetDirectorCamera(vec3_t &position, vec3_t &angle)
+bool CHudSpectator::GetDirectorCamera(Vector &position, Vector &angle)
 {
 	float now = gHUD.m_flTime;
 	float fov = 90.0f;
@@ -410,7 +410,7 @@ bool CHudSpectator::GetDirectorCamera(vec3_t &position, vec3_t &angle)
 
 		if (ent)
 		{
-			vec3_t vt = ent->curstate.origin;
+			Vector vt = ent->curstate.origin;
 
 			if (m_ChaseEntity <= gEngfuncs.GetMaxClients())
 			{
@@ -568,7 +568,7 @@ void CHudSpectator::Draw(float flTime)
 	// if user moves in map mode, change map origin
 	if ((m_moveDelta != 0.0f) && (g_iUser1 != OBS_ROAMING))
 	{
-		vec3_t right;
+		Vector right;
 		AngleVectors(v_angles, NULL, right, NULL);
 		VectorNormalize(right);
 		VectorScale(right, m_moveDelta, right);
@@ -618,7 +618,7 @@ void CHudSpectator::DirectorMessage(int iSize, void *pbuf)
 {
 	float f1, f2;
 	char *string;
-	vec3_t v1, v2;
+	Vector v1, v2;
 	int i1, i2, i3;
 
 	BEGIN_READ(pbuf, iSize);
@@ -1459,7 +1459,7 @@ void CHudSpectator::DrawOverviewEntities()
 {
 	int i;
 	struct model_s *hSpriteModel;
-	vec3_t origin, angles, point, forward, right, left, up, world, screen, offset;
+	Vector origin, angles, point, forward, right, left, up, world, screen, offset;
 	float x, y, z, r, g, b, sizeScale = 4.0f;
 	cl_entity_t *ent;
 	float rmatrix[3][4]; // transformation matrix

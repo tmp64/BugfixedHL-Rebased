@@ -24,7 +24,7 @@ ConVar cl_hidecorpses("cl_hidecorpses", "0", FCVAR_BHL_ARCHIVE);
 
 void Game_AddObjects(void);
 
-extern vec3_t v_origin;
+extern Vector v_origin;
 
 int g_iAlive = 1;
 
@@ -603,7 +603,7 @@ void CL_DLLEXPORT HUD_TempEntUpdate(
 
 			if (pTemp->flags & (FTENT_COLLIDEALL | FTENT_COLLIDEWORLD))
 			{
-				vec3_t traceNormal;
+				Vector traceNormal;
 				float traceFraction = 1;
 
 				if (pTemp->flags & FTENT_COLLIDEALL)

@@ -43,7 +43,7 @@ int AgHudGlobal::MsgFunc_PlaySound(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
 
-	vec3_t origin;
+	Vector origin;
 	/*int iPlayer = */ READ_BYTE();
 	for (int i = 0; i < 3; i++)
 		origin[i] = READ_COORD();

@@ -149,8 +149,6 @@ add_sources(
 
 if( PLATFORM_WINDOWS )
 	add_sources(
-		wxdebug.h
-		Wxdebug.cpp
 		hl.def
 		hl.rc
 		resource.h

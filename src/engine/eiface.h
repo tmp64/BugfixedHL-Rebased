@@ -79,9 +79,9 @@ typedef struct
 	int fInOpen;
 	int fInWater;
 	float flFraction; // time completed, 1.0 = didn't hit anything
-	vec3_t vecEndPos; // final position
+	Vector vecEndPos; // final position
 	float flPlaneDist;
-	vec3_t vecPlaneNormal; // surface normal at impact
+	Vector vecPlaneNormal; // surface normal at impact
 	edict_t *pHit; // entity the surface is on
 	int iHitgroup; // 0 == generic, non zero is specific body part
 } TraceResult;
@@ -1440,7 +1440,7 @@ typedef struct
 	char mapName[32];
 	char landmarkName[32];
 	edict_t *pentLandmark;
-	vec3_t vecLandmarkOrigin;
+	Vector vecLandmarkOrigin;
 } LEVELLIST;
 #define MAX_LEVEL_CONNECTIONS 16 // These are encoded in the lower 16bits of ENTITYTABLE->flags
 
@@ -1484,7 +1484,7 @@ typedef
 	// smooth transition
 	int fUseLandmark;
 	char szLandmarkName[20]; // landmark we'll spawn near in next level
-	vec3_t vecLandmarkOffset; // for landmark transitions
+	Vector vecLandmarkOffset; // for landmark transitions
 	float time;
 	char szCurrentMapName[32]; // To check global entities
 
@@ -1814,7 +1814,7 @@ typedef struct
 	*	@param player_mins Array of the player minimum bounds for each hull.
 	*	@param player_maxs Array of the player maximum bounds for each hull.
 	*/
-	void (*pfnCreateBaseline)(int player, int eindex, struct entity_state_s *baseline, struct edict_s *entity, int playermodelindex, vec3_t player_mins, vec3_t player_maxs);
+	void (*pfnCreateBaseline)(int player, int eindex, struct entity_state_s *baseline, struct edict_s *entity, int playermodelindex, Vector player_mins, Vector player_maxs);
 
 	/**
 	*	Called by the engine to allow the server to register delta encoders.

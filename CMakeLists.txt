@@ -549,7 +549,9 @@ target_include_directories( hl PRIVATE
 
 target_compile_definitions( hl PRIVATE
 	${GAME_COMMON_DEFINES}
+	${SOURCE_SDK_DEFINES}
 	SERVER_DLL
+	MATHLIB_USE_C_ASSERT
 )
 
 # Dependencies
@@ -608,8 +610,10 @@ target_include_directories( bugfixedapi_amxx PRIVATE
 
 target_compile_definitions( bugfixedapi_amxx PRIVATE
 	${GAME_COMMON_DEFINES}
+	${SOURCE_SDK_DEFINES}
 	USE_METAMOD
 	HAVE_STDINT_H
+	MATHLIB_USE_C_ASSERT
 )
 
 # Dependencies

@@ -1408,9 +1408,9 @@ int CGraph ::RejectInlineLinks(CLink *pLinkPool, FILE *file)
 		{
 			pCheckNode = &m_pNodes[pLinkPool[pSrcNode->m_iFirstLink + j].m_iDestNode];
 
-			vec2DirToCheckNode = (pCheckNode->m_vecOrigin - pSrcNode->m_vecOrigin).Make2D();
+			vec2DirToCheckNode = (pCheckNode->m_vecOrigin - pSrcNode->m_vecOrigin).AsVector2D();
 			flDistToCheckNode = vec2DirToCheckNode.Length();
-			vec2DirToCheckNode = vec2DirToCheckNode.Normalized();
+			vec2DirToCheckNode.NormalizeInPlace();
 
 			pLinkPool[pSrcNode->m_iFirstLink + j].m_flWeight = flDistToCheckNode;
 
@@ -1424,19 +1424,19 @@ int CGraph ::RejectInlineLinks(CLink *pLinkPool, FILE *file)
 
 				pTestNode = &m_pNodes[pLinkPool[pSrcNode->m_iFirstLink + k].m_iDestNode];
 
-				vec2DirToTestNode = (pTestNode->m_vecOrigin - pSrcNode->m_vecOrigin).Make2D();
+				vec2DirToTestNode = (pTestNode->m_vecOrigin - pSrcNode->m_vecOrigin).AsVector2D();
 
 				flDistToTestNode = vec2DirToTestNode.Length();
-				vec2DirToTestNode = vec2DirToTestNode.Normalized();
+				vec2DirToTestNode.NormalizeInPlace();
 
-				if (DotProduct(vec2DirToCheckNode, vec2DirToTestNode) >= 0.998)
+				if (DotProduct2D(vec2DirToCheckNode, vec2DirToTestNode) >= 0.998)
 				{
 					// there's a chance that TestNode intersects the line to CheckNode. If so, we should disconnect the link to CheckNode.
 					if (flDistToTestNode < flDistToCheckNode)
 					{
 						if (file)
 						{
-							fprintf(file, "REJECTED NODE %3d through Node %3d, Dot = %8f\n", pLinkPool[pSrcNode->m_iFirstLink + j].m_iDestNode, pLinkPool[pSrcNode->m_iFirstLink + k].m_iDestNode, DotProduct(vec2DirToCheckNode, vec2DirToTestNode));
+							fprintf(file, "REJECTED NODE %3d through Node %3d, Dot = %8f\n", pLinkPool[pSrcNode->m_iFirstLink + j].m_iDestNode, pLinkPool[pSrcNode->m_iFirstLink + k].m_iDestNode, DotProduct2D(vec2DirToCheckNode, vec2DirToTestNode));
 						}
 
 						pLinkPool[pSrcNode->m_iFirstLink + j] = pLinkPool[pSrcNode->m_iFirstLink + (pSrcNode->m_cNumLinks - 1)];

@@ -980,10 +980,10 @@ void CBaseMonster ::CheckAttacks(CBaseEntity *pTarget, float flDist)
 
 	UTIL_MakeVectors(pev->angles);
 
-	vec2LOS = (pTarget->pev->origin - pev->origin).Make2D();
-	vec2LOS = vec2LOS.Normalized();
+	vec2LOS = (pTarget->pev->origin - pev->origin).AsVector2D();
+	vec2LOS.NormalizeInPlace();
 
-	flDot = DotProduct(vec2LOS, gpGlobals->v_forward.Make2D());
+	flDot = DotProduct2D(vec2LOS, gpGlobals->v_forward.AsVector2D());
 
 	// we know the enemy is in front now. We'll find which attacks the monster is capable of by
 	// checking for corresponding Activities in the model file, then do the simple checks to validate

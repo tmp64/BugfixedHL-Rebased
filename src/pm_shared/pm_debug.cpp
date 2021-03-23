@@ -95,7 +95,7 @@ PM_ParticleLine(Vector start, Vector end, int color, float life)
 
 ================
 */
-void PM_ParticleLine(Vector start, Vector end, int pcolor, float life, float vert)
+void PM_ParticleLine(const Vector &start, const Vector &end, int pcolor, float life, float vert)
 {
 	float linestep = 2.0f;
 	float curdist;
@@ -126,7 +126,7 @@ PM_DrawRectangle(Vector tl, Vector br)
 
 ================
 */
-void PM_DrawRectangle(Vector tl, Vector bl, Vector tr, Vector br, int pcolor, float life)
+void PM_DrawRectangle(const Vector &tl, const Vector &bl, const Vector &tr, const Vector &br, int pcolor, float life)
 {
 	PM_ParticleLine(tl, bl, pcolor, life, 0);
 	PM_ParticleLine(bl, br, pcolor, life, 0);
@@ -228,7 +228,7 @@ PM_DrawBBox(Vector mins, Vector maxs, Vector origin, int pcolor, float life)
 
 ================
 */
-void PM_DrawBBox(Vector mins, Vector maxs, Vector origin, int pcolor, float life)
+void PM_DrawBBox(const Vector &mins, const Vector &maxs, const Vector &origin, int pcolor, float life)
 {
 	int j;
 

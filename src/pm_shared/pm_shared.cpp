@@ -784,7 +784,7 @@ PM_AddToTouched
 Add's the trace result to touch list, if contact is not already in list.
 ================
 */
-qboolean PM_AddToTouched(pmtrace_t tr, Vector impactvelocity)
+qboolean PM_AddToTouched(pmtrace_t tr, const Vector &impactvelocity)
 {
 	int i;
 
@@ -857,7 +857,7 @@ returns the blocked flags:
 0x02 == step / wall
 ==================
 */
-int PM_ClipVelocity(Vector in, Vector normal, Vector out, float overbounce)
+int PM_ClipVelocity(const Vector &in, const Vector &normal, Vector &out, float overbounce)
 {
 	float backoff;
 	float change;
@@ -1135,7 +1135,7 @@ int PM_FlyMove(void)
 PM_Accelerate
 ==============
 */
-void PM_Accelerate(Vector wishdir, float wishspeed, float accel)
+void PM_Accelerate(const Vector &wishdir, float wishspeed, float accel)
 {
 	int i;
 	float addspeed, accelspeed, currentspeed;
@@ -1765,7 +1765,7 @@ When a player is stuck, it's costly to try and unstick them
 Grab a test offset for the player based on a passed in index
 =================
 */
-int PM_GetRandomStuckOffsets(int nIndex, int server, Vector offset)
+int PM_GetRandomStuckOffsets(int nIndex, int server, Vector &offset)
 {
 	// Last time we did a full
 	int idx;
@@ -2395,7 +2395,7 @@ PM_PushEntity
 Does not change the entities velocity at all
 ============
 */
-pmtrace_t PM_PushEntity(Vector push)
+pmtrace_t PM_PushEntity(const Vector &push)
 {
 	pmtrace_t trace;
 	Vector end;
@@ -2911,7 +2911,7 @@ PM_CalcRoll
 
 ===============
 */
-float PM_CalcRoll(Vector angles, Vector velocity, float rollangle, float rollspeed)
+float PM_CalcRoll(const Vector &angles, const Vector &velocity, float rollangle, float rollspeed)
 {
 	float sign;
 	float side;
@@ -2946,7 +2946,7 @@ PM_DropPunchAngle
 
 =============
 */
-void PM_DropPunchAngle(Vector punchangle)
+void PM_DropPunchAngle(Vector &punchangle)
 {
 	float len;
 

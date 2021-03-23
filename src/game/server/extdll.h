@@ -68,9 +68,11 @@ typedef float vec_t; // needed before including progdefs.h
 // Source SDK mathlib
 #include <mathlib/mathlib.h>
 
+#ifdef USE_METAMOD
 // Defining it as a (bogus) struct helps enforce type-checking
-// TODO: Remove, replace with Vector
-#define vec3_t Vector
+// Only used in Metamod headers
+using vec3_t = Vector;
+#endif
 
 // Shared engine/DLL constants
 #include "const.h"

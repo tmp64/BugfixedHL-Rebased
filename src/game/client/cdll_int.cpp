@@ -18,7 +18,6 @@
 // this implementation handles the linking of the engine to the DLL
 //
 
-
 #include <cstring>
 
 #if HAS_STD_FILESYSTEM

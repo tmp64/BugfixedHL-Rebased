@@ -14,7 +14,7 @@
 ****/
 // pm_math.c -- math primitives
 
-#include "mathlib.h"
+#include "pm_math.h"
 #include "const.h"
 #include <math.h>
 

@@ -7,6 +7,7 @@ add_sources(
 	enum_utils.h
 	IBugfixedServer.h
 	IGameVersion.h
+	mathlib.cpp
 	voice_common.h
 )
 

@@ -23,7 +23,6 @@ add_sources(
 	hltv.h
 	in_buttons.h
 	ivoicetweak.h
-	mathlib.h
 	net_api.h
 	netadr.h
 	nowin.h

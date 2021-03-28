@@ -37,11 +37,15 @@ public:
 	 * This method must be the first one in this class.
 	 * New methods must be added to the end and should increment minor each time new update with them is released.
 	 * Any changes to existing methods may/will break compatibility.
+	 * 
+	 * Added in version v1.0
 	 */
 	virtual void GetInterfaceVersion(int &major, int &minor) = 0;
 
 	/**
 	 * Returns a pointer to g_pGameRules that contains a pointer to CGameRules.
+	 * 
+	 * Added in version v1.0
 	 */
 	virtual CGameRules **GetGameRulesPtr() = 0;
 
@@ -50,6 +54,8 @@ public:
 	 *
 	 * This pointer is only valid immediately after the call.
 	 * Make a copy if you need to use it later.
+	 * 
+	 * Added in version v1.0
 	 */
 	virtual const IGameVersion *GetServerVersion() = 0;
 
@@ -57,16 +63,22 @@ public:
 	 * Returns bitfield with BugfixedHL features the client's game supports.
 	 * Use bitwise AND to check:
 	 * if (server()->GetClientSupports(idx) & AGHL_SUPPORTS_UNICODE_MOTD) { ... }
+	 * 
+	 * Added in version v1.0
 	 */
 	virtual bhl::E_ClientSupports GetClientSupports(int idx) = 0;
 
 	/**
 	 * Returns true if client has color code parsing (^1, ^2, ...) enabled (BugfixedHL or Rofi's client DLL).
+	 * 
+	 * Added in version v1.0
 	 */
 	virtual bool GetColorSupport(int idx) = 0;
 
 	/**
 	 * Returns true if server knows client's game DLL version.
+	 * 
+	 * Added in version v1.0
 	 */
 	virtual bool IsClientVersionValid(int idx) = 0;
 
@@ -76,6 +88,8 @@ public:
 	 *
 	 * This pointer is only valid immediately after the call.
 	 * Make a copy if you need to use it later.
+	 * 
+	 * Added in version v1.0
 	 */
 	virtual const IGameVersion *GetClientVersion(int idx) = 0;
 
@@ -93,6 +107,8 @@ public:
 	 * Otherwise, file `motdfile` is sent.
 	 *
 	 * If a MOTD file is supported but it is disabled with SetAutomaticMotd, no MOTD is sent.
+	 * 
+	 * Added in version v1.0
 	 *
 	 * @see CHalfLifeMultiplay::InitHUD for details
 	 */
@@ -100,6 +116,9 @@ public:
 
 	/**
 	 * Sends a MOTD to the client from a string
+	 * 
+	 * Added in version v1.0
+	 * 
 	 * @param type MOTD type
 	 * @param idx Client index [1; (maxplayers)]
 	 * @param str The string
@@ -108,6 +127,9 @@ public:
 
 	/**
 	 * Sends a MOTD to the client from a file
+	 * 
+	 * Added in version v1.0
+	 * 
 	 * @param type MOTD type
 	 * @param idx Client index [1; (maxplayers)]
 	 * @param file Path to the file relative from gamedir

@@ -164,6 +164,18 @@ static cell AMX_NATIVE_CALL bhl_show_motd_from_file(AMX *amx, cell *params)
 	return 1;
 }
 
+// native bhl_set_player_score(idx, frags, deaths);
+static cell AMX_NATIVE_CALL bhl_set_player_score(AMX *amx, cell *params)
+{
+	if (!bhl::IsServerApiReady())
+		return 0;
+	int idx = params[1];
+	if (idx < 0 || idx > gpGlobals->maxClients)
+		return 0;
+	bhl::serverapi()->SetPlayerScore(idx, params[2], params[3]);
+	return 1;
+}
+
 AMX_NATIVE_INFO bugfixedapi_Exports[] = {
 	{ "bhl_is_api_ready", bhl_is_api_ready },
 	{ "bhl_get_server_version", bhl_get_server_version },
@@ -177,6 +189,7 @@ AMX_NATIVE_INFO bugfixedapi_Exports[] = {
 	{ "bhl_set_automatic_motd", bhl_set_automatic_motd },
 	{ "bhl_show_motd_from_string", bhl_show_motd_from_string },
 	{ "bhl_show_motd_from_file", bhl_show_motd_from_file },
+	{ "bhl_set_player_score", bhl_set_player_score },
 	{ nullptr, nullptr }
 };
 

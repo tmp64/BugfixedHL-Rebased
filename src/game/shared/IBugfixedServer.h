@@ -135,6 +135,17 @@ public:
 	 * @param file Path to the file relative from gamedir
 	 */
 	virtual void ShowMotdFromFile(bhl::E_MotdType type, int idx, const char *file) = 0;
+
+	/**
+	 * Sets player's score and sends score update message to all players.
+	 * 
+	 * Added in version v1.1
+	 * 
+	 * @param	idx		Client index [1; (maxplayers)]
+	 * @param	frags	Number of kills (score)
+	 * @param	deaths	Number of deaths
+	 */
+	virtual void SetPlayerScore(int idx, int frags, int deaths) = 0;
 };
 }
 #endif

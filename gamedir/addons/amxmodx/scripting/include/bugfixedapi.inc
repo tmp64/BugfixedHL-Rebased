@@ -127,3 +127,11 @@ native bhl_show_motd_from_string(E_MotdType:type, idx, const str[]);
  * @param file Path to the file relative from gamedir
  */
 native bhl_show_motd_from_file(E_MotdType:type, idx, const file[]);
+
+/**
+ * Sets player's score and sends score update message to all players.
+ * @param	idx		Client index [1; (maxplayers)]
+ * @param	frags	Number of kills (score)
+ * @param	deaths	Number of deaths
+ */
+native bhl_set_player_score(idx, frags, deaths);

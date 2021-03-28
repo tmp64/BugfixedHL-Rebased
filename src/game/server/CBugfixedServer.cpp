@@ -276,3 +276,24 @@ void CBugfixedServer::ShowMotdFromFile(bhl::E_MotdType type, int idx, const char
 	if (!result)
 		UTIL_LogPrintf("CBugfixedServer::ShowMotdFromFile(): file not found: %s\n", file);
 }
+
+void CBugfixedServer::SetPlayerScore(int idx, int frags, int deaths)
+{
+	if (idx < 1 || idx > gpGlobals->maxClients)
+	{
+		UTIL_LogPrintf("CBugfixedServer::SetPlayerScore(): invalid player id (%d)\n", idx);
+		return;
+	}
+
+	CBasePlayer *pPlayer = (CBasePlayer *)UTIL_PlayerByIndex(idx);
+
+	if (!pPlayer)
+	{
+		UTIL_LogPrintf("CBugfixedServer::SetPlayerScore(): player %d not yet ready\n", idx);
+		return;
+	}
+
+	pPlayer->pev->frags = frags;
+	pPlayer->m_iDeaths = deaths;
+	pPlayer->SendScoreInfo();
+}

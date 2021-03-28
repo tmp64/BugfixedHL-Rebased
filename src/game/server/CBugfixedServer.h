@@ -74,6 +74,7 @@ public:
 	virtual void SetAutomaticMotd(bhl::E_MotdType type, bool state);
 	virtual void ShowMotdFromString(bhl::E_MotdType type, int idx, const char *str);
 	virtual void ShowMotdFromFile(bhl::E_MotdType type, int idx, const char *file);
+	virtual void SetPlayerScore(int idx, int frags, int deaths);
 };
 
 CBugfixedServer *serverapi();

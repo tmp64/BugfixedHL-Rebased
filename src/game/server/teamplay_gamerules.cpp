@@ -272,13 +272,7 @@ void CHalfLifeTeamplay::ChangePlayerTeam(CBasePlayer *pPlayer, const char *pTeam
 	WRITE_STRING(pPlayer->pev->iuser1 ? "" : pPlayer->TeamID());
 	MESSAGE_END();
 
-	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-	WRITE_BYTE(clientIndex);
-	WRITE_SHORT(pPlayer->pev->frags);
-	WRITE_SHORT(pPlayer->m_iDeaths);
-	WRITE_SHORT(0);
-	WRITE_SHORT(g_pGameRules->GetTeamIndex(pPlayer->m_szTeamName) + 1);
-	MESSAGE_END();
+	pPlayer->SendScoreInfo();
 }
 
 //=========================================================
@@ -583,13 +577,7 @@ void CHalfLifeTeamplay::RecountTeams(void)
 				if (!pPlayer)
 					continue;
 
-				MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-				WRITE_BYTE(i);
-				WRITE_SHORT(pPlayer->pev->frags);
-				WRITE_SHORT(pPlayer->m_iDeaths);
-				WRITE_SHORT(0);
-				WRITE_SHORT(g_pGameRules->GetTeamIndex(pPlayer->m_szTeamName) + 1);
-				MESSAGE_END();
+				pPlayer->SendScoreInfo();
 			}
 		}
 	}

@@ -1560,6 +1560,17 @@ void CBasePlayer::StopWelcomeCam(void)
 	pev->nextthink = -1;
 }
 
+void CBasePlayer::SendScoreInfo()
+{
+	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+	WRITE_BYTE(ENTINDEX(edict())); // Player index
+	WRITE_SHORT(pev->frags); // Score
+	WRITE_SHORT(m_iDeaths); // Deaths
+	WRITE_SHORT(0); // TFC class
+	WRITE_SHORT(g_pGameRules->GetTeamIndex(m_szTeamName) + 1); // Team index
+	MESSAGE_END();
+}
+
 //
 // PlayerUse - handles USE keypress
 //
@@ -1770,13 +1781,7 @@ void CBasePlayer::AddPoints(int score, BOOL bAllowNegativeScore)
 
 	pev->frags += score;
 
-	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-	WRITE_BYTE(ENTINDEX(edict()));
-	WRITE_SHORT(pev->frags);
-	WRITE_SHORT(m_iDeaths);
-	WRITE_SHORT(0);
-	WRITE_SHORT(g_pGameRules->GetTeamIndex(m_szTeamName) + 1);
-	MESSAGE_END();
+	SendScoreInfo();
 }
 
 void CBasePlayer::AddPointsToTeam(int score, BOOL bAllowNegativeScore)

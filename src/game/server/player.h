@@ -348,6 +348,12 @@ public:
 	BOOL m_bInWelcomeCam;
 	void StartWelcomeCam(void);
 	void StopWelcomeCam(void);
+
+	/**
+	 * Sends a message to all clients with score of this player.
+	 * Should be called any time kills/deaths are updated.
+	 */
+	void SendScoreInfo();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

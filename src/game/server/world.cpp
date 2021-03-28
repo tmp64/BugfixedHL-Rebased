@@ -21,6 +21,7 @@
 */
 
 #include "extdll.h"
+#include "convar.h"
 #include "util.h"
 #include "cbase.h"
 #include "nodes.h"
@@ -43,6 +44,8 @@ CGlobalState gGlobalState;
 extern DLL_GLOBAL int gDisplayTitle;
 
 extern void W_Precache(void);
+
+ConVar mp_hidecorpses("mp_hidecorpses", "0", FCVAR_SERVER, "Disables player corpses");
 
 //
 // This must match the list in util.h
@@ -226,6 +229,9 @@ static void InitBodyQue(void)
 //
 void CopyToBodyQue(entvars_t *pev)
 {
+	if (mp_hidecorpses.GetBool())
+		return; // Don't spawn the corpse
+
 	if (pev->effects & EF_NODRAW)
 		return;
 

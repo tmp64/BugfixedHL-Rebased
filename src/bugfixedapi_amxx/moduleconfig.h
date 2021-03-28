@@ -32,7 +32,7 @@
 #define MODULE_AUTHOR   "tmp64"
 #define MODULE_URL      "https://github.com/tmp64/BugfixedHL"
 #define MODULE_LOGTAG   "BugfixedAPI"
-#define MODULE_LIBRARY  "bugfixedapi_mm"
+#define MODULE_LIBRARY  "bugfixedapi"
 #define MODULE_LIBCLASS ""
 // If you want the module not to be reloaded on mapchange, remove / comment out the next line
 //#define MODULE_RELOAD_ON_MAPCHANGE

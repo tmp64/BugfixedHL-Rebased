@@ -1215,7 +1215,8 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 		playerName = GetPlayerInfo(iPlayerIndex)->Update()->GetName();
 	}
 
-	int bufSize = (strlen(pmsg) + 1) * sizeof(wchar_t);
+	int msglen = strlen(pmsg);
+	int bufSize = (msglen + 1) * sizeof(wchar_t);
 	wchar_t *wbuf = static_cast<wchar_t *>(_alloca(bufSize));
 	if (wbuf)
 	{
@@ -1272,8 +1273,13 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	else
 		ConPrintf(m_ConsoleMsgColor, "%s %s\n", time_buf, pmsg);
 
-	CResults::Get().AddLog(time_buf, true);
-	CResults::Get().AddLog(pmsg, true);
+	bool isPlayerChat = (pmsg[0] == COLOR_PLAYERNAME);
+	CResults::Get().AddLog(time_buf, isPlayerChat);
+	// For player messages first bytes needs to be skipped since it's COLOR_PLAYERNAME and not text
+	CResults::Get().AddLog(pmsg + (isPlayerChat ? 1 : 0), isPlayerChat);
+
+	if (pmsg[msglen - 1] != '\n')
+		CResults::Get().AddLog("\n", isPlayerChat);
 }
 
 void CHudChatEntry::OnKeyCodeTyped(vgui2::KeyCode code)

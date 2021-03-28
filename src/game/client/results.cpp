@@ -155,21 +155,12 @@ void CResults::AddLog(const char *text, bool chat)
 
 	// Open log file in case it is not already
 	if (!m_pLogFile)
-		m_pLogFile = fopen(m_szCurrentResultsLog, "a+b");
+		m_pLogFile = fopen(m_szCurrentResultsLog, "a");
 	if (!m_pLogFile)
 		return;
 
 	int len = strlen(text);
-	if (text[len - 1] == '\n')
-	{
-		const_cast<char &>(text[len - 1]) = '\0';
-		fprintf(m_pLogFile, "%s\n", text);
-		const_cast<char &>(text[len - 1]) = '\n';
-	}
-	else
-	{
-		fprintf(m_pLogFile, "%s", text);
-	}
+	fprintf(m_pLogFile, "%s", text);
 	fflush(m_pLogFile);
 #endif
 }

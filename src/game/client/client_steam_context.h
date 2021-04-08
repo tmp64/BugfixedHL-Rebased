@@ -27,9 +27,9 @@ public:
 	void Shutdown();
 
 #if !defined(NO_STEAM)
-	STEAM_CALLBACK(CClientSteamContext, OnSteamServersDisconnected, SteamServersDisconnected_t, m_CallbackSteamServersDisconnected);
-	STEAM_CALLBACK(CClientSteamContext, OnSteamServerConnectFailure, SteamServerConnectFailure_t, m_CallbackSteamServerConnectFailure);
-	STEAM_CALLBACK(CClientSteamContext, OnSteamServersConnected, SteamServersConnected_t, m_CallbackSteamServersConnected);
+	STEAM_CALLBACK_MANUAL(CClientSteamContext, OnSteamServersDisconnected, SteamServersDisconnected_t, m_CallbackSteamServersDisconnected);
+	STEAM_CALLBACK_MANUAL(CClientSteamContext, OnSteamServerConnectFailure, SteamServerConnectFailure_t, m_CallbackSteamServerConnectFailure);
+	STEAM_CALLBACK_MANUAL(CClientSteamContext, OnSteamServersConnected, SteamServersConnected_t, m_CallbackSteamServersConnected);
 #endif
 
 	bool BLoggedOn()
@@ -50,6 +50,7 @@ private:
 
 	bool m_bActive;
 	bool m_bLoggedOn;
+	bool m_bCallbacksRegistered = false;
 	CSteamID m_SteamIDLocalPlayer;
 	EUniverse m_nUniverse;
 	uint32 m_nAppID;

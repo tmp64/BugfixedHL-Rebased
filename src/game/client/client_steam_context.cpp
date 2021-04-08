@@ -14,11 +14,6 @@ CSteamAPIContext *steamapicontext = &g_ClientSteamContext;
 
 //-----------------------------------------------------------------------------
 CClientSteamContext::CClientSteamContext()
-#if !defined(NO_STEAM)
-    : m_CallbackSteamServersDisconnected(this, &CClientSteamContext::OnSteamServersDisconnected)
-    , m_CallbackSteamServerConnectFailure(this, &CClientSteamContext::OnSteamServerConnectFailure)
-    , m_CallbackSteamServersConnected(this, &CClientSteamContext::OnSteamServersConnected)
-#endif
 {
 	m_bActive = false;
 	m_bLoggedOn = false;
@@ -37,6 +32,13 @@ void CClientSteamContext::Shutdown()
 {
 	if (!m_bActive)
 		return;
+
+	if (m_bCallbacksRegistered)
+	{
+		m_CallbackSteamServersDisconnected.Unregister();
+		m_CallbackSteamServerConnectFailure.Unregister();
+		m_CallbackSteamServersConnected.Unregister();
+	}
 
 	m_bActive = false;
 	m_bLoggedOn = false;
@@ -61,6 +63,11 @@ void CClientSteamContext::Activate()
 #if !defined(NO_STEAM)
 	SteamAPI_InitSafe(); // ignore failure, that will fall out later when they don't get a valid logon cookie
 	Init(); // Steam API context init
+
+	m_CallbackSteamServersDisconnected.Register(this, &CClientSteamContext::OnSteamServersDisconnected);
+	m_CallbackSteamServerConnectFailure.Register(this, &CClientSteamContext::OnSteamServerConnectFailure);
+	m_CallbackSteamServersConnected.Register(this, &CClientSteamContext::OnSteamServersConnected);
+	m_bCallbacksRegistered = true;
 
 	UpdateLoggedOnState();
 	Msg("CClientSteamContext logged on = %d\n", m_bLoggedOn);

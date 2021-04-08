@@ -63,6 +63,7 @@ include( CTest )
 #-----------------------------------------------------------------
 option( AUTO_DEPLOY		"Whether to automatically deploy to deploy paths" )
 option( USE_UPDATER		"Enable update checked and downloader" )
+option( NO_STEAM_API	"Disable Steam API" )
 
 #-----------------------------------------------------------------
 # Compiler checks
@@ -367,6 +368,11 @@ set( GAME_COMMON_INCLUDE_PATHS
 #-----------------------------------------------------------------
 set( SOURCE_SDK_MIN_STEAM_API TRUE )
 set( SOURCE_SDK_GFX_PATH "ui/gfx/vgui" )
+
+if (NO_STEAM_API)
+	set( SOURCE_SDK_NO_STEAM TRUE )
+endif()
+
 add_subdirectory( source_sdk )
 
 #-----------------------------------------------------------------

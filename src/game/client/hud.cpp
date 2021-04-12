@@ -206,6 +206,8 @@ void CHud::Init(void)
 
 	HookCommand("about", AboutCommand);
 
+	EngineClientCmd("alias zpecial \"append _zpecial\"");
+
 	HookViewportMessage<&CClientViewport::MsgFunc_ValClass>("ValClass");
 	HookViewportMessage<&CClientViewport::MsgFunc_TeamNames>("TeamNames");
 	HookViewportMessage<&CClientViewport::MsgFunc_Feign>("Feign");
@@ -683,6 +685,18 @@ void CHud::UpdateSupportsCvar()
 	char buf[64];
 	snprintf(buf, sizeof(buf), "aghl_supports %u", static_cast<unsigned int>(supports));
 	gEngfuncs.pfnClientCmd(buf);
+}
+
+CON_COMMAND(append, "Support OpenAG scripts.")
+{
+	if (gEngfuncs.Cmd_Argc() != 2) {
+		if (!gEngfuncs.pDemoAPI->IsPlayingback())
+			gEngfuncs.Con_Printf("append <command> - put the command into the end of the command buffer.\n");
+
+		return;
+	}
+
+	EngineClientCmd(gEngfuncs.Cmd_Argv(1));
 }
 
 CON_COMMAND(_toggle, "Switches cvar values from arguments.")

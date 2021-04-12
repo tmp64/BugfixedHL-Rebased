@@ -30,13 +30,10 @@ void CHudCrosshair::Draw(float flTime)
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
 		return;
 
-	if ((gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL)))
+	if (gHUD.m_iHideHUDDisplay & HIDEHUD_ALL)
 		return;
 
 	if (!(m_iFlags & HUD_ACTIVE))
-		return;
-
-	if (!CHudAmmo::Get()->m_pWeapon)
 		return;
 
 	// Draw custom crosshair if enabled

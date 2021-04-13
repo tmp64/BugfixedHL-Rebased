@@ -36,6 +36,9 @@ void CHudCrosshair::Draw(float flTime)
 	if (!(m_iFlags & HUD_ACTIVE))
 		return;
 
+	if (!CHudAmmo::Get()->m_pWeapon)
+		return;
+
 	// Draw custom crosshair if enabled
 	if (cl_cross_enable.GetBool() && !(CHudAmmo::Get()->m_fOnTarget && CHudAmmo::Get()->m_pWeapon->hAutoaim))
 	{

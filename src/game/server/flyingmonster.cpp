@@ -160,7 +160,7 @@ void CFlyingMonster::MoveExecute(CBaseEntity *pTargetEnt, const Vector &vecDir, 
 				m_flGroundSpeed = m_flightSpeed = 200;
 			}
 		}
-		Vector vecMove = pev->origin + ((vecDir + (m_vecTravel * m_momentum)).Normalize() * (m_flGroundSpeed * flInterval));
+		Vector vecMove = pev->origin + ((vecDir + (m_vecTravel * m_momentum)).Normalized() * (m_flGroundSpeed * flInterval));
 
 		if (m_IdealActivity != m_movementActivity)
 		{
@@ -174,7 +174,7 @@ void CFlyingMonster::MoveExecute(CBaseEntity *pTargetEnt, const Vector &vecDir, 
 		if (CheckLocalMove(pev->origin, vecMove, pTargetEnt, NULL))
 		{
 			m_vecTravel = (vecMove - pev->origin);
-			m_vecTravel = m_vecTravel.Normalize();
+			m_vecTravel = m_vecTravel.Normalized();
 			UTIL_MoveToOrigin(ENT(pev), vecMove, (m_flGroundSpeed * flInterval), MOVE_STRAFE);
 		}
 		else
@@ -228,7 +228,7 @@ BOOL CFlyingMonster::ProbeZ(const Vector &position, const Vector &probe, float *
 		return FALSE;
 	}
 
-	Vector ProbeUnit = (probe - position).Normalize();
+	Vector ProbeUnit = (probe - position).Normalized();
 	float ProbeLength = (probe - position).Length();
 	float maxProbeLength = ProbeLength;
 	float minProbeLength = 0;

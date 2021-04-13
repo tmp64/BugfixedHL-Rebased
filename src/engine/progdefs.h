@@ -27,14 +27,14 @@ typedef struct
 	float teamplay;
 	float serverflags;
 	float found_secrets;
-	vec3_t v_forward;
-	vec3_t v_up;
-	vec3_t v_right;
+	Vector v_forward;
+	Vector v_up;
+	Vector v_right;
 	float trace_allsolid;
 	float trace_startsolid;
 	float trace_fraction;
-	vec3_t trace_endpos;
-	vec3_t trace_plane_normal;
+	Vector trace_endpos;
+	Vector trace_plane_normal;
 	float trace_plane_dist;
 	edict_t *trace_ent;
 	float trace_inopen;
@@ -48,7 +48,7 @@ typedef struct
 	const char *pStringBase;
 
 	void *pSaveData;
-	vec3_t vecLandmarkOffset;
+	Vector vecLandmarkOffset;
 } globalvars_t;
 
 typedef struct entvars_s
@@ -56,22 +56,22 @@ typedef struct entvars_s
 	string_t classname;
 	string_t globalname;
 
-	vec3_t origin;
-	vec3_t oldorigin;
-	vec3_t velocity;
-	vec3_t basevelocity;
-	vec3_t clbasevelocity; // Base velocity that was passed in to server physics so
+	Vector origin;
+	Vector oldorigin;
+	Vector velocity;
+	Vector basevelocity;
+	Vector clbasevelocity; // Base velocity that was passed in to server physics so
 	    //  client can predict conveyors correctly.  Server zeroes it, so we need to store here, too.
-	vec3_t movedir;
+	Vector movedir;
 
-	vec3_t angles; // Model angles
-	vec3_t avelocity; // angle velocity (degrees per second)
-	vec3_t punchangle; // auto-decaying view angle adjustment
-	vec3_t v_angle; // Viewing angle (player only)
+	Vector angles; // Model angles
+	Vector avelocity; // angle velocity (degrees per second)
+	Vector punchangle; // auto-decaying view angle adjustment
+	Vector v_angle; // Viewing angle (player only)
 
 	// For parametric entities
-	vec3_t endpos;
-	vec3_t startpos;
+	Vector endpos;
+	Vector startpos;
 	float impacttime;
 	float starttime;
 
@@ -87,11 +87,11 @@ typedef struct entvars_s
 	int viewmodel; // player's viewmodel
 	int weaponmodel; // what other players see
 
-	vec3_t absmin; // BB max translated to world coord
-	vec3_t absmax; // BB max translated to world coord
-	vec3_t mins; // local BB min
-	vec3_t maxs; // local BB max
-	vec3_t size; // maxs - mins
+	Vector absmin; // BB max translated to world coord
+	Vector absmax; // BB max translated to world coord
+	Vector mins; // local BB min
+	Vector maxs; // local BB max
+	Vector size; // maxs - mins
 
 	float ltime;
 	float nextthink;
@@ -120,7 +120,7 @@ typedef struct entvars_s
 
 	int rendermode;
 	float renderamt;
-	vec3_t rendercolor;
+	Vector rendercolor;
 	int renderfx;
 
 	float health;
@@ -129,7 +129,7 @@ typedef struct entvars_s
 	float takedamage;
 
 	int deadflag;
-	vec3_t view_ofs; // eye position
+	Vector view_ofs; // eye position
 
 	int button;
 	int impulse;
@@ -206,10 +206,10 @@ typedef struct entvars_s
 	float fuser2;
 	float fuser3;
 	float fuser4;
-	vec3_t vuser1;
-	vec3_t vuser2;
-	vec3_t vuser3;
-	vec3_t vuser4;
+	Vector vuser1;
+	Vector vuser2;
+	Vector vuser3;
+	Vector vuser4;
 	edict_t *euser1;
 	edict_t *euser2;
 	edict_t *euser3;

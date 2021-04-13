@@ -14,7 +14,7 @@
 ****/
 
 #include <assert.h>
-#include "mathlib.h"
+#include "pm_math.h"
 #include "const.h"
 #include "usercmd.h"
 #include "pm_defs.h"
@@ -27,14 +27,12 @@
 #include <stdlib.h> // atoi
 #include <ctype.h> // isspace
 
-static vec3_t vec3_origin = { 0, 0, 0 };
-
 #ifdef CLIENT_DLL
 // Spectator Mode
-int iJumpSpectator;
+int pm_iJumpSpectator;
 #ifndef DISABLE_JUMP_ORIGIN
-float vJumpOrigin[3];
-float vJumpAngles[3];
+float pm_vJumpOrigin[3];
+float pm_vJumpAngles[3];
 #endif
 #endif
 
@@ -60,7 +58,7 @@ typedef struct
 
 typedef struct mplane_s
 {
-	vec3_t normal; // surface normal
+	Vector normal; // surface normal
 	float dist; // closest appoach to origin
 	byte type; // for texture axis selection and fast side tests
 	byte signbits; // signx + signy<<1 + signz<<1
@@ -73,8 +71,8 @@ typedef struct hull_s
 	mplane_t *planes;
 	int firstclipnode;
 	int lastclipnode;
-	vec3_t clip_mins;
-	vec3_t clip_maxs;
+	Vector clip_mins;
+	Vector clip_maxs;
 } hull_t;
 
 // Ducking time
@@ -149,7 +147,7 @@ typedef struct hull_s
 #define CONTENTS_TRANSLUCENT -15
 
 #define MAX_STUCKTABLE_ENTRIES 52
-static vec3_t rgv3tStuckTable[MAX_STUCKTABLE_ENTRIES];
+static Vector rgv3tStuckTable[MAX_STUCKTABLE_ENTRIES];
 static int g_iBigMovesOffsetInStuckTable;
 static int rgStuckLast[MAX_CLIENTS][2];
 
@@ -362,7 +360,7 @@ void PM_PlayStepSound(int step, float fvol)
 {
 	static int iSkipStep = 0;
 	int irand;
-	vec3_t hvel;
+	Vector hvel;
 
 	pmove->iStepLeft = !pmove->iStepLeft;
 
@@ -380,7 +378,7 @@ void PM_PlayStepSound(int step, float fvol)
 	VectorCopy(pmove->velocity, hvel);
 	hvel[2] = 0.0;
 
-	if (pmove->multiplayer && (!g_onladder && Length(hvel) <= 220))
+	if (pmove->multiplayer && (!g_onladder && hvel.Length() <= 220))
 		return;
 
 	// irand - 0,1 for right foot, 2,3 for left foot
@@ -611,7 +609,7 @@ Determine texture info for the texture we are standing on.
 */
 void PM_CatagorizeTextureType(void)
 {
-	vec3_t start, end;
+	Vector start, end;
 	const char *pTextureName;
 
 	VectorCopy(pmove->origin, start);
@@ -647,9 +645,9 @@ void PM_UpdateStepSound(void)
 {
 	int fWalking;
 	float fvol;
-	vec3_t knee;
-	vec3_t feet;
-	vec3_t center;
+	Vector knee;
+	Vector feet;
+	Vector center;
 	float height;
 	float speed;
 	float velrun;
@@ -666,7 +664,7 @@ void PM_UpdateStepSound(void)
 
 	PM_CatagorizeTextureType();
 
-	speed = Length(pmove->velocity);
+	speed = pmove->velocity.Length();
 
 	// determine if we are on a ladder
 	fLadder = (pmove->movetype == MOVETYPE_FLY); // IsOnLadder();
@@ -688,7 +686,7 @@ void PM_UpdateStepSound(void)
 	// If we're on a ladder or on the ground, and we're moving fast enough,
 	//  play step sound.  Also, if pmove->flTimeStepSound is zero, get the new
 	//  sound right away - we just started moving in new level.
-	if ((fLadder || (pmove->onground != -1)) && (Length(pmove->velocity) > 0.0) && (speed >= velwalk || !pmove->flTimeStepSound))
+	if ((fLadder || (pmove->onground != -1)) && (pmove->velocity.Length() > 0.0) && (speed >= velwalk || !pmove->flTimeStepSound))
 	{
 		fWalking = speed < velrun;
 
@@ -786,7 +784,7 @@ PM_AddToTouched
 Add's the trace result to touch list, if contact is not already in list.
 ================
 */
-qboolean PM_AddToTouched(pmtrace_t tr, vec3_t impactvelocity)
+qboolean PM_AddToTouched(pmtrace_t tr, const Vector &impactvelocity)
 {
 	int i;
 
@@ -859,7 +857,7 @@ returns the blocked flags:
 0x02 == step / wall
 ==================
 */
-int PM_ClipVelocity(vec3_t in, vec3_t normal, vec3_t out, float overbounce)
+int PM_ClipVelocity(const Vector &in, const Vector &normal, Vector &out, float overbounce)
 {
 	float backoff;
 	float change;
@@ -940,15 +938,15 @@ The basic solid body movement clip that slides along multiple planes
 int PM_FlyMove(void)
 {
 	int bumpcount, numbumps;
-	vec3_t dir;
+	Vector dir;
 	float d;
 	int numplanes;
-	vec3_t planes[MAX_CLIP_PLANES];
-	vec3_t primal_velocity, original_velocity;
-	vec3_t new_velocity;
+	Vector planes[MAX_CLIP_PLANES];
+	Vector primal_velocity, original_velocity;
+	Vector new_velocity;
 	int i, j;
 	pmtrace_t trace;
-	vec3_t end;
+	Vector end;
 	float time_left, allFraction;
 	int blocked;
 
@@ -1137,7 +1135,7 @@ int PM_FlyMove(void)
 PM_Accelerate
 ==============
 */
-void PM_Accelerate(vec3_t wishdir, float wishspeed, float accel)
+void PM_Accelerate(const Vector &wishdir, float wishspeed, float accel)
 {
 	int i;
 	float addspeed, accelspeed, currentspeed;
@@ -1187,15 +1185,15 @@ void PM_WalkMove()
 	int oldonground;
 	int i;
 
-	vec3_t wishvel;
+	Vector wishvel;
 	float spd;
 	float fmove, smove;
-	vec3_t wishdir;
+	Vector wishdir;
 	float wishspeed;
 
-	vec3_t dest, start;
-	vec3_t original, originalvel;
-	vec3_t down, downvel;
+	Vector dest, start;
+	Vector original, originalvel;
+	Vector down, downvel;
 	float downdist, updist;
 
 	pmtrace_t trace;
@@ -1236,7 +1234,7 @@ void PM_WalkMove()
 	// Add in any base velocity to the current velocity.
 	VectorAdd(pmove->velocity, pmove->basevelocity, pmove->velocity);
 
-	spd = Length(pmove->velocity);
+	spd = pmove->velocity.Length();
 
 	if (spd < 1.0f)
 	{
@@ -1355,7 +1353,7 @@ void PM_Friction(void)
 	float speed, newspeed, control;
 	float friction;
 	float drop;
-	vec3_t newvel;
+	Vector newvel;
 
 	// If we are in water jump cycle, don't apply friction
 	if (pmove->waterjumptime)
@@ -1378,7 +1376,7 @@ void PM_Friction(void)
 	// apply ground friction
 	if (pmove->onground != -1) // On an entity that is the ground
 	{
-		vec3_t start, stop;
+		Vector start, stop;
 		pmtrace_t trace;
 
 		start[0] = stop[0] = pmove->origin[0] + vel[0] / speed * 16;
@@ -1425,7 +1423,7 @@ void PM_Friction(void)
 	VectorCopy(newvel, pmove->velocity);
 }
 
-void PM_AirAccelerate(vec3_t wishdir, float wishspeed, float accel)
+void PM_AirAccelerate(Vector wishdir, float wishspeed, float accel)
 {
 	int i;
 	float addspeed, accelspeed, currentspeed, wishspd = wishspeed;
@@ -1470,11 +1468,11 @@ PM_WaterMove
 void PM_WaterMove(void)
 {
 	int i;
-	vec3_t wishvel;
+	Vector wishvel;
 	float wishspeed;
-	vec3_t wishdir;
-	vec3_t start, dest;
-	vec3_t temp;
+	Vector wishdir;
+	Vector start, dest;
+	Vector temp;
 	pmtrace_t trace;
 
 	float speed, newspeed, addspeed, accelspeed;
@@ -1565,9 +1563,9 @@ PM_AirMove
 void PM_AirMove(void)
 {
 	int i;
-	vec3_t wishvel;
+	Vector wishvel;
 	float fmove, smove;
-	vec3_t wishdir;
+	Vector wishdir;
 	float wishspeed;
 
 	// Copy movement amounts
@@ -1622,7 +1620,7 @@ Sets pmove->waterlevel and pmove->watertype values.
 */
 qboolean PM_CheckWater()
 {
-	vec3_t point;
+	Vector point;
 	int cont;
 	int truecont;
 	float height;
@@ -1672,7 +1670,7 @@ qboolean PM_CheckWater()
 		if ((truecont <= CONTENTS_CURRENT_0) && (truecont >= CONTENTS_CURRENT_DOWN))
 		{
 			// The deeper we are, the stronger the current.
-			static vec3_t current_table[] = {
+			static Vector current_table[] = {
 				{ 1, 0, 0 }, { 0, 1, 0 }, { -1, 0, 0 },
 				{ 0, -1, 0 }, { 0, 0, 1 }, { 0, 0, -1 }
 			};
@@ -1704,7 +1702,7 @@ PM_CatagorizePosition
 */
 void PM_CatagorizePosition(void)
 {
-	vec3_t point;
+	Vector point;
 	pmtrace_t tr;
 	physent_t *pLadder;
 
@@ -1767,7 +1765,7 @@ When a player is stuck, it's costly to try and unstick them
 Grab a test offset for the player based on a passed in index
 =================
 */
-int PM_GetRandomStuckOffsets(int nIndex, int server, vec3_t offset)
+int PM_GetRandomStuckOffsets(int nIndex, int server, Vector &offset)
 {
 	// Last time we did a full
 	int idx;
@@ -1796,9 +1794,9 @@ allow for the cut precision of the net coordinates
 
 int PM_CheckStuck(void)
 {
-	vec3_t base;
-	vec3_t offset;
-	vec3_t test;
+	Vector base;
+	Vector offset;
+	Vector test;
 	int hitent;
 	float fTime;
 	int i;
@@ -1913,9 +1911,9 @@ void PM_SpectatorMove(void)
 	//float   accel;
 	float currentspeed, addspeed, accelspeed;
 	int i;
-	vec3_t wishvel;
+	Vector wishvel;
 	float fmove, smove;
-	vec3_t wishdir;
+	Vector wishdir;
 	float wishspeed;
 	// this routine keeps track of the spectators psoition
 	// there a two different main move types : track player or moce freely (OBS_ROAMING)
@@ -1927,21 +1925,21 @@ void PM_SpectatorMove(void)
 
 #ifdef CLIENT_DLL
 		// jump only in roaming mode
-		if (iJumpSpectator)
+		if (pm_iJumpSpectator)
 		{
-			VectorCopy(vJumpOrigin, pmove->origin);
-			VectorCopy(vJumpAngles, pmove->angles);
+			VectorCopy(pm_vJumpOrigin, pmove->origin);
+			VectorCopy(pm_vJumpAngles, pmove->angles);
 			VectorCopy(vec3_origin, pmove->velocity);
-			iJumpSpectator = 0;
+			pm_iJumpSpectator = 0;
 			return;
 		}
 #endif // CLIENT_DLL
 
 		// Move around in normal spectator method
-		speed = Length(pmove->velocity);
+		speed = pmove->velocity.Length();
 		if (speed < 1)
 		{
-			VectorCopy(vec3_origin, pmove->velocity)
+			VectorCopy(vec3_origin, pmove->velocity);
 		}
 		else
 		{
@@ -2052,7 +2050,7 @@ void PM_FixPlayerCrouchStuck(int direction)
 {
 	int hitent;
 	int i;
-	vec3_t test;
+	Vector test;
 
 	hitent = pmove->PM_TestPlayerPosition(pmove->origin, NULL);
 	if (hitent == -1)
@@ -2074,7 +2072,7 @@ void PM_UnDuck(void)
 {
 	int i;
 	pmtrace_t trace;
-	vec3_t newOrigin;
+	Vector newOrigin;
 
 	VectorCopy(pmove->origin, newOrigin);
 
@@ -2210,11 +2208,11 @@ void PM_Duck(void)
 
 void PM_LadderMove(physent_t *pLadder)
 {
-	vec3_t ladderCenter;
+	Vector ladderCenter;
 	trace_t trace;
 	qboolean onFloor;
-	vec3_t floor;
-	vec3_t modelmins, modelmaxs;
+	Vector floor;
+	Vector modelmins, modelmaxs;
 
 	if (pmove->movetype == MOVETYPE_NOCLIP)
 		return;
@@ -2241,7 +2239,7 @@ void PM_LadderMove(physent_t *pLadder)
 	if (trace.fraction != 1.0)
 	{
 		float forward = 0, right = 0;
-		vec3_t vpn, v_right;
+		Vector vpn, v_right;
 
 		float climbSpeed = MAX_CLIMB_SPEED;
 		if (climbSpeed > pmove->maxspeed)
@@ -2249,7 +2247,7 @@ void PM_LadderMove(physent_t *pLadder)
 		if (!s_iIsAg && (pmove->flags & FL_DUCKING))
 			climbSpeed *= PLAYER_DUCKING_MULTIPLIER;
 
-		AngleVectors(pmove->angles, vpn, v_right, NULL);
+		AngleVectors(pmove->angles, &vpn, &v_right, nullptr);
 
 		if (pmove->cmd.buttons & IN_BACK)
 			forward -= climbSpeed;
@@ -2269,7 +2267,7 @@ void PM_LadderMove(physent_t *pLadder)
 		{
 			if (forward != 0 || right != 0)
 			{
-				vec3_t velocity, perp, cross, lateral, tmp;
+				Vector velocity, perp, cross, lateral, tmp;
 				float normal;
 
 				//ALERT(at_console, "pev %.2f %.2f %.2f - ",
@@ -2281,7 +2279,7 @@ void PM_LadderMove(physent_t *pLadder)
 
 				// Perpendicular in the ladder plane
 				//Vector perp = CrossProduct( Vector(0,0,1), trace.vecPlaneNormal );
-				//perp = perp.Normalize();
+				//perp = perp.Normalized();
 				VectorClear(tmp);
 				tmp[2] = 1;
 				CrossProduct(tmp, trace.plane.normal, perp);
@@ -2322,7 +2320,7 @@ physent_t *PM_Ladder(void)
 	physent_t *pe;
 	hull_t *hull;
 	int num;
-	vec3_t test;
+	Vector test;
 
 	for (i = 0; i < pmove->nummoveent; i++)
 	{
@@ -2397,10 +2395,10 @@ PM_PushEntity
 Does not change the entities velocity at all
 ============
 */
-pmtrace_t PM_PushEntity(vec3_t push)
+pmtrace_t PM_PushEntity(const Vector &push)
 {
 	pmtrace_t trace;
-	vec3_t end;
+	Vector end;
 
 	VectorAdd(pmove->origin, push, end);
 
@@ -2427,7 +2425,7 @@ Dead player flying through air., e.g.
 void PM_Physics_Toss()
 {
 	pmtrace_t trace;
-	vec3_t move;
+	Vector move;
 	float backoff;
 
 	PM_CheckWater();
@@ -2488,7 +2486,7 @@ void PM_Physics_Toss()
 	if (trace.plane.normal[2] > 0.7)
 	{
 		float vel;
-		vec3_t base;
+		Vector base;
 
 		VectorClear(base);
 		if (pmove->velocity[2] < pmove->movevars->gravity * pmove->frametime)
@@ -2512,7 +2510,7 @@ void PM_Physics_Toss()
 			VectorScale(pmove->velocity, (1.0 - trace.fraction) * pmove->frametime * 0.9, move);
 			trace = PM_PushEntity(move);
 		}
-		VectorSubtract(pmove->velocity, base, pmove->velocity)
+		VectorSubtract(pmove->velocity, base, pmove->velocity);
 	}
 
 	// check for in water
@@ -2528,7 +2526,7 @@ PM_NoClip
 void PM_NoClip()
 {
 	int i;
-	vec3_t wishvel;
+	Vector wishvel;
 	float fmove, smove;
 	//	float		currentspeed, addspeed, accelspeed;
 
@@ -2576,7 +2574,7 @@ void PM_PreventMegaBunnyJumping(void)
 	if (maxscaledspeed <= 0.0f)
 		return;
 
-	spd = Length(pmove->velocity);
+	spd = pmove->velocity.Length();
 
 	if (spd <= maxscaledspeed)
 		return;
@@ -2697,7 +2695,7 @@ void PM_Jump(void)
 	{
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.
-		if (cansuperjump && (pmove->cmd.buttons & IN_DUCK) && (pmove->flDuckTime > 0) && Length(pmove->velocity) > 50)
+		if (cansuperjump && (pmove->cmd.buttons & IN_DUCK) && (pmove->flDuckTime > 0) && (pmove->velocity.Length() > 50))
 		{
 			pmove->punchangle[0] = -5;
 
@@ -2744,9 +2742,9 @@ PM_CheckWaterJump
 #define WJ_HEIGHT 8
 void PM_CheckWaterJump(void)
 {
-	vec3_t vecStart, vecEnd;
-	vec3_t flatforward;
-	vec3_t flatvelocity;
+	Vector vecStart, vecEnd;
+	Vector flatforward;
+	Vector flatvelocity;
 	float curspeed;
 	pmtrace_t tr;
 	int savehull;
@@ -2913,14 +2911,14 @@ PM_CalcRoll
 
 ===============
 */
-float PM_CalcRoll(vec3_t angles, vec3_t velocity, float rollangle, float rollspeed)
+float PM_CalcRoll(const Vector &angles, const Vector &velocity, float rollangle, float rollspeed)
 {
 	float sign;
 	float side;
 	float value;
-	vec3_t forward, right, up;
+	Vector forward, right, up;
 
-	AngleVectors(angles, forward, right, up);
+	AngleVectors(angles, &forward, &right, &up);
 
 	side = DotProduct(velocity, right);
 
@@ -2948,7 +2946,7 @@ PM_DropPunchAngle
 
 =============
 */
-void PM_DropPunchAngle(vec3_t punchangle)
+void PM_DropPunchAngle(Vector &punchangle)
 {
 	float len;
 
@@ -2968,7 +2966,7 @@ void PM_CheckParamters(void)
 {
 	float spd;
 	float maxspeed;
-	vec3_t v_angle;
+	Vector v_angle;
 
 	spd = (pmove->cmd.forwardmove * pmove->cmd.forwardmove) + (pmove->cmd.sidemove * pmove->cmd.sidemove) + (pmove->cmd.upmove * pmove->cmd.upmove);
 	spd = sqrt(spd);
@@ -3082,7 +3080,7 @@ void PM_PlayerMove(qboolean server)
 	PM_ReduceTimers();
 
 	// Convert view angles to vectors
-	AngleVectors(pmove->angles, pmove->forward, pmove->right, pmove->up);
+	AngleVectors(pmove->angles, &pmove->forward, &pmove->right, &pmove->up);
 
 	// PM_ShowClipBox();
 
@@ -3325,7 +3323,7 @@ void PM_CreateStuckTable(void)
 	int i;
 	float zi[3];
 
-	memset(rgv3tStuckTable, 0, MAX_STUCKTABLE_ENTRIES * sizeof(vec3_t));
+	memset(rgv3tStuckTable, 0, MAX_STUCKTABLE_ENTRIES * sizeof(Vector));
 
 	// Little Moves.
 

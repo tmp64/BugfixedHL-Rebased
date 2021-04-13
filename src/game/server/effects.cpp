@@ -723,7 +723,7 @@ void CBeam::BeamDamage(TraceResult *ptr, entvars_t *pevAttacker)
 		if (pHit)
 		{
 			ClearMultiDamage();
-			pHit->TraceAttack(pevAttacker ? pevAttacker : pev, pev->dmg * (gpGlobals->time - pev->dmgtime), (ptr->vecEndPos - pev->origin).Normalize(), ptr, DMG_ENERGYBEAM);
+			pHit->TraceAttack(pevAttacker ? pevAttacker : pev, pev->dmg * (gpGlobals->time - pev->dmgtime), (ptr->vecEndPos - pev->origin).Normalized(), ptr, DMG_ENERGYBEAM);
 			ApplyMultiDamage(pev, pevAttacker ? pevAttacker : pev);
 			if (pev->spawnflags & SF_BEAM_DECALS)
 			{
@@ -793,7 +793,7 @@ void CLightning::RandomArea(void)
 		Vector vecSrc = pev->origin;
 
 		Vector vecDir1 = Vector(RANDOM_FLOAT(-1.0, 1.0), RANDOM_FLOAT(-1.0, 1.0), RANDOM_FLOAT(-1.0, 1.0));
-		vecDir1 = vecDir1.Normalize();
+		vecDir1 = vecDir1.Normalized();
 		TraceResult tr1;
 		UTIL_TraceLine(vecSrc, vecSrc + vecDir1 * m_radius, ignore_monsters, ENT(pev), &tr1);
 
@@ -805,7 +805,7 @@ void CLightning::RandomArea(void)
 		{
 			vecDir2 = Vector(RANDOM_FLOAT(-1.0, 1.0), RANDOM_FLOAT(-1.0, 1.0), RANDOM_FLOAT(-1.0, 1.0));
 		} while (DotProduct(vecDir1, vecDir2) > 0);
-		vecDir2 = vecDir2.Normalize();
+		vecDir2 = vecDir2.Normalized();
 		TraceResult tr2;
 		UTIL_TraceLine(vecSrc, vecSrc + vecDir2 * m_radius, ignore_monsters, ENT(pev), &tr2);
 
@@ -833,7 +833,7 @@ void CLightning::RandomPoint(Vector &vecSrc)
 	for (iLoops = 0; iLoops < 10; iLoops++)
 	{
 		Vector vecDir1 = Vector(RANDOM_FLOAT(-1.0, 1.0), RANDOM_FLOAT(-1.0, 1.0), RANDOM_FLOAT(-1.0, 1.0));
-		vecDir1 = vecDir1.Normalize();
+		vecDir1 = vecDir1.Normalized();
 		TraceResult tr1;
 		UTIL_TraceLine(vecSrc, vecSrc + vecDir1 * m_radius, ignore_monsters, ENT(pev), &tr1);
 
@@ -1429,7 +1429,7 @@ void CGibShooter ::ShootThink(void)
 	vecShootDir = vecShootDir + gpGlobals->v_up * RANDOM_FLOAT(-1, 1) * m_flVariance;
 	;
 
-	vecShootDir = vecShootDir.Normalize();
+	vecShootDir = vecShootDir.Normalized();
 	CGib *pGib = CreateGib();
 
 	if (pGib)
@@ -1589,7 +1589,7 @@ void CTestEffect::TestThink(void)
 
 		Vector vecSrc = pev->origin;
 		Vector vecDir = Vector(RANDOM_FLOAT(-1.0, 1.0), RANDOM_FLOAT(-1.0, 1.0), RANDOM_FLOAT(-1.0, 1.0));
-		vecDir = vecDir.Normalize();
+		vecDir = vecDir.Normalized();
 		UTIL_TraceLine(vecSrc, vecSrc + vecDir * 128, ignore_monsters, ENT(pev), &tr);
 
 		pbeam->PointsInit(vecSrc, tr.vecEndPos);

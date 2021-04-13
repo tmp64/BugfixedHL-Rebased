@@ -31,11 +31,10 @@
 #pragma warning(disable : 4514) // unreferenced inline function removed
 #pragma warning(disable : 4100) // unreferenced formal parameter
 
-#include "archtypes.h" // DAL
+#if defined(_WIN32) && defined(USE_METAMOD)
 
-// Prevent tons of unused windows definitions
-#ifdef _WIN32
-
+// Metamod requires windows.h on Windows
+// Defines prevent tons of unused windows definitions
 #define WIN32_LEAN_AND_MEAN
 #define NOWINRES
 #define NOSERVICE
@@ -46,21 +45,10 @@
 #include "windows.h"
 #include "winsani_out.h"
 
-#else // _WIN32
+#endif
 
-#define FALSE 0
-#define TRUE  (!FALSE)
-
-typedef uint32 ULONG;
-typedef unsigned char BYTE;
-typedef int BOOL;
-
-#define MAX_PATH PATH_MAX
-#include <limits.h>
-#include <stdarg.h>
-#include <string.h> // memset
-
-#endif //_WIN32
+#include "archtypes.h" // DAL
+#include <tier0/platform.h>
 
 // Misc C-runtime library headers
 #include "stdio.h"
@@ -77,11 +65,14 @@ typedef unsigned int func_t; //
 typedef unsigned int string_t; // from engine's pr_comp.h;
 typedef float vec_t; // needed before including progdefs.h
 
-// Vector class
-#include "vector.h"
+// Source SDK mathlib
+#include <mathlib/mathlib.h>
 
+#ifdef USE_METAMOD
 // Defining it as a (bogus) struct helps enforce type-checking
-#define vec3_t Vector
+// Only used in Metamod headers
+using vec3_t = Vector;
+#endif
 
 // Shared engine/DLL constants
 #include "const.h"

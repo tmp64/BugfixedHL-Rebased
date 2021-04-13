@@ -1485,7 +1485,7 @@ Vector UTIL_ClampVectorToBox(const Vector &input, const Vector &clampSize)
 	else
 		sourceVector.z = 0;
 
-	return sourceVector.Normalize();
+	return sourceVector.Normalized();
 }
 
 float UTIL_WaterLevel(const Vector &position, float minz, float maxz)
@@ -1635,10 +1635,10 @@ float UTIL_DotPoints(const Vector &vecSrc, const Vector &vecCheck, const Vector 
 {
 	Vector2D vec2LOS;
 
-	vec2LOS = (vecCheck - vecSrc).Make2D();
-	vec2LOS = vec2LOS.Normalize();
+	vec2LOS = (vecCheck - vecSrc).AsVector2D();
+	vec2LOS.NormalizeInPlace();
 
-	return DotProduct(vec2LOS, (vecDir.Make2D()));
+	return DotProduct2D(vec2LOS, (vecDir.AsVector2D()));
 }
 
 //=========================================================

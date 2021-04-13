@@ -9,6 +9,10 @@
 // File path manipulation routines.
 //
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "path.h"
 
 bool IsValidFilename(const char *path)

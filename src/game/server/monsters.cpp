@@ -980,10 +980,10 @@ void CBaseMonster ::CheckAttacks(CBaseEntity *pTarget, float flDist)
 
 	UTIL_MakeVectors(pev->angles);
 
-	vec2LOS = (pTarget->pev->origin - pev->origin).Make2D();
-	vec2LOS = vec2LOS.Normalize();
+	vec2LOS = (pTarget->pev->origin - pev->origin).AsVector2D();
+	vec2LOS.NormalizeInPlace();
 
-	flDot = DotProduct(vec2LOS, gpGlobals->v_forward.Make2D());
+	flDot = DotProduct2D(vec2LOS, gpGlobals->v_forward.AsVector2D());
 
 	// we know the enemy is in front now. We'll find which attacks the monster is capable of by
 	// checking for corresponding Activities in the model file, then do the simple checks to validate
@@ -1616,7 +1616,7 @@ BOOL CBaseMonster ::FTriangulate(const Vector &vecStart, const Vector &vecEnd, f
 	//if (sizeZ < 24.0)
 	//	sizeZ = 24.0;
 
-	vecForward = (vecEnd - vecStart).Normalize();
+	vecForward = (vecEnd - vecStart).Normalized();
 
 	Vector vecDirUp(0, 0, 1);
 	vecDir = CrossProduct(vecForward, vecDirUp);
@@ -1811,7 +1811,7 @@ void CBaseMonster ::Move(float flInterval)
 	pTargetEnt = NULL;
 
 	// local move to waypoint.
-	vecDir = (m_Route[m_iRouteIndex].vecLocation - pev->origin).Normalize();
+	vecDir = (m_Route[m_iRouteIndex].vecLocation - pev->origin).Normalized();
 	flWaypointDist = (m_Route[m_iRouteIndex].vecLocation - pev->origin).Length2D();
 
 	MakeIdealYaw(m_Route[m_iRouteIndex].vecLocation);
@@ -3133,7 +3133,7 @@ Vector CBaseMonster ::ShootAtEnemy(const Vector &shootOrigin)
 
 	if (pEnemy)
 	{
-		return ((pEnemy->BodyTarget(shootOrigin) - pEnemy->pev->origin) + m_vecEnemyLKP - shootOrigin).Normalize();
+		return ((pEnemy->BodyTarget(shootOrigin) - pEnemy->pev->origin) + m_vecEnemyLKP - shootOrigin).Normalized();
 	}
 	else
 		return gpGlobals->v_forward;

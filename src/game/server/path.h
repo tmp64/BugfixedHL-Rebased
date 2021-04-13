@@ -9,10 +9,6 @@
 // File path manipulation routines.
 //
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 bool IsValidFilename(const char *path);
 void RemoveInvalidFilenameChars(char *path);
 void RemoveInvalidPathChars(char *path, bool isRoted);

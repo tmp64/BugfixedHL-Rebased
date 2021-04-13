@@ -540,7 +540,7 @@ Vector Intersect(Vector vecSrc, Vector vecDst, Vector vecMove, float flSpeed)
 		t = 10.0;
 
 	Vector vecHit = vecTo + vecMove * t;
-	return vecHit.Normalize() * flSpeed;
+	return vecHit.Normalized() * flSpeed;
 }
 
 int CController::LookupFloat()
@@ -888,7 +888,7 @@ void CController ::Move(float flInterval)
 	do
 	{
 		// local move to waypoint.
-		vecDir = (m_Route[m_iRouteIndex].vecLocation - pev->origin).Normalize();
+		vecDir = (m_Route[m_iRouteIndex].vecLocation - pev->origin).Normalized();
 		flWaypointDist = (m_Route[m_iRouteIndex].vecLocation - pev->origin).Length();
 
 		// MakeIdealYaw ( m_Route[ m_iRouteIndex ].vecLocation );
@@ -1211,16 +1211,16 @@ void CControllerHeadBall ::MovetoTarget(Vector vecTarget)
 
 	if (flSpeed > 400)
 	{
-		m_vecIdeal = m_vecIdeal.Normalize() * 400;
+		m_vecIdeal = m_vecIdeal.Normalized() * 400;
 	}
-	m_vecIdeal = m_vecIdeal + (vecTarget - pev->origin).Normalize() * 100;
+	m_vecIdeal = m_vecIdeal + (vecTarget - pev->origin).Normalized() * 100;
 	pev->velocity = m_vecIdeal;
 }
 
 void CControllerHeadBall ::Crawl(void)
 {
 
-	Vector vecAim = Vector(RANDOM_FLOAT(-1, 1), RANDOM_FLOAT(-1, 1), RANDOM_FLOAT(-1, 1)).Normalize();
+	Vector vecAim = Vector(RANDOM_FLOAT(-1, 1), RANDOM_FLOAT(-1, 1), RANDOM_FLOAT(-1, 1)).Normalized();
 	Vector vecPnt = pev->origin + pev->velocity * 0.3 + vecAim * 64;
 
 	MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
@@ -1245,7 +1245,7 @@ void CControllerHeadBall ::Crawl(void)
 
 void CControllerHeadBall::BounceTouch(CBaseEntity *pOther)
 {
-	Vector vecDir = m_vecIdeal.Normalize();
+	Vector vecDir = m_vecIdeal.Normalized();
 
 	TraceResult tr = UTIL_GetGlobalTrace();
 
@@ -1330,7 +1330,7 @@ void CControllerZapBall::ExplodeTouch(CBaseEntity *pOther)
 		}
 
 		ClearMultiDamage();
-		pOther->TraceAttack(pevOwner, gSkillData.controllerDmgBall, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM);
+		pOther->TraceAttack(pevOwner, gSkillData.controllerDmgBall, pev->velocity.Normalized(), &tr, DMG_ENERGYBEAM);
 		ApplyMultiDamage(pevOwner, pevOwner);
 
 		UTIL_EmitAmbientSound(ENT(pev), tr.vecEndPos, "weapons/electro4.wav", 0.3, ATTN_NORM, 0, RANDOM_LONG(90, 99));

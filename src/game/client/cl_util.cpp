@@ -30,8 +30,6 @@
 #define M_PI 3.14159265358979323846 // matches value in gcc v2 math.h
 #endif
 
-const Vector vec3_origin(0, 0, 0);
-
 double sqrt(double x);
 
 float Length(const float *v)

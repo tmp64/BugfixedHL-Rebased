@@ -473,7 +473,7 @@ void CApache ::HuntThink(void)
 		}
 	}
 
-	m_vecTarget = (m_posTarget - pev->origin).Normalize();
+	m_vecTarget = (m_posTarget - pev->origin).Normalized();
 
 	float flLength = (pev->origin - m_posDesired).Length();
 
@@ -500,15 +500,15 @@ void CApache ::HuntThink(void)
 
 	if (flLength > 250) // 500
 	{
-		// float flLength2 = (m_posTarget - pev->origin).Length() * (1.5 - DotProduct((m_posTarget - pev->origin).Normalize(), pev->velocity.Normalize() ));
+		// float flLength2 = (m_posTarget - pev->origin).Length() * (1.5 - DotProduct((m_posTarget - pev->origin).Normalized(), pev->velocity.Normalized() ));
 		// if (flLength2 < flLength)
-		if (m_flLastSeen + 90 > gpGlobals->time && DotProduct((m_posTarget - pev->origin).Normalize(), (m_posDesired - pev->origin).Normalize()) > 0.25)
+		if (m_flLastSeen + 90 > gpGlobals->time && DotProduct((m_posTarget - pev->origin).Normalized(), (m_posDesired - pev->origin).Normalized()) > 0.25)
 		{
-			m_vecDesired = (m_posTarget - pev->origin).Normalize();
+			m_vecDesired = (m_posTarget - pev->origin).Normalized();
 		}
 		else
 		{
-			m_vecDesired = (m_posDesired - pev->origin).Normalize();
+			m_vecDesired = (m_posDesired - pev->origin).Normalized();
 		}
 	}
 	else
@@ -534,7 +534,7 @@ void CApache ::HuntThink(void)
 	}
 
 	UTIL_MakeAimVectors(pev->angles);
-	Vector vecEst = (gpGlobals->v_forward * 800 + pev->velocity).Normalize();
+	Vector vecEst = (gpGlobals->v_forward * 800 + pev->velocity).Normalized();
 	// ALERT( at_console, "%d %d %d %4.2f\n", pev->angles.x < 0, DotProduct( pev->velocity, gpGlobals->v_forward ) > -100, m_flNextRocket < gpGlobals->time, DotProduct( m_vecTarget, vecEst ) );
 
 	if ((m_iRockets % 2) == 1)
@@ -706,7 +706,7 @@ void CApache ::Flight(void)
 		if (pPlayer)
 		{
 
-			float pitch = DotProduct(pev->velocity - pPlayer->pev->velocity, (pPlayer->pev->origin - pev->origin).Normalize());
+			float pitch = DotProduct(pev->velocity - pPlayer->pev->velocity, (pPlayer->pev->origin - pev->origin).Normalized());
 
 			pitch = (int)(100 + pitch / 50.0);
 
@@ -784,7 +784,7 @@ BOOL CApache ::FireGun()
 	Vector posGun, angGun;
 	GetAttachment(1, posGun, angGun);
 
-	Vector vecTarget = (m_posTarget - posGun).Normalize();
+	Vector vecTarget = (m_posTarget - posGun).Normalized();
 
 	Vector vecOut;
 
@@ -818,7 +818,7 @@ BOOL CApache ::FireGun()
 
 	Vector posBarrel, angBarrel;
 	GetAttachment(0, posBarrel, angBarrel);
-	Vector vecGun = (posBarrel - posGun).Normalize();
+	Vector vecGun = (posBarrel - posGun).Normalized();
 
 	if (DotProduct(vecGun, vecTarget) > 0.98)
 	{

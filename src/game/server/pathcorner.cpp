@@ -241,7 +241,7 @@ void CPathTrack ::Project(CPathTrack *pstart, CPathTrack *pend, Vector *origin, 
 	if (pstart && pend)
 	{
 		Vector dir = (pend->pev->origin - pstart->pev->origin);
-		dir = dir.Normalize();
+		dir = dir.Normalized();
 		*origin = pend->pev->origin + dir * dist;
 	}
 }

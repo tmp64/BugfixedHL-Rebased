@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#include <pm_shared.h>
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -22,10 +23,6 @@
 #include "game.h"
 
 void EntvarsKeyvalue(entvars_t *pev, KeyValueData *pkvd);
-
-extern "C" void PM_Move(struct playermove_s *ppmove, int server);
-extern "C" void PM_Init(struct playermove_s *ppmove);
-extern "C" char PM_FindTextureType(char *name);
 
 extern Vector VecBModelOrigin(entvars_t *pevBModel);
 extern DLL_GLOBAL Vector g_vecAttackDir;
@@ -539,7 +536,7 @@ int CBaseEntity ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	}
 
 	// this global is still used for glass and other non-monster killables, along with decals.
-	g_vecAttackDir = vecTemp.Normalize();
+	g_vecAttackDir = vecTemp.Normalized();
 
 	// save damage based on the target's armor level
 
@@ -547,7 +544,7 @@ int CBaseEntity ::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	if ((!FNullEnt(pevInflictor)) && (pev->movetype == MOVETYPE_WALK || pev->movetype == MOVETYPE_STEP) && (pevAttacker->solid != SOLID_TRIGGER))
 	{
 		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
-		vecDir = vecDir.Normalize();
+		vecDir = vecDir.Normalized();
 
 		float flForce = flDamage * ((32 * 32 * 72.0) / (pev->size.x * pev->size.y * pev->size.z)) * 5;
 

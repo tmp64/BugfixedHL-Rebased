@@ -467,12 +467,12 @@ void CFlockingFlyer ::SpreadFlock()
 		{
 			// push the other away
 			vecDir = (pList->pev->origin - pev->origin);
-			vecDir = vecDir.Normalize();
+			vecDir = vecDir.Normalized();
 
 			// store the magnitude of the other boid's velocity, and normalize it so we
 			// can average in a course that points away from the leader.
 			flSpeed = pList->pev->velocity.Length();
-			pList->pev->velocity = pList->pev->velocity.Normalize();
+			pList->pev->velocity = pList->pev->velocity.Normalized();
 			pList->pev->velocity = (pList->pev->velocity + vecDir) * 0.5;
 			pList->pev->velocity = pList->pev->velocity * flSpeed;
 		}
@@ -496,7 +496,7 @@ void CFlockingFlyer ::SpreadFlock2()
 		if (pList != this && (pev->origin - pList->pev->origin).Length() <= AFLOCK_TOO_CLOSE)
 		{
 			vecDir = (pev->origin - pList->pev->origin);
-			vecDir = vecDir.Normalize();
+			vecDir = vecDir.Normalized();
 
 			pev->velocity = (pev->velocity + vecDir);
 		}
@@ -717,12 +717,12 @@ void CFlockingFlyer ::FlockFollowerThink(void)
 	SpreadFlock2();
 
 	pev->speed = pev->velocity.Length();
-	pev->velocity = pev->velocity.Normalize();
+	pev->velocity = pev->velocity.Normalized();
 
 	// if we are too far from leader, average a vector towards it into our current velocity
 	if (flDistToLeader > AFLOCK_TOO_FAR)
 	{
-		vecDirToLeader = vecDirToLeader.Normalize();
+		vecDirToLeader = vecDirToLeader.Normalized();
 		pev->velocity = (pev->velocity + vecDirToLeader) * 0.5;
 	}
 

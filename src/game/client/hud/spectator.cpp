@@ -37,18 +37,14 @@
 
 #pragma warning(disable : 4244)
 
-extern "C" int iJumpSpectator;
-extern "C" float vJumpOrigin[3];
-extern "C" float vJumpAngles[3];
-
 extern void V_GetInEyePos(int entity, float *origin, float *angles);
 extern void V_ResetChaseCam();
 extern void V_GetChasePos(int target, float *cl_angles, float *origin, float *angles);
 
-extern vec3_t v_origin; // last view origin
-extern vec3_t v_angles; // last view angle
-extern vec3_t v_cl_angles; // last client/mouse angle
-extern vec3_t v_sim_org; // last sim origin
+extern Vector v_origin; // last view origin
+extern Vector v_angles; // last view angle
+extern Vector v_cl_angles; // last client/mouse angle
+extern Vector v_sim_org; // last sim origin
 
 DEFINE_HUD_ELEM(CHudSpectator);
 
@@ -70,7 +66,7 @@ void SpectatorMode(void)
 
 void SpectatorSpray(void)
 {
-	vec3_t forward;
+	Vector forward;
 	char string[128];
 
 	if (!gEngfuncs.IsSpectateOnly())
@@ -130,7 +126,7 @@ void CHudSpectator::Init()
 	m_moveDelta = 0.0f;
 	m_FOV = 90.0f;
 	m_chatEnabled = true;
-	iJumpSpectator = 0;
+	pm_iJumpSpectator = 0;
 
 	memset(&m_OverviewData, 0, sizeof(m_OverviewData));
 	memset(&m_OverviewEntities, 0, sizeof(m_OverviewEntities));
@@ -318,16 +314,16 @@ void CHudSpectator::SetSpectatorStartPosition()
 {
 	// search for info_player start
 	if (UTIL_FindEntityInMap("trigger_camera", m_cameraOrigin, m_cameraAngles))
-		iJumpSpectator = 1;
+		pm_iJumpSpectator = 1;
 
 	else if (UTIL_FindEntityInMap("info_player_start", m_cameraOrigin, m_cameraAngles))
-		iJumpSpectator = 1;
+		pm_iJumpSpectator = 1;
 
 	else if (UTIL_FindEntityInMap("info_player_deathmatch", m_cameraOrigin, m_cameraAngles))
-		iJumpSpectator = 1;
+		pm_iJumpSpectator = 1;
 
 	else if (UTIL_FindEntityInMap("info_player_coop", m_cameraOrigin, m_cameraAngles))
-		iJumpSpectator = 1;
+		pm_iJumpSpectator = 1;
 	else
 	{
 		// jump to 0,0,0 if no better position was found
@@ -335,22 +331,22 @@ void CHudSpectator::SetSpectatorStartPosition()
 		VectorCopy(vec3_origin, m_cameraAngles);
 	}
 
-	VectorCopy(m_cameraOrigin, vJumpOrigin);
-	VectorCopy(m_cameraAngles, vJumpAngles);
+	VectorCopy(m_cameraOrigin, pm_vJumpOrigin);
+	VectorCopy(m_cameraAngles, pm_vJumpAngles);
 
-	iJumpSpectator = 1; // jump anyway
+	pm_iJumpSpectator = 1; // jump anyway
 }
 
-void CHudSpectator::SetCameraView(vec3_t pos, vec3_t angle, float fov)
+void CHudSpectator::SetCameraView(Vector pos, Vector angle, float fov)
 {
 	m_FOV = fov;
-	VectorCopy(pos, vJumpOrigin);
-	VectorCopy(angle, vJumpAngles);
-	gEngfuncs.SetViewAngles(vJumpAngles);
-	iJumpSpectator = 1; // jump anyway
+	VectorCopy(pos, pm_vJumpOrigin);
+	VectorCopy(angle, pm_vJumpAngles);
+	gEngfuncs.SetViewAngles(pm_vJumpAngles);
+	pm_iJumpSpectator = 1; // jump anyway
 }
 
-void CHudSpectator::AddWaypoint(float time, vec3_t pos, vec3_t angle, float fov, int flags)
+void CHudSpectator::AddWaypoint(float time, Vector pos, Vector angle, float fov, int flags)
 {
 	if (!flags == 0 && time == 0.0f)
 	{
@@ -403,7 +399,7 @@ void CHudSpectator::SetWayInterpolation(cameraWayPoint_t *prev, cameraWayPoint_t
 	}
 }
 
-bool CHudSpectator::GetDirectorCamera(vec3_t &position, vec3_t &angle)
+bool CHudSpectator::GetDirectorCamera(Vector &position, Vector &angle)
 {
 	float now = gHUD.m_flTime;
 	float fov = 90.0f;
@@ -414,7 +410,7 @@ bool CHudSpectator::GetDirectorCamera(vec3_t &position, vec3_t &angle)
 
 		if (ent)
 		{
-			vec3_t vt = ent->curstate.origin;
+			Vector vt = ent->curstate.origin;
 
 			if (m_ChaseEntity <= gEngfuncs.GetMaxClients())
 			{
@@ -532,7 +528,7 @@ void CHudSpectator::VidInit()
 	m_flNextObserverInput = 0.0f;
 	m_lastHudMessage = 0;
 	m_iSpectatorNumber = 0;
-	iJumpSpectator = 0;
+	pm_iJumpSpectator = 0;
 	g_iUser1 = g_iUser2 = 0;
 }
 
@@ -572,7 +568,7 @@ void CHudSpectator::Draw(float flTime)
 	// if user moves in map mode, change map origin
 	if ((m_moveDelta != 0.0f) && (g_iUser1 != OBS_ROAMING))
 	{
-		vec3_t right;
+		Vector right;
 		AngleVectors(v_angles, NULL, right, NULL);
 		VectorNormalize(right);
 		VectorScale(right, m_moveDelta, right);
@@ -622,7 +618,7 @@ void CHudSpectator::DirectorMessage(int iSize, void *pbuf)
 {
 	float f1, f2;
 	char *string;
-	vec3_t v1, v2;
+	Vector v1, v2;
 	int i1, i2, i3;
 
 	BEGIN_READ(pbuf, iSize);
@@ -670,10 +666,10 @@ void CHudSpectator::DirectorMessage(int iSize, void *pbuf)
 	case DRC_CMD_CAMERA:
 		v1[0] = READ_COORD(); // position
 		v1[1] = READ_COORD();
-		v1[2] = READ_COORD(); // vJumpOrigin
+		v1[2] = READ_COORD(); // pm_vJumpOrigin
 
 		v2[0] = READ_COORD(); // view angle
-		v2[1] = READ_COORD(); // vJumpAngles
+		v2[1] = READ_COORD(); // pm_vJumpAngles
 		v2[2] = READ_COORD();
 		f1 = READ_BYTE(); // fov
 		i1 = READ_WORD(); // target
@@ -760,10 +756,10 @@ void CHudSpectator::DirectorMessage(int iSize, void *pbuf)
 	case DRC_CMD_CAMPATH:
 		v1[0] = READ_COORD(); // position
 		v1[1] = READ_COORD();
-		v1[2] = READ_COORD(); // vJumpOrigin
+		v1[2] = READ_COORD(); // pm_vJumpOrigin
 
 		v2[0] = READ_COORD(); // view angle
-		v2[1] = READ_COORD(); // vJumpAngles
+		v2[1] = READ_COORD(); // pm_vJumpAngles
 		v2[2] = READ_COORD();
 		f1 = READ_BYTE(); // FOV
 		i1 = READ_BYTE(); // flags
@@ -785,10 +781,10 @@ void CHudSpectator::DirectorMessage(int iSize, void *pbuf)
 
 			v1[0] = READ_COORD(); // position
 			v1[1] = READ_COORD();
-			v1[2] = READ_COORD(); // vJumpOrigin
+			v1[2] = READ_COORD(); // pm_vJumpOrigin
 
 			v2[0] = READ_COORD(); // view angle
-			v2[1] = READ_COORD(); // vJumpAngles
+			v2[1] = READ_COORD(); // pm_vJumpAngles
 			v2[2] = READ_COORD();
 			f2 = READ_BYTE(); // fov
 			i3 = READ_BYTE(); // flags
@@ -882,17 +878,17 @@ void CHudSpectator::FindNextPlayer(bool bReverse)
 	{
 		gEngfuncs.Con_DPrintf("No observer targets.\n");
 		// take save camera position
-		VectorCopy(m_cameraOrigin, vJumpOrigin);
-		VectorCopy(m_cameraAngles, vJumpAngles);
+		VectorCopy(m_cameraOrigin, pm_vJumpOrigin);
+		VectorCopy(m_cameraAngles, pm_vJumpAngles);
 	}
 	else
 	{
 		// use new entity position for roaming
-		VectorCopy(pEnt->origin, vJumpOrigin);
-		VectorCopy(pEnt->angles, vJumpAngles);
+		VectorCopy(pEnt->origin, pm_vJumpOrigin);
+		VectorCopy(pEnt->angles, pm_vJumpAngles);
 	}
 
-	iJumpSpectator = 1;
+	pm_iJumpSpectator = 1;
 }
 
 void CHudSpectator::FindPlayer(const char *name)
@@ -936,17 +932,17 @@ void CHudSpectator::FindPlayer(const char *name)
 	{
 		gEngfuncs.Con_DPrintf("No observer targets.\n");
 		// take save camera position
-		VectorCopy(m_cameraOrigin, vJumpOrigin);
-		VectorCopy(m_cameraAngles, vJumpAngles);
+		VectorCopy(m_cameraOrigin, pm_vJumpOrigin);
+		VectorCopy(m_cameraAngles, pm_vJumpAngles);
 	}
 	else
 	{
 		// use new entity position for roaming
-		VectorCopy(pEnt->origin, vJumpOrigin);
-		VectorCopy(pEnt->angles, vJumpAngles);
+		VectorCopy(pEnt->origin, pm_vJumpOrigin);
+		VectorCopy(pEnt->angles, pm_vJumpAngles);
 	}
 
-	iJumpSpectator = 1;
+	pm_iJumpSpectator = 1;
 }
 
 void CHudSpectator::HandleButtonsDown(int ButtonPressed)
@@ -1015,8 +1011,8 @@ void CHudSpectator::HandleButtonsDown(int ButtonPressed)
 
 			if (g_iUser1 == OBS_ROAMING)
 			{
-				gEngfuncs.SetViewAngles(vJumpAngles);
-				iJumpSpectator = 1;
+				gEngfuncs.SetViewAngles(pm_vJumpAngles);
+				pm_iJumpSpectator = 1;
 			}
 			// release directed mode if player wants to see another player
 			m_autoDirector->value = 0.0f;
@@ -1117,13 +1113,13 @@ void CHudSpectator::SetModes(int iNewMainMode, int iNewInsetMode)
 			g_iUser1 = OBS_CHASE_FREE;
 			break;
 
-		case OBS_ROAMING: // jump to current vJumpOrigin/angle
+		case OBS_ROAMING: // jump to current pm_vJumpOrigin/angle
 			g_iUser1 = OBS_ROAMING;
 			if (g_iUser2)
 			{
-				V_GetChasePos(g_iUser2, v_cl_angles, vJumpOrigin, vJumpAngles);
-				gEngfuncs.SetViewAngles(vJumpAngles);
-				iJumpSpectator = 1;
+				V_GetChasePos(g_iUser2, v_cl_angles, pm_vJumpOrigin, pm_vJumpAngles);
+				gEngfuncs.SetViewAngles(pm_vJumpAngles);
+				pm_iJumpSpectator = 1;
 			}
 			break;
 
@@ -1463,7 +1459,7 @@ void CHudSpectator::DrawOverviewEntities()
 {
 	int i;
 	struct model_s *hSpriteModel;
-	vec3_t origin, angles, point, forward, right, left, up, world, screen, offset;
+	Vector origin, angles, point, forward, right, left, up, world, screen, offset;
 	float x, y, z, r, g, b, sizeScale = 4.0f;
 	cl_entity_t *ent;
 	float rmatrix[3][4]; // transformation matrix
@@ -1875,7 +1871,7 @@ void CHudSpectator::InitHudData()
 	m_flNextObserverInput = 0.0f;
 	m_lastHudMessage = 0;
 	m_iSpectatorNumber = 0;
-	iJumpSpectator = 0;
+	pm_iJumpSpectator = 0;
 	g_iUser1 = g_iUser2 = 0;
 
 	memset(&m_OverviewData, 0, sizeof(m_OverviewData));

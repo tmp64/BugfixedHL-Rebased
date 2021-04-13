@@ -32,8 +32,8 @@ void HUD_GetLastOrg(float *org);
 
 void UpdateBeams(void)
 {
-	vec3_t forward, vecSrc, vecEnd, origin, angles, right, up;
-	vec3_t view_ofs;
+	Vector forward, vecSrc, vecEnd, origin, angles, right, up;
+	Vector view_ofs;
 	pmtrace_t tr;
 	cl_entity_t *pthisplayer = gEngfuncs.GetLocalPlayer();
 	int idx = pthisplayer->index;

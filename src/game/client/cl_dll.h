@@ -33,8 +33,6 @@ typedef float vec_t;
 
 #include <mathlib/mathlib.h>
 
-using vec3_t = Vector;
-
 #ifndef EXPORT
 #ifdef _WIN32
 #define EXPORT _declspec(dllexport)

@@ -10,12 +10,8 @@
 #include "cl_util.h"
 #include "camera.h"
 
-extern "C"
-{
-#include <pm_shared.h>
 #include "kbutton.h"
-}
-
+#include "pm_shared.h"
 #include "cvardef.h"
 #include "usercmd.h"
 #include "const.h"
@@ -674,12 +670,12 @@ void CL_DLLEXPORT CL_CreateMove(float frametime, struct usercmd_s *cmd, int acti
 	//	RecClCL_CreateMove(frametime, cmd, active);
 
 	float spd;
-	vec3_t viewangles;
-	static vec3_t oldangles;
+	Vector viewangles;
+	static Vector oldangles;
 
 	if (active)
 	{
-		//memset( viewangles, 0, sizeof( vec3_t ) );
+		//memset( viewangles, 0, sizeof( Vector ) );
 		//viewangles[ 0 ] = viewangles[ 1 ] = viewangles[ 2 ] = 0.0;
 		gEngfuncs.GetViewAngles((float *)viewangles);
 

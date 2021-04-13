@@ -687,7 +687,7 @@ void CHud::UpdateSupportsCvar()
 	gEngfuncs.pfnClientCmd(buf);
 }
 
-CON_COMMAND(append, "Support OpenAG scripts.")
+CON_COMMAND(append, "Puts a command into the end of the command buffer")
 {
 	if (gEngfuncs.Cmd_Argc() != 2) {
 		if (!gEngfuncs.pDemoAPI->IsPlayingback())

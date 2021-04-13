@@ -23,12 +23,12 @@ void PM_Init(struct playermove_s *ppmove);
 void PM_Move(struct playermove_s *ppmove, int server);
 char PM_FindTextureType(char *name);
 
-int PM_GetOnGround();
-int PM_GetWaterLevel();
-
 void PM_SetIsAG(int state);
 
 #ifdef CLIENT_DLL
+int PM_GetOnGround();
+int PM_GetWaterLevel();
+int PM_GetMoveType();
 int PM_GetBHopCapState();
 void PM_SetBHopCapState(int state);
 void PM_ResetBHopDetection();

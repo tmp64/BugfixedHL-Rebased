@@ -68,25 +68,23 @@ cvar_t *cl_pitchspeed;
 cvar_t *cl_anglespeedkey;
 cvar_t *cl_vsmoothing;
 cvar_t *cl_jumptype;
-cvar_t *cl_autojump_priority;
+
+ConVar cl_autojump("cl_autojump", "0", FCVAR_BHL_ARCHIVE, "Jump automatically when ground is hit");
+ConVar cl_autojump_priority("cl_autojump_priority", "0", FCVAR_BHL_ARCHIVE, "Autojump takes priority over ducktap");
 
 namespace autofuncs
 {
-	static cvar_t* cl_autojump;
-
-	static struct {
-		bool onground = false;
-		bool inwater = false;
-		bool walking = true; // Movetype == MOVETYPE_WALK. Filters out noclip, being on ladder, etc.
-	} player;
-
-	static void handle_autojump(usercmd_t* cmd)
+	static void HandleAutojump(usercmd_t *cmd)
 	{
-		static bool s_jump_was_down_last_frame = false;
+		static bool s_bJumpWasDownLastFrame = false;
 
-		if (cl_autojump->value != 0.0f)
+		bool inWater = PM_GetWaterLevel() > 1;
+	    bool isWalking = PM_GetMoveType() == MOVETYPE_WALK;
+	    bool shouldReleaseDuck = (!PM_GetOnGround() && !inWater && isWalking);
+
+		if (cl_autojump.GetBool())
 		{
-			bool should_release_jump = (!player.onground && !player.inwater && player.walking);
+		    bool shouldReleaseJump = (!PM_GetOnGround() && !inWater && isWalking);
 
 			/*
 			 * Spam pressing and releasing jump if we're stuck in a spot where jumping still results in
@@ -94,41 +92,36 @@ namespace autofuncs
 			 * when the player exits this spot they would have to release and press the jump button to
 			 * start jumping again. This also helps with exiting water or ladder right onto the ground.
 			 */
-			if (s_jump_was_down_last_frame && player.onground && !player.inwater && player.walking)
-				should_release_jump = true;
+		    if (s_bJumpWasDownLastFrame && PM_GetOnGround() && !inWater && isWalking)
+			    shouldReleaseJump = true;
 
-			if (should_release_jump)
+			if (shouldReleaseJump)
 				cmd->buttons &= ~IN_JUMP;
 		}
 
-		s_jump_was_down_last_frame = ((cmd->buttons & IN_JUMP) != 0);
+		s_bJumpWasDownLastFrame = ((cmd->buttons & IN_JUMP) != 0);
 	}
 
-	static void handle_ducktap(usercmd_t* cmd)
+	static void HandleDucktap(usercmd_t* cmd)
 	{
-		static bool s_duck_was_down_last_frame = false;
+		static bool s_bDuckWasDownLastFrame = false;
 
-		bool should_release_duck = (!player.onground && !player.inwater && player.walking);
+		bool inWater = PM_GetWaterLevel() > 1;
+	    bool isWalking = PM_GetMoveType() == MOVETYPE_WALK;
+	    bool shouldReleaseDuck = (!PM_GetOnGround() && !inWater && isWalking);
 
-		if (s_duck_was_down_last_frame && player.onground && !player.inwater && player.walking)
+		if (s_bDuckWasDownLastFrame && PM_GetOnGround() && !inWater && isWalking)
 		{
-			should_release_duck = true;
+		    shouldReleaseDuck = true;
 		}
 
-		if (should_release_duck)
+		if (shouldReleaseDuck)
 		{
 			cmd->buttons &= ~IN_DUCK;
 		}
 
-		s_duck_was_down_last_frame = ((cmd->buttons & IN_DUCK) != 0);
+		s_bDuckWasDownLastFrame = ((cmd->buttons & IN_DUCK) != 0);
 	}
-}
-
-extern "C" void update_player_info(int onground, int inwater, int walking)
-{
-	autofuncs::player.onground = (onground != 0);
-	autofuncs::player.inwater = (inwater != 0);
-	autofuncs::player.walking = (walking != 0);
 }
 
 /*
@@ -168,7 +161,6 @@ kbutton_t in_speed;
 kbutton_t in_use;
 kbutton_t in_jump;
 kbutton_t in_longjump;
-kbutton_t in_bunnyhop;
 kbutton_t in_attack;
 kbutton_t in_attack2;
 kbutton_t in_up;
@@ -546,8 +538,6 @@ void IN_JumpDown(void)
 void IN_JumpUp(void) { KeyUp(&in_jump); }
 void IN_LongJumpDown(void) { KeyDown(&in_longjump); }
 void IN_LongJumpUp(void) { KeyUp(&in_longjump); }
-void IN_BunnyHopDown(void) { KeyDown(&in_bunnyhop); }
-void IN_BunnyHopUp(void) { KeyUp(&in_bunnyhop); }
 void IN_DuckDown(void)
 {
 	KeyDown(&in_duck);
@@ -760,7 +750,7 @@ void CL_DLLEXPORT CL_CreateMove(float frametime, struct usercmd_s *cmd, int acti
 		cmd->sidemove -= cl_sidespeed->value * CL_KeyState(&in_moveleft);
 
 		// simulate moveup underwater for +bhop, +ljump and +jump actions
-		cmd->upmove += cl_upspeed->value * std::max(CL_KeyState(&in_up), PM_GetWaterLevel() >= 2 ? max(max(CL_KeyState(&in_bunnyhop), CL_KeyState(&in_jump)), CL_KeyState(&in_longjump)) : 0);
+		cmd->upmove += cl_upspeed->value * std::max(CL_KeyState(&in_up), PM_GetWaterLevel() >= 2 ? max(CL_KeyState(&in_jump), CL_KeyState(&in_longjump)) : 0);
 		cmd->upmove -= cl_upspeed->value * CL_KeyState(&in_down);
 
 		if (!(in_klook.state & 1))
@@ -807,15 +797,18 @@ void CL_DLLEXPORT CL_CreateMove(float frametime, struct usercmd_s *cmd, int acti
 	//
 	cmd->buttons = CL_ButtonBits(1);
 
-	if (cl_autojump_priority->value != 0.0f)
-		autofuncs::handle_autojump(cmd);
+	if (cl_autojump_priority.GetBool())
+		autofuncs::HandleAutojump(cmd);
 
 	if (in_ducktap.state & 1)
 	{
 		cmd->buttons |= IN_DUCK;
-		autofuncs::handle_ducktap(cmd); // Ducktap takes priority over autojump
-	} else if (cl_autojump_priority->value == 0.0f)
-		autofuncs::handle_autojump(cmd);
+		autofuncs::HandleDucktap(cmd); // Ducktap takes priority over autojump
+	}
+	else if (!cl_autojump_priority.GetBool())
+	{
+		autofuncs::HandleAutojump(cmd);
+	}
 
 	// Using joystick?
 	if (in_joystick->value)
@@ -880,7 +873,7 @@ int CL_ButtonBits(int bResetState)
 
 	if (in_jump.state & 3)
 	{
-		if (cl_jumptype->value == 0.0 || g_iUser1 || autofuncs::cl_autojump->value != 0.0f) // Simple jump in spectator
+		if (cl_jumptype->value == 0.0 || g_iUser1 || cl_autojump.GetBool()) // Simple jump in spectator
 		{
 			bits |= IN_JUMP;
 		}
@@ -940,35 +933,6 @@ int CL_ButtonBits(int bResetState)
 		if (bResetState)
 		{
 			g_bLongJumped = false;
-		}
-	}
-
-	if (in_bunnyhop.state & 3)
-	{
-		if (g_iUser1) // Simple jump in spectator
-		{
-			bits |= IN_JUMP;
-		}
-		else if (PM_GetOnGround())
-		{
-			if (!g_bBunnyhopJumped)
-			{
-				bits |= IN_JUMP;
-			}
-			if (bResetState)
-			{
-				g_bBunnyhopJumped = !g_bBunnyhopJumped;
-			}
-		}
-		else
-		{
-			g_bBunnyhopJumped = false;
-
-			if (PM_GetWaterLevel() == 2)
-			{
-				// Over the water, glide on the surface, but only if we are over deep water
-				bits |= IN_JUMP;
-			}
 		}
 	}
 
@@ -1044,7 +1008,6 @@ int CL_ButtonBits(int bResetState)
 		in_duck.state &= ~2;
 		in_jump.state &= ~2;
 		in_longjump.state &= ~2;
-		in_bunnyhop.state &= ~2;
 		in_forward.state &= ~2;
 		in_back.state &= ~2;
 		in_use.state &= ~2;
@@ -1129,8 +1092,6 @@ void InitInput(void)
 	gEngfuncs.pfnAddCommand("-jump", IN_JumpUp);
 	gEngfuncs.pfnAddCommand("+ljump", IN_LongJumpDown);
 	gEngfuncs.pfnAddCommand("-ljump", IN_LongJumpUp);
-	gEngfuncs.pfnAddCommand("+bhop", IN_BunnyHopDown);
-	gEngfuncs.pfnAddCommand("-bhop", IN_BunnyHopUp);
 	gEngfuncs.pfnAddCommand("impulse", IN_Impulse);
 	gEngfuncs.pfnAddCommand("+klook", IN_KLookDown);
 	gEngfuncs.pfnAddCommand("-klook", IN_KLookUp);
@@ -1170,9 +1131,6 @@ void InitInput(void)
 
 	cl_vsmoothing = gEngfuncs.pfnRegisterVariable("cl_vsmoothing", "0.05", FCVAR_ARCHIVE);
 	cl_jumptype = gEngfuncs.pfnRegisterVariable("cl_jumptype", "1", FCVAR_ARCHIVE);
-	
-	autofuncs::cl_autojump = gEngfuncs.pfnRegisterVariable ( "cl_autojump", "0", FCVAR_ARCHIVE );
-	cl_autojump_priority = gEngfuncs.pfnRegisterVariable ( "cl_autojump_priority", "0", FCVAR_ARCHIVE );
 
 	m_pitch = gEngfuncs.pfnRegisterVariable("m_pitch", "0.022", FCVAR_ARCHIVE);
 	m_yaw = gEngfuncs.pfnRegisterVariable("m_yaw", "0.022", FCVAR_ARCHIVE);

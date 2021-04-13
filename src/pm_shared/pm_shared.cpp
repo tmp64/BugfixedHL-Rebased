@@ -157,10 +157,23 @@ static char grgszTextureName[CTEXTURESMAX][CBTEXTURENAMEMAX];
 static char grgchTextureType[CTEXTURESMAX];
 
 int g_onladder = 0;
-static int s_iOnGround;
-static int s_iWaterlevel;
 static int s_bBHopCap = true;
 static int s_iIsAg = false;
+
+void PM_SetIsAG(int state)
+{
+	s_iIsAg = state;
+}
+
+#ifdef CLIENT_DLL
+
+#define BHOP_DETECT_DELAY 0.3f
+
+static int s_iOnGround;
+static int s_iWaterlevel;
+static int s_iMoveType;
+static int s_iBHopState = 1;
+static float s_flBHopCheckTime = 0.0f;
 
 int PM_GetOnGround()
 {
@@ -172,17 +185,10 @@ int PM_GetWaterLevel()
 	return s_iWaterlevel;
 }
 
-void PM_SetIsAG(int state)
+int PM_GetMoveType()
 {
-	s_iIsAg = state;
+	return s_iMoveType;
 }
-
-#ifdef CLIENT_DLL
-
-#define BHOP_DETECT_DELAY 0.3f
-
-static int s_iBHopState = 1;
-static float s_flBHopCheckTime = 0.0f;
 
 int PM_GetBHopCapState()
 {
@@ -1688,7 +1694,9 @@ qboolean PM_CheckWater()
 			pmove->waterlevel = 3; // In over our eyes
 	}
 
+#ifdef CLIENT_DLL
 	s_iWaterlevel = pmove->waterlevel;
+#endif
 
 	return pmove->waterlevel > 1;
 }
@@ -2868,12 +2876,11 @@ void PM_CheckFalling(void)
 	if (pmove->onground != -1)
 	{
 		pmove->flFallVelocity = 0;
-		s_iOnGround = 1; // Set flag for bunnyhop, to jump when touch the ground
 	}
-	else
-	{
-		s_iOnGround = 0;
-	}
+
+#ifdef CLIENT_DLL
+	s_iOnGround = pmove->onground != -1; // Set flag for bunnyhop, to jump when touch the ground
+#endif
 }
 
 /*
@@ -3121,7 +3128,9 @@ void PM_PlayerMove(qboolean server)
 		if (pLadder)
 		{
 			g_onladder = 1;
+#ifdef CLIENT_DLL
 			s_iOnGround = 1; // allow to jump off
+#endif
 		}
 	}
 
@@ -3470,14 +3479,7 @@ void PM_Move(struct playermove_s *ppmove, int server)
 
 	// BHop autodetection
 #ifdef CLIENT_DLL
-
-	extern void update_player_info(int onground, int inwater, int walking);
-
-	update_player_info(
-		pmove->onground != -1,
-		pmove->waterlevel > 1,
-		pmove->movetype == MOVETYPE_WALK
-	);
+	s_iMoveType = pmove->movetype;
 	
 	if (s_iBHopState == 2 && s_flBHopCheckTime > 0)
 	{

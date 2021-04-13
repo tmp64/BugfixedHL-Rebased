@@ -3480,7 +3480,7 @@ void PM_Move(struct playermove_s *ppmove, int server)
 	// BHop autodetection
 #ifdef CLIENT_DLL
 	s_iMoveType = pmove->movetype;
-	
+
 	if (s_iBHopState == 2 && s_flBHopCheckTime > 0)
 	{
 		float speed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);

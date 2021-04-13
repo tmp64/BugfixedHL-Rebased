@@ -74,54 +74,54 @@ ConVar cl_autojump_priority("cl_autojump_priority", "0", FCVAR_BHL_ARCHIVE, "Aut
 
 namespace autofuncs
 {
-	static void HandleAutojump(usercmd_t *cmd)
+static void HandleAutojump(usercmd_t *cmd)
+{
+	static bool s_bJumpWasDownLastFrame = false;
+
+	bool inWater = PM_GetWaterLevel() > 1;
+	bool isWalking = PM_GetMoveType() == MOVETYPE_WALK;
+	bool shouldReleaseDuck = (!PM_GetOnGround() && !inWater && isWalking);
+
+	if (cl_autojump.GetBool())
 	{
-		static bool s_bJumpWasDownLastFrame = false;
+		bool shouldReleaseJump = (!PM_GetOnGround() && !inWater && isWalking);
 
-		bool inWater = PM_GetWaterLevel() > 1;
-	    bool isWalking = PM_GetMoveType() == MOVETYPE_WALK;
-	    bool shouldReleaseDuck = (!PM_GetOnGround() && !inWater && isWalking);
-
-		if (cl_autojump.GetBool())
-		{
-		    bool shouldReleaseJump = (!PM_GetOnGround() && !inWater && isWalking);
-
-			/*
+		/*
 			 * Spam pressing and releasing jump if we're stuck in a spot where jumping still results in
 			 * being onground in the end of the frame. Without this check, +jump would remain held and
 			 * when the player exits this spot they would have to release and press the jump button to
 			 * start jumping again. This also helps with exiting water or ladder right onto the ground.
 			 */
-		    if (s_bJumpWasDownLastFrame && PM_GetOnGround() && !inWater && isWalking)
-			    shouldReleaseJump = true;
+		if (s_bJumpWasDownLastFrame && PM_GetOnGround() && !inWater && isWalking)
+			shouldReleaseJump = true;
 
-			if (shouldReleaseJump)
-				cmd->buttons &= ~IN_JUMP;
-		}
-
-		s_bJumpWasDownLastFrame = ((cmd->buttons & IN_JUMP) != 0);
+		if (shouldReleaseJump)
+			cmd->buttons &= ~IN_JUMP;
 	}
 
-	static void HandleDucktap(usercmd_t* cmd)
+	s_bJumpWasDownLastFrame = ((cmd->buttons & IN_JUMP) != 0);
+}
+
+static void HandleDucktap(usercmd_t *cmd)
+{
+	static bool s_bDuckWasDownLastFrame = false;
+
+	bool inWater = PM_GetWaterLevel() > 1;
+	bool isWalking = PM_GetMoveType() == MOVETYPE_WALK;
+	bool shouldReleaseDuck = (!PM_GetOnGround() && !inWater && isWalking);
+
+	if (s_bDuckWasDownLastFrame && PM_GetOnGround() && !inWater && isWalking)
 	{
-		static bool s_bDuckWasDownLastFrame = false;
-
-		bool inWater = PM_GetWaterLevel() > 1;
-	    bool isWalking = PM_GetMoveType() == MOVETYPE_WALK;
-	    bool shouldReleaseDuck = (!PM_GetOnGround() && !inWater && isWalking);
-
-		if (s_bDuckWasDownLastFrame && PM_GetOnGround() && !inWater && isWalking)
-		{
-		    shouldReleaseDuck = true;
-		}
-
-		if (shouldReleaseDuck)
-		{
-			cmd->buttons &= ~IN_DUCK;
-		}
-
-		s_bDuckWasDownLastFrame = ((cmd->buttons & IN_DUCK) != 0);
+		shouldReleaseDuck = true;
 	}
+
+	if (shouldReleaseDuck)
+	{
+		cmd->buttons &= ~IN_DUCK;
+	}
+
+	s_bDuckWasDownLastFrame = ((cmd->buttons & IN_DUCK) != 0);
+}
 }
 
 /*

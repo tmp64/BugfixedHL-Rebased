@@ -689,7 +689,8 @@ void CHud::UpdateSupportsCvar()
 
 CON_COMMAND(append, "Puts a command into the end of the command buffer")
 {
-	if (gEngfuncs.Cmd_Argc() != 2) {
+	if (gEngfuncs.Cmd_Argc() != 2)
+	{
 		if (!gEngfuncs.pDemoAPI->IsPlayingback())
 			gEngfuncs.Con_Printf("append <command> - put the command into the end of the command buffer.\n");
 

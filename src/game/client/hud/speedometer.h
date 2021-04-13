@@ -14,7 +14,6 @@ private:
 	int m_iOldSpeed;
 	int m_iSpeed;
 	float m_fFade;
-	cvar_t *m_pCvarSpeedometerBelowCross;
 };
 
 #endif

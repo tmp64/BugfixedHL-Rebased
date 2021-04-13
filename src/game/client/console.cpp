@@ -1,7 +1,9 @@
 #define TIER2_GAMEUI_INTERNALS
 #include <cstdarg>
 #include <queue>
+#include <FileSystem.h>
 #include <tier0/dbg.h>
+#include <tier1/interface.h>
 #include <tier1/strtools.h>
 #include <tier2/tier2.h>
 #include <IGameConsole.h>
@@ -30,6 +32,18 @@ public:
 	bool m_bInitialized;
 	void *m_pConsole;
 };
+
+//-----------------------------------------------------
+// GameUI module
+// Engine unloads GameUI before HUD_Shutdown.
+// If a tier0 spew occurs between CBaseUI::Shutdown and HUD_Shutdown
+// SetColor will access invalid memory (pointing to unloaded module).
+// We prevent this by keeping it loaded until Hud_Shutdown.
+//-----------------------------------------------------
+CSysModule *s_hGameUI = nullptr;
+
+static void LoadGameUI();
+static void UnloadGameUI();
 
 //-----------------------------------------------------
 // Console color hook
@@ -145,9 +159,11 @@ void console::HudPostInit()
 
 void console::HudShutdown()
 {
-	// Pointers to GameUI are no longer valid since VGUI2 has been shutdown
+	// Pointers to GameUI will no longer be valid after GameUI is unloaded
 	s_ConColor = &s_StubColor;
 	s_ConDColor = &s_StubDColor;
+
+	UnloadGameUI();
 }
 
 void console::HudPostShutdown()
@@ -173,10 +189,43 @@ void console::ResetColor()
 }
 
 //-----------------------------------------------------
+// GameUI
+//-----------------------------------------------------
+void console::LoadGameUI()
+{
+#ifdef PLATFORM_WINDOWS
+	// Windows loads GameUI from cl_dlls/GameUI.dll using IFileSystem
+	char path[MAX_PATH];
+	g_pFullFileSystem->GetLocalPath("cl_dlls/GameUI.dll", path, sizeof(path));
+#else
+	// Linux always loads GameUI from valve/cl_dlls/gameui.so
+	const char *path = "valve/cl_dlls/gameui" DLL_EXT_STRING;
+#endif
+
+	s_hGameUI = Sys_LoadModule(path);
+}
+
+void console::UnloadGameUI()
+{
+	if (s_hGameUI)
+	{
+		Sys_UnloadModule(s_hGameUI);
+	}
+}
+
+//-----------------------------------------------------
 // Console color hook
 //-----------------------------------------------------
 void console::HookConsoleColor()
 {
+	LoadGameUI();
+
+	if (!s_hGameUI)
+	{
+		ConPrintf(ConColor::Red, "HookConsoleColor: GameUI not loaded, color hooking is not safe.\n");
+		return;
+	}
+
 	CGameConsolePrototype *pGameConsole = (CGameConsolePrototype *)g_pGameConsole;
 
 	if (!pGameConsole)

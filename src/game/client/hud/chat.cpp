@@ -1166,6 +1166,50 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	// Substitute location
 	AgHudLocation::Get()->ParseAndEditSayString(iPlayerIndex, msg, sizeof(msg));
 
+	// Replace server name with real name
+	CPlayerInfo *pi = nullptr;
+	if (iPlayerIndex != 0)
+	{
+		pi = GetPlayerInfo(iPlayerIndex)->Update();
+
+		if (pi->HasRealName())
+		{
+			const char *realname = pi->GetDisplayName();
+			int realnamelen = strlen(realname);
+
+			// Find player name
+			const char *nameinmsg = strstr(msg, pi->GetName());
+			int namelen = 0;
+
+			if (!nameinmsg)
+			{
+				// Try name without color codes (miniAG bug)
+				const char *strippedname = RemoveColorCodes(pi->GetName());
+				nameinmsg = strstr(msg, strippedname);
+
+				if (nameinmsg)
+					namelen = strlen(strippedname);
+			}
+			else
+			{
+				namelen = strlen(pi->GetName());
+			}
+
+			if (namelen > 0)
+			{
+				int namestart = nameinmsg - msg;
+				int nameend = namestart + namelen;
+				int realnameend = namestart + realnamelen;
+
+				// Move part after the name to where it will be after replace
+				memmove(msg + realnameend, msg + nameend, std::min(sizeof(msg) - nameend + 1, sizeof(msg) - realnameend - 1));
+
+				// Replace name with realname
+				memcpy(msg + namestart, realname, realnamelen);
+			}
+		}
+	}
+
 	// Strip leading \n characters ( or notify/color signifiers ) for empty string check
 	char *pmsg = msg;
 	while (*pmsg && (*pmsg == '\n' || (*pmsg > 0 && *pmsg < COLOR_MAX) || (*pmsg == '^' && *(pmsg + 1) >= '0' && *(pmsg + 1) <= '9')))
@@ -1212,7 +1256,7 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	const char *playerName = "Console";
 	if (iPlayerIndex != 0)
 	{
-		playerName = GetPlayerInfo(iPlayerIndex)->Update()->GetName();
+		playerName = GetPlayerInfo(iPlayerIndex)->Update()->GetDisplayName();
 	}
 
 	int msglen = strlen(pmsg);
@@ -1234,7 +1278,7 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 			// miniag issue: server-side is giving a name with colorcodes while say message doesn't have them
 			// server-side will give the name with colors removed after first name change
 			// so until that, we need to remove them by ourselves and try to find again
-			if (!strstr(pmsg, playerName))
+			if (pi && !pi->HasRealName() && !strstr(pmsg, playerName))
 				pName = RemoveColorCodes(pName);
 
 			wchar_t wideName[MAX_PLAYER_NAME];

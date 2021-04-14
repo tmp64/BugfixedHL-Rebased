@@ -10,7 +10,6 @@ ConVar hud_rainbow_speed("hud_rainbow_speed", "40", FCVAR_ARCHIVE, "Rainbow HUD 
 ConVar hud_rainbow_xphase("hud_rainbow_xphase", "0.4", FCVAR_ARCHIVE, "Rainbow HUD X phase shift (deg/px)");
 ConVar hud_rainbow_yphase("hud_rainbow_yphase", "0.7", FCVAR_ARCHIVE, "Rainbow HUD Y phase shift (deg/px)");
 
-
 void CRainbow::Init()
 {
 	// Save engine functions

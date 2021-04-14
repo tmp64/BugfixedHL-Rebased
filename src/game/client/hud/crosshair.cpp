@@ -36,8 +36,14 @@ void CHudCrosshair::Draw(float flTime)
 	if (!(m_iFlags & HUD_ACTIVE))
 		return;
 
-	if (!CHudAmmo::Get()->m_pWeapon)
-		return;
+	if (gEngfuncs.GetMaxClients() == 1)
+	{
+		// These checks are limited to singleplayer since HL servers
+		// reset the HUD incorrectly on full update (e.g. when starting a demo recording).
+		// This causes ammo count and crosshair to disappear.
+		if ((gHUD.m_iHideHUDDisplay & HIDEHUD_WEAPONS) || !CHudAmmo::Get()->m_pWeapon)
+			return;
+	}
 
 	// Draw custom crosshair if enabled
 	if (cl_cross_enable.GetBool() && !(CHudAmmo::Get()->m_fOnTarget && CHudAmmo::Get()->m_pWeapon->hAutoaim))

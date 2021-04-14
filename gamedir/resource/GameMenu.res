@@ -86,7 +86,7 @@
 	{
 		"label" "#GameUI_GameMenu_ChangeGame"
 		"command" "OpenChangeGameDialog"
-		"notsteam" "0"
+		"notsteam" "1"
 		"notsingle" "1"
 		"notmulti" "1"
 	}

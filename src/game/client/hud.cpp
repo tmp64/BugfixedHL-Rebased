@@ -40,6 +40,7 @@
 #include "cl_voice_status.h"
 #include "bhlcfg.h"
 #include "results.h"
+#include "svc_messages.h"
 
 #if USE_UPDATER
 #include "updater/update_checker.h"
@@ -322,6 +323,8 @@ void CHud::VidInit(void)
 	{
 		GetTeamInfo(i)->Reset(i);
 	}
+
+	CSvcMessages::Get().VidInit();
 
 	// ----------
 	// Load Sprites

@@ -91,6 +91,12 @@ CSvcMessages &CSvcMessages::Get()
 	return s_SvcMessages;
 }
 
+CSvcMessages::CSvcMessages()
+{
+	memset(&m_Handlers, 0, sizeof(m_Handlers));
+	memset(m_iMarkedPlayers, 0, sizeof(m_iMarkedPlayers));
+}
+
 void CSvcMessages::Init()
 {
 	if (!CEnginePatches::Get().GetSvcArray())
@@ -120,10 +126,10 @@ void CSvcMessages::Init()
 void CSvcMessages::VidInit()
 {
 	m_iStatusRequestState = StatusRequestState::Idle;
-	m_flStatusRequestLastTime = 0;
+	m_iStatusResponseCounter = 0;
 
-	// Delayed request on level start
-	m_flStatusRequestNextTime = gEngfuncs.GetAbsoluteTime() + 0.5;
+	// Only allow sending requests STATUS_REQUEST_CONN_DELAY after connection was established
+	m_flStatusRequestLastTime = gEngfuncs.GetAbsoluteTime() + STATUS_REQUEST_CONN_DELAY - STATUS_REQUEST_PERIOD;
 }
 
 void CSvcMessages::SendStatusRequest()
@@ -132,35 +138,35 @@ void CSvcMessages::SendStatusRequest()
 	if (!CEnginePatches::Get().GetSvcArray())
 		return;
 
-	if (m_flStatusRequestLastTime > gEngfuncs.GetAbsoluteTime())
-	{
-		// Time was reset: changelevel, etc...
-		m_flStatusRequestLastTime = 0;
-	}
+	// Only send or delay once per frame
+	if (m_iStatusRequestLastFrame == gHUD.GetFrameCount())
+		return;
 
-	if (m_iStatusRequestState != StatusRequestState::Idle && m_flStatusRequestLastTime + 1.0 > gEngfuncs.GetAbsoluteTime())
+	m_iStatusRequestLastFrame = gHUD.GetFrameCount();
+
+	if (m_iStatusRequestState != StatusRequestState::Idle && m_flStatusRequestLastTime + STATUS_REQUEST_TIMEOUT > gEngfuncs.GetAbsoluteTime())
 	{
 		// Request is in progress, delay it
-		m_flStatusRequestNextTime = m_flStatusRequestLastTime + 1.1;
+		m_flStatusRequestNextTime = m_flStatusRequestLastTime + STATUS_REQUEST_PERIOD;
 		return;
 	}
 
-	if (m_flStatusRequestLastTime + 1.0 > gEngfuncs.GetAbsoluteTime())
+	if (m_flStatusRequestLastTime + STATUS_REQUEST_PERIOD >= gEngfuncs.GetAbsoluteTime())
 	{
 		// Delay request if it was called recently (to not spam the server)
-		m_flStatusRequestNextTime = m_flStatusRequestLastTime + 1.1;
+		m_flStatusRequestNextTime = m_flStatusRequestLastTime + STATUS_REQUEST_PERIOD;
 		return;
 	}
 
 	m_iStatusRequestState = StatusRequestState::Sent;
-	m_flStatusRequestLastTime = gEngfuncs.GetAbsoluteTime();
 	ServerCmd("status");
-	gEngfuncs.Con_DPrintf("%.3f status request sent\n", gEngfuncs.GetAbsoluteTime());
+	gEngfuncs.Con_DPrintf("%.3f status request sent (delta %.3f)\n", gEngfuncs.GetAbsoluteTime(), gEngfuncs.GetAbsoluteTime() - m_flStatusRequestLastTime);
+	m_flStatusRequestLastTime = gEngfuncs.GetAbsoluteTime();
 }
 
 void CSvcMessages::CheckDelayedSendStatusRequest()
 {
-	if (m_flStatusRequestNextTime > 0 && m_flStatusRequestNextTime <= gEngfuncs.GetAbsoluteTime())
+	if (m_flStatusRequestNextTime > 0 && m_flStatusRequestNextTime < gEngfuncs.GetAbsoluteTime())
 	{
 		m_flStatusRequestNextTime = 0;
 		SendStatusRequest();
@@ -375,11 +381,12 @@ void CSvcMessages::SvcPrint()
 			if (!strncmp(str, "hostname:  ", 11))
 			{
 				m_iStatusRequestState = StatusRequestState::AnswerReceived;
+				m_iStatusResponseCounter++;
 				// Suppress status output
 				GetMsgBuf().GetReadPos() += strlen(str) + 1;
 				return;
 			}
-			else if (m_flStatusRequestLastTime + 1.0 > gEngfuncs.GetAbsoluteTime())
+			else if (m_flStatusRequestLastTime + STATUS_REQUEST_TIMEOUT > gEngfuncs.GetAbsoluteTime())
 			{
 				// No answer
 				m_iStatusRequestState = StatusRequestState::Idle;
@@ -456,6 +463,8 @@ void CSvcMessages::SvcPrint()
 									else
 										strncpy(pi->m_szSteamID, steamid, MAX_STEAMID);
 									pi->m_szSteamID[MAX_STEAMID] = 0;
+
+									m_iMarkedPlayers[slot] = m_iStatusResponseCounter;
 								}
 								else
 								{
@@ -482,6 +491,16 @@ void CSvcMessages::SvcPrint()
 				// end of the table
 				m_iStatusRequestState = StatusRequestState::Idle;
 				gEngfuncs.Con_DPrintf("%.3f status request received\n", gEngfuncs.GetAbsoluteTime());
+
+				for (int idx = 1; idx <= MAX_PLAYERS; idx++)
+				{
+					CPlayerInfo *pi = GetPlayerInfo(idx);
+
+					if (pi->IsConnected() && m_iMarkedPlayers[idx] != m_iStatusResponseCounter)
+					{
+						pi->m_iStatusPenalty++;
+					}
+				}
 			}
 			// Suppress status output
 			GetMsgBuf().GetReadPos() += strlen(str) + 1;

@@ -103,7 +103,7 @@ public:
 	 */
 	static CSvcMessages &Get();
 
-	CSvcMessages() = default;
+	CSvcMessages();
 	CSvcMessages(const CSvcMessages &) = delete;
 	CSvcMessages &operator=(const CSvcMessages &) = delete;
 
@@ -148,9 +148,16 @@ private:
 		SvcParseFunc array[SVC_MSG_COUNT];
 	} m_Handlers;
 
+	static constexpr float STATUS_REQUEST_TIMEOUT = 1.0f; //<! Maximum waiting time for response
+	static constexpr float STATUS_REQUEST_PERIOD = 2.0f; //<! Minimum time between status requests
+	static constexpr float STATUS_REQUEST_CONN_DELAY = 3.f; //<! Only begin sending requests some time after connection established
+
 	StatusRequestState m_iStatusRequestState = StatusRequestState::Idle;
-	float m_flStatusRequestLastTime;
-	float m_flStatusRequestNextTime;
+	float m_flStatusRequestLastTime = 0.0f;
+	float m_flStatusRequestNextTime = 0.0f;
+	int m_iStatusRequestLastFrame = 0;
+	int m_iStatusResponseCounter = 0; //<! Incremented at the start of each response
+	int m_iMarkedPlayers[MAX_PLAYERS + 1]; //<! [i] is set to counter if i-th player was found in the response
 
 	/**
 	 * Returns whether string matches a regular expression.

@@ -76,12 +76,23 @@ public:
 	CPlayerInfo *Update();
 
 private:
+	/**
+	 * Sometimes players get stuck in connecting state and won't be visible in status output.
+	 * If player wasn't found in status this many times, increase status request period.
+	 * Prevents status spamming every 2 seconds.
+	 */
+	static constexpr int STATUS_PENALTY_THRESHOLD = 4;
+	static constexpr float STATUS_PERIOD = 2.f;
+	static constexpr float STATUS_BUGGED_PERIOD = 10.f;
+
 	int m_iIndex = -1;
 	hud_player_info_t m_EngineInfo;
 	extra_player_info_t m_ExtraInfo;
 	bool m_bIsConnected;
 	bool m_bIsSpectator;
 	char m_szSteamID[MAX_STEAMID + 1];
+	int m_iStatusPenalty; //!< This var is incremented every time player is not found in status output
+	float m_flLastStatusRequest = 0;
 
 	player_info_t *GetEnginePlayerInfo();
 	void Reset();

@@ -208,17 +208,9 @@ CPlayerInfo *CPlayerInfo::Update()
 	{
 		// Player connected or disconnected
 		m_szSteamID[0] = '\0';
+		m_iStatusPenalty = 0;
+		m_flLastStatusRequest = 0;
 		g_pViewport->GetScoreBoard()->UpdateOnPlayerInfo(GetIndex());
-	}
-
-	if (bIsConnected && !bWasConnected)
-	{
-		// Player connected, update SteamID
-		CSvcMessages::Get().SendStatusRequest();
-	}
-	else if (!bIsConnected && bWasConnected)
-	{
-		// Player disconnected
 	}
 
 	if (bIsConnected)
@@ -226,7 +218,12 @@ CPlayerInfo *CPlayerInfo::Update()
 		if (!m_szSteamID[0])
 		{
 			// Player has no SteamID, update it
-			CSvcMessages::Get().SendStatusRequest();
+			float period = (m_iStatusPenalty < STATUS_PENALTY_THRESHOLD) ? STATUS_PERIOD : STATUS_BUGGED_PERIOD;
+			if (m_flLastStatusRequest + period < gEngfuncs.GetAbsoluteTime())
+			{
+				CSvcMessages::Get().SendStatusRequest();
+				m_flLastStatusRequest = gEngfuncs.GetAbsoluteTime();
+			}
 		}
 
 		if (IsThisPlayer())

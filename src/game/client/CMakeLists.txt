@@ -47,6 +47,8 @@ add_sources(
 	net.h
 	player_info.cpp
 	player_info.h
+	rainbow.cpp
+	rainbow.h
 	results.cpp
 	results.h
 	sdl_rt.cpp

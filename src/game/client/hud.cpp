@@ -248,6 +248,8 @@ void CHud::Init(void)
 	// Load default HUD colors into m_HudColor*.
 	UpdateHudColors();
 
+	m_Rainbow.Init();
+
 	// Create HUD elements
 	RegisterHudElem<CHudAmmo>();
 	RegisterHudElem<CHudHealth>();

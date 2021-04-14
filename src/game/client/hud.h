@@ -31,6 +31,7 @@
 #include "global_consts.h"
 #include "hud/base.h"
 #include "player_info.h"
+#include "rainbow.h"
 
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH    0x00FF1010 //255,160,0
@@ -107,6 +108,8 @@ public:
 
 	// Screen information
 	SCREENINFO m_scrinfo;
+
+	CRainbow m_Rainbow;
 
 	//-----------------------------------------------------
 	// HUD exports

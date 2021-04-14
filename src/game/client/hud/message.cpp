@@ -153,6 +153,9 @@ void CHudMessage::MessageScanNextChar(Color srcColor)
 	destRed = destGreen = destBlue = 0;
 	blend = 0; // Pure source
 
+	if (gHUD.m_Rainbow.IsEnabled())
+		gHUD.m_Rainbow.GetRainbowColor(m_parms.x, m_parms.y, srcRed, srcGreen, srcBlue);
+
 	switch (m_parms.pMessage->effect)
 	{
 	// Fade-in / Fade-out

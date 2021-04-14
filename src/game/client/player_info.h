@@ -75,6 +75,16 @@ public:
 	// Returns this
 	CPlayerInfo *Update();
 
+	/**
+	 * Returns whether the player has a real name.
+	 */
+	bool HasRealName();
+
+	/**
+	 * Clears saved realname. Should be called when realnames are unloaded.
+	 */
+	void ClearRealName();
+
 private:
 	/**
 	 * Sometimes players get stuck in connecting state and won't be visible in status output.
@@ -91,6 +101,8 @@ private:
 	bool m_bIsConnected;
 	bool m_bIsSpectator;
 	char m_szSteamID[MAX_STEAMID + 1];
+	char m_szRealName[MAX_PLAYER_NAME + 1];
+	bool m_bRealNameChecked = false;
 	int m_iStatusPenalty; //!< This var is incremented every time player is not found in status output
 	float m_flLastStatusRequest = 0;
 

@@ -1,3 +1,6 @@
+#include <map>
+#include <string>
+#include <FileSystem.h>
 #include <tier1/strtools.h>
 #include "hud.h"
 #include "cl_util.h"
@@ -10,9 +13,17 @@
 CPlayerInfo CPlayerInfo::m_sPlayerInfo[MAX_PLAYERS + 1];
 static CPlayerInfo *s_ThisPlayerInfo = nullptr;
 
-CPlayerInfo *GetThisPlayerInfo()
+namespace
 {
-	return s_ThisPlayerInfo;
+
+std::map<uint64_t, std::string> s_RealNames;
+
+// UTF-friendly version instead of platform-specific ones
+bool IsSpace(char c)
+{
+	// Everything before space is either whitespace or invalid.
+	// UTF-8 chars all have bit 7 set to high
+	return static_cast<unsigned char>(c) <= ' ';
 }
 
 /**
@@ -20,7 +31,7 @@ CPlayerInfo *GetThisPlayerInfo()
  * Credits to voogru
  * https://forums.alliedmods.net/showthread.php?t=60899?t=60899
  */
-static uint64 ParseSteamID(const char *pszAuthID)
+uint64 ParseSteamID(const char *pszAuthID)
 {
 	if (!pszAuthID)
 		return 0;
@@ -53,6 +64,140 @@ static uint64 ParseSteamID(const char *pszAuthID)
 	i64friendID += 76561197960265728 + iServer;
 
 	return i64friendID;
+}
+
+void UnloadAuthID()
+{
+	s_RealNames.clear();
+
+	for (int i = 1; i <= MAX_PLAYERS; i++)
+	{
+		GetPlayerInfo(i)->ClearRealName();
+	}
+}
+
+void LoadAuthID()
+{
+	UnloadAuthID();
+	FileHandle_t hFile = g_pFullFileSystem->Open("realnames.txt", "r");
+
+	if (hFile == FILESYSTEM_INVALID_HANDLE)
+	{
+		ConPrintf(ConColor::Red, "Failed to open realnames.txt");
+		return;
+	}
+
+	char linebuf[512];
+
+	for (int linenum = 1; g_pFullFileSystem->ReadLine(linebuf, sizeof(linebuf), hFile); linenum++)
+	{
+		char steamid[64];
+		char name[64];
+		int idx = 0;
+
+		if (!linebuf[idx])
+			continue; // Empty line
+
+		// Skip spaces
+		while (linebuf[idx] && IsSpace(linebuf[idx]))
+			idx++;
+
+		if (!linebuf[idx])
+			continue; // Empty line
+
+		// Find next space
+		int steamidbegin = idx;
+		while (linebuf[idx] && !IsSpace(linebuf[idx]))
+			idx++;
+
+		if (!linebuf[idx])
+		{
+			ConPrintf("Line %d: unexpected end of line [1]\n", linenum);
+			continue;
+		}
+
+		// Copy SteamID
+		int steamidend = idx;
+		int steamidlen = steamidend - steamidbegin;
+
+		if (steamidlen >= 2)
+		{
+			if (linebuf[steamidbegin + 0] == '/' && linebuf[steamidbegin + 1] == '/')
+			{
+				// Skip comment
+				continue;
+			}
+		}
+
+		if (steamidlen >= sizeof(steamid))
+		{
+			ConPrintf("Line %d: SteamID too long (%d > %d)\n", linenum, steamidlen, sizeof(steamid) - 1);
+			continue;
+		}
+
+		memcpy(steamid, linebuf + steamidbegin, steamidlen);
+		steamid[steamidlen] = '\0';
+
+		// Skip spaces
+		while (linebuf[idx] && IsSpace(linebuf[idx]))
+			idx++;
+
+		if (!linebuf[idx])
+		{
+			ConPrintf("Line %d: unexpected end of line [2]\n", linenum);
+			continue;
+		}
+
+		int namebegin = idx;
+
+		// Find end of the string
+		while (linebuf[idx])
+			idx++;
+		int nameend = idx;
+		int namelen = nameend - namebegin;
+
+		if (namelen >= sizeof(name))
+		{
+			ConPrintf("Line %d: name too long (%d > %d)\n", linenum, namelen, sizeof(name) - 1);
+			continue;
+		}
+
+		memcpy(name, linebuf + namebegin, namelen);
+		name[namelen] = '\0';
+
+		if (name[namelen - 1] == '\n')
+			name[namelen - 1] = '\0';
+
+		// Parse SteamID
+		uint64_t steamid64 = ParseSteamID(steamid);
+
+		if (steamid64 == 0)
+		{
+			ConPrintf("Line %d: failed to parse SteamID\n", linenum);
+			continue;
+		}
+
+		s_RealNames.insert({ steamid64, name });
+	}
+
+	ConPrintf("Loaded %d realnames\n", s_RealNames.size());
+}
+
+}
+
+CON_COMMAND(loadauthid, "Loads real names from realnames.txt")
+{
+	LoadAuthID();
+}
+
+CON_COMMAND(unloadauthid, "Clears loaded realnames")
+{
+	UnloadAuthID();
+}
+
+CPlayerInfo *GetThisPlayerInfo()
+{
+	return s_ThisPlayerInfo;
 }
 
 int CPlayerInfo::GetIndex()
@@ -171,7 +316,13 @@ bool CPlayerInfo::IsSpectator()
 
 const char *CPlayerInfo::GetDisplayName(bool bNoColorCodes)
 {
-	// This method is a great place to add AG realnames.
+	const char *name = nullptr;
+
+	if (m_szRealName[0])
+		name = m_szRealName;
+	else
+		name = GetName();
+
 	if (bNoColorCodes && gHUD.GetColorCodeAction() != ColorCodeAction::Ignore)
 	{
 		// Select a buffer
@@ -181,14 +332,14 @@ const char *CPlayerInfo::GetDisplayName(bool bNoColorCodes)
 		bufferIndex++;
 
 		// Strip color codes
-		RemoveColorCodes(GetName(), buf, MAX_PLAYER_NAME);
+		RemoveColorCodes(name, buf, MAX_PLAYER_NAME);
 
 		return buf;
 	}
 	else
 	{
 		// Return name with color codes
-		return GetName();
+		return name;
 	}
 }
 
@@ -208,6 +359,8 @@ CPlayerInfo *CPlayerInfo::Update()
 	{
 		// Player connected or disconnected
 		m_szSteamID[0] = '\0';
+		m_szRealName[0] = '\0';
+		m_bRealNameChecked = false;
 		m_iStatusPenalty = 0;
 		m_flLastStatusRequest = 0;
 		g_pViewport->GetScoreBoard()->UpdateOnPlayerInfo(GetIndex());
@@ -226,11 +379,39 @@ CPlayerInfo *CPlayerInfo::Update()
 			}
 		}
 
+		if (!m_bRealNameChecked)
+		{
+			m_bRealNameChecked = true;
+
+			if (!s_RealNames.empty())
+			{
+				// Find real name
+				uint64_t steamid64 = GetSteamID64();
+				auto it = s_RealNames.find(GetSteamID64());
+
+				if (it != s_RealNames.end())
+				{
+					Q_strncpy(m_szRealName, it->second.c_str(), sizeof(m_szRealName));
+				}
+			}
+		}
+
 		if (IsThisPlayer())
 			s_ThisPlayerInfo = this;
 	}
 
 	return this;
+}
+
+bool CPlayerInfo::HasRealName()
+{
+	return m_szRealName[0] != '\0';
+}
+
+void CPlayerInfo::ClearRealName()
+{
+	m_szRealName[0] = '\0';
+	m_bRealNameChecked = false;
 }
 
 player_info_t *CPlayerInfo::GetEnginePlayerInfo()

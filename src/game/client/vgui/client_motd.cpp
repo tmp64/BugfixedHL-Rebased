@@ -131,9 +131,12 @@ void CClientMOTD::Activate(const char *title, const char *msg)
 	SetTitle(title, false);
 	//SetControlString( "serverName", title );
 
-	m_pMessage->SetText(msg);
-	SetKeyBoardInputEnabled(true);
-	SetMouseInputEnabled(true);
+	// Replace CRLF with LF and convert to wide string
+	static char buf[8192];
+	static wchar_t wbuf[4096];
+	V_StrSubst(msg, "\r\n", "\n", buf, sizeof(buf));
+	Q_UTF8ToWString(buf, wbuf, sizeof(wbuf), STRINGCONVERT_REPLACE);
+	m_pMessage->SetText(wbuf);
 }
 
 void CClientMOTD::ActivateHtml(const char *title, const char *msg)

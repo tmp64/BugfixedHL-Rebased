@@ -129,6 +129,8 @@ void CClientMOTD::Activate(const char *title, const char *msg)
 	BaseClass::Activate();
 
 	SetTitle(title, false);
+	SetKeyBoardInputEnabled(true);
+	SetMouseInputEnabled(true);
 	//SetControlString( "serverName", title );
 
 	// Replace CRLF with LF and convert to wide string

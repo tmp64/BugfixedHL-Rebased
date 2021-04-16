@@ -37,6 +37,9 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
 	m_pMOTD = new CCvarCheckButton(this, "MOTD", "#BHL_AdvOptions_General_HTML", "cl_enable_html_motd");
 	m_pMOTDLabel = new vgui2::Label(this, "MOTDLabel", "#BHL_AdvOptions_General_HTML2");
 
+	m_pAutoJump = new CCvarCheckButton(this, "AutoJump", "#BHL_AdvOptions_General_AutoJump", "cl_autojump");
+	m_pAutoJumpLabel = new vgui2::Label(this, "AutoJumpLabel", "#BHL_AdvOptions_General_AutoJump2");
+
 	m_pAutoDemo = new CCvarCheckButton(this, "AutoDemo", "#BHL_AdvOptions_General_AutoDemo", "results_demo_autorecord");
 	m_pAutoDemoLabel = new vgui2::Label(this, "AutoDemoLabel", "#BHL_AdvOptions_General_AutoDemo2");
 	m_pKeepFor = new CCvarTextEntry(this, "KeepFor", "results_demo_keepdays", CCvarTextEntry::CvarType::Int);

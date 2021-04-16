@@ -37,6 +37,8 @@ private:
 	vgui2::Label *m_pKillSndLabel = nullptr;
 	CCvarCheckButton *m_pMOTD = nullptr;
 	vgui2::Label *m_pMOTDLabel = nullptr;
+	CCvarCheckButton *m_pAutoJump = nullptr;
+	vgui2::Label *m_pAutoJumpLabel = nullptr;
 
 	CCvarCheckButton *m_pAutoDemo = nullptr;
 	vgui2::Label *m_pAutoDemoLabel = nullptr;

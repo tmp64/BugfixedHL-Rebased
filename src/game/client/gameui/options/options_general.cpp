@@ -71,6 +71,7 @@ void CGeneralSubOptions::OnResetData()
 	m_pInputMethodBox->ActivateItem(m_InputMethodItems[clamp(m_input.GetInt(), 0, 2)]);
 	m_pKillSnd->ResetData();
 	m_pMOTD->ResetData();
+	m_pAutoJump->ResetData();
 	m_pAutoDemo->ResetData();
 	m_pKeepFor->ResetData();
 }
@@ -80,6 +81,7 @@ void CGeneralSubOptions::OnApplyChanges()
 	m_pFovValue->ApplyChanges();
 	m_pKillSnd->ApplyChanges();
 	m_pMOTD->ApplyChanges();
+	m_pAutoJump->ApplyChanges();
 	m_pAutoDemo->ApplyChanges();
 	m_pKeepFor->ApplyChanges();
 

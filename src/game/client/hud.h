@@ -121,6 +121,7 @@ public:
 	void Frame(double time);
 	void Shutdown();
 	void ApplyViewportSchemeSettings(vgui2::IScheme *pScheme);
+	void SaveEngineVersion();
 
 	/**
 	 * Returns whether DLL is installed onto AG mod.

@@ -198,6 +198,10 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 
 	memcpy(&gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t));
 
+	// Save engine version before everything els
+	// (in case the game crashes there, crash handler will know the engine version)
+	gHUD.SaveEngineVersion();
+
 	console::Initialize();
 	CvarSystem::RegisterCvars();
 	EV_HookEvents();

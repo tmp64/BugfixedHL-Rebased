@@ -233,13 +233,6 @@ void CHud::Init(void)
 
 	cl_lw = gEngfuncs.pfnGetCvarPointer("cl_lw");
 
-	// Save engine version
-	cvar_t *sv_version = sv_version = gEngfuncs.pfnGetCvarPointer("sv_version");
-	if (sv_version)
-		Q_strncpy(m_szEngineVersion, sv_version->string, sizeof(m_szEngineVersion));
-	else
-		Q_strncpy(m_szEngineVersion, "< sv_version not found >", sizeof(m_szEngineVersion));
-
 	m_pSpriteList = NULL;
 
 	// In case we get messages before the first update -- time will be valid
@@ -489,6 +482,15 @@ void CHud::ApplyViewportSchemeSettings(vgui2::IScheme *pScheme)
 	}
 
 	vgui2::Label::SetDefaultColorCodeArray(m_ColorCodeColors);
+}
+
+void CHud::SaveEngineVersion()
+{
+	cvar_t *sv_version = sv_version = gEngfuncs.pfnGetCvarPointer("sv_version");
+	if (sv_version)
+		Q_strncpy(m_szEngineVersion, sv_version->string, sizeof(m_szEngineVersion));
+	else
+		Q_strncpy(m_szEngineVersion, "< sv_version not found >", sizeof(m_szEngineVersion));
 }
 
 bool CHud::IsAG()

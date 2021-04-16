@@ -62,6 +62,7 @@ void CheckWorkingDirectory()
 		char buf[MAX_PATH];
 		gEngfuncs.COM_ExpandFilename("liblist.gam", buf, sizeof(buf));
 		fs::path liblistPath = fs::u8path(buf);
+
 		if (liblistPath.empty())
 			throw std::logic_error("liblist.gam not found: " + liblistPath.u8string());
 
@@ -72,10 +73,10 @@ void CheckWorkingDirectory()
 		if (enginePath.empty())
 			throw std::logic_error("enginePath is empty");
 
-		enginePath = fs::canonical(enginePath);
-		fs::path workdir = fs::canonical(fs::current_path());
+		enginePath = fs::absolute(enginePath.lexically_normal());
+		fs::path workdir = fs::absolute(fs::current_path().lexically_normal());
 
-		if (enginePath != workdir)
+		if (!fs::equivalent(enginePath, workdir))
 		{
 			char buf[1024];
 			snprintf(buf, sizeof(buf),

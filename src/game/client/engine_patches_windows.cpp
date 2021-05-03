@@ -673,6 +673,62 @@ void CEnginePatchesWindows::ExchangeMemoryBytes(uintptr_t *origAddr, size_t *dat
 	VirtualProtect(origAddr, size, oldProtect, &oldProtect);
 }
 
+//-------------------------------------------------------------------
+// Heap validation
+//-------------------------------------------------------------------
+extern "C" HANDLE __acrt_heap; // ucrt.lib (heap_handle.obj)
+
+void Win_ValidateHeap(const std::function<void(const char *)> &logfn)
+{
+#ifdef _DEBUG
+	logfn("Debug heap: ");
+	if (!_CrtCheckMemory())
+	{
+		logfn("HEAP CORRUPTED\n");
+		DebuggerBreakIfDebugging();
+	}
+	else
+	{
+		logfn("validated successfully\n");
+	}
+#endif
+
+	logfn("CRT heap: ");
+	if (__acrt_heap)
+	{
+		if (!HeapValidate(__acrt_heap, 0, nullptr))
+		{
+			logfn("HEAP CORRUPTED\n");
+			if (IsDebug())
+			{
+				DebuggerBreakIfDebugging();
+			}
+		}
+		else
+		{
+			logfn("validated successfully\n");
+		}
+	}
+	else
+	{
+		logfn("nullptr\n");
+	}
+
+	logfn("Process heap: ");
+	if (!HeapValidate(GetProcessHeap(), 0, nullptr))
+	{
+		logfn("HEAP CORRUPTED\n");
+		if (IsDebug())
+		{
+			DebuggerBreakIfDebugging();
+		}
+	}
+	else
+	{
+		logfn("validated successfully\n");
+	}
+}
+
 //---------------------------------------------------------------
 // Vectored Exceptions Handler
 //---------------------------------------------------------------
@@ -759,6 +815,7 @@ public:
 			PrintGameInfo(file);
 			PrintStackTrace(file, pExceptionInfo);
 			PrintModuleList(file, pExceptionInfo);
+			ValidateHeap(file);
 
 			fclose(file);
 
@@ -906,6 +963,15 @@ public:
 					fprintf(file, "  %08X %08X\n", moduleBase, moduleSize);
 			}
 		}
+
+		fprintf(file, "\n");
+	}
+
+	void ValidateHeap(FILE *file)
+	{
+		fprintf(file, "Validating heap\n");
+		fflush(file); // Flush in case heap validation causes a crash
+		Win_ValidateHeap([file](const char *str) { fputs(str, file); fflush(file); });
 	}
 
 	void CreateMiniDump(PEXCEPTION_POINTERS pExceptionInfo)

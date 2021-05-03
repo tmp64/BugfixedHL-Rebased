@@ -394,6 +394,11 @@ void CL_DLLEXPORT HUD_Shutdown(void)
 	ClientSteamContext().Shutdown();
 	CEnginePatches::Get().Shutdown();
 	console::HudPostShutdown();
+
+#if defined(PLATFORM_WINDOWS) && defined(_DEBUG)
+	void Win_ValidateHeap(const std::function<void(const char *)> &logfn);
+	Win_ValidateHeap([](const char *) {});
+#endif
 }
 
 extern "C" CL_DLLEXPORT void *ClientFactory()

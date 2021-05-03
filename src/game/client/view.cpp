@@ -216,7 +216,7 @@ V_CalcRoll
 Used by view and sv_user
 ===============
 */
-float V_CalcRoll(Vector angles, Vector velocity, float rollangle, float rollspeed)
+float V_CalcRoll(const Vector &angles, const Vector &velocity, float rollangle, float rollspeed)
 {
 	float sign;
 	float side;

@@ -96,3 +96,21 @@ void AngleVectorsTranspose(const Vector &angles, Vector *forward, Vector *right,
 		up->z = cr * cp;
 	}
 }
+
+float PM_VectorNormalize(Vector &v)
+{
+	float length, ilength;
+
+	length = v.x * v.x + v.y * v.y + v.z * v.z;
+	length = sqrt(length);
+
+	if (length)
+	{
+		ilength = 1 / length;
+		v.x *= ilength;
+		v.y *= ilength;
+		v.z *= ilength;
+	}
+
+	return length;
+}

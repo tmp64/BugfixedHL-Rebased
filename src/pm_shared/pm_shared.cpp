@@ -1212,8 +1212,8 @@ void PM_WalkMove()
 	pmove->forward[2] = 0;
 	pmove->right[2] = 0;
 
-	VectorNormalize(pmove->forward); // Normalize remainder of vectors.
-	VectorNormalize(pmove->right); //
+	PM_VectorNormalize(pmove->forward); // Normalize remainder of vectors.
+	PM_VectorNormalize(pmove->right); //
 
 	for (i = 0; i < 2; i++) // Determine x and y parts of velocity
 		wishvel[i] = pmove->forward[i] * fmove + pmove->right[i] * smove;
@@ -1221,7 +1221,7 @@ void PM_WalkMove()
 	wishvel[2] = 0; // Zero out z part of velocity
 
 	VectorCopy(wishvel, wishdir); // Determine maginitude of speed of move
-	wishspeed = VectorNormalize(wishdir);
+	wishspeed = PM_VectorNormalize(wishdir);
 
 	//
 	// Clamp to server defined max speed
@@ -1440,7 +1440,7 @@ void PM_AirAccelerate(Vector wishdir, float wishspeed, float accel)
 		return;
 
 	// Cap speed
-	//wishspd = VectorNormalize (pmove->wishveloc);
+	//wishspd = PM_VectorNormalize (pmove->wishveloc);
 
 	if (wishspd > 30)
 		wishspd = 30;
@@ -1497,7 +1497,7 @@ void PM_WaterMove(void)
 
 	// Copy it over and determine speed
 	VectorCopy(wishvel, wishdir);
-	wishspeed = VectorNormalize(wishdir);
+	wishspeed = PM_VectorNormalize(wishdir);
 
 	// Cap speed.
 	if (wishspeed > pmove->maxspeed)
@@ -1511,7 +1511,7 @@ void PM_WaterMove(void)
 	VectorAdd(pmove->velocity, pmove->basevelocity, pmove->velocity);
 	// Water friction
 	VectorCopy(pmove->velocity, temp);
-	speed = VectorNormalize(temp);
+	speed = PM_VectorNormalize(temp);
 	if (speed)
 	{
 		newspeed = speed - pmove->frametime * speed * pmove->movevars->friction * pmove->friction;
@@ -1535,7 +1535,7 @@ void PM_WaterMove(void)
 	if (addspeed > 0)
 	{
 
-		VectorNormalize(wishvel);
+		PM_VectorNormalize(wishvel);
 		accelspeed = pmove->movevars->accelerate * wishspeed * pmove->frametime * pmove->friction;
 		if (accelspeed > addspeed)
 			accelspeed = addspeed;
@@ -1582,8 +1582,8 @@ void PM_AirMove(void)
 	pmove->forward[2] = 0;
 	pmove->right[2] = 0;
 	// Renormalize
-	VectorNormalize(pmove->forward);
-	VectorNormalize(pmove->right);
+	PM_VectorNormalize(pmove->forward);
+	PM_VectorNormalize(pmove->right);
 
 	// Determine x and y parts of velocity
 	for (i = 0; i < 2; i++)
@@ -1595,7 +1595,7 @@ void PM_AirMove(void)
 
 	// Determine maginitude of speed of move
 	VectorCopy(wishvel, wishdir);
-	wishspeed = VectorNormalize(wishdir);
+	wishspeed = PM_VectorNormalize(wishdir);
 
 	// Clamp to server defined max speed
 	if (wishspeed > pmove->maxspeed)
@@ -1970,8 +1970,8 @@ void PM_SpectatorMove(void)
 		fmove = pmove->cmd.forwardmove;
 		smove = pmove->cmd.sidemove;
 
-		VectorNormalize(pmove->forward);
-		VectorNormalize(pmove->right);
+		PM_VectorNormalize(pmove->forward);
+		PM_VectorNormalize(pmove->right);
 
 		for (i = 0; i < 3; i++)
 		{
@@ -1980,7 +1980,7 @@ void PM_SpectatorMove(void)
 		wishvel[2] += pmove->cmd.upmove;
 
 		VectorCopy(wishvel, wishdir);
-		wishspeed = VectorNormalize(wishdir);
+		wishspeed = PM_VectorNormalize(wishdir);
 
 		//
 		// clamp to server defined max speed
@@ -2291,7 +2291,7 @@ void PM_LadderMove(physent_t *pLadder)
 				VectorClear(tmp);
 				tmp[2] = 1;
 				CrossProduct(tmp, trace.plane.normal, perp);
-				VectorNormalize(perp);
+				PM_VectorNormalize(perp);
 
 				// decompose velocity into ladder plane
 				normal = DotProduct(velocity, trace.plane.normal);
@@ -2542,8 +2542,8 @@ void PM_NoClip()
 	fmove = pmove->cmd.forwardmove;
 	smove = pmove->cmd.sidemove;
 
-	VectorNormalize(pmove->forward);
-	VectorNormalize(pmove->right);
+	PM_VectorNormalize(pmove->forward);
+	PM_VectorNormalize(pmove->right);
 
 	for (i = 0; i < 3; i++) // Determine x and y parts of velocity
 	{
@@ -2771,13 +2771,13 @@ void PM_CheckWaterJump(void)
 	flatvelocity[2] = 0;
 
 	// Must be moving
-	curspeed = VectorNormalize(flatvelocity);
+	curspeed = PM_VectorNormalize(flatvelocity);
 
 	// see if near an edge
 	flatforward[0] = pmove->forward[0];
 	flatforward[1] = pmove->forward[1];
 	flatforward[2] = 0;
-	VectorNormalize(flatforward);
+	PM_VectorNormalize(flatforward);
 
 	// Are we backing into water from steps or something?  If so, don't pop forward
 	if (curspeed != 0.0 && (DotProduct(flatvelocity, flatforward) < 0.0))
@@ -2957,7 +2957,7 @@ void PM_DropPunchAngle(Vector &punchangle)
 {
 	float len;
 
-	len = VectorNormalize(punchangle);
+	len = PM_VectorNormalize(punchangle);
 	len -= (10.0 + len * 0.5) * pmove->frametime;
 	len = max(len, 0.0);
 	VectorScale(punchangle, len, punchangle);

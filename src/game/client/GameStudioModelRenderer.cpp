@@ -263,8 +263,16 @@ void CGameStudioModelRenderer::PrintDebugInfo()
 {
 	CPlayerInfo *actuallocalpi = GetThisPlayerInfo();
 	int localplayer = (actuallocalpi->IsSpectator() && g_iUser2 > 0) ? g_iUser2 : m_iLocalPlayerIndex;
+
+	if (localplayer == 0)
+	{
+		ConPrintf("Local player unknown.\n");
+		return;
+	}
+
 	CPlayerInfo *localpi = GetPlayerInfo(localplayer);
 	ConPrintf("Local player: %s [%d]\n", localpi->GetName(), localpi->GetIndex());
+	ConPrintf("Local team: %d %s\n", localpi->GetTeamNumber(), localpi->GetTeamName());
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -276,6 +284,7 @@ void CGameStudioModelRenderer::PrintDebugInfo()
 		ConPrintf("%s [%d]\n", pi->GetName(), pi->GetIndex());
 		ConPrintf("    Real Model: %s\n", pi->GetModel());
 		ConPrintf("    Is teammate: %d\n", (int)AreTeammates(i + 1, localplayer));
+		ConPrintf("    Team: %d %s\n", pi->GetTeamNumber(), pi->GetTeamName());
 		ConPrintf("    Replaced model: %s\n", GetPlayerModel(i)->name);
 	}
 }

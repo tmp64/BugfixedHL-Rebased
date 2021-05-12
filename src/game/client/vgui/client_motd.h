@@ -24,6 +24,7 @@ public:
 public:
 	CClientMOTD();
 	virtual ~CClientMOTD();
+	virtual void OnThink() override;
 
 	void SetLabelText(const char *textEntryName, const wchar_t *text);
 

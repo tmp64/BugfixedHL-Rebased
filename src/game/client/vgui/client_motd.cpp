@@ -52,6 +52,15 @@ CClientMOTD::~CClientMOTD()
 	RemoveTempFile();
 }
 
+void CClientMOTD::OnThink()
+{
+	if (IsMouseInputEnabled())
+	{
+		// Refresh input state. It is bugged when GameUI is activated.
+		SetMouseInputEnabled(true);
+	}
+}
+
 void CClientMOTD::SetLabelText(const char *textEntryName, const wchar_t *text)
 {
 	vgui2::Panel *pChild = FindChildByName(textEntryName);

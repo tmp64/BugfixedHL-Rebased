@@ -33,12 +33,14 @@ void CClientSteamContext::Shutdown()
 	if (!m_bActive)
 		return;
 
+#if !defined(NO_STEAM)
 	if (m_bCallbacksRegistered)
 	{
 		m_CallbackSteamServersDisconnected.Unregister();
 		m_CallbackSteamServerConnectFailure.Unregister();
 		m_CallbackSteamServersConnected.Unregister();
 	}
+#endif
 
 	m_bActive = false;
 	m_bLoggedOn = false;

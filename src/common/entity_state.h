@@ -185,7 +185,7 @@ typedef struct local_state_s
 {
 	entity_state_t playerstate;
 	clientdata_t client;
-	weapon_data_t weapondata[64];
+	weapon_data_t weapondata[32];
 } local_state_t;
 
 typedef struct packet_entities_s

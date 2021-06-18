@@ -264,6 +264,7 @@ private:
 	int m_nVisibleHeight;
 
 	vgui2::HFont m_hChatFont;
+	Color m_DefTextColor;
 	Color m_ConsoleMsgColor;
 	const char *m_pszChatSoundPath = nullptr;
 

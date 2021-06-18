@@ -25,6 +25,7 @@ Scheme
 
 		"Blank"				"0 0 0 0"
 		
+		"ChatTextColor"		"255 178 0 255"
 		"ChatBgColor"		"0 0 0 64"
 		"ChatConsoleMsg"	"30 230 50 255"
 	}

@@ -398,6 +398,7 @@ void CHudChat::ApplySchemeSettings(vgui2::IScheme *pScheme)
 	GetChatHistory()->SetVerticalScrollbar(false);
 
 	m_pChatInput->SetVisible(false);
+	m_DefTextColor = pScheme->GetColor("ChatTextColor", NoTeamColor::Orange);
 	m_ConsoleMsgColor = pScheme->GetColor("ChatConsoleMsg", Color(30, 230, 50, 255));
 }
 
@@ -808,7 +809,7 @@ void CHudChat::SetCustomColor(const char *pszColorName)
 //-----------------------------------------------------------------------------
 Color CHudChat::GetDefaultTextColor(void)
 {
-	return NoTeamColor::Orange;
+	return m_DefTextColor;
 }
 
 //-----------------------------------------------------------------------------

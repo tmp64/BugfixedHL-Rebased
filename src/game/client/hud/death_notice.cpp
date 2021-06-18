@@ -115,7 +115,6 @@ void CHudDeathNotice::Draw(float flTime)
 				x = 5 + DrawConsoleString(x, y, rgDeathNoticeList[i].szKiller, color);
 			}
 
-			
 			// Draw death weapon
 			if (rgDeathNoticeList[i].iTeamKill)
 				SPR_Set(spr, tkSpriteColor.r(), tkSpriteColor.g(), tkSpriteColor.b());

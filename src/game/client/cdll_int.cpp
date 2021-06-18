@@ -237,6 +237,7 @@ int CL_DLLEXPORT HUD_VidInit(void)
 	//	RecClHudVidInit();
 	g_pViewport->VidInit();
 	gHUD.VidInit();
+	g_StudioRenderer.InitOnConnect();
 	PM_ResetBHopDetection();
 
 	return 1;
@@ -317,7 +318,6 @@ void CL_DLLEXPORT HUD_Reset(void)
 	//	RecClHudReset();
 
 	gHUD.VidInit();
-	g_StudioRenderer.InitOnConnect();
 }
 
 /*

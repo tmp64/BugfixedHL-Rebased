@@ -34,6 +34,7 @@
 
 ConVar hud_fastswitch("hud_fastswitch", "0", FCVAR_ARCHIVE, "Controls whether or not weapons can be selected in one keypress");
 ConVar hud_weapon("hud_weapon", "0", FCVAR_BHL_ARCHIVE, "Controls displaying sprite of currently selected weapon");
+extern ConVar cl_cross_zoom;
 
 WEAPON *gpActiveSel; // NULL means off, 1 means just the menu bar, otherwise
     // this points to the active weapon menu item
@@ -625,10 +626,19 @@ void CHudAmmo::UpdateCrosshair()
 	}
 	else
 	{ // zoomed crosshairs
-		if (m_fOnTarget && m_pWeapon->hZoomedAutoaim)
-			SetCrosshair(m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255);
+		int crossZoom = cl_cross_zoom.GetInt();
+		if (CHudCrosshair::Get()->IsEnabled() && crossZoom == 1)
+		{
+			// Disable crosshair because custom one is enabled
+			SetCrosshair(0, nullrc, 0, 0, 0);
+		}
 		else
-			SetCrosshair(m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255);
+		{
+			if (m_fOnTarget && m_pWeapon->hZoomedAutoaim)
+				SetCrosshair(m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255);
+			else
+				SetCrosshair(m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255);
+		}
 	}
 }
 

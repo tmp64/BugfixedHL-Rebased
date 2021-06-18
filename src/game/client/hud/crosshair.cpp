@@ -13,6 +13,7 @@ static ConVar cl_cross_thickness("cl_cross_thickness", "2", FCVAR_BHL_ARCHIVE);
 static ConVar cl_cross_outline_thickness("cl_cross_outline_thickness", "0", FCVAR_BHL_ARCHIVE);
 static ConVar cl_cross_dot("cl_cross_dot", "0", FCVAR_BHL_ARCHIVE);
 static ConVar cl_cross_t("cl_cross_t", "0", FCVAR_BHL_ARCHIVE);
+ConVar cl_cross_zoom("cl_cross_zoom", "2", FCVAR_BHL_ARCHIVE, "Zoomed crosshair mode: sprite, custom, both");
 
 DEFINE_HUD_ELEM(CHudCrosshair);
 
@@ -45,8 +46,11 @@ void CHudCrosshair::Draw(float flTime)
 			return;
 	}
 
+	bool isZoomed = gHUD.m_iFOV < 90;
+	bool shouldDrawZoomed = cl_cross_zoom.GetInt() == 1 || cl_cross_zoom.GetInt() == 2;
+
 	// Draw custom crosshair if enabled
-	if (cl_cross_enable.GetBool() && !(CHudAmmo::Get()->m_fOnTarget && CHudAmmo::Get()->m_pWeapon->hAutoaim))
+	if (cl_cross_enable.GetBool() && !(CHudAmmo::Get()->m_fOnTarget && CHudAmmo::Get()->m_pWeapon->hAutoaim) && (!isZoomed || shouldDrawZoomed))
 	{
 		CrosshairSettings settings;
 		settings.color = Color(cl_cross_red.GetInt(), cl_cross_green.GetInt(), cl_cross_blue.GetInt(), 255);

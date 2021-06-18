@@ -20,7 +20,9 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "r_efx.h"
+#include "hud/ammo.h"
 #include "hud/status_icons.h"
+#include "hud/ammo.h"
 
 #include "particleman.h"
 extern IParticleMan *g_pParticleMan;
@@ -168,6 +170,9 @@ int CHud::MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
 		// set a new sensitivity that is proportional to the change from the FOV default
 		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)def_fov) * zoom_sensitivity_ratio.GetFloat();
 	}
+
+	// Update crosshair after zoom change
+	CHudAmmo::Get()->UpdateCrosshair();
 
 	return 1;
 }

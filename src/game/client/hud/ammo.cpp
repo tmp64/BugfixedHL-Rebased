@@ -335,6 +335,13 @@ void CHudAmmo::VidInit()
 //
 void CHudAmmo::Think(void)
 {
+	if (gHUD.m_iFOV != m_iLastFOV)
+	{
+		// Update crosshair after zoom change
+		UpdateCrosshair();
+		m_iLastFOV = gHUD.m_iFOV;
+	}
+
 	if (gHUD.m_fPlayerDead)
 		return;
 

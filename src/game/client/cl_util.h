@@ -135,7 +135,7 @@ inline char *safe_strcpy(char *dst, const char *src, int len_dst)
 }
 
 // sound functions
-inline void PlaySound(char *szSound, float vol) { gEngfuncs.pfnPlaySoundByName(szSound, vol); }
+inline void PlaySound(const char *szSound, float vol) { gEngfuncs.pfnPlaySoundByName(szSound, vol); }
 inline void PlaySound(int iSound, float vol) { gEngfuncs.pfnPlaySoundByIndex(iSound, vol); }
 
 using std::abs;

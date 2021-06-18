@@ -265,6 +265,7 @@ private:
 
 	vgui2::HFont m_hChatFont;
 	Color m_ConsoleMsgColor;
+	const char *m_pszChatSoundPath = nullptr;
 
 public:
 	// memory handling, uses calloc so members are zero'd out on instantiation

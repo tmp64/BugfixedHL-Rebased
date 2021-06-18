@@ -6,6 +6,7 @@
 //=============================================================================//
 
 #include <ctime>
+#include <FileSystem.h>
 #include <vgui/IScheme.h>
 #include <vgui/IVGui.h>
 #include <vgui/ILocalize.h>
@@ -29,6 +30,9 @@ ConVar hud_saytext("hud_saytext", "1", FCVAR_BHL_ARCHIVE, "Enable/disable the ch
 ConVar hud_saytext_time("hud_saytext_time", "12", FCVAR_BHL_ARCHIVE, "How long for new messages should stay on the screen");
 ConVar hud_saytext_sound("hud_saytext_sound", "1", FCVAR_BHL_ARCHIVE, "Play sound on new chat message");
 ConVar cl_mute_all_comms("cl_mute_all_comms", "1", FCVAR_BHL_ARCHIVE, "If 1, then all communications from a player will be blocked when that player is muted, including chat messages.");
+
+constexpr const char CHAT_SOUND_FILE[] = "misc/talk.wav";
+constexpr const char CHAT_SOUND_FALLBACK[] = "misc/talk_bhl_fallback.wav";
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -454,6 +458,13 @@ void CHudChat::Init(void)
 		msgMode->function = MessageModeVGUI2;
 		msgMode2->function = MessageMode2VGUI2;
 	}
+
+	char buf[128];
+	snprintf(buf, sizeof(buf), "sound/%s", CHAT_SOUND_FILE);
+	if (g_pFullFileSystem->FileExists(buf))
+		m_pszChatSoundPath = CHAT_SOUND_FILE;
+	else
+		m_pszChatSoundPath = CHAT_SOUND_FALLBACK;
 }
 
 static int __cdecl SortLines(void const *line1, void const *line2)
@@ -1302,7 +1313,7 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	}
 
 	if (hud_saytext.GetBool() && hud_saytext_sound.GetBool())
-		PlaySound("misc/talk.wav", 1);
+		PlaySound(m_pszChatSoundPath, 1);
 
 	// Print to console
 	time_t now;

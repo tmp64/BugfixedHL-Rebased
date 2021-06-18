@@ -42,6 +42,8 @@ struct DeathNoticeItem
 
 static ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE, "Play a bell sound on kill");
 static ConVar hud_deathnotice_time("hud_deathnotice_time", "6", FCVAR_BHL_ARCHIVE, "How long should death notice stay up for");
+static ConVar hud_deathnotice_color("hud_deathnotice_color", "255 80 0", FCVAR_BHL_ARCHIVE, "Color of death notice sprite");
+static ConVar hud_deathnotice_color_tk("hud_deathnotice_color_tk", "10 240 10", FCVAR_BHL_ARCHIVE, "Color of death notice teamkill sprite");
 
 #define MAX_DEATHNOTICES 4
 static int DEATHNOTICE_DISPLAY_TIME = 6;
@@ -71,7 +73,12 @@ void CHudDeathNotice::VidInit()
 
 void CHudDeathNotice::Draw(float flTime)
 {
-	int x, y, r, g, b;
+	int x, y;
+
+	Color spriteColor = Color(255, 80, 0, 255);
+	Color tkSpriteColor = Color(10, 240, 10, 255); // teamkill - sickly green
+	ParseColor(hud_deathnotice_color.GetString(), spriteColor);
+	ParseColor(hud_deathnotice_color_tk.GetString(), tkSpriteColor);
 
 	for (int i = 0; i < MAX_DEATHNOTICES; i++)
 	{
@@ -108,18 +115,13 @@ void CHudDeathNotice::Draw(float flTime)
 				x = 5 + DrawConsoleString(x, y, rgDeathNoticeList[i].szKiller, color);
 			}
 
-			r = 255;
-			g = 80;
-			b = 0;
-			if (rgDeathNoticeList[i].iTeamKill)
-			{
-				r = 10;
-				g = 240;
-				b = 10; // display it in sickly green
-			}
-
+			
 			// Draw death weapon
-			SPR_Set(spr, r, g, b);
+			if (rgDeathNoticeList[i].iTeamKill)
+				SPR_Set(spr, tkSpriteColor.r(), tkSpriteColor.g(), tkSpriteColor.b());
+			else
+				SPR_Set(spr, spriteColor.r(), spriteColor.g(), spriteColor.b());
+
 			SPR_DrawAdditive(0, x, y, &rect);
 
 			x += (rect.right - rect.left);

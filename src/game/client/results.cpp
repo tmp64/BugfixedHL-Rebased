@@ -35,7 +35,7 @@ static CResults s_Results;
 #if HAS_STD_FILESYSTEM
 // File format passed to strftime
 // <map> will be replaced with mapname
-static constexpr char FILENAME_FORMAT[] = "results\\%Y-%m\\<map>-%Y%m%d-%H%M%S";
+static constexpr char FILENAME_FORMAT[] = "results/%Y-%m/<map>-%Y%m%d-%H%M%S";
 
 static ConVar results_demo_autorecord("results_demo_autorecord", "0", FCVAR_BHL_ARCHIVE, "Record demos when joining a server");
 static ConVar results_demo_keepdays("results_demo_keepdays", "14", FCVAR_BHL_ARCHIVE, "Days to keep automatically recorded demos");

@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <memory>
 #include <tier1/strtools.h>
 #include <vgui/ISurface.h>
 #include <vgui/ILocalize.h>

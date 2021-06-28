@@ -69,6 +69,7 @@ void CClientSteamContext::Activate()
 	m_CallbackSteamServersDisconnected.Register(this, &CClientSteamContext::OnSteamServersDisconnected);
 	m_CallbackSteamServerConnectFailure.Register(this, &CClientSteamContext::OnSteamServerConnectFailure);
 	m_CallbackSteamServersConnected.Register(this, &CClientSteamContext::OnSteamServersConnected);
+	m_CallbackGameOverlayActivated.Register(this, &CClientSteamContext::OnGameOverlayActivated);
 	m_bCallbacksRegistered = true;
 
 	UpdateLoggedOnState();
@@ -116,6 +117,14 @@ void CClientSteamContext::OnSteamServersConnected(SteamServersConnected_t *pConn
 {
 	UpdateLoggedOnState();
 	Msg("CClientSteamContext OnSteamServersConnected logged on = %d\n", m_bLoggedOn);
+}
+
+void IN_SteamOverlayHidden();
+
+void CClientSteamContext::OnGameOverlayActivated(GameOverlayActivated_t *pCallback)
+{
+	if (!pCallback->m_bActive)
+		IN_SteamOverlayHidden();
 }
 #endif // !defined(NO_STEAM)
 

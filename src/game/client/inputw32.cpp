@@ -10,6 +10,7 @@
 
 #include <tier2/tier2.h>
 #include <vgui/ISurface.h>
+#include <vgui/Cursor.h>
 
 #include "port.h"
 
@@ -321,6 +322,19 @@ void IN_RunFrame()
 			IN_UpdateMouseMode();
 		}
 	}
+}
+
+void IN_SteamOverlayHidden()
+{
+	gHUD.CallOnNextFrame([]() {
+		if (mouseactive && m_mode == MouseMode::RawInput && !g_pVGuiSurface->IsCursorVisible())
+		{
+			// Hiding Steam overlay in SDL2 input mode breaks the mouse.
+			// Relative mode needs to be reset
+			IN_SetRelativeMouseMode(false);
+			IN_SetRelativeMouseMode(true);
+		}
+	});
 }
 
 /*

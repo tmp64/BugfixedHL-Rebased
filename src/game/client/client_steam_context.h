@@ -30,6 +30,7 @@ public:
 	STEAM_CALLBACK_MANUAL(CClientSteamContext, OnSteamServersDisconnected, SteamServersDisconnected_t, m_CallbackSteamServersDisconnected);
 	STEAM_CALLBACK_MANUAL(CClientSteamContext, OnSteamServerConnectFailure, SteamServerConnectFailure_t, m_CallbackSteamServerConnectFailure);
 	STEAM_CALLBACK_MANUAL(CClientSteamContext, OnSteamServersConnected, SteamServersConnected_t, m_CallbackSteamServersConnected);
+	STEAM_CALLBACK_MANUAL(CClientSteamContext, OnGameOverlayActivated, GameOverlayActivated_t, m_CallbackGameOverlayActivated);
 #endif
 
 	bool BLoggedOn()

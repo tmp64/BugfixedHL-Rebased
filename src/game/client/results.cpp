@@ -97,11 +97,11 @@ void CResults::Frame()
 	int maxClients = gEngfuncs.GetMaxClients();
 	if (maxClients != m_iLastMaxClients)
 	{
-		// Store maxClients value for later usages in other functions
-		m_iLastMaxClients = maxClients;
-
 		// Connection state changed, do results stop, besides if they are started (this is needed due to agrecord command)
 		Stop();
+
+		// Store maxClients value for later usages in other functions
+		m_iLastMaxClients = maxClients;
 
 		// Startup results here, but without demo recording
 		if (maxClients > 1)
@@ -181,6 +181,7 @@ void CResults::Start()
 void CResults::Stop()
 {
 	m_bResultsStarted = false;
+	m_iLastMaxClients = 0;
 
 	// Clear map name
 	m_szCurrentMap[0] = 0;

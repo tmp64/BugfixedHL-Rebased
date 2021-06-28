@@ -40,6 +40,7 @@
 #include "svc_messages.h"
 #include "sdl_rt.h"
 #include "GameStudioModelRenderer.h"
+#include "results.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -239,6 +240,7 @@ int CL_DLLEXPORT HUD_VidInit(void)
 	gHUD.VidInit();
 	g_StudioRenderer.InitOnConnect();
 	PM_ResetBHopDetection();
+	CResults::Get().Stop();
 
 	return 1;
 }

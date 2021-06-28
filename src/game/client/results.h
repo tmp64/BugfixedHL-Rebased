@@ -42,6 +42,16 @@ public:
 	 */
 	void AddLog(const char *text, bool chat);
 
+	/**
+	 * Starts results.
+	 */
+	void Start();
+
+	/**
+	 * Stops log and demo recordings.
+	 */
+	void Stop();
+
 private:
 #if HAS_STD_FILESYSTEM
 	// Contains path to gamedir with a trailing path separator
@@ -63,16 +73,6 @@ private:
 	int m_bDemoRecordingFrame = 0;
 
 	FILE *m_pLogFile = nullptr;
-
-	/**
-	 * Starts results.
-	 */
-	void Start();
-
-	/**
-	 * Stops log and demo recordings.
-	 */
-	void Stop();
 
 	/**
 	 * Closes opened results files.

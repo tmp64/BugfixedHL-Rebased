@@ -201,6 +201,7 @@ void CScorePanel::UpdateOnPlayerInfo(int client)
 	if (!IsVisible())
 		return;
 
+	RestoreSize();
 	UpdateClientInfo(client);
 	UpdateScoresAndCounts();
 	Resize();
@@ -359,14 +360,11 @@ void CScorePanel::RefreshItems()
 {
 	std::fill(m_TeamData.begin(), m_TeamData.end(), TeamData());
 	std::fill(m_PlayerData.begin(), m_PlayerData.end(), PlayerData());
+	std::fill(m_IsTeamSectionCreated.begin(), m_IsTeamSectionCreated.end(), false);
 	m_pPlayerList->RemoveAll();
 	m_pPlayerList->RemoveAllSections();
 
-	// Restore size
-	if (GetSizeMode() == SizeMode::Compact)
-		m_pPlayerList->SetLineSpacingOverride(GetLineSpacingForCompact());
-	else
-		m_pPlayerList->SetLineSpacingOverride(GetLineSpacingForNormal());
+	RestoreSize();
 
 	// Assign player teams, calculate team scores
 	for (int i = 1; i <= MAX_PLAYERS; i++)
@@ -453,6 +451,11 @@ void CScorePanel::RefreshItems()
 
 void CScorePanel::CreateSection(int nTeamID)
 {
+	if (m_IsTeamSectionCreated[nTeamID])
+		return;
+
+	m_IsTeamSectionCreated[nTeamID] = true;
+
 	char buf[128];
 	TeamData &td = m_TeamData[nTeamID];
 
@@ -575,10 +578,7 @@ void CScorePanel::UpdateClientInfo(int client)
 	}
 
 	// Create section for player's team if need to
-	if (m_TeamData[pd.nTeamID].iPlayerCount == 0)
-	{
-		CreateSection(pi->GetTeamNumber());
-	}
+	CreateSection(pd.nTeamID);
 
 	KeyValues *playerKv = new KeyValues("data");
 
@@ -1064,6 +1064,14 @@ int CScorePanel::GetLineSpacingForCompact()
 	if (hud_scoreboard_spacing_compact.GetInt() > 0)
 		return hud_scoreboard_spacing_compact.GetInt();
 	return GetLineSpacingForHeight(ScreenHeight);
+}
+
+void CScorePanel::RestoreSize()
+{
+	if (GetSizeMode() == SizeMode::Compact)
+		m_pPlayerList->SetLineSpacingOverride(GetLineSpacingForCompact());
+	else
+		m_pPlayerList->SetLineSpacingOverride(GetLineSpacingForNormal());
 }
 
 void CScorePanel::Resize()

@@ -98,7 +98,7 @@ private:
 	struct PlayerData
 	{
 		bool bIsConnected = false;
-		int nItemID = 0;
+		int nItemID = -1;
 		int nTeamID = 0;
 	};
 
@@ -123,6 +123,7 @@ private:
 	vgui2::Menu *m_pPlayerMenu = nullptr;
 
 	std::array<TeamData, MAX_TEAMS + 2> m_TeamData;
+	std::array<bool, MAX_TEAMS + 2> m_IsTeamSectionCreated;
 	std::array<PlayerData, MAX_PLAYERS + 1> m_PlayerData;
 	std::array<int, MAX_TEAMS + 1> m_SortedTeamIDs;
 	std::map<CSteamID, CAvatarImage *> m_PlayerAvatars;
@@ -253,6 +254,11 @@ private:
 	 * Returns line spacing override value for compact size.
 	 */
 	int GetLineSpacingForCompact();
+
+	/**
+	 * Restores default size.
+	 */
+	void RestoreSize();
 
 	/**
 	 * Resize and reposition the scoreboard.

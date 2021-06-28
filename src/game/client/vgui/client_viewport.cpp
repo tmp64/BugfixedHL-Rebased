@@ -565,7 +565,7 @@ void CClientViewport::MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pb
 
 	if (cl > 0 && cl <= MAX_PLAYERS)
 	{
-		CPlayerInfo *info = GetPlayerInfo(cl);
+		CPlayerInfo *info = GetPlayerInfo(cl)->Update();
 		info->m_ExtraInfo.frags = frags;
 		info->m_ExtraInfo.deaths = deaths;
 		info->m_ExtraInfo.playerclass = playerclass;
@@ -608,7 +608,8 @@ void CClientViewport::MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbu
 	if (cl > 0 && cl <= MAX_PLAYERS)
 	{
 		// set the players team
-		strncpy(GetPlayerInfo(cl)->m_ExtraInfo.teamname, READ_STRING(), MAX_TEAM_NAME);
+		CPlayerInfo *pi = GetPlayerInfo(cl)->Update();
+		strncpy(pi->m_ExtraInfo.teamname, READ_STRING(), MAX_TEAM_NAME);
 		UpdateOnPlayerInfo(cl);
 	}
 }

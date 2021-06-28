@@ -977,7 +977,7 @@ struct cl_enginefunc_t
 	*	@param[ out ] piLength Optional. Length of the file, in bytes. 0 if the file couldn't be loaded.
 	*	@return Pointer to buffer, or null if the file couldn't be loaded.
 	*/
-	byte *(*COM_LoadFile)(char *pszPath, int usehunk, int *piLength);
+	byte *(*COM_LoadFile)(const char *pszPath, int usehunk, int *piLength);
 
 	/**
 	*	Parses the given data.

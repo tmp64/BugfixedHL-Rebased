@@ -43,8 +43,7 @@ private:
 	}
 
 	void UpdateMenuItemHeight(int height);
-
-	void RecursiveLoadItems(KeyValues *kv, vgui2::Menu *pParentMenu, std::string path);
+	void RecursiveLoadItems(char *&pfile, vgui2::Menu *pParentMenu, std::string basePath);
 };
 
 #endif

@@ -200,7 +200,7 @@ void CAvatarImage::InitFromRGBA(int iAvatar, const byte *rgba, int width, int he
 	if (iTexIndex == s_AvatarImageCache.InvalidIndex())
 	{
 		m_iTextureID = vgui2::surface()->CreateNewTextureID(true);
-		vgui2::surface()->DrawSetTextureRGBA(m_iTextureID, rgba, width, height, false, false);
+		vgui2::surface()->DrawSetTextureRGBA(m_iTextureID, rgba, width, height, true, false);
 		iTexIndex = s_AvatarImageCache.Insert(AvatarImagePair_t(m_SteamID, iAvatar));
 		s_AvatarImageCache[iTexIndex] = m_iTextureID;
 	}

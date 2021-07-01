@@ -37,7 +37,11 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_pDimCheckbox = new CCvarCheckButton(this, "DimCheckbox", "#BHL_AdvOptions_HUD_Dim", "hud_dim");
 	m_pViewmodelCheckbox = new CCvarCheckButton(this, "ViewmodelCheckbox", "#BHL_AdvOptions_HUD_Viewmodel", "r_drawviewmodel", true);
 	m_pWeaponSpriteCheckbox = new CCvarCheckButton(this, "WeaponSpriteCheckbox", "#BHL_AdvOptions_HUD_WeapSprite", "hud_weapon");
+	m_pCenterIdCvar = new CCvarCheckButton(this, "CenterIdCvar", "#BHL_AdvOptions_HUD_CenterId", "hud_centerid");
+	m_pRainbowCvar = new CCvarCheckButton(this, "RainbowCvar", "#BHL_AdvOptions_HUD_Rainbow", "hud_rainbow");
+
 	m_pSpeedCheckbox = new CCvarCheckButton(this, "SpeedCheckbox", "#BHL_AdvOptions_HUD_Speed", "hud_speedometer");
+	m_pSpeedCrossCheckbox = new CCvarCheckButton(this, "SpeedCrossCheckbox", "#BHL_AdvOptions_HUD_SpeedCross", "hud_speedometer_below_cross");
 
 	m_pTimerLabel = new vgui2::Label(this, "TimerLabel", "#BHL_AdvOptions_Hud_Timer");
 	m_pTimerBox = new vgui2::ComboBox(this, "TimerBox", 4, false);
@@ -60,7 +64,10 @@ void CHudSubOptions::OnResetData()
 	m_pDimCheckbox->ResetData();
 	m_pViewmodelCheckbox->ResetData();
 	m_pWeaponSpriteCheckbox->ResetData();
+	m_pCenterIdCvar->ResetData();
+	m_pRainbowCvar->ResetData();
 	m_pSpeedCheckbox->ResetData();
+	m_pSpeedCrossCheckbox->ResetData();
 	TimerResetData();
 }
 
@@ -74,7 +81,10 @@ void CHudSubOptions::OnApplyChanges()
 	m_pDimCheckbox->ApplyChanges();
 	m_pViewmodelCheckbox->ApplyChanges();
 	m_pWeaponSpriteCheckbox->ApplyChanges();
+	m_pCenterIdCvar->ApplyChanges();
+	m_pRainbowCvar->ApplyChanges();
 	m_pSpeedCheckbox->ApplyChanges();
+	m_pSpeedCrossCheckbox->ApplyChanges();
 	TimerApplyChanges();
 }
 

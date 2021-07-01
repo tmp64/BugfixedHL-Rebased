@@ -33,7 +33,11 @@ private:
 	CCvarCheckButton *m_pDimCheckbox = nullptr;
 	CCvarCheckButton *m_pWeaponSpriteCheckbox = nullptr;
 	CCvarCheckButton *m_pViewmodelCheckbox = nullptr;
+	CCvarCheckButton *m_pCenterIdCvar = nullptr;
+	CCvarCheckButton *m_pRainbowCvar = nullptr;
+
 	CCvarCheckButton *m_pSpeedCheckbox = nullptr;
+	CCvarCheckButton *m_pSpeedCrossCheckbox = nullptr;
 
 	vgui2::Label *m_pTimerLabel = nullptr;
 	vgui2::ComboBox *m_pTimerBox = nullptr;

@@ -34,6 +34,8 @@ CScoreboardSubOptions::CScoreboardSubOptions(vgui2::Panel *parent)
 	m_SizeItems[1] = m_pSizeBox->AddItem("#BHL_AdvOptions_Scores_Size1", new KeyValues("Large", "value", 1));
 	m_SizeItems[2] = m_pSizeBox->AddItem("#BHL_AdvOptions_Scores_Size2", new KeyValues("Compact", "value", 2));
 
+	m_pShowInHud = new CCvarTextEntry(this, "ShowInHud", "hud_scores", CCvarTextEntry::CvarType::Int);
+
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/ScoreboardSubOptions.res");
 }
 
@@ -43,6 +45,7 @@ void CScoreboardSubOptions::OnResetData()
 	m_pShowSteamId->ResetData();
 	m_pShowPacketLoss->ResetData();
 	m_pShowEff->ResetData();
+	m_pShowInHud->ResetData();
 
 	int type = gEngfuncs.pfnGetCvarFloat("hud_scoreboard_efftype");
 	type = clamp(type, 0, 1);
@@ -63,6 +66,7 @@ void CScoreboardSubOptions::OnApplyChanges()
 	m_pShowSteamId->ApplyChanges();
 	m_pShowPacketLoss->ApplyChanges();
 	m_pShowEff->ApplyChanges();
+	m_pShowInHud->ApplyChanges();
 	ApplyEffType();
 	ApplyMouse();
 	ApplySize();

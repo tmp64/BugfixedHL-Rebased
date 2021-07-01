@@ -26,7 +26,7 @@
 #include "hud/ag/ag_location.h"
 #include "gameui/gameui_viewport.h"
 
-ConVar hud_saytext("hud_saytext", "1", FCVAR_BHL_ARCHIVE, "Enable/disable the chat");
+ConVar hud_saytext("hud_saytext", "1", FCVAR_BHL_ARCHIVE, "Enable/disable display of new chat messages");
 ConVar hud_saytext_time("hud_saytext_time", "12", FCVAR_BHL_ARCHIVE, "How long for new messages should stay on the screen");
 ConVar hud_saytext_sound("hud_saytext_sound", "1", FCVAR_BHL_ARCHIVE, "Play sound on new chat message");
 ConVar cl_mute_all_comms("cl_mute_all_comms", "1", FCVAR_BHL_ARCHIVE, "If 1, then all communications from a player will be blocked when that player is muted, including chat messages.");
@@ -160,7 +160,16 @@ void CHudChatLine::PerformFadeout(void)
 void CHudChatLine::SetExpireTime(void)
 {
 	m_flStartTime = gEngfuncs.GetAbsoluteTime();
-	m_flExpireTime = m_flStartTime + hud_saytext_time.GetFloat();
+
+	if (hud_saytext.GetBool())
+	{
+		m_flExpireTime = m_flStartTime + hud_saytext_time.GetFloat();
+	}
+	else
+	{
+		// Expire immediately
+		m_flExpireTime = m_flStartTime;
+	}
 	m_nCount = CHudChat::m_nLineCounter++;
 }
 
@@ -541,11 +550,6 @@ void CHudChat::OnTick(void)
 
 		GetChatHistory()->SetBounds(iChatHistoryX, iChatHistoryY, iChatHistoryW, iChatHistoryH);
 	}
-
-	bool isVisible = hud_saytext.GetBool() || m_nMessageMode != MM_NONE;
-
-	if (IsVisible() != isVisible)
-		SetVisible(isVisible);
 
 	FadeChatHistory();
 }
@@ -1014,7 +1018,11 @@ void CHudChatLine::Colorize(int alpha)
 			{
 				pChat->GetChatHistory()->InsertColorChange(color);
 				pChat->GetChatHistory()->InsertString(wText);
-				pChat->GetChatHistory()->InsertFade(hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME);
+
+				if (hud_saytext.GetBool())
+					pChat->GetChatHistory()->InsertFade(hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME);
+				else
+					pChat->GetChatHistory()->InsertFade(0, 0);
 
 				if (i == m_textRanges.Count() - 1)
 				{

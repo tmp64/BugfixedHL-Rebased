@@ -25,6 +25,7 @@ private:
 	CCvarTextEntry *m_pTime = nullptr;
 	vgui2::Label *m_pTimeLabel = nullptr;
 
+	CCvarCheckButton *m_pChatDisplay = nullptr;
 	CCvarCheckButton *m_pChatSound = nullptr;
 	vgui2::Label *m_pChatSoundLabel = nullptr;
 

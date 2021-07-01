@@ -40,6 +40,8 @@ private:
 	CCvarCheckButton *m_pAutoJump = nullptr;
 	vgui2::Label *m_pAutoJumpLabel = nullptr;
 
+	CCvarCheckButton *m_pLogChat = nullptr;
+	CCvarCheckButton *m_pLogOther = nullptr;
 	CCvarCheckButton *m_pAutoDemo = nullptr;
 	vgui2::Label *m_pAutoDemoLabel = nullptr;
 	CCvarTextEntry *m_pKeepFor = nullptr;

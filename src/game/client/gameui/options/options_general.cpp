@@ -40,6 +40,8 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
 	m_pAutoJump = new CCvarCheckButton(this, "AutoJump", "#BHL_AdvOptions_General_AutoJump", "cl_autojump");
 	m_pAutoJumpLabel = new vgui2::Label(this, "AutoJumpLabel", "#BHL_AdvOptions_General_AutoJump2");
 
+	m_pLogChat = new CCvarCheckButton(this, "LogChat", "#BHL_AdvOptions_General_LogChat", "results_log_chat");
+	m_pLogOther = new CCvarCheckButton(this, "LogOther", "#BHL_AdvOptions_General_LogOther", "results_log_other");
 	m_pAutoDemo = new CCvarCheckButton(this, "AutoDemo", "#BHL_AdvOptions_General_AutoDemo", "results_demo_autorecord");
 	m_pAutoDemoLabel = new vgui2::Label(this, "AutoDemoLabel", "#BHL_AdvOptions_General_AutoDemo2");
 	m_pKeepFor = new CCvarTextEntry(this, "KeepFor", "results_demo_keepdays", CCvarTextEntry::CvarType::Int);
@@ -72,6 +74,8 @@ void CGeneralSubOptions::OnResetData()
 	m_pKillSnd->ResetData();
 	m_pMOTD->ResetData();
 	m_pAutoJump->ResetData();
+	m_pLogChat->ResetData();
+	m_pLogOther->ResetData();
 	m_pAutoDemo->ResetData();
 	m_pKeepFor->ResetData();
 }
@@ -82,6 +86,8 @@ void CGeneralSubOptions::OnApplyChanges()
 	m_pKillSnd->ApplyChanges();
 	m_pMOTD->ApplyChanges();
 	m_pAutoJump->ApplyChanges();
+	m_pLogChat->ApplyChanges();
+	m_pLogOther->ApplyChanges();
 	m_pAutoDemo->ApplyChanges();
 	m_pKeepFor->ApplyChanges();
 

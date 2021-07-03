@@ -23,6 +23,8 @@ add_sources(
 	options_general.h
 	options_hud.cpp
 	options_hud.h
+	options_models.cpp
+	options_models.h
 	options_scoreboard.cpp
 	options_scoreboard.h
 )

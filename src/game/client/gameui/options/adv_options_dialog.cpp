@@ -8,6 +8,7 @@
 #include "cl_util.h"
 
 #include "options_hud.h"
+#include "options_models.h"
 #include "options_chat.h"
 #include "options_crosshair.h"
 #include "options_scoreboard.h"
@@ -40,6 +41,7 @@ CAdvOptionsDialog::CAdvOptionsDialog(vgui2::Panel *pParent)
 	AddPage(new CChatSubOptions(this), "#BHL_AdvOptions_Chat");
 	AddPage(new CScoreboardSubOptions(this), "#BHL_AdvOptions_Scores");
 	AddPage(new CCrosshairSubOptions(this), "#BHL_AdvOptions_Cross");
+	AddPage(new CModelSubOptions(this), "#BHL_AdvOptions_Models");
 	AddPage(new CAboutSubOptions(this), "#BHL_AdvOptions_About");
 
 	SetApplyButtonVisible(true);

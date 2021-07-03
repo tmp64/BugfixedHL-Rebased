@@ -36,9 +36,9 @@
 //
 
 static ConVar cl_forceenemymodels("cl_forceenemymodels", "", FCVAR_BHL_ARCHIVE, "List of allowed enemy models (e.g. \"red;zombie\")");
-static ConVar cl_forceenemycolors("cl_forceenemycolors", "", FCVAR_BHL_ARCHIVE, "List of allowed enemy colors (e.g. \"90 30\")");
-static ConVar cl_forceteammatesmodels("cl_forceteammatesmodels", "", FCVAR_BHL_ARCHIVE, "Teammates models (e.g. \"blue;hgrunt\")");
-static ConVar cl_forceteammatescolors("cl_forceteammatescolors", "", FCVAR_BHL_ARCHIVE, "Teammates colors (e.g. \"90 30\")");
+static ConVar cl_forceenemycolors("cl_forceenemycolors", "", FCVAR_BHL_ARCHIVE, "Forced enemy colors (e.g. \"90 30\")");
+static ConVar cl_forceteammatesmodels("cl_forceteammatesmodels", "", FCVAR_BHL_ARCHIVE, "Forced teammates model (e.g. \"blue\")");
+static ConVar cl_forceteammatescolors("cl_forceteammatescolors", "", FCVAR_BHL_ARCHIVE, "Forced teammates color (e.g. \"90 30\")");
 
 // Global engine <-> studio model rendering code interface
 extern engine_studio_api_t IEngineStudio;

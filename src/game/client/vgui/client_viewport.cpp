@@ -174,22 +174,21 @@ bool CClientViewport::KeyInput(int down, int keynum, const char *pszCurrentBindi
 	{
 		if (IsScoreBoardVisible())
 		{
-			int constexpr WHEEL_DELTA = 20;
-
-			if ((keynum == K_MOUSE1 && hud_scoreboard_mousebtn.GetInt() == 1) || (keynum == K_MOUSE2 && hud_scoreboard_mousebtn.GetInt() == 2))
+			if (!m_pScorePanel->IsMouseInputEnabled())
 			{
-				m_pScorePanel->EnableMousePointer(true);
-				return 0;
+				if ((keynum == K_MOUSE1 && hud_scoreboard_mousebtn.GetInt() == 1) || (keynum == K_MOUSE2 && hud_scoreboard_mousebtn.GetInt() == 2))
+				{
+					m_pScorePanel->EnableMousePointer(true);
+					return 0;
+				}
 			}
-			else if (keynum == K_MWHEELDOWN)
+			else
 			{
-				m_pScorePanel->OnMouseWheeled(WHEEL_DELTA);
-				return 0;
-			}
-			else if (keynum == K_MWHEELUP)
-			{
-				m_pScorePanel->OnMouseWheeled(-WHEEL_DELTA);
-				return 0;
+				// Ignore mouse input so it can be handled by VGUI
+				if (keynum == K_MOUSE1 || keynum == K_MOUSE2 ||keynum == K_MWHEELDOWN || keynum == K_MWHEELUP)
+				{
+					return 0;
+				}
 			}
 		}
 		else

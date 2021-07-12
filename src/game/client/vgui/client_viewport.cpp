@@ -159,6 +159,10 @@ void CClientViewport::ActivateClientUI()
 void CClientViewport::HideClientUI()
 {
 	SetVisible(false);
+
+	// Hide command menu when GameUI is opened
+	if (m_pCommandMenu && m_pCommandMenu->IsVisible())
+		m_pCommandMenu->ShowPanel(false);
 }
 
 void CClientViewport::VidInit()

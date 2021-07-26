@@ -1278,6 +1278,9 @@ void CUpdateInstaller::BeginFileUpdating()
 						if (oldPath.empty())
 							oldPath = m_InstallationPath / fs::u8path(name);
 
+						// Create directories for the file
+						fs::create_directories(oldPath.parent_path());
+
 						if (!hash.oldPath.empty() && Plat_IsSpecialFile(oldPath))
 						{
 							Plat_CopySpecialFile(hash.newPath, oldPath);

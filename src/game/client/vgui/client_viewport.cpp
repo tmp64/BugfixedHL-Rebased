@@ -189,7 +189,7 @@ bool CClientViewport::KeyInput(int down, int keynum, const char *pszCurrentBindi
 			else
 			{
 				// Ignore mouse input so it can be handled by VGUI
-				if (keynum == K_MOUSE1 || keynum == K_MOUSE2 ||keynum == K_MWHEELDOWN || keynum == K_MWHEELUP)
+				if (keynum == K_MOUSE1 || keynum == K_MOUSE2 || keynum == K_MWHEELDOWN || keynum == K_MWHEELUP)
 				{
 					return 0;
 				}

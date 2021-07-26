@@ -59,7 +59,10 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
 
 	// Disable HTML MOTD if SteamAPI not available
 	if (!SteamAPI_IsAvailable())
+	{
 		m_pMOTD->SetEnabled(false);
+		m_pMOTD->SetSelected(false);
+	}
 }
 
 void CGeneralSubOptions::PerformLayout()
@@ -72,7 +75,10 @@ void CGeneralSubOptions::OnResetData()
 	m_pFovValue->ResetData();
 	m_pInputMethodBox->ActivateItem(m_InputMethodItems[clamp(m_input.GetInt(), 0, 2)]);
 	m_pKillSnd->ResetData();
-	m_pMOTD->ResetData();
+
+	if (m_pMOTD->IsEnabled())
+		m_pMOTD->ResetData();
+
 	m_pAutoJump->ResetData();
 	m_pLogChat->ResetData();
 	m_pLogOther->ResetData();
@@ -84,7 +90,10 @@ void CGeneralSubOptions::OnApplyChanges()
 {
 	m_pFovValue->ApplyChanges();
 	m_pKillSnd->ApplyChanges();
-	m_pMOTD->ApplyChanges();
+
+	if (m_pMOTD->IsEnabled())
+		m_pMOTD->ApplyChanges();
+
 	m_pAutoJump->ApplyChanges();
 	m_pLogChat->ApplyChanges();
 	m_pLogOther->ApplyChanges();

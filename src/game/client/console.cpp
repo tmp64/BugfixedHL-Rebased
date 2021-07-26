@@ -514,9 +514,15 @@ CON_COMMAND(find, "Searches cvars and commands for a string.")
 			nullptr, // 12
 			nullptr, // 13
 			nullptr, // 14
-			"bhl_archive", // 15
-			"devonly", // 16
-			nullptr, // 17...
+			nullptr, // 15
+			nullptr, // 16
+			nullptr, // 17
+			nullptr, // 18
+			nullptr, // 19
+			nullptr, // 20
+			nullptr, // 21
+			"bhl_archive", // 22
+			"devonly", // 23
 		};
 
 		bool isFirstPrinted = false;

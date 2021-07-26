@@ -46,6 +46,8 @@ void CRainbow::GetRainbowColor(int x, int y, int &r, int &g, int &b)
 	phase += hud_rainbow_xphase.GetFloat() * x;
 	phase += hud_rainbow_yphase.GetFloat() * y;
 	phase = fmod(phase, 360);
+	if (phase < 0)
+		phase += 360;
 
 	HSVtoRGB(phase, m_flSat, m_flVal, r, g, b);
 }

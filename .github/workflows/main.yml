@@ -3,7 +3,13 @@
 name: CI
 
 # Controls when the action will run. Triggers the workflow on push or pull request events
-on: [push, pull_request]
+on: 
+  push:
+  pull_request:
+
+# Run GitHub Actions monthly to make sure CI isn't broken
+  schedule:
+    - cron: '0 0 1 * *'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:

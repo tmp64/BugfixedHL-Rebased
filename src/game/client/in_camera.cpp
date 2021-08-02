@@ -150,6 +150,8 @@ extern trace_t SV_ClipMoveToEntity(edict_t *ent, Vector start, Vector mins, Vect
 void CL_DLLEXPORT CAM_Think(void)
 {
 	//	RecClCamThink();
+	if (gEngfuncs.GetMaxClients() > 1 && CL_IsThirdPerson())
+		CAM_ToFirstPerson();
 
 	Vector origin;
 	Vector ext, pnt, camForward, camRight, camUp;

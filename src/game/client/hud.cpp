@@ -68,6 +68,7 @@
 #include "hud/voice_status.h"
 #include "hud/voice_status_self.h"
 #include "hud/speedometer.h"
+#include "hud/jumpspeed.h"
 #include "hud/timer.h"
 
 // Adrenaline Gamer HUD Elements
@@ -264,6 +265,7 @@ void CHud::Init(void)
 	RegisterHudElem<CHudVoiceStatus>();
 	RegisterHudElem<CHudVoiceStatusSelf>();
 	RegisterHudElem<CHudSpeedometer>();
+	RegisterHudElem<CHudJumpspeed>();
 	RegisterHudElem<CHudTimer>();
 
 	ClientVoiceMgr_Init();

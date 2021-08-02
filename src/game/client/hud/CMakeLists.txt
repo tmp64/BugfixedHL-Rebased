@@ -22,6 +22,8 @@ add_sources(
 	geiger.h
 	health.cpp
 	health.h
+	jumpspeed.cpp
+	jumpspeed.h
 	menu.cpp
 	menu.h
 	message.cpp

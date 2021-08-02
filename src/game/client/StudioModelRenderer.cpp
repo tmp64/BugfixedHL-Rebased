@@ -38,6 +38,8 @@ const char *legs_bones[NUM_LEGS_BONES] = {
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
 
+ConVar cl_viewmodel_hltv("cl_viewmodel_hltv", "0", FCVAR_BHL_ARCHIVE, "Disables the animations of viewmodel\n  1 - idle, 2 - equip, 3 - both");
+
 /////////////////////
 // Implementation of CStudioModelRenderer.h
 /////////////////////
@@ -795,6 +797,28 @@ void CStudioModelRenderer::StudioSetupBones(void)
 	}
 
 	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;
+	if (m_pCurrentEntity == gEngfuncs.GetViewModel())
+	{
+		if (cl_viewmodel_hltv.GetInt() == 1 || cl_viewmodel_hltv.GetInt() == 3)
+		{
+			if (strstr(pseqdesc->label, "idle") != NULL || strstr(pseqdesc->label, "fidget") != NULL)
+			{
+				m_pCurrentEntity->curstate.frame = 0; // set current state to first frame
+				m_pCurrentEntity->curstate.framerate = 0; // don't animate at all
+			}
+		}
+		if (cl_viewmodel_hltv.GetInt() == 2 || cl_viewmodel_hltv.GetInt() == 3)
+		{
+			if (strstr(pseqdesc->label, "holster") != NULL || strstr(pseqdesc->label, "draw") != NULL ||
+			    strstr(pseqdesc->label, "deploy") != NULL)
+			{
+				m_pCurrentEntity->curstate.sequence = 0; // instead set to idle sequence
+				pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;
+				pseqdesc->numframes = 1;
+				pseqdesc->fps = 1;
+			}
+		}
+	}
 
 	f = StudioEstimateFrame(pseqdesc);
 

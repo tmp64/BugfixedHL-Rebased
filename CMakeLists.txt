@@ -487,6 +487,7 @@ if( WIN32 )
 	find_package( DXGUID REQUIRED )
 
 	set( CLIENT_PLAT_LIBS
+		opengl32
 		wsock32
 		psapi
 		DInput
@@ -501,6 +502,7 @@ if( WIN32 )
 else()
 	# Only link with SDL2 on Linux. Windows will conditionally link in runtime.
 	set( CLIENT_PLAT_LIBS
+		OpenGL
 		dl
 		SDL2
 	)

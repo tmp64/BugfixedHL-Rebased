@@ -94,6 +94,8 @@ ConVar cl_viewmodel_ofs_right("cl_viewmodel_ofs_right", "0", FCVAR_BHL_ARCHIVE, 
 ConVar cl_viewmodel_ofs_forward("cl_viewmodel_ofs_forward", "0", FCVAR_BHL_ARCHIVE, "Viewmodel forward offset");
 ConVar cl_viewmodel_ofs_up("cl_viewmodel_ofs_up", "0", FCVAR_BHL_ARCHIVE, "Viewmodel up offset");
 
+ConVar cl_bob_angled("cl_bob_angled", "0", FCVAR_BHL_ARCHIVE, "Enables the angled viewmodel bobbing");
+
 // These cvars are not registered (so users can't cheat), so set the ->value field directly
 // Register these cvars in V_Init() if needed for easy tweaking
 cvar_t v_iyaw_cycle = { "v_iyaw_cycle", "2", 0, 2 };
@@ -691,6 +693,11 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 	view->angles[YAW] -= bob * 0.5;
 	view->angles[ROLL] -= bob * 1;
 	view->angles[PITCH] -= bob * 0.3;
+
+	if (cl_bob_angled.GetBool())
+	{
+		VectorCopy(view->angles, view->curstate.angles);
+	}
 
 	// pushing the view origin down off of the same X/Z plane as the ent's origin will give the
 	// gun a very nice 'shifting' effect when the player looks up/down. If there is a problem

@@ -809,8 +809,7 @@ void CStudioModelRenderer::StudioSetupBones(void)
 		}
 		if (cl_viewmodel_hltv.GetInt() == 2 || cl_viewmodel_hltv.GetInt() == 3)
 		{
-			if (strstr(pseqdesc->label, "holster") != NULL || strstr(pseqdesc->label, "draw") != NULL ||
-			    strstr(pseqdesc->label, "deploy") != NULL)
+			if (strstr(pseqdesc->label, "holster") != NULL || strstr(pseqdesc->label, "draw") != NULL || strstr(pseqdesc->label, "deploy") != NULL)
 			{
 				m_pCurrentEntity->curstate.sequence = 0; // instead set to idle sequence
 				pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;

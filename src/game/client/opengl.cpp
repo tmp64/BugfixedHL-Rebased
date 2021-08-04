@@ -246,4 +246,3 @@ void CClientOpenGL::Shutdown()
 		glDebugMessageCallbackARB(nullptr, nullptr);
 	}
 }
-

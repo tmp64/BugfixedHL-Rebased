@@ -93,6 +93,7 @@ void CSDLRuntime::InitWindows()
 	m_bIsGood = m_bIsGood && fnLoadSym(GameControllerGetAxis, "SDL_GameControllerGetAxis");
 	m_bIsGood = m_bIsGood && fnLoadSym(GameControllerGetButton, "SDL_GameControllerGetButton");
 	m_bIsGood = m_bIsGood && fnLoadSym(JoystickUpdate, "SDL_JoystickUpdate");
+	m_bIsGood = m_bIsGood && fnLoadSym(GL_GetProcAddress, "SDL_GL_GetProcAddress");
 
 	if (!m_bIsGood)
 	{
@@ -113,6 +114,7 @@ void CSDLRuntime::InitOther()
 	GameControllerGetAxis = &SDL_GameControllerGetAxis;
 	GameControllerGetButton = &SDL_GameControllerGetButton;
 	JoystickUpdate = &SDL_JoystickUpdate;
+	GL_GetProcAddress = &SDL_GL_GetProcAddress;
 
 	m_bIsGood = true;
 #endif

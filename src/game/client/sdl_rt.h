@@ -18,6 +18,7 @@ public:
 	decltype(SDL_GameControllerGetAxis) *GameControllerGetAxis = nullptr;
 	decltype(SDL_GameControllerGetButton) *GameControllerGetButton = nullptr;
 	decltype(SDL_JoystickUpdate) *JoystickUpdate = nullptr;
+	decltype(SDL_GL_GetProcAddress) *GL_GetProcAddress = nullptr;
 
 	/**
 	 * Custom ShowSimpleMessageBox, works on Windows without SDL.

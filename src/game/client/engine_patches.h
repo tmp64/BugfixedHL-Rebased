@@ -13,6 +13,14 @@ struct UserMessage;
 class CEnginePatches
 {
 public:
+	enum class Renderer
+	{
+		Unknown,
+		Software,
+		Direct3D,
+		OpenGL,
+	};
+
 	struct EngineMsgBuf
 	{
 		inline bool IsValid() const
@@ -55,9 +63,14 @@ public:
 	virtual void RunFrame();
 
 	/**
-	 * Returns truf if client running SteamPipe version of engine which uses SDL2.
+	 * Returns true if client running SteamPipe version of engine which uses SDL2.
 	 */
 	bool IsSDLEngine();
+
+	/**
+	 * Returns which rendering API is used by the engine.
+	 */
+	virtual Renderer GetRenderer();
 
 	/**
 	 * Returns engine message buffer.

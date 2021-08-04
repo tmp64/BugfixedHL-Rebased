@@ -76,6 +76,11 @@ void CEnginePatches::RunFrame()
 	}
 }
 
+CEnginePatches::Renderer CEnginePatches::GetRenderer()
+{
+	return Renderer::Unknown;
+}
+
 void CEnginePatches::HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT])
 {
 	Assert(false);

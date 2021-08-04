@@ -27,6 +27,7 @@ struct sizebuf_t
 class CEnginePatchesLinux : public CEnginePatches
 {
 public:
+	virtual Renderer GetRenderer() override;
 	virtual void HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT]) override;
 
 protected:
@@ -65,6 +66,12 @@ private:
 };
 
 static CEnginePatchesLinux s_EnginePatchesInstance;
+
+CEnginePatches::Renderer CEnginePatchesLinux::GetRenderer()
+{
+	// Linux only supports OpenGL
+	return Renderer::OpenGL;
+}
 
 void CEnginePatchesLinux::HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT])
 {

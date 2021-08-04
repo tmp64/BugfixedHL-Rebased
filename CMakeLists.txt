@@ -511,6 +511,7 @@ target_link_libraries( client
 	${GAME_COMMON_LIBS}
 	${SOURCE_SDK_LIBS}
 	${UPDATER_LIBS}
+	glad
 	pcre
 	semver
 	nlohmann_json

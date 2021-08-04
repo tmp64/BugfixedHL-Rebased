@@ -41,6 +41,7 @@
 #include "sdl_rt.h"
 #include "GameStudioModelRenderer.h"
 #include "results.h"
+#include "opengl.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -262,6 +263,7 @@ void CL_DLLEXPORT HUD_Init(void)
 	CEnginePatches::Get().Init();
 	InitInput();
 	ClientSteamContext().Activate();
+	CClientOpenGL::Get().Init();
 	gHUD.Init();
 	CSvcMessages::Get().Init();
 	console::HudPostInit();
@@ -394,6 +396,7 @@ void CL_DLLEXPORT HUD_Shutdown(void)
 	ShutdownInput();
 	CL_UnloadParticleMan();
 	ClientSteamContext().Shutdown();
+	CClientOpenGL::Get().Shutdown();
 	CEnginePatches::Get().Shutdown();
 	console::HudPostShutdown();
 

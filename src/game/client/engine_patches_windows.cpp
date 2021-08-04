@@ -47,6 +47,8 @@ public:
 
 	virtual void RunFrame() override;
 
+	virtual Renderer GetRenderer() override;
+
 	virtual void HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT]) override;
 
 protected:
@@ -58,6 +60,7 @@ protected:
 	virtual void FindUserMessageList() override;
 
 private:
+	Renderer m_Renderer = Renderer::Unknown;
 	Module m_EngineModule;
 	Module m_ServerBrowserModule;
 
@@ -183,6 +186,11 @@ void CEnginePatchesWindows::RunFrame()
 	{
 		m_ServerBrowserModule.ReadModule("ServerBrowser.dll");
 	}
+}
+
+CEnginePatches::Renderer CEnginePatchesWindows::GetRenderer()
+{
+	return m_Renderer;
 }
 
 void CEnginePatchesWindows::HookSvcHandlers(SvcParseFunc array[SVC_MSG_COUNT])
@@ -363,11 +371,30 @@ bool CEnginePatchesWindows::GetEngineModule()
 {
 	// Try Hardware engine
 	if (m_EngineModule.ReadModule("hw.dll"))
+	{
+		HMODULE hOpenGL32 = nullptr;
+		GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, "opengl32.dll", &hOpenGL32);
+
+		if (hOpenGL32)
+		{
+			auto fnGetContext = reinterpret_cast<decltype(&wglGetCurrentContext)>(GetProcAddress(hOpenGL32, "wglGetCurrentContext"));
+
+			if (fnGetContext && fnGetContext() != nullptr)
+				m_Renderer = Renderer::OpenGL;
+		}
+
+		if (m_Renderer == Renderer::Unknown)
+			m_Renderer = Renderer::Direct3D;
+
 		return true;
+	}
 
 	// Try Software engine
 	if (m_EngineModule.ReadModule("sw.dll"))
+	{
+		m_Renderer = Renderer::Software;
 		return true;
+	}
 
 	// Try Encrypted engine
 	if (m_EngineModule.ReadModule("hl.exe"))

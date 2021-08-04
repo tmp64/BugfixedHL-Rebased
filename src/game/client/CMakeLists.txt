@@ -45,6 +45,8 @@ add_sources(
 	interpolation.h
 	kbutton.h
 	net.h
+	opengl.cpp
+	opengl.h
 	player_info.cpp
 	player_info.h
 	rainbow.cpp

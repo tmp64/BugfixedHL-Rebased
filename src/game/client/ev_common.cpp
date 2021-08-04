@@ -175,13 +175,22 @@ void EV_GetDefaultShellInfo(event_args_t *args, float *origin, float *velocity, 
 		}
 	}
 
-	fR = gEngfuncs.pfnRandomFloat(50, 70);
+	extern ConVar cl_righthand;
+	if (cl_righthand.GetFloat() > 0)
+		fR = -gEngfuncs.pfnRandomFloat(50, 70);
+	else
+		fR = gEngfuncs.pfnRandomFloat(50, 70);
+
 	fU = gEngfuncs.pfnRandomFloat(100, 150);
 
 	for (i = 0; i < 3; i++)
 	{
 		ShellVelocity[i] = velocity[i] + right[i] * fR + up[i] * fU + forward[i] * 25;
-		ShellOrigin[i] = origin[i] + view_ofs[i] + up[i] * upScale + forward[i] * forwardScale + right[i] * rightScale;
+
+		if (cl_righthand.GetFloat() > 0)
+			ShellOrigin[i] = origin[i] + view_ofs[i] + up[i] * upScale + forward[i] * forwardScale + right[i] * -rightScale;
+		else
+			ShellOrigin[i] = origin[i] + view_ofs[i] + up[i] * upScale + forward[i] * forwardScale + right[i] * rightScale;
 	}
 }
 

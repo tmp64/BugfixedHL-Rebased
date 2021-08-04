@@ -71,6 +71,12 @@ qboolean v_resetCamera = 1;
 
 Vector ev_punchangle;
 
+// Used in model rendering code for view model attachment reprojection
+Vector g_vViewOrigin;
+Vector g_vViewForward;
+Vector g_vViewRight;
+Vector g_vViewUp;
+
 cvar_t *scr_ofsx;
 cvar_t *scr_ofsy;
 cvar_t *scr_ofsz;
@@ -83,6 +89,10 @@ cvar_t *cl_bob;
 cvar_t *cl_bobup;
 cvar_t *cl_waterdist;
 cvar_t *cl_chasedist;
+
+cvar_t *cl_viewmodel_ofs_right;
+cvar_t *cl_viewmodel_ofs_forward;
+cvar_t *cl_viewmodel_ofs_up;
 
 // These cvars are not registered (so users can't cheat), so set the ->value field directly
 // Register these cvars in V_Init() if needed for easy tweaking
@@ -504,6 +514,10 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 	Vector camAngles, camForward, camRight, camUp;
 	cl_entity_t *pwater;
 
+	float forward_offset = cl_viewmodel_ofs_forward->value;
+	float right_offset = cl_viewmodel_ofs_right->value;
+	float up_offset = cl_viewmodel_ofs_up->value;
+
 	V_DriftPitch(pparams);
 
 	if (gEngfuncs.IsSpectateOnly() || g_iUser1 == OBS_IN_EYE)
@@ -650,6 +664,21 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 	VectorCopy(pparams->simorg, view->origin);
 	view->origin[2] += (waterOffset);
 	VectorAdd((float *)view->origin, pparams->viewheight, (float *)view->origin);
+
+	// Change the origin from which the camera is looking at the viewmodel
+	// This does not change the angles of the viewmodel camera
+	// This does not the player's angles & origin
+	extern ConVar cl_righthand;
+	if (cl_righthand.GetFloat() > 0)
+	{
+		right_offset *= -1;
+	}
+	for (i = 0; i < 3; i++)
+	{
+		view->origin[i] += forward_offset * pparams->forward[i] +
+				right_offset * pparams->right[i] +
+				up_offset * pparams->up[i];
+	}
 
 	// Let the viewmodel shake at about 10% of the amplitude
 	gEngfuncs.V_ApplyShake(view->origin, view->angles, 0.9);
@@ -1640,6 +1669,12 @@ void CL_DLLEXPORT V_CalcRefdef(struct ref_params_s *pparams)
 		V_CalcNormalRefdef(pparams);
 	}
 
+	// Save view data for viewmodel renderer
+	g_vViewOrigin = pparams->vieworg;
+	g_vViewForward = pparams->forward;
+	g_vViewRight = pparams->right;
+	g_vViewUp = pparams->up;
+
 	/*
 // Example of how to overlay the whole screen with red at 50 % alpha
 #define SF_TEST
@@ -1709,6 +1744,10 @@ void V_Init(void)
 	cl_bobup = gEngfuncs.pfnRegisterVariable("cl_bobup", "0.5", 0);
 	cl_waterdist = gEngfuncs.pfnRegisterVariable("cl_waterdist", "4", 0);
 	cl_chasedist = gEngfuncs.pfnRegisterVariable("cl_chasedist", "112", 0);
+
+	cl_viewmodel_ofs_right = gEngfuncs.pfnRegisterVariable("cl_viewmodel_ofs_right", "0", FCVAR_BHL_ARCHIVE); // x = right
+	cl_viewmodel_ofs_forward = gEngfuncs.pfnRegisterVariable("cl_viewmodel_ofs_forward", "0", FCVAR_BHL_ARCHIVE); // y = forward
+	cl_viewmodel_ofs_up = gEngfuncs.pfnRegisterVariable("cl_viewmodel_ofs_up", "0", FCVAR_BHL_ARCHIVE); // z = up
 }
 
 //#define TRACE_TEST

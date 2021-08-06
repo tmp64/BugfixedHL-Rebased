@@ -39,6 +39,7 @@ const char *legs_bones[NUM_LEGS_BONES] = {
 engine_studio_api_t IEngineStudio;
 
 ConVar cl_viewmodel_hltv("cl_viewmodel_hltv", "0", FCVAR_BHL_ARCHIVE, "Disables the animations of viewmodel\n  1 - idle, 2 - equip, 3 - both");
+extern ConVar cl_righthand;
 
 /////////////////////
 // Implementation of CStudioModelRenderer.h
@@ -956,6 +957,14 @@ void CStudioModelRenderer::StudioSetupBones(void)
 
 		if (pbones[i].parent == -1)
 		{
+			if (m_pCurrentEntity == gEngfuncs.GetViewModel()
+			    && IEngineStudio.IsHardware()
+			    && cl_righthand.GetFloat() > 0)
+			{
+				for (size_t j = 0; j < 4; ++j)
+					bonematrix[1][j] *= -1.0;
+			}
+
 			if (IEngineStudio.IsHardware())
 			{
 				ConcatTransforms((*m_protationmatrix), bonematrix, (*m_pbonetransform)[i]);

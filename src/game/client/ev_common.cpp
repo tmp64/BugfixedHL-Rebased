@@ -27,6 +27,9 @@
 #include "hud/spectator.h"
 
 #define IS_FIRSTPERSON_SPEC (g_iUser1 == OBS_IN_EYE || (g_iUser1 && (CHudSpectator::Get()->m_pip->value == INSET_IN_EYE)))
+
+extern ConVar cl_righthand;
+
 /*
 =================
 GetEntity
@@ -177,6 +180,12 @@ void EV_GetDefaultShellInfo(event_args_t *args, float *origin, float *velocity, 
 
 	fR = gEngfuncs.pfnRandomFloat(50, 70);
 	fU = gEngfuncs.pfnRandomFloat(100, 150);
+
+	if (cl_righthand.GetFloat() > 0)
+	{
+		fR *= -1;
+		rightScale *= -1;
+	}
 
 	for (i = 0; i < 3; i++)
 	{

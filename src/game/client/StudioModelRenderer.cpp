@@ -1,13 +1,5 @@
 // studio_model.cpp
 // routines for setting up to draw 3DStudio models
-#ifdef _WIN32
-#include <winsani_in.h>
-#include <Windows.h>
-#include <winsani_out.h>
-#endif
-
-#include "opengl.h"
-
 #include "hud.h"
 #include "cl_util.h"
 #include "const.h"
@@ -28,6 +20,7 @@
 
 #include "StudioModelRenderer.h"
 #include "GameStudioModelRenderer.h"
+#include "opengl.h"
 
 // Bones that used in gait animation
 #define NUM_LEGS_BONES 8

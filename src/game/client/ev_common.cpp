@@ -29,6 +29,9 @@
 #define IS_FIRSTPERSON_SPEC (g_iUser1 == OBS_IN_EYE || (g_iUser1 && (CHudSpectator::Get()->m_pip->value == INSET_IN_EYE)))
 
 extern ConVar cl_righthand;
+extern ConVar cl_viewmodel_ofs_right;
+extern ConVar cl_viewmodel_ofs_forward;
+extern ConVar cl_viewmodel_ofs_up;
 
 /*
 =================
@@ -181,10 +184,13 @@ void EV_GetDefaultShellInfo(event_args_t *args, float *origin, float *velocity, 
 	fR = gEngfuncs.pfnRandomFloat(50, 70);
 	fU = gEngfuncs.pfnRandomFloat(100, 150);
 
-	if (cl_righthand.GetFloat() > 0)
+	if (EV_IsPlayer(idx) && EV_IsLocal(idx))
 	{
-		fR *= -1;
-		rightScale *= -1;
+		if (cl_righthand.GetFloat() > 0)
+		{
+			fR *= -1;
+			rightScale *= -1;
+		}
 	}
 
 	for (i = 0; i < 3; i++)

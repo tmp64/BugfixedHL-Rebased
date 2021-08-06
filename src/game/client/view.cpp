@@ -696,7 +696,7 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 
 	if (cl_bob_angled.GetBool())
 	{
-		VectorCopy(view->angles, view->curstate.angles);
+		view->curstate.angles = view->angles;
 	}
 
 	// pushing the view origin down off of the same X/Z plane as the ent's origin will give the

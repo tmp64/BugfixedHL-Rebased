@@ -1600,7 +1600,7 @@ void CStudioModelRenderer::StudioCalcAttachments(void)
 	{
 		VectorTransform(pattachment[i].org, (*m_plighttransform)[pattachment[i].bone], m_pCurrentEntity->attachment[i]);
 
-		if (IEngineStudio.IsHardware() && // OpenGL mode
+		if (CClientOpenGL::Get().IsAvailable() && // OpenGL mode
 			m_pCurrentEntity == gEngfuncs.GetViewModel() && // attachments of viewmodel
 			cl_viewmodel_fov.GetBool() && // viewmodel FOV is changed
 			g_flRenderFOV == default_fov.GetFloat()) // weapon is not zoomed in
@@ -1720,6 +1720,9 @@ void CStudioModelRenderer::StudioRenderFinal_Software(void)
 
 void CStudioModelRenderer::SetViewmodelFovProjection(void)
 {
+	if (!CClientOpenGL::Get().IsAvailable())
+		return;
+
 	if (cl_viewmodel_fov.GetFloat() < 1 || cl_viewmodel_fov.GetFloat() > 179)
 		return;
 

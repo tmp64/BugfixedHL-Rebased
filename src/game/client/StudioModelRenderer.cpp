@@ -1601,9 +1601,9 @@ void CStudioModelRenderer::StudioCalcAttachments(void)
 		VectorTransform(pattachment[i].org, (*m_plighttransform)[pattachment[i].bone], m_pCurrentEntity->attachment[i]);
 
 		if (CClientOpenGL::Get().IsAvailable() && // OpenGL mode
-			m_pCurrentEntity == gEngfuncs.GetViewModel() && // attachments of viewmodel
-			cl_viewmodel_fov.GetBool() && // viewmodel FOV is changed
-			g_flRenderFOV == default_fov.GetFloat()) // weapon is not zoomed in
+		    m_pCurrentEntity == gEngfuncs.GetViewModel() && // attachments of viewmodel
+		    cl_viewmodel_fov.GetBool() && // viewmodel FOV is changed
+		    g_flRenderFOV == default_fov.GetFloat()) // weapon is not zoomed in
 		{
 			// Adjust attachment positions to account for different viewmodel FOV.
 			// Otherwise weapon effects (sprites, beams) will be drawn in incorrect position.
@@ -1738,7 +1738,7 @@ void CStudioModelRenderer::SetViewmodelFovProjection(void)
 	float fovY = cl_viewmodel_fov.GetFloat();
 	float aspect = (float)ScreenWidth / (float)ScreenHeight;
 
-	h = tan (fovY / 360 * M_PI) * _near * ((float)ScreenHeight / (float)ScreenWidth);
+	h = tan(fovY / 360 * M_PI) * _near * ((float)ScreenHeight / (float)ScreenWidth);
 	w = h * aspect;
 	glFrustum(-w, w, -h, h, _near, _far);
 	// shouldn't be needed, as the API's render funcs called after us probably just set it themselves

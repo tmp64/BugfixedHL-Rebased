@@ -675,9 +675,7 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 	}
 	for (i = 0; i < 3; i++)
 	{
-		view->origin[i] += forward_offset * pparams->forward[i] +
-				right_offset * pparams->right[i] +
-				up_offset * pparams->up[i];
+		view->origin[i] += forward_offset * pparams->forward[i] + right_offset * pparams->right[i] + up_offset * pparams->up[i];
 	}
 
 	// Let the viewmodel shake at about 10% of the amplitude

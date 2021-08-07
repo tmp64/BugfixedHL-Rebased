@@ -186,6 +186,10 @@ void EV_GetDefaultShellInfo(event_args_t *args, float *origin, float *velocity, 
 
 	if (EV_IsPlayer(idx) && EV_IsLocal(idx))
 	{
+		rightScale += cl_viewmodel_ofs_right.GetFloat();
+		forwardScale += cl_viewmodel_ofs_forward.GetFloat();
+		upScale += cl_viewmodel_ofs_up.GetFloat();
+
 		if (cl_righthand.GetFloat() > 0)
 		{
 			fR *= -1;

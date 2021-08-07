@@ -1600,16 +1600,20 @@ void CStudioModelRenderer::StudioCalcAttachments(void)
 	{
 		VectorTransform(pattachment[i].org, (*m_plighttransform)[pattachment[i].bone], m_pCurrentEntity->attachment[i]);
 
-		if (CClientOpenGL::Get().IsAvailable() && // OpenGL mode
-		    m_pCurrentEntity == gEngfuncs.GetViewModel() && // attachments of viewmodel
-		    cl_viewmodel_fov.GetBool() && // viewmodel FOV is changed
-		    g_flRenderFOV == default_fov.GetFloat()) // weapon is not zoomed in
+		if (m_pCurrentEntity == gEngfuncs.GetViewModel() && NeedAdjustViewmodelAdjustments())
 		{
 			// Adjust attachment positions to account for different viewmodel FOV.
 			// Otherwise weapon effects (sprites, beams) will be drawn in incorrect position.
 			StudioAdjustViewmodelAttachments(m_pCurrentEntity->attachment[i]);
 		}
 	}
+}
+
+bool CStudioModelRenderer::NeedAdjustViewmodelAdjustments()
+{
+	return CClientOpenGL::Get().IsAvailable() && // OpenGL mode
+	    cl_viewmodel_fov.GetBool() && // viewmodel FOV is changed
+	    g_flRenderFOV == default_fov.GetFloat(); // weapon is not zoomed in
 }
 
 void CStudioModelRenderer::StudioAdjustViewmodelAttachments(Vector &vOrigin)

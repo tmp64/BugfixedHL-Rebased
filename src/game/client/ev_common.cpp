@@ -26,6 +26,8 @@
 #include "pm_shared.h"
 #include "hud/spectator.h"
 
+#include "StudioModelRenderer.h"
+
 #define IS_FIRSTPERSON_SPEC (g_iUser1 == OBS_IN_EYE || (g_iUser1 && (CHudSpectator::Get()->m_pip->value == INSET_IN_EYE)))
 
 extern ConVar cl_righthand;
@@ -156,7 +158,7 @@ EV_GetDefaultShellInfo
 Determine where to eject shells from
 =================
 */
-void EV_GetDefaultShellInfo(event_args_t *args, float *origin, float *velocity, float *ShellVelocity, float *ShellOrigin, float *forward, float *right, float *up, float forwardScale, float upScale, float rightScale)
+void EV_GetDefaultShellInfo(event_args_t *args, float *origin, float *velocity, float *ShellVelocity, Vector &ShellOrigin, float *forward, float *right, float *up, float forwardScale, float upScale, float rightScale)
 {
 	int i;
 	Vector view_ofs;
@@ -184,7 +186,9 @@ void EV_GetDefaultShellInfo(event_args_t *args, float *origin, float *velocity, 
 	fR = gEngfuncs.pfnRandomFloat(50, 70);
 	fU = gEngfuncs.pfnRandomFloat(100, 150);
 
-	if (EV_IsPlayer(idx) && EV_IsLocal(idx))
+	bool bIsFirstPerson = EV_IsPlayer(idx) && EV_IsLocal(idx);
+
+	if (bIsFirstPerson)
 	{
 		rightScale += cl_viewmodel_ofs_right.GetFloat();
 		forwardScale += cl_viewmodel_ofs_forward.GetFloat();
@@ -202,6 +206,9 @@ void EV_GetDefaultShellInfo(event_args_t *args, float *origin, float *velocity, 
 		ShellVelocity[i] = velocity[i] + right[i] * fR + up[i] * fU + forward[i] * 25;
 		ShellOrigin[i] = origin[i] + view_ofs[i] + up[i] * upScale + forward[i] * forwardScale + right[i] * rightScale;
 	}
+
+	if (bIsFirstPerson && CStudioModelRenderer::NeedAdjustViewmodelAdjustments())
+		CStudioModelRenderer::StudioAdjustViewmodelAttachments(ShellOrigin);
 }
 
 /*

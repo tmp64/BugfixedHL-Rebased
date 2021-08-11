@@ -42,8 +42,8 @@
 #include "GameStudioModelRenderer.h"
 #include "results.h"
 #include "opengl.h"
+#include "engfuncs.h"
 
-cl_enginefunc_t gEngfuncs;
 CHud gHUD;
 
 void InitInput(void);
@@ -192,14 +192,12 @@ void CL_DLLEXPORT HUD_PlayerMove(struct playermove_s *ppmove, int server)
 
 int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 {
-	gEngfuncs = *pEnginefuncs;
-
 	//	RecClInitialize(pEnginefuncs, iVersion);
 
 	if (iVersion != CLDLL_INTERFACE_VERSION)
 		return 0;
 
-	memcpy(&gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t));
+	EngFuncs_Init(pEnginefuncs);
 
 	// Save engine version before everything els
 	// (in case the game crashes there, crash handler will know the engine version)
@@ -266,6 +264,7 @@ void CL_DLLEXPORT HUD_Init(void)
 	CClientOpenGL::Get().Init();
 	gHUD.Init();
 	CSvcMessages::Get().Init();
+	EngFuncs_UpdateHooks();
 	console::HudPostInit();
 }
 
@@ -337,6 +336,7 @@ void CL_DLLEXPORT HUD_Frame(double time)
 	//	RecClHudFrame(time);
 
 	CEnginePatches::Get().RunFrame();
+	EngFuncs_UpdateHooks();
 	gHUD.Frame(time);
 	GetClientVoiceMgr()->Frame(time);
 }

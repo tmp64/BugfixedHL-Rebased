@@ -6,21 +6,23 @@
 class CRainbow
 {
 public:
-	void Init();
 	void Think();
 
 	/**
 	 * Returns whether Rainbow HUD is enabled.
 	 */
-	inline bool IsEnabled()
-	{
-		return m_bIsEnabled;
-	}
+	bool IsEnabled();
 
 	/**
 	 * Converts input color to rainbow.
 	 */
 	void GetRainbowColor(int x, int y, int &r, int &g, int &b);
+
+	/**
+	 * Overwrites some gEngfuncs members with color-changing wrappers.
+	 * Makes the player happier.
+	 */
+	void HookFuncs();
 
 private:
 	/**
@@ -29,7 +31,6 @@ private:
 	 */
 	using DrawStringFn = std::function<int(int x, int y, const char *buf, int r, int g, int b)>;
 
-	bool m_bIsEnabled = false;
 	float m_flSat = 100;
 	float m_flVal = 100;
 
@@ -42,17 +43,6 @@ private:
 	decltype(gEngfuncs.pfnDrawStringReverse) m_pfnDrawStringReverse = nullptr;
 	decltype(gEngfuncs.pfnDrawConsoleString) m_pfnDrawConsoleString = nullptr;
 	decltype(gEngfuncs.pfnFillRGBA) m_pfnFillRGBA = nullptr;
-
-	/**
-	 * Overwrites some gEngfuncs members with color-changing wrappers.
-	 * Makes the player happier.
-	 */
-	void HookFuncs();
-
-	/**
-	 * Restores original gEngfuncs.
-	 */
-	void UnhookFuncs();
 
 	static void SPR_SetRainbow(HSPRITE hPic, int r, int g, int b);
 	static void SPR_DrawAdditiveRainbow(int frame, int x, int y, const struct rect_s *prc);

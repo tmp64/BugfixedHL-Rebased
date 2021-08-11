@@ -10,25 +10,9 @@ ConVar hud_rainbow_speed("hud_rainbow_speed", "40", FCVAR_ARCHIVE, "Rainbow HUD 
 ConVar hud_rainbow_xphase("hud_rainbow_xphase", "0.4", FCVAR_ARCHIVE, "Rainbow HUD X phase shift (deg/px)");
 ConVar hud_rainbow_yphase("hud_rainbow_yphase", "0.7", FCVAR_ARCHIVE, "Rainbow HUD Y phase shift (deg/px)");
 
-void CRainbow::Init()
-{
-	// Save engine functions
-	m_pfnSPR_Set = gEngfuncs.pfnSPR_Set;
-	m_pfnSPR_DrawAdditive = gEngfuncs.pfnSPR_DrawAdditive;
-	m_pfnDrawString = gEngfuncs.pfnDrawString;
-	m_pfnDrawStringReverse = gEngfuncs.pfnDrawStringReverse;
-	m_pfnDrawConsoleString = gEngfuncs.pfnDrawConsoleString;
-	m_pfnFillRGBA = gEngfuncs.pfnFillRGBA;
-}
-
 void CRainbow::Think()
 {
-	if (hud_rainbow.GetBool() && !m_bIsEnabled)
-		HookFuncs();
-	else if (!hud_rainbow.GetBool() && m_bIsEnabled)
-		UnhookFuncs();
-
-	if (m_bIsEnabled)
+	if (hud_rainbow.GetBool())
 	{
 		// Update saturation and value and clamp them in [0; 100]
 		m_flSat = hud_rainbow_sat.GetFloat();
@@ -38,6 +22,11 @@ void CRainbow::Think()
 		m_flVal = std::min(m_flVal, 100.f);
 		m_flVal = std::max(m_flVal, 0.f);
 	}
+}
+
+bool CRainbow::IsEnabled()
+{
+	return hud_rainbow.GetBool();
 }
 
 void CRainbow::GetRainbowColor(int x, int y, int &r, int &g, int &b)
@@ -54,24 +43,24 @@ void CRainbow::GetRainbowColor(int x, int y, int &r, int &g, int &b)
 
 void CRainbow::HookFuncs()
 {
+	if (!hud_rainbow.GetBool())
+		return;
+
+	// Save engine functions
+	m_pfnSPR_Set = gEngfuncs.pfnSPR_Set;
+	m_pfnSPR_DrawAdditive = gEngfuncs.pfnSPR_DrawAdditive;
+	m_pfnDrawString = gEngfuncs.pfnDrawString;
+	m_pfnDrawStringReverse = gEngfuncs.pfnDrawStringReverse;
+	m_pfnDrawConsoleString = gEngfuncs.pfnDrawConsoleString;
+	m_pfnFillRGBA = gEngfuncs.pfnFillRGBA;
+
+	// Overwrite them
 	gEngfuncs.pfnSPR_Set = &SPR_SetRainbow;
 	gEngfuncs.pfnSPR_DrawAdditive = &SPR_DrawAdditiveRainbow;
 	gEngfuncs.pfnDrawString = &DrawString;
 	gEngfuncs.pfnDrawStringReverse = &DrawStringReverse;
 	gEngfuncs.pfnDrawConsoleString = &DrawConsoleString;
 	gEngfuncs.pfnFillRGBA = &FillRGBARainbow;
-	m_bIsEnabled = true;
-}
-
-void CRainbow::UnhookFuncs()
-{
-	gEngfuncs.pfnSPR_Set = m_pfnSPR_Set;
-	gEngfuncs.pfnSPR_DrawAdditive = m_pfnSPR_DrawAdditive;
-	gEngfuncs.pfnDrawString = m_pfnDrawString;
-	gEngfuncs.pfnDrawStringReverse = m_pfnDrawStringReverse;
-	gEngfuncs.pfnDrawConsoleString = m_pfnDrawConsoleString;
-	gEngfuncs.pfnFillRGBA = m_pfnFillRGBA;
-	m_bIsEnabled = false;
 }
 
 void CRainbow::SPR_SetRainbow(HSPRITE hPic, int r, int g, int b)

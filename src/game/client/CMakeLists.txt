@@ -19,6 +19,8 @@ add_sources(
 	console.h
 	demo.cpp
 	demo.h
+	engfuncs.cpp
+	engfuncs.h
 	engine_patches.cpp
 	engine_patches.h
 	entity.cpp
@@ -36,6 +38,8 @@ add_sources(
 	hud_iface.h
 	hud_msg.cpp
 	hud_redraw.cpp
+	hud_renderer.cpp
+	hud_renderer.h
 	hud_update.cpp
 	in_camera.cpp
 	in_defs.h

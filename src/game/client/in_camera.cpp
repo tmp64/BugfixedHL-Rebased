@@ -15,6 +15,7 @@
 #include "camera.h"
 #include "in_defs.h"
 #include "Exports.h"
+#include "pm_shared.h"
 
 #include "SDL2/SDL_mouse.h"
 #include "port.h"
@@ -44,6 +45,8 @@ enum ECAM_Command
 };
 
 //-------------------------------------------------- Global Variables
+
+ConVar dem_forcehltv_local_model("dem_forcehltv_local_model", "0", FCVAR_BHL_ARCHIVE, "Drawing player model that recorded in 3rd person for POV demos");
 
 cvar_t *cam_command;
 cvar_t *cam_snapto;
@@ -612,7 +615,10 @@ void CAM_EndDistance(void)
 int CL_DLLEXPORT CL_IsThirdPerson(void)
 {
 	//	RecClCL_IsThirdPerson();
-
+	
+	if (dem_forcehltv_local_model.GetBool() && gEngfuncs.IsSpectateOnly() && g_iUser1 != OBS_IN_EYE)
+		return 1;
+	
 	return (cam_thirdperson ? 1 : 0) || (g_iUser1 && (g_iUser2 == gEngfuncs.GetLocalPlayer()->index));
 }
 

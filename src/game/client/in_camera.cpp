@@ -150,7 +150,6 @@ extern trace_t SV_ClipMoveToEntity(edict_t *ent, Vector start, Vector mins, Vect
 void CL_DLLEXPORT CAM_Think(void)
 {
 	//	RecClCamThink();
-
 	static ConVarRef sv_cheats("sv_cheats");
 
 	if (gEngfuncs.GetMaxClients() > 1 && CL_IsThirdPerson() && !sv_cheats.GetBool())

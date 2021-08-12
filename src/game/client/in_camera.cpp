@@ -46,7 +46,7 @@ enum ECAM_Command
 
 //-------------------------------------------------- Global Variables
 
-ConVar dem_forcehltv_local_model("dem_forcehltv_local_model", "0", FCVAR_BHL_ARCHIVE, "Drawing player model that recorded in 3rd person for POV demos");
+ConVar dem_forcehltv_local_model("dem_forcehltv_local_model", "0", FCVAR_BHL_ARCHIVE, "Draw correct player model in 3rd person POV demos");
 
 cvar_t *cam_command;
 cvar_t *cam_snapto;

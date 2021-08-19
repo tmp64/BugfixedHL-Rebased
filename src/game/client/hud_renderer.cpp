@@ -1,6 +1,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "hud_renderer.h"
+#include "engine_patches.h"
 #include <com_model.h>
 #include <triangleapi.h>
 
@@ -13,9 +14,15 @@ CHudRenderer &CHudRenderer::Get()
 	return s_Instance;
 }
 
+bool CHudRenderer::IsAvailable()
+{
+	auto renderer = CEnginePatches::Get().GetRenderer();
+	return renderer == CEnginePatches::Renderer::OpenGL || renderer == CEnginePatches::Renderer::Direct3D;
+}
+
 void CHudRenderer::HookFuncs()
 {
-	if (!hud_client_renderer.GetBool())
+	if (!IsAvailable() || !hud_client_renderer.GetBool())
 		return;
 
 	gEngfuncs.pfnSPR_Set = &SpriteSet;

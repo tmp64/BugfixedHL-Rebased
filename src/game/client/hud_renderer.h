@@ -1,13 +1,13 @@
 #ifndef HUD_RENDERER_H
 #define HUD_RENDERER_H
 #include "hud.h"
-#include "opengl.h"
 
 class CHudRenderer
 {
 public:
 	static CHudRenderer &Get();
 
+	bool IsAvailable();
 	void HookFuncs();
 
 	static void SpriteSet(HSPRITE hPic, int r, int g, int b);

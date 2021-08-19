@@ -24,6 +24,7 @@
 #include "death_notice.h"
 #include "spectator.h"
 #include "vgui/client_viewport.h"
+#include "death_notice_panel.h"
 
 struct DeathNoticeItem
 {
@@ -40,10 +41,11 @@ struct DeathNoticeItem
 	bool bVictimHasColor;
 };
 
-static ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE, "Play a bell sound on kill");
-static ConVar hud_deathnotice_time("hud_deathnotice_time", "6", FCVAR_BHL_ARCHIVE, "How long should death notice stay up for");
-static ConVar hud_deathnotice_color("hud_deathnotice_color", "255 80 0", FCVAR_BHL_ARCHIVE, "Color of death notice sprite");
-static ConVar hud_deathnotice_color_tk("hud_deathnotice_color_tk", "10 240 10", FCVAR_BHL_ARCHIVE, "Color of death notice teamkill sprite");
+extern ConVar hud_deathnotice_vgui;
+ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE, "Play a bell sound on kill");
+ConVar hud_deathnotice_time("hud_deathnotice_time", "6", FCVAR_BHL_ARCHIVE, "How long should death notice stay up for");
+ConVar hud_deathnotice_color("hud_deathnotice_color", "255 80 0", FCVAR_BHL_ARCHIVE, "Color of death notice sprite");
+ConVar hud_deathnotice_color_tk("hud_deathnotice_color_tk", "10 240 10", FCVAR_BHL_ARCHIVE, "Color of death notice teamkill sprite");
 
 #define MAX_DEATHNOTICES 4
 static int DEATHNOTICE_DISPLAY_TIME = 6;
@@ -73,6 +75,9 @@ void CHudDeathNotice::VidInit()
 
 void CHudDeathNotice::Draw(float flTime)
 {
+	if (hud_deathnotice_vgui.GetBool() && CHudDeathNoticePanel::Get())
+		return;
+
 	int x, y;
 
 	Color spriteColor = Color(255, 80, 0, 255);
@@ -154,6 +159,9 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 		g_pViewport->DeathMsg(killer, victim);
 
 	CHudSpectator::Get()->DeathMessage(victim);
+
+	if (hud_deathnotice_vgui.GetBool() && CHudDeathNoticePanel::Get())
+		CHudDeathNoticePanel::Get()->AddItem(killer, victim, killedwith);
 
 	int i;
 	for (i = 0; i < MAX_DEATHNOTICES; i++)

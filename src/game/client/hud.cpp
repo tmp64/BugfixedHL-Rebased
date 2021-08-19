@@ -34,6 +34,7 @@
 #include "parsemsg.h"
 #include "vgui/client_viewport.h"
 #include "gameui/options/colorpicker/texture_manager.h"
+#include "hud_renderer.h"
 
 #include "demo.h"
 #include "demo_api.h"
@@ -61,6 +62,7 @@
 #include "hud/scores.h"
 #include "hud/statusbar.h"
 #include "hud/death_notice.h"
+#include "hud/death_notice_panel.h"
 #include "hud/ammo_secondary.h"
 #include "hud/text_message.h"
 #include "hud/status_icons.h"
@@ -267,6 +269,11 @@ void CHud::Init(void)
 	RegisterHudElem<CHudSpeedometer>();
 	RegisterHudElem<CHudJumpspeed>();
 	RegisterHudElem<CHudTimer>();
+
+	if (CHudRenderer::Get().IsAvailable())
+	{
+		RegisterHudElem<CHudDeathNoticePanel>();
+	}
 
 	ClientVoiceMgr_Init();
 

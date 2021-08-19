@@ -56,4 +56,35 @@
 		"fade_in_time"		"0"
 		"fade_out_time"		"0.15"
 	}
+	
+	HudDeathNoticePanel
+	{
+		"fieldName"			"HudDeathNoticePanel"
+		"visible"			"1"
+		"enabled"			"1"
+		"xpos"				"r640"
+		"ypos"				"24"
+		"wide"				"628"
+		"tall"				"468"
+		
+		"hor_padding"		"12"		// Left and right padding of a row
+		"icon_padding"		"2"			// Left and tight padding of the kill icon
+		"vert_margin"		"4"			// Distance between rows
+		"row_height"		"13"		// Height of a row
+		"text_font"			"Default"
+		
+		// Background color
+		"color_bg"			"KF_Background"
+		"color_bg_kill"		"KF_Background_Kill"
+		"color_bg_death"	"KF_Background_Death"
+		
+		// Icon color
+		"color_icon"		"KF_Icon"
+		"color_icon_kill"	"KF_Icon_Kill"
+		"color_icon_death"	"KF_Icon_Death"
+		"color_icon_teamkill"	"KF_Icon_Teamkiill"
+		
+		// Default name color
+		"default_name_color"	"Orange"
+	}
 }

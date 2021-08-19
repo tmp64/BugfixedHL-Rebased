@@ -16,6 +16,8 @@ add_sources(
 	crosshair.h
 	death_notice.cpp
 	death_notice.h
+	death_notice_panel.cpp
+	death_notice_panel.h
 	flashlight.cpp
 	flashlight.h
 	geiger.cpp

@@ -50,7 +50,7 @@ void CHudJumpspeed::Draw(float flTime)
 	if (hud_jumpspeed_below_cross.GetBool())
 		y = ScreenHeight / 2 + gHUD.m_iFontHeight / 2 + gHUD.m_iFontHeight;
 	else
-		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2 - gHUD.m_iFontHeight;
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 
 	a *= gHUD.GetHudTransparency();
 	gHUD.GetHudColor(HudPart::Common, 0, r, g, b);

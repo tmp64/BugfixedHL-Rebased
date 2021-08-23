@@ -4,6 +4,8 @@
 #include "parsemsg.h"
 #include "speedometer.h"
 
+extern ConVar hud_jumpspeed;
+extern ConVar hud_jumpspeed_below_cross;
 static ConVar hud_speedometer("hud_speedometer", "0", FCVAR_BHL_ARCHIVE, "Enable speedometer");
 static ConVar hud_speedometer_below_cross("hud_speedometer_below_cross", "0", FCVAR_BHL_ARCHIVE, "Move speedometer to below the crosshair");
 
@@ -47,9 +49,18 @@ void CHudSpeedometer::Draw(float time)
 
 	int y;
 	if (hud_speedometer_below_cross.GetBool())
+	{
 		y = ScreenHeight / 2 + gHUD.m_iFontHeight / 2;
+	}
 	else
-		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+	{
+		int yoffset = 0;
+
+		if (hud_jumpspeed.GetBool() && !hud_jumpspeed_below_cross.GetBool())
+			yoffset = gHUD.m_iFontHeight;
+
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2 - yoffset;
+	}
 
 	a *= gHUD.GetHudTransparency();
 	gHUD.GetHudColor(HudPart::Common, 0, r, g, b);

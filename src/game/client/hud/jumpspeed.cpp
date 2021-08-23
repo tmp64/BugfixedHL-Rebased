@@ -4,8 +4,8 @@
 #include "parsemsg.h"
 #include "jumpspeed.h"
 
-static ConVar hud_jumpspeed("hud_jumpspeed", "0", FCVAR_BHL_ARCHIVE, "Enable jumpspeed");
-static ConVar hud_jumpspeed_below_cross("hud_jumpspeed_below_cross", "0", FCVAR_BHL_ARCHIVE, "Move jumpspeed to below the crosshair");
+ConVar hud_jumpspeed("hud_jumpspeed", "0", FCVAR_BHL_ARCHIVE, "Enable jumpspeed");
+ConVar hud_jumpspeed_below_cross("hud_jumpspeed_below_cross", "0", FCVAR_BHL_ARCHIVE, "Move jumpspeed to below the crosshair");
 
 DEFINE_HUD_ELEM(CHudJumpspeed);
 
@@ -50,7 +50,7 @@ void CHudJumpspeed::Draw(float flTime)
 	if (hud_jumpspeed_below_cross.GetBool())
 		y = ScreenHeight / 2 + gHUD.m_iFontHeight / 2 + gHUD.m_iFontHeight;
 	else
-		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2 - gHUD.m_iFontHeight;
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 
 	a *= gHUD.GetHudTransparency();
 	gHUD.GetHudColor(HudPart::Common, 0, r, g, b);

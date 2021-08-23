@@ -6,8 +6,8 @@
 
 extern ConVar hud_jumpspeed;
 extern ConVar hud_jumpspeed_below_cross;
-static ConVar hud_speedometer("hud_speedometer", "0", FCVAR_BHL_ARCHIVE, "Enable speedometer");
-static ConVar hud_speedometer_below_cross("hud_speedometer_below_cross", "0", FCVAR_BHL_ARCHIVE, "Move speedometer to below the crosshair");
+ConVar hud_speedometer("hud_speedometer", "0", FCVAR_BHL_ARCHIVE, "Enable speedometer");
+ConVar hud_speedometer_below_cross("hud_speedometer_below_cross", "0", FCVAR_BHL_ARCHIVE, "Move speedometer to below the crosshair");
 
 DEFINE_HUD_ELEM(CHudSpeedometer);
 

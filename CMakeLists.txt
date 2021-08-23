@@ -257,6 +257,9 @@ if( GIT_FOUND )
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 	)
 	
+	# Replace slash with hyphen
+	string( REPLACE "/" "-" GIT_BRANCH ${GIT_BRANCH} )
+	
 	# Get last commit hash (short)
 	execute_process(
 		COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD

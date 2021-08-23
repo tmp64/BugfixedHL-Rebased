@@ -194,7 +194,7 @@ void CHudDeathNoticePanel::PaintBackground()
 		int wide = 2 * m_iHPadding + GetEntryContentWide(entry);
 		int x = panelWide - wide;
 		Color bgColor;
-		
+
 		if (entry.type == EntryType::Kill)
 			bgColor = m_ColorBgKill;
 		else if (entry.type == EntryType::Death)

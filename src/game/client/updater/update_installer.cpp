@@ -1130,8 +1130,8 @@ bool CUpdateInstaller::ValidateUpdateFiles()
 
 		bool isPlatFile = !i.second.oldPath.empty() && IsPlatFile(i.second.oldPath);
 
-		// If file was updated OR a platform file
-		if (isPlatFile || i.second.metaOldHash.empty() || i.second.metaOldHash != i.second.metaNewHash)
+		// If file was updated OR a platform file OR doesn't exist
+		if (isPlatFile || i.second.metaOldHash.empty() || i.second.metaOldHash != i.second.metaNewHash || i.second.realOldHash.empty())
 		{
 			bool needToAsk = false;
 

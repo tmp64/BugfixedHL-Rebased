@@ -98,6 +98,9 @@ private:
 		// Hash and size of the new file from FS
 		std::vector<uint8_t> realNewHash;
 		uint64_t realNewSize = 0;
+
+		// If true and file exists, it must not be modified (assume it is up to date)
+		bool metaIsUserModifiable = false;
 	};
 
 	std::atomic_bool m_bIsInProcess = false;

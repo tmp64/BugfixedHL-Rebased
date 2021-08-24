@@ -15,6 +15,7 @@ LOCAL_URL = 'http://' + IP + ':' + str(PORT) + '/'
 
 VERSIONS = [
     # From newest to oldest
+    '1.6.1',
     '1.1.0',
     '1.0.1',
     '1.0.0',

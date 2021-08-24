@@ -928,6 +928,14 @@ bool CUpdateInstaller::PrepareFileList()
 			if (hash.metaNewHash.size() != SHA1_HASH_SIZE)
 				throw std::runtime_error("file " + filename + " has invalid hash in new metadata");
 
+			// User modifiable flag
+			auto userModifiable = file.second.find("user_modifiable");
+
+			if (userModifiable != file.second.end())
+				hash.metaIsUserModifiable = userModifiable->get<bool>();
+			else
+				hash.metaIsUserModifiable = false;
+
 			// Insert into the map
 			m_FileHashes.insert({ filename, hash });
 		}
@@ -1114,6 +1122,10 @@ bool CUpdateInstaller::ValidateUpdateFiles()
 	{
 		// Don't replace if file in FS is same as in update
 		if (!i.second.realOldHash.empty() && i.second.metaNewHash == i.second.realOldHash)
+			continue;
+
+		// Don't replace if exists in FS and is a user modifiable file
+		if (!i.second.realOldHash.empty() && i.second.metaIsUserModifiable)
 			continue;
 
 		bool isPlatFile = !i.second.oldPath.empty() && IsPlatFile(i.second.oldPath);

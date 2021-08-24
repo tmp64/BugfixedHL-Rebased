@@ -12,6 +12,13 @@ import hashlib
 import json
 import os
 
+# List of files that don't need to be updated
+USER_MODIFIABLE_FILES = [
+    'ui/resource/ChatScheme.res',
+    'ui/resource/ClientScheme.res',
+    'ui/scripts/HudLayout.res',
+]
+
 
 def create_metadata(version, startpath):
     meta = {
@@ -30,7 +37,8 @@ def create_metadata(version, startpath):
 
             file_data = {
                 'size': os.path.getsize(fullpath),
-                'hash_sha1': ''
+                'hash_sha1': '',
+                'user_modifiable': False,
             }
 
             hasher = hashlib.sha1()
@@ -39,6 +47,11 @@ def create_metadata(version, startpath):
                 hasher.update(buf)
 
             file_data['hash_sha1'] = hasher.hexdigest()
+
+            for userFile in USER_MODIFIABLE_FILES:
+                if userFile.lower() == path.lower():
+                    file_data['user_modifiable'] = True
+                    break
 
             meta['files'][path] = file_data
 

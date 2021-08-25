@@ -35,6 +35,8 @@ extern ConVar cl_viewmodel_ofs_right;
 extern ConVar cl_viewmodel_ofs_forward;
 extern ConVar cl_viewmodel_ofs_up;
 
+ConVar cl_noshells("cl_noshells", "0", FCVAR_BHL_ARCHIVE, "Disables shells ejected from weapons when firing");
+
 /*
 =================
 GetEntity
@@ -145,6 +147,9 @@ Bullet shell casings
 */
 void EV_EjectBrass(float *origin, float *velocity, float rotation, int model, int soundtype)
 {
+	if (cl_noshells.GetBool())
+		return;
+
 	Vector endpos;
 	VectorClear(endpos);
 	endpos[1] = rotation;

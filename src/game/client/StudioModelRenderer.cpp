@@ -46,8 +46,28 @@ extern Vector g_vViewUp;
 
 extern ConVar cl_viewmodel_fov;
 
-ConVar cl_viewmodel_hltv("cl_viewmodel_hltv", "0", FCVAR_BHL_ARCHIVE, "Disables the animations of viewmodel\n  1 - idle, 2 - equip, 3 - both");
+ConVar cl_viewmodel_hltv("cl_viewmodel_hltv", "0", FCVAR_BHL_ARCHIVE,
+    "Disables animations of the viewmodel\n"
+    "   0 - nothing is disabled\n"
+    "  +1 - disables idle animations\n"
+    "  +2 - disables equip animations\n"
+    "  +4 - disables shooting animations\n"
+    "  +8 - disables reload animations\n"
+    "   7 - disables all above but reloading\n"
+    "  15 - disables all listed above");
 extern ConVar cl_righthand;
+
+namespace
+{
+enum ViewmodelHLTV
+{
+	VMHLTV_NOTHING = 0,
+	VMHLTV_IDLE = (1 << 0),
+	VMHLTV_EQUIP = (1 << 1),
+	VMHLTV_SHOOT = (1 << 2),
+	VMHLTV_RELOAD = (1 << 3),
+};
+}
 
 /////////////////////
 // Implementation of CStudioModelRenderer.h
@@ -808,17 +828,23 @@ void CStudioModelRenderer::StudioSetupBones(void)
 	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;
 	if (m_pCurrentEntity == gEngfuncs.GetViewModel())
 	{
-		if (cl_viewmodel_hltv.GetInt() == 1 || cl_viewmodel_hltv.GetInt() == 3)
+		ViewmodelHLTV disableAnims = (ViewmodelHLTV)cl_viewmodel_hltv.GetInt();
+
+		if (disableAnims != VMHLTV_NOTHING)
 		{
-			if (strstr(pseqdesc->label, "idle") != NULL || strstr(pseqdesc->label, "fidget") != NULL)
+			if (disableAnims & VMHLTV_IDLE
+			    && (strstr(pseqdesc->label, "idle") || strstr(pseqdesc->label, "fidget")))
 			{
 				m_pCurrentEntity->curstate.frame = 0; // set current state to first frame
 				m_pCurrentEntity->curstate.framerate = 0; // don't animate at all
 			}
-		}
-		if (cl_viewmodel_hltv.GetInt() == 2 || cl_viewmodel_hltv.GetInt() == 3)
-		{
-			if (strstr(pseqdesc->label, "holster") != NULL || strstr(pseqdesc->label, "draw") != NULL || strstr(pseqdesc->label, "deploy") != NULL)
+
+			if ((disableAnims & VMHLTV_SHOOT
+			        && (strstr(pseqdesc->label, "shoot") || strstr(pseqdesc->label, "Shoot") || strstr(pseqdesc->label, "fire") || strstr(pseqdesc->label, "spin")))
+			    || (disableAnims & VMHLTV_EQUIP
+			        && (strstr(pseqdesc->label, "holster") || strstr(pseqdesc->label, "draw") || strstr(pseqdesc->label, "deploy")))
+			    || (disableAnims & VMHLTV_RELOAD
+			        && (strstr(pseqdesc->label, "reload") || strstr(pseqdesc->label, "pump"))))
 			{
 				m_pCurrentEntity->curstate.sequence = 0; // instead set to idle sequence
 				pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;

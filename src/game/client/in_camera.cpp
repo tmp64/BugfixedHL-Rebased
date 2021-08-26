@@ -19,6 +19,7 @@
 
 #include "SDL2/SDL_mouse.h"
 #include "port.h"
+#include "demo_api.h"
 
 float CL_KeyState(kbutton_t *key);
 
@@ -45,8 +46,6 @@ enum ECAM_Command
 };
 
 //-------------------------------------------------- Global Variables
-
-ConVar dem_forcehltv_local_model("dem_forcehltv_local_model", "0", FCVAR_BHL_ARCHIVE, "Draw correct player model in 3rd person POV demos");
 
 cvar_t *cam_command;
 cvar_t *cam_snapto;
@@ -620,7 +619,7 @@ int CL_DLLEXPORT CL_IsThirdPerson(void)
 {
 	//	RecClCL_IsThirdPerson();
 
-	if (dem_forcehltv_local_model.GetBool() && gEngfuncs.IsSpectateOnly() && g_iUser1 != OBS_IN_EYE)
+	if (gEngfuncs.pDemoAPI->IsPlayingback() && gEngfuncs.IsSpectateOnly() && g_iUser1 != OBS_IN_EYE)
 		return 1;
 
 	return (cam_thirdperson ? 1 : 0) || (g_iUser1 && (g_iUser2 == gEngfuncs.GetLocalPlayer()->index));

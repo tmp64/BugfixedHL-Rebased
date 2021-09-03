@@ -18,6 +18,7 @@
 #include "update_dialogs.h"
 #include "gameui/gameui_viewport.h"
 #include "engine_patches.h"
+#include "appversion.h"
 
 static CUpdateInstaller s_Instance;
 
@@ -1461,4 +1462,223 @@ void CUpdateInstaller::CleanUp() noexcept
 	m_UpdateDir.clear();
 	m_TempDir.clear();
 	m_InstallationPath.clear();
+}
+
+CON_COMMAND(bhl_validate_files, "Validates integrity of BugfixedHL files, may freeze the game for a bit")
+{
+	using nlohmann::json;
+
+	// Disconnect from the server so the command can't be abused for lagspiking
+	gEngfuncs.pfnClientCmd("disconnect\n");
+
+	// Print diagnostic info
+	ConPrintf(ConColor::Cyan, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+	ConPrintf(ConColor::Yellow, "BugfixedHL Rebased " APP_VERSION "\n");
+
+	ConPrintf("Binary version: " APP_VERSION);
+	if (IsDebug())
+		ConPrintf(" [Debug Build]");
+	ConPrintf("\n");
+
+	ConPrintf("Shared lib ext: " DLL_EXT_STRING "\n"); // Easy way to get OS type
+	ConPrintf("Engine: %s\n", gHUD.GetEngineVersion());
+	ConPrintf("Mod: %s\n", gEngfuncs.pfnGetGameDirectory());
+
+	fs::path modPath;
+	json metadata;
+
+	{
+		// Locate installation path
+		if (!g_pFullFileSystem->FileExists(UPDATE_METADATA_FILE))
+		{
+			ConPrintf(ConColor::Red, "%s doesn't exist.\n", UPDATE_METADATA_FILE);
+			return;
+		}
+
+		char localMetadataPath[1024];
+
+		if (!g_pFullFileSystem->GetLocalPath(UPDATE_METADATA_FILE, localMetadataPath, sizeof(localMetadataPath)))
+		{
+			ConPrintf(ConColor::Red, "GetLocalPath failed.\n");
+			return;
+		}
+
+		fs::path metadataPath = fs::u8path(localMetadataPath);
+		if (metadataPath.empty())
+		{
+			ConPrintf(ConColor::Red, "metadataPath is empty.\n");
+			return;
+		}
+
+		modPath = metadataPath.parent_path();
+
+		ConPrintf("BHL location: %s\n", modPath.filename().u8string().c_str());
+
+		// Read metadata
+		FileHandle_t metadataFile = g_pFullFileSystem->Open(UPDATE_METADATA_FILE, "r");
+
+		if (metadataFile == FILESYSTEM_INVALID_HANDLE)
+		{
+			ConPrintf(ConColor::Red, "Failed to open metadata file " UPDATE_METADATA_FILE "\n");
+			return;
+		}
+
+		std::vector<char> metadataContents(g_pFullFileSystem->Size(metadataFile) + 1);
+		int bytesRead = g_pFullFileSystem->Read(metadataContents.data(), metadataContents.size() - 1, metadataFile);
+		metadataContents[bytesRead] = '\0';
+		g_pFullFileSystem->Close(metadataFile);
+
+		try
+		{
+			metadata = nlohmann::json::parse(metadataContents.data());
+		}
+		catch (const std::exception &e)
+		{
+			ConPrintf(ConColor::Red, "Failed to parse metadata file:\n%s\n", e.what());
+			return;
+		}
+	}
+
+	int filesChecked = 0;
+	int filesFailed = 0;
+	int filesPassed = 0;
+
+	try
+	{
+		// Print version of metadata
+		ConPrintf("Metadata version: %s\n", metadata.at("version").get<std::string>().c_str());
+
+		// Validate all files in the metadata
+		ConPrintf(ConColor::Yellow, "Validating files...\n");
+
+		for (auto &file : metadata.at("files").get<json::object_t>())
+		{
+			const std::string &filename = file.first;
+
+			// Validate file name
+			if (filename.find("..") != filename.npos)
+				throw std::runtime_error("file " + filename + " points outside mod dir");
+
+			// Hash and size
+			std::vector<uint8_t> metaHash = HexStringToBytes(file.second.at("hash_sha1").get<std::string>());
+			uint64_t metaSize = file.second.at("size").get<uint64_t>();
+
+			if (metaHash.size() != SHA1_HASH_SIZE)
+				throw std::runtime_error("file " + filename + " has invalid hash in metadata");
+
+			// User modifiable flag
+			bool isUserMod = false;
+			auto userModifiableIt = file.second.find("user_modifiable");
+
+			if (userModifiableIt != file.second.end())
+				isUserMod = userModifiableIt->get<bool>();
+
+			// Get all possible paths to the file
+			fs::path realPath = modPath / fs::path(filename);
+			bool realPathExists = fs::exists(realPath);
+
+			char vfsPath[MAX_PATH];
+			bool vfsPathExists = g_pFullFileSystem->GetLocalPath(filename.c_str(), vfsPath, sizeof(vfsPath));
+
+			bool isValid = false;
+
+			if (!realPathExists && !vfsPathExists)
+			{
+				ConPrintf("%s is missing\n", filename.c_str());
+			}
+			else if (realPathExists != vfsPathExists)
+			{
+				if (realPathExists)
+				{
+					ConPrintf("%s only exists in real file system\n", filename.c_str());
+					ConPrintf("    %s\n", realPath.u8string().c_str());
+				}
+				else
+				{
+					ConPrintf("%s only exists in virtual file system\n", filename.c_str());
+					ConPrintf("    %s\n", vfsPath);
+				}
+			}
+			else
+			{
+				// Both files exist
+				fs::path vfsPathAsPath = fs::u8path(vfsPath);
+
+				if (!fs::equivalent(realPath, fs::u8path(vfsPath)))
+				{
+					ConPrintf("%s points to two different files\n", filename.c_str());
+					ConPrintf("    Real: %s\n", realPath.u8string().c_str());
+					ConPrintf("    Virtual: %s\n", vfsPath);
+				}
+				else
+				{
+					bool isModified = false;
+
+					// Compare sizes
+					uint64_t realSize = fs::file_size(realPath);
+
+					if (realSize != metaSize)
+					{
+						isModified = true;
+					}
+					else
+					{
+						std::ifstream file;
+						file.exceptions(std::ios::badbit | std::ios::failbit);
+						file.open(realPath, std::ios::in | std::ios::binary);
+						std::vector<uint8_t> realHash = CalcFileSHA1(file);
+
+						if (realHash != metaHash)
+							isModified = true;
+					}
+
+					if (isModified)
+					{
+						if (isUserMod)
+						{
+							ConPrintf("%s is user-modified\n", filename.c_str());
+							isValid = true;
+						}
+						else
+						{
+							ConPrintf("%s is modified\n", filename.c_str());
+						}
+					}
+					else
+					{
+						isValid = true;
+					}
+				}
+			}
+
+			if (isValid)
+				filesPassed++;
+			else
+				filesFailed++;
+			filesChecked++;
+		}
+	}
+	catch (const std::exception &e)
+	{
+		ConPrintf(ConColor::Red, "Metadata corrupted:\n%s\n", e.what());
+		return;
+	}
+
+	ConPrintf("\n");
+
+	if (filesPassed + filesFailed != filesChecked)
+	{
+		ConPrintf(ConColor::Red, "File number mismatch: %d + %d != %d\nThis should never happen.\n", filesPassed, filesFailed, filesChecked);
+	}
+
+	if (filesFailed == 0)
+	{
+		ConPrintf("All %d files validated successfully.\n", filesChecked);
+	}
+	else
+	{
+		ConPrintf("%d/%d files are corrupted or missing.\n", filesFailed, filesChecked);
+	}
+
+	ConPrintf(ConColor::Cyan, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 }

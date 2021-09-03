@@ -240,6 +240,7 @@ int CL_DLLEXPORT HUD_VidInit(void)
 	g_StudioRenderer.InitOnConnect();
 	PM_ResetBHopDetection();
 	CResults::Get().Stop();
+	GetClientVoiceMgr()->VidInit();
 
 	return 1;
 }

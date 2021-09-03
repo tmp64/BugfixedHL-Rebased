@@ -233,6 +233,12 @@ void CVoiceStatus::CreateEntities()
 
 void CVoiceStatus::UpdateSpeakerStatus(int entindex, qboolean bTalking)
 {
+	if (!m_VoiceHeadModel)
+	{
+		// gEngfuncs.GetLocalPlayer() returns garbage before VidInit
+		return;
+	}
+
 	cvar_t *pVoiceLoopback = NULL;
 
 	if (voice_clientdebug.GetBool())

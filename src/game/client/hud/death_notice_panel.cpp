@@ -46,6 +46,11 @@ void CHudDeathNoticePanel::Think()
 	{
 		SetVisible(shouldBeVisible);
 		m_iEntryCount = 0;
+
+		if (shouldBeVisible)
+			m_iFlags &= ~HUD_ACTIVE; // Disable HUD Think since it will be called from VGUI
+		else
+			m_iFlags |= HUD_ACTIVE; // Enable Think from HUD to update visibility
 	}
 
 	if (shouldBeVisible)

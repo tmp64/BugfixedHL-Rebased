@@ -65,7 +65,9 @@ void CUpdateNotificationDialog::PerformLayout()
 		maxPosX = max(maxPosX, x + m_pNewVersionTextLabel->GetWide());
 
 		m_pOldVersionLabel->SetPos(maxPosX, m_pOldVersionTextLabel->GetYPos());
+		m_pOldVersionLabel->SetTall(m_pOldVersionTextLabel->GetTall());
 		m_pNewVersionLabel->SetPos(maxPosX, m_pNewVersionTextLabel->GetYPos());
+		m_pNewVersionLabel->SetTall(m_pNewVersionTextLabel->GetTall());
 	}
 
 	// Resize change log to fill almost whole frame
@@ -110,6 +112,8 @@ void CUpdateNotificationDialog::Activate()
 	m_pOldVersionLabel->SizeToContents();
 	m_pNewVersionLabel->SetText(VerToString(CUpdateChecker::Get().GetLatestVersion()));
 	m_pNewVersionLabel->SizeToContents();
+
+	InvalidateLayout(); // Update label position and size
 
 	const std::string &changelog = CUpdateChecker::Get().GetChangelog();
 	std::vector<char> buf(changelog.size() + 1);

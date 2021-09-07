@@ -18,7 +18,7 @@ typedef struct cvar_s cvar_t;
 class CHudElem
 {
 public:
-	int m_iFlags; // active, moving,
+	int m_iFlags = 0; // active, moving,
 
 	virtual ~CHudElem();
 

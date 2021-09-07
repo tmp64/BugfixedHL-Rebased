@@ -102,9 +102,7 @@ CAboutSubOptions::CAboutSubOptions(vgui2::Panel *parent)
 	m_pLatestVerTextLabel = new vgui2::Label(this, "LatestVerTextLabel", "#BHL_AdvOptions_About_NewVersion");
 	m_pLatestVerLabel = new vgui2::Label(this, "LatestVerLabel", "#BHL_AdvOptions_About_NoUpdater");
 	m_pUpdateLabel = new vgui2::Label(this, "UpdateLable", "#BHL_AdvOptions_About_NewUpdate");
-	m_pUpdate2Label = new vgui2::Label(this, "Update2Lable", "#BHL_AdvOptions_About_NewUpdate2");
 	m_pCheckUpdatesButton = new vgui2::Button(this, "CheckUpdatesButton", "#BHL_AdvOptions_About_Check", this, "CheckUpd");
-	m_pChangelogButton = new vgui2::Button(this, "ChangelogButton", "#BHL_AdvOptions_About_Changelog", this, "Changelog");
 
 	m_pGitHubLink = new vgui2::URLLabel(this, "GitHubLink", "#BHL_AdvOptions_About_GitHub", "URL goes here");
 	m_pAghlLink = new vgui2::URLLabel(this, "AghlLink", "#BHL_AdvOptions_About_AGHL", "URL goes here");
@@ -128,7 +126,6 @@ void CAboutSubOptions::ApplySchemeSettings(vgui2::IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 	m_pUpdateLabel->SetFgColor(m_GreenColor);
-	m_pUpdate2Label->SetFgColor(m_GreenColor);
 }
 
 void CAboutSubOptions::PerformLayout()
@@ -219,9 +216,7 @@ void CAboutSubOptions::UpdateControls()
 #if !USE_UPDATER
 	m_pLatestVerLabel->SetText("#BHL_AdvOptions_About_NoUpdater");
 	m_pUpdateLabel->SetVisible(false);
-	m_pUpdate2Label->SetVisible(false);
 	m_pCheckUpdatesButton->SetEnabled(false);
-	m_pChangelogButton->SetEnabled(false);
 #else
 	m_pCheckUpdatesButton->SetEnabled(true);
 
@@ -242,22 +237,16 @@ void CAboutSubOptions::UpdateControls()
 		if (latestVer > m_GameVer)
 		{
 			m_pUpdateLabel->SetVisible(true);
-			m_pUpdate2Label->SetVisible(true);
-			m_pChangelogButton->SetEnabled(true);
 		}
 		else
 		{
 			m_pUpdateLabel->SetVisible(false);
-			m_pUpdate2Label->SetVisible(false);
-			m_pChangelogButton->SetEnabled(false);
 		}
 	}
 	else
 	{
 		m_pLatestVerLabel->SetText("#BHL_AdvOptions_About_Unknown");
 		m_pUpdateLabel->SetVisible(false);
-		m_pUpdate2Label->SetVisible(false);
-		m_pChangelogButton->SetEnabled(false);
 	}
 #endif
 }

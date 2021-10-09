@@ -97,6 +97,11 @@ ConVar cl_viewmodel_ofs_up("cl_viewmodel_ofs_up", "0", FCVAR_BHL_ARCHIVE, "Viewm
 
 ConVar cl_bob_angled("cl_bob_angled", "0", FCVAR_BHL_ARCHIVE, "Enables the angled viewmodel bobbing");
 
+ConVar cl_rollangle("cl_rollangle", "0", FCVAR_BHL_ARCHIVE, "Max viewroll angle");
+ConVar cl_rollspeed("cl_rollspeed", "200", FCVAR_BHL_ARCHIVE, "Max viewroll speed");
+
+ConVar cl_viewheight_mode("cl_viewheight_mode", "0", FCVAR_BHL_ARCHIVE, "Adjusts the viewheight to be correct on older HLSDK servers");
+
 // These cvars are not registered (so users can't cheat), so set the ->value field directly
 // Register these cvars in V_Init() if needed for easy tweaking
 cvar_t v_iyaw_cycle = { "v_iyaw_cycle", "2", 0, 2 };
@@ -141,7 +146,7 @@ void V_InterpolateAngles( float *start, float *end, float *output, float frac )
 	int i;
 	float ang1, ang2;
 	float d;
-	
+
 	V_NormalizeAngles( start );
 	V_NormalizeAngles( end );
 
@@ -156,7 +161,7 @@ void V_InterpolateAngles( float *start, float *end, float *output, float frac )
 			d -= 360;
 		}
 		else if ( d < -180 )
-		{	
+		{
 			d += 360;
 		}
 
@@ -366,10 +371,10 @@ void V_DriftPitch(struct ref_params_s *pparams)
 	}
 }
 
-/* 
-============================================================================== 
-						VIEW RENDERING 
-============================================================================== 
+/*
+==============================================================================
+						VIEW RENDERING
+==============================================================================
 */
 
 /*
@@ -426,6 +431,8 @@ void V_CalcViewRoll(struct ref_params_s *pparams)
 	viewentity = gEngfuncs.GetEntityByIndex(pparams->viewentity);
 	if (!viewentity)
 		return;
+
+	pparams->viewangles[ROLL] = V_CalcRoll(pparams->viewangles, pparams->simvel, cl_rollangle.GetFloat(), cl_rollspeed.GetFloat()) * 4;
 
 	side = V_CalcRoll(viewentity->angles, pparams->simvel, pparams->movevars->rollangle, pparams->movevars->rollspeed);
 
@@ -980,7 +987,7 @@ void V_GetChaseOrigin(float *angles, float *origin, float distance, float *retur
 
 	/*	if ( ent )
 	{
-		gEngfuncs.Con_Printf("Trace loops %i , entity %i, model %s, solid %i\n",(8-maxLoops),ent->curstate.number, ent->model->name , ent->curstate.solid ); 
+		gEngfuncs.Con_Printf("Trace loops %i , entity %i, model %s, solid %i\n",(8-maxLoops),ent->curstate.number, ent->model->name , ent->curstate.solid );
 	} */
 
 	VectorMA(trace->endpos, 4, trace->plane.normal, returnvec);
@@ -990,7 +997,7 @@ void V_GetChaseOrigin(float *angles, float *origin, float distance, float *retur
 
 /*void V_GetDeathCam(cl_entity_t * ent1, cl_entity_t * ent2, float * angle, float * origin)
 {
-	float newAngle[3]; float newOrigin[3]; 
+	float newAngle[3]; float newOrigin[3];
 
 	float distance = 168.0f;
 
@@ -1024,7 +1031,7 @@ void V_GetChaseOrigin(float *angles, float *origin, float distance, float *retur
 
 	// and smooth view
 	V_SmoothInterpolateAngles( v_lastAngles, newAngle, angle, 120.0f );
-			
+
 	V_GetChaseOrigin( angle, newOrigin, distance, origin );
 
 	VectorCopy(angle, v_lastAngles);
@@ -1521,7 +1528,25 @@ void V_CalcSpectatorRefdef(struct ref_params_s *pparams)
 		// predict missing client data and set weapon model ( in HLTV mode or inset in eye mode or in AG )
 		if (gEngfuncs.IsSpectateOnly() || gHUD.IsAG())
 		{
-			V_GetInEyePos(g_iUser2, pparams->simorg, pparams->cl_viewangles);
+			if (cl_viewheight_mode.GetBool() && (CHudSpectator::Get()->m_pip->value == INSET_IN_EYE || g_iUser1 == OBS_IN_EYE))
+			{
+				// In the latest HLSDK some observer stuff is performed serverside which ends up
+				// adding some extra viewheight when spectating in first person mode, so use
+				// cl_viewheight_mode 1 to avoid the extra viewheight
+
+				// Get eye position and angles
+				VectorCopy (ent->origin, pparams->simorg);
+				VectorCopy (ent->angles, pparams->cl_viewangles);
+
+				pparams->cl_viewangles[PITCH] *= -3.0f; // see CL_ProcessEntityUpdate()
+
+				if (ent->curstate.solid == SOLID_NOT)
+					pparams->cl_viewangles[ROLL] = 80; // dead view angle
+			}
+			else
+			{
+				V_GetInEyePos(g_iUser2, pparams->simorg, pparams->cl_viewangles);
+			}
 
 			pparams->health = 1;
 

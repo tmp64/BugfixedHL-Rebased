@@ -36,6 +36,8 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_pJumpSpeedCheckbox = new CCvarCheckButton(this, "JumpSpeedCheckbox", "#BHL_AdvOptions_HUD_JumpSpeed", "hud_jumpspeed");
 	m_pJumpSpeedCrossCheckbox = new CCvarCheckButton(this, "JumpSpeedCrossCheckbox", "#BHL_AdvOptions_HUD_JumpSpeedCross", "hud_jumpspeed_below_cross");
 
+	m_pDeathnoticeVGui = new CCvarCheckButton(this, "DeathnoticeCheckbox", "#BHL_AdvOptions_HUD_Deathnotice", "hud_deathnotice_vgui");
+
 	m_pTimerLabel = new vgui2::Label(this, "TimerLabel", "#BHL_AdvOptions_Hud_Timer");
 	m_pTimerBox = new vgui2::ComboBox(this, "TimerBox", 4, false);
 	m_TimerItems[0] = m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer0", new KeyValues("Off", "value", 0));
@@ -49,7 +51,10 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	// Client sprite renderer only works in hardware mode
 	CEnginePatches::Renderer renderer = CEnginePatches::Get().GetRenderer();
 	if (renderer != CEnginePatches::Renderer::OpenGL && renderer != CEnginePatches::Renderer::Direct3D)
+	{
 		m_pRenderCheckbox->SetEnabled(false);
+		m_pDeathnoticeVGui->SetEnabled(false);
+	}
 }
 
 void CHudSubOptions::PerformLayout()
@@ -92,6 +97,12 @@ void CHudSubOptions::OnResetData()
 	m_pSpeedCrossCheckbox->ResetData();
 	m_pJumpSpeedCheckbox->ResetData();
 	m_pJumpSpeedCrossCheckbox->ResetData();
+
+	if (m_pDeathnoticeVGui->IsEnabled())
+		m_pDeathnoticeVGui->ResetData();
+	else
+		m_pDeathnoticeVGui->SetSelected(false);
+
 	TimerResetData();
 }
 
@@ -110,6 +121,10 @@ void CHudSubOptions::OnApplyChanges()
 	m_pSpeedCrossCheckbox->ApplyChanges();
 	m_pJumpSpeedCheckbox->ApplyChanges();
 	m_pJumpSpeedCrossCheckbox->ApplyChanges();
+
+	if (m_pDeathnoticeVGui->IsEnabled())
+		m_pDeathnoticeVGui->ApplyChanges();
+
 	TimerApplyChanges();
 }
 

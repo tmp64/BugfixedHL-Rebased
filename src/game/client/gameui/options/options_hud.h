@@ -40,6 +40,8 @@ private:
 	CCvarCheckButton *m_pJumpSpeedCheckbox = nullptr;
 	CCvarCheckButton *m_pJumpSpeedCrossCheckbox = nullptr;
 
+	CCvarCheckButton *m_pDeathnoticeVGui = nullptr;
+
 	vgui2::Label *m_pTimerLabel = nullptr;
 	vgui2::ComboBox *m_pTimerBox = nullptr;
 	int m_TimerItems[4];

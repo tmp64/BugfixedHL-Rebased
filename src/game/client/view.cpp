@@ -146,7 +146,7 @@ void V_InterpolateAngles( float *start, float *end, float *output, float frac )
 	int i;
 	float ang1, ang2;
 	float d;
-
+	
 	V_NormalizeAngles( start );
 	V_NormalizeAngles( end );
 
@@ -161,7 +161,7 @@ void V_InterpolateAngles( float *start, float *end, float *output, float frac )
 			d -= 360;
 		}
 		else if ( d < -180 )
-		{
+		{	
 			d += 360;
 		}
 
@@ -371,10 +371,10 @@ void V_DriftPitch(struct ref_params_s *pparams)
 	}
 }
 
-/*
-==============================================================================
-						VIEW RENDERING
-==============================================================================
+/* 
+============================================================================== 
+						VIEW RENDERING 
+============================================================================== 
 */
 
 /*
@@ -987,7 +987,7 @@ void V_GetChaseOrigin(float *angles, float *origin, float distance, float *retur
 
 	/*	if ( ent )
 	{
-		gEngfuncs.Con_Printf("Trace loops %i , entity %i, model %s, solid %i\n",(8-maxLoops),ent->curstate.number, ent->model->name , ent->curstate.solid );
+		gEngfuncs.Con_Printf("Trace loops %i , entity %i, model %s, solid %i\n",(8-maxLoops),ent->curstate.number, ent->model->name , ent->curstate.solid ); 
 	} */
 
 	VectorMA(trace->endpos, 4, trace->plane.normal, returnvec);
@@ -997,7 +997,7 @@ void V_GetChaseOrigin(float *angles, float *origin, float distance, float *retur
 
 /*void V_GetDeathCam(cl_entity_t * ent1, cl_entity_t * ent2, float * angle, float * origin)
 {
-	float newAngle[3]; float newOrigin[3];
+	float newAngle[3]; float newOrigin[3]; 
 
 	float distance = 168.0f;
 
@@ -1031,7 +1031,7 @@ void V_GetChaseOrigin(float *angles, float *origin, float distance, float *retur
 
 	// and smooth view
 	V_SmoothInterpolateAngles( v_lastAngles, newAngle, angle, 120.0f );
-
+			
 	V_GetChaseOrigin( angle, newOrigin, distance, origin );
 
 	VectorCopy(angle, v_lastAngles);

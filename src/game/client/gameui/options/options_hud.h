@@ -27,6 +27,7 @@ private:
 	vgui2::Slider *m_pOpacitySlider = nullptr;
 	CCvarTextEntry *m_pOpacityValue = nullptr;
 
+	CCvarCheckButton *m_pRenderCheckbox = nullptr;
 	CCvarCheckButton *m_pDimCheckbox = nullptr;
 	CCvarCheckButton *m_pWeaponSpriteCheckbox = nullptr;
 	CCvarCheckButton *m_pViewmodelCheckbox = nullptr;
@@ -35,6 +36,9 @@ private:
 
 	CCvarCheckButton *m_pSpeedCheckbox = nullptr;
 	CCvarCheckButton *m_pSpeedCrossCheckbox = nullptr;
+
+	CCvarCheckButton *m_pJumpSpeedCheckbox = nullptr;
+	CCvarCheckButton *m_pJumpSpeedCrossCheckbox = nullptr;
 
 	vgui2::Label *m_pTimerLabel = nullptr;
 	vgui2::ComboBox *m_pTimerBox = nullptr;

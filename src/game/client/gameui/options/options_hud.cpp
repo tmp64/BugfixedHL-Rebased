@@ -9,6 +9,7 @@
 #include "cvar_color.h"
 #include "cvar_check_button.h"
 #include "hud.h"
+#include "engine_patches.h"
 
 CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
     : BaseClass(parent, "HudSubOptions")
@@ -22,6 +23,7 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_pOpacitySlider->SetValue(m_pOpacityValue->GetFloat() * 100.f);
 	m_pOpacitySlider->AddActionSignalTarget(this);
 
+	m_pRenderCheckbox = new CCvarCheckButton(this, "RenderCheckbox", "#BHL_AdvOptions_HUD_Render", "hud_client_renderer");
 	m_pDimCheckbox = new CCvarCheckButton(this, "DimCheckbox", "#BHL_AdvOptions_HUD_Dim", "hud_dim");
 	m_pViewmodelCheckbox = new CCvarCheckButton(this, "ViewmodelCheckbox", "#BHL_AdvOptions_HUD_Viewmodel", "r_drawviewmodel", true);
 	m_pWeaponSpriteCheckbox = new CCvarCheckButton(this, "WeaponSpriteCheckbox", "#BHL_AdvOptions_HUD_WeapSprite", "hud_weapon");
@@ -30,6 +32,9 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 
 	m_pSpeedCheckbox = new CCvarCheckButton(this, "SpeedCheckbox", "#BHL_AdvOptions_HUD_Speed", "hud_speedometer");
 	m_pSpeedCrossCheckbox = new CCvarCheckButton(this, "SpeedCrossCheckbox", "#BHL_AdvOptions_HUD_SpeedCross", "hud_speedometer_below_cross");
+
+	m_pJumpSpeedCheckbox = new CCvarCheckButton(this, "JumpSpeedCheckbox", "#BHL_AdvOptions_HUD_JumpSpeed", "hud_jumpspeed");
+	m_pJumpSpeedCrossCheckbox = new CCvarCheckButton(this, "JumpSpeedCrossCheckbox", "#BHL_AdvOptions_HUD_JumpSpeedCross", "hud_jumpspeed_below_cross");
 
 	m_pTimerLabel = new vgui2::Label(this, "TimerLabel", "#BHL_AdvOptions_Hud_Timer");
 	m_pTimerBox = new vgui2::ComboBox(this, "TimerBox", 4, false);
@@ -40,24 +45,43 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/HudSubOptions.res");
 	m_pOpacityLabel->MoveToFront(); // Obscured by the slider
+
+	// Client sprite renderer only works in hardware mode
+	CEnginePatches::Renderer renderer = CEnginePatches::Get().GetRenderer();
+	if (renderer != CEnginePatches::Renderer::OpenGL && renderer != CEnginePatches::Renderer::Direct3D)
+		m_pRenderCheckbox->SetEnabled(false);
 }
 
 void CHudSubOptions::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	int x, y;
+	int x, speedY, jumpY;
 	int wide, tall;
 
-	// Move speedometer_under_cross just after speedometer
-	m_pSpeedCheckbox->GetPos(x, y);
+	// Resize hud_speedometer
+	m_pSpeedCheckbox->GetPos(x, speedY);
 	m_pSpeedCheckbox->GetContentSize(wide, tall);
 	m_pSpeedCheckbox->SetWide(wide);
-	m_pSpeedCrossCheckbox->SetPos(x + 4 + wide, y);
+	int xpos = x + wide;
+
+	// Resize hud_jumpspeed
+	m_pJumpSpeedCheckbox->GetPos(x, jumpY);
+	m_pJumpSpeedCheckbox->GetContentSize(wide, tall);
+	m_pJumpSpeedCheckbox->SetWide(wide);
+	xpos = max(xpos, x + wide);
+
+	m_pSpeedCrossCheckbox->SetPos(xpos + 4, speedY);
+	m_pJumpSpeedCrossCheckbox->SetPos(xpos + 4, jumpY);
 }
 
 void CHudSubOptions::OnResetData()
 {
+	if (m_pRenderCheckbox->IsEnabled())
+		m_pRenderCheckbox->ResetData();
+	else
+		m_pRenderCheckbox->SetSelected(false);
+
 	m_pOpacityValue->ResetData();
 	m_pDimCheckbox->ResetData();
 	m_pViewmodelCheckbox->ResetData();
@@ -66,11 +90,16 @@ void CHudSubOptions::OnResetData()
 	m_pRainbowCvar->ResetData();
 	m_pSpeedCheckbox->ResetData();
 	m_pSpeedCrossCheckbox->ResetData();
+	m_pJumpSpeedCheckbox->ResetData();
+	m_pJumpSpeedCrossCheckbox->ResetData();
 	TimerResetData();
 }
 
 void CHudSubOptions::OnApplyChanges()
 {
+	if (m_pRenderCheckbox->IsEnabled())
+		m_pRenderCheckbox->ApplyChanges();
+
 	m_pOpacityValue->ApplyChanges();
 	m_pDimCheckbox->ApplyChanges();
 	m_pViewmodelCheckbox->ApplyChanges();
@@ -79,6 +108,8 @@ void CHudSubOptions::OnApplyChanges()
 	m_pRainbowCvar->ApplyChanges();
 	m_pSpeedCheckbox->ApplyChanges();
 	m_pSpeedCrossCheckbox->ApplyChanges();
+	m_pJumpSpeedCheckbox->ApplyChanges();
+	m_pJumpSpeedCrossCheckbox->ApplyChanges();
 	TimerApplyChanges();
 }
 

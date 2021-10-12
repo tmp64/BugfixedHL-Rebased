@@ -93,7 +93,9 @@
 		"color_icon_death"	"KF_Icon_Death"
 		"color_icon_teamkill"	"KF_Icon_Teamkiill"
 		
-		// Default name color
-		"default_name_color"	"Orange"
+		// No-team name colors
+		"default_name_color"		"Orange"
+		"default_name_color_kill"	"OffWhite"
+		"default_name_color_death"	"OffWhite"
 	}
 }

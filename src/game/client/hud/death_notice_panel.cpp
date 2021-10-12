@@ -91,6 +91,19 @@ void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *kille
 	if (!strcmp(killedwith, "d_teammate"))
 		e.bIsTeamKill = true;
 
+	Color nameColor = m_ColorNameDefault;
+
+	if (victimId == thisPlayerId)
+	{
+		e.type = EntryType::Death;
+		nameColor = m_ColorNameDeath;
+	}
+	else if (killerId == thisPlayerId)
+	{
+		e.type = EntryType::Kill;
+		nameColor = m_ColorNameKill;
+	}
+
 	// Fill killer info
 	if (killer && !e.bIsSuicide)
 	{
@@ -99,10 +112,7 @@ void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *kille
 		e.iKillerLen /= sizeof(wchar_t);
 		e.iKillerLen--; // L'\0'
 		e.iKillerWide = GetColoredTextWide(e.wszKiller, e.iKillerLen);
-		e.killerColor = gHUD.GetClientColor(killerId, m_ColorNameDefault);
-
-		if (killerId == thisPlayerId)
-			e.type = EntryType::Kill;
+		e.killerColor = gHUD.GetClientColor(killerId, nameColor);
 	}
 
 	// Fill victim info
@@ -113,10 +123,7 @@ void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *kille
 		e.iVictimLen /= sizeof(wchar_t);
 		e.iVictimLen--; // L'\0'
 		e.iVictimWide = GetColoredTextWide(e.wszVictim, e.iVictimLen);
-		e.victimColor = gHUD.GetClientColor(victimId, m_ColorNameDefault);
-
-		if (victimId == thisPlayerId)
-			e.type = EntryType::Death;
+		e.victimColor = gHUD.GetClientColor(victimId, nameColor);
 	}
 
 	// Expiration time

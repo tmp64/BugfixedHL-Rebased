@@ -24,9 +24,9 @@ public:
 private:
 	enum class EntryType : uint8_t
 	{
-		Other,
-		Kill,
-		Death
+		Other, //!< Other players
+		Kill, //!< Kill of this player
+		Death, //!< Death of this player
 	};
 
 	struct Entry
@@ -69,6 +69,8 @@ private:
 	CPanelAnimationVar(Color, m_ColorIconTK, "color_icon_teamkill", "10 240 10 255");
 
 	CPanelAnimationVar(Color, m_ColorNameDefault, "default_name_color", "Orange");
+	CPanelAnimationVar(Color, m_ColorNameKill, "default_name_color_kill", "Orange");
+	CPanelAnimationVar(Color, m_ColorNameDeath, "default_name_color_death", "Orange");
 
 	int m_iRowTall = 0;
 

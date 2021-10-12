@@ -54,7 +54,7 @@ Scheme
 		"KF_Background_Kill"	"255 119 0 96"
 		"KF_Background_Death"	"255 0 0 96"
 		"KF_Icon"				"255 80 0 255"
-		"KF_Icon_Kill"			"255 80 0 255"
+		"KF_Icon_Kill"			"241 237 212 255"
 		"KF_Icon_Death"			"241 237 212 255"
 		"KF_Icon_Teamkiill"		"10 240 10 255"
 	}

@@ -22,18 +22,6 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_pOpacitySlider->SetValue(m_pOpacityValue->GetFloat() * 100.f);
 	m_pOpacitySlider->AddActionSignalTarget(this);
 
-	m_pColorLabel[0] = new vgui2::Label(this, "ColorLabel", "#BHL_AdvOptions_HUD_Color");
-	m_pColorValue[0] = new CCvarColor(this, "ColorValue", "hud_color", "#BHL_AdvOptions_HUD_Color_Title");
-
-	m_pColorLabel[1] = new vgui2::Label(this, "Color1Label", "#BHL_AdvOptions_HUD_Color1");
-	m_pColorValue[1] = new CCvarColor(this, "Color1Value", "hud_color1", "#BHL_AdvOptions_HUD_Color1_Title");
-
-	m_pColorLabel[2] = new vgui2::Label(this, "Color2Label", "#BHL_AdvOptions_HUD_Color2");
-	m_pColorValue[2] = new CCvarColor(this, "Color2Value", "hud_color2", "#BHL_AdvOptions_HUD_Color2_Title");
-
-	m_pColorLabel[3] = new vgui2::Label(this, "Color3Label", "#BHL_AdvOptions_HUD_Color3");
-	m_pColorValue[3] = new CCvarColor(this, "Color3Value", "hud_color3", "#BHL_AdvOptions_HUD_Color3_Title");
-
 	m_pDimCheckbox = new CCvarCheckButton(this, "DimCheckbox", "#BHL_AdvOptions_HUD_Dim", "hud_dim");
 	m_pViewmodelCheckbox = new CCvarCheckButton(this, "ViewmodelCheckbox", "#BHL_AdvOptions_HUD_Viewmodel", "r_drawviewmodel", true);
 	m_pWeaponSpriteCheckbox = new CCvarCheckButton(this, "WeaponSpriteCheckbox", "#BHL_AdvOptions_HUD_WeapSprite", "hud_weapon");
@@ -54,13 +42,23 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_pOpacityLabel->MoveToFront(); // Obscured by the slider
 }
 
+void CHudSubOptions::PerformLayout()
+{
+	BaseClass::PerformLayout();
+
+	int x, y;
+	int wide, tall;
+
+	// Move speedometer_under_cross just after speedometer
+	m_pSpeedCheckbox->GetPos(x, y);
+	m_pSpeedCheckbox->GetContentSize(wide, tall);
+	m_pSpeedCheckbox->SetWide(wide);
+	m_pSpeedCrossCheckbox->SetPos(x + 4 + wide, y);
+}
+
 void CHudSubOptions::OnResetData()
 {
 	m_pOpacityValue->ResetData();
-	m_pColorValue[0]->ResetData();
-	m_pColorValue[1]->ResetData();
-	m_pColorValue[2]->ResetData();
-	m_pColorValue[3]->ResetData();
 	m_pDimCheckbox->ResetData();
 	m_pViewmodelCheckbox->ResetData();
 	m_pWeaponSpriteCheckbox->ResetData();
@@ -74,10 +72,6 @@ void CHudSubOptions::OnResetData()
 void CHudSubOptions::OnApplyChanges()
 {
 	m_pOpacityValue->ApplyChanges();
-	m_pColorValue[0]->ApplyChanges();
-	m_pColorValue[1]->ApplyChanges();
-	m_pColorValue[2]->ApplyChanges();
-	m_pColorValue[3]->ApplyChanges();
 	m_pDimCheckbox->ApplyChanges();
 	m_pViewmodelCheckbox->ApplyChanges();
 	m_pWeaponSpriteCheckbox->ApplyChanges();

@@ -7,7 +7,7 @@
 #include "hud.h"
 #include "cl_util.h"
 
-#include "options_hud.h"
+#include "options_hud_root.h"
 #include "options_models.h"
 #include "options_chat.h"
 #include "options_crosshair.h"
@@ -37,7 +37,7 @@ CAdvOptionsDialog::CAdvOptionsDialog(vgui2::Panel *pParent)
 	SetTitle("#BHL_AdvOptions", true);
 
 	AddPage(new CGeneralSubOptions(this), "#BHL_AdvOptions_General");
-	AddPage(new CHudSubOptions(this), "#BHL_AdvOptions_HUD");
+	AddPage(new CHudSubOptionsRoot(this), "#BHL_AdvOptions_HUD");
 	AddPage(new CChatSubOptions(this), "#BHL_AdvOptions_Chat");
 	AddPage(new CScoreboardSubOptions(this), "#BHL_AdvOptions_Scores");
 	AddPage(new CCrosshairSubOptions(this), "#BHL_AdvOptions_Cross");

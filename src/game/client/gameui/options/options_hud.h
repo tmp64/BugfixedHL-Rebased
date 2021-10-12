@@ -9,7 +9,6 @@ class Slider;
 }
 
 class CCvarTextEntry;
-class CCvarColor;
 class CCvarCheckButton;
 
 class CHudSubOptions : public vgui2::PropertyPage
@@ -19,16 +18,14 @@ class CHudSubOptions : public vgui2::PropertyPage
 public:
 	CHudSubOptions(vgui2::Panel *parent);
 
-	virtual void OnResetData();
-	virtual void OnApplyChanges();
+	void PerformLayout() override;
+	void OnResetData() override;
+	void OnApplyChanges() override;
 
 private:
 	vgui2::Label *m_pOpacityLabel = nullptr;
 	vgui2::Slider *m_pOpacitySlider = nullptr;
 	CCvarTextEntry *m_pOpacityValue = nullptr;
-
-	vgui2::Label *m_pColorLabel[4];
-	CCvarColor *m_pColorValue[4];
 
 	CCvarCheckButton *m_pDimCheckbox = nullptr;
 	CCvarCheckButton *m_pWeaponSpriteCheckbox = nullptr;

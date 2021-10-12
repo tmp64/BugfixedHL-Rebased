@@ -34,6 +34,9 @@ private:
 	CCvarTextEntry *m_pEnemyColors = nullptr;
 	CCvarTextEntry *m_pTeamColors = nullptr;
 	CCvarCheckButton *m_pHideCorpses = nullptr;
+	CCvarCheckButton *m_pLeftHand = nullptr;
+	CCvarCheckButton *m_pAngledBob = nullptr;
+	CCvarCheckButton *m_pNoShells = nullptr;
 
 	int m_iNewItemIdx = 0;
 

@@ -32,6 +32,9 @@ CModelSubOptions::CModelSubOptions(vgui2::Panel *parent)
 	m_pEnemyColors = new CCvarTextEntry(this, "EnemyColors", "cl_forceenemycolors");
 	m_pTeamColors = new CCvarTextEntry(this, "TeamColors", "cl_forceteammatescolors");
 	m_pHideCorpses = new CCvarCheckButton(this, "HideCorpses", "#BHL_AdvOptions_Models_HideCorpses", "cl_hidecorpses");
+	m_pLeftHand = new CCvarCheckButton(this, "LeftHand", "#BHL_AdvOptions_Models_LeftHand", "cl_righthand");
+	m_pAngledBob = new CCvarCheckButton(this, "AngledBob", "#BHL_AdvOptions_Models_AngledBob", "cl_bob_angled");
+	m_pNoShells = new CCvarCheckButton(this, "NoShells", "#BHL_AdvOptions_Models_NoShells", "cl_noshells");
 
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/ModelSubOptions.res");
 }
@@ -92,6 +95,9 @@ void CModelSubOptions::OnResetData()
 	m_pEnemyColors->ResetData();
 	m_pTeamColors->ResetData();
 	m_pHideCorpses->ResetData();
+	m_pLeftHand->ResetData();
+	m_pAngledBob->ResetData();
+	m_pNoShells->ResetData();
 }
 
 void CModelSubOptions::OnApplyChanges()
@@ -101,6 +107,9 @@ void CModelSubOptions::OnApplyChanges()
 	m_pEnemyColors->ApplyChanges();
 	m_pTeamColors->ApplyChanges();
 	m_pHideCorpses->ApplyChanges();
+	m_pLeftHand->ApplyChanges();
+	m_pAngledBob->ApplyChanges();
+	m_pNoShells->ApplyChanges();
 }
 
 void CModelSubOptions::ParseEnemyModels()

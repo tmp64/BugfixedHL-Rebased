@@ -9,7 +9,7 @@
 #include "cvar_color.h"
 #include "cvar_check_button.h"
 #include "hud.h"
-#include "engine_patches.h"
+#include "hud_renderer.h"
 
 CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
     : BaseClass(parent, "HudSubOptions")
@@ -49,8 +49,7 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_pOpacityLabel->MoveToFront(); // Obscured by the slider
 
 	// Client sprite renderer only works in hardware mode
-	CEnginePatches::Renderer renderer = CEnginePatches::Get().GetRenderer();
-	if (renderer != CEnginePatches::Renderer::OpenGL && renderer != CEnginePatches::Renderer::Direct3D)
+	if (CHudRenderer::Get().IsAvailable())
 	{
 		m_pRenderCheckbox->SetEnabled(false);
 		m_pDeathnoticeVGui->SetEnabled(false);

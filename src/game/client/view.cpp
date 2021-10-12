@@ -1535,8 +1535,8 @@ void V_CalcSpectatorRefdef(struct ref_params_s *pparams)
 				// cl_viewheight_mode 1 to avoid the extra viewheight
 
 				// Get eye position and angles
-				VectorCopy (ent->origin, pparams->simorg);
-				VectorCopy (ent->angles, pparams->cl_viewangles);
+				VectorCopy(ent->origin, pparams->simorg);
+				VectorCopy(ent->angles, pparams->cl_viewangles);
 
 				pparams->cl_viewangles[PITCH] *= -3.0f; // see CL_ProcessEntityUpdate()
 

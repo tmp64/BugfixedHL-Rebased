@@ -100,8 +100,6 @@ ConVar cl_bob_angled("cl_bob_angled", "0", FCVAR_BHL_ARCHIVE, "Enables the angle
 ConVar cl_rollangle("cl_rollangle", "0", FCVAR_BHL_ARCHIVE, "Max viewroll angle");
 ConVar cl_rollspeed("cl_rollspeed", "200", FCVAR_BHL_ARCHIVE, "Max viewroll speed");
 
-ConVar cl_viewheight_mode("cl_viewheight_mode", "0", FCVAR_BHL_ARCHIVE, "Adjusts the viewheight to be correct on older HLSDK servers");
-
 // These cvars are not registered (so users can't cheat), so set the ->value field directly
 // Register these cvars in V_Init() if needed for easy tweaking
 cvar_t v_iyaw_cycle = { "v_iyaw_cycle", "2", 0, 2 };
@@ -1528,25 +1526,7 @@ void V_CalcSpectatorRefdef(struct ref_params_s *pparams)
 		// predict missing client data and set weapon model ( in HLTV mode or inset in eye mode or in AG )
 		if (gEngfuncs.IsSpectateOnly() || gHUD.IsAG())
 		{
-			if (cl_viewheight_mode.GetBool() && (CHudSpectator::Get()->m_pip->value == INSET_IN_EYE || g_iUser1 == OBS_IN_EYE))
-			{
-				// In the latest HLSDK some observer stuff is performed serverside which ends up
-				// adding some extra viewheight when spectating in first person mode, so use
-				// cl_viewheight_mode 1 to avoid the extra viewheight
-
-				// Get eye position and angles
-				VectorCopy(ent->origin, pparams->simorg);
-				VectorCopy(ent->angles, pparams->cl_viewangles);
-
-				pparams->cl_viewangles[PITCH] *= -3.0f; // see CL_ProcessEntityUpdate()
-
-				if (ent->curstate.solid == SOLID_NOT)
-					pparams->cl_viewangles[ROLL] = 80; // dead view angle
-			}
-			else
-			{
-				V_GetInEyePos(g_iUser2, pparams->simorg, pparams->cl_viewangles);
-			}
+			V_GetInEyePos(g_iUser2, pparams->simorg, pparams->cl_viewangles);
 
 			pparams->health = 1;
 

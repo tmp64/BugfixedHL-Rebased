@@ -65,9 +65,21 @@ void CGameUIViewport::OnThink()
 
 	if (m_bPreventEscape || m_iDelayedPreventEscapeFrame == gHUD.GetFrameCount())
 	{
-		g_pBaseUI->HideGameUI();
+		const char *levelName = gEngfuncs.pfnGetLevelName();
 
-		// Hiding GameUI doesn't update the mouse cursor
-		g_pVGuiSurface->CalculateMouseVisible();
+		if (levelName && levelName[0])
+		{
+			g_pBaseUI->HideGameUI();
+
+			// Hiding GameUI doesn't update the mouse cursor
+			g_pVGuiSurface->CalculateMouseVisible();
+		}
+		else
+		{
+			// Disconnected from the server while prevent escape is enabled
+			// Disable it
+			m_bPreventEscape = false;
+			m_iDelayedPreventEscapeFrame = 0;
+		}
 	}
 }

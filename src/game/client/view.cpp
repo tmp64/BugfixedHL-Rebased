@@ -97,6 +97,9 @@ ConVar cl_viewmodel_ofs_up("cl_viewmodel_ofs_up", "0", FCVAR_BHL_ARCHIVE, "Viewm
 
 ConVar cl_bob_angled("cl_bob_angled", "0", FCVAR_BHL_ARCHIVE, "Enables the angled viewmodel bobbing");
 
+ConVar cl_rollangle("cl_rollangle", "0", FCVAR_BHL_ARCHIVE, "Max viewroll angle");
+ConVar cl_rollspeed("cl_rollspeed", "200", FCVAR_BHL_ARCHIVE, "Max viewroll speed");
+
 // These cvars are not registered (so users can't cheat), so set the ->value field directly
 // Register these cvars in V_Init() if needed for easy tweaking
 cvar_t v_iyaw_cycle = { "v_iyaw_cycle", "2", 0, 2 };
@@ -426,6 +429,8 @@ void V_CalcViewRoll(struct ref_params_s *pparams)
 	viewentity = gEngfuncs.GetEntityByIndex(pparams->viewentity);
 	if (!viewentity)
 		return;
+
+	pparams->viewangles[ROLL] = V_CalcRoll(pparams->viewangles, pparams->simvel, cl_rollangle.GetFloat(), cl_rollspeed.GetFloat()) * 4;
 
 	side = V_CalcRoll(viewentity->angles, pparams->simvel, pparams->movevars->rollangle, pparams->movevars->rollspeed);
 

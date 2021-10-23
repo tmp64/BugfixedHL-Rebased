@@ -842,7 +842,7 @@ void CStudioModelRenderer::StudioSetupBones(void)
 			if ((disableAnims & VMHLTV_SHOOT
 			        && (strstr(pseqdesc->label, "shoot") || strstr(pseqdesc->label, "Shoot") || strstr(pseqdesc->label, "fire") || strstr(pseqdesc->label, "spin")))
 			    || (disableAnims & VMHLTV_EQUIP
-			        && (strstr(pseqdesc->label, "holster") || strstr(pseqdesc->label, "draw") || strstr(pseqdesc->label, "deploy")))
+			        && (strstr(pseqdesc->label, "holster") || strstr(pseqdesc->label, "draw") || strstr(pseqdesc->label, "deploy") || strstr(pseqdesc->label, "up") || strstr(pseqdesc->label, "down")))
 			    || (disableAnims & VMHLTV_RELOAD
 			        && (strstr(pseqdesc->label, "reload") || strstr(pseqdesc->label, "pump"))))
 			{

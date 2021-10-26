@@ -16,8 +16,7 @@ CHudRenderer &CHudRenderer::Get()
 
 bool CHudRenderer::IsAvailable()
 {
-	auto renderer = CEnginePatches::Get().GetRenderer();
-	return renderer == CEnginePatches::Renderer::OpenGL || renderer == CEnginePatches::Renderer::Direct3D;
+	return CEnginePatches::Get().GetRenderer() == CEnginePatches::Renderer::OpenGL;
 }
 
 void CHudRenderer::HookFuncs()

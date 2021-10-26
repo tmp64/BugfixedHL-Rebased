@@ -192,8 +192,20 @@ void CL_DLLEXPORT HUD_PlayerMove(struct playermove_s *ppmove, int server)
 
 int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 {
-	//	RecClInitialize(pEnginefuncs, iVersion);
+	// Initialize must only be called once, another call requires the DLL to be reloaded.
+	// Sometimes the DLL isn't unloaded, in that case this code crashes the game.
+	static bool bIsInitialized = false;
 
+	if (bIsInitialized)
+	{
+		GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "BugfixedHL Fatal Error", "The engine failed to unload client library during restart.");
+		std::abort();
+		return 0;
+	}
+
+	bIsInitialized = true;
+
+	// Check the interface version
 	if (iVersion != CLDLL_INTERFACE_VERSION)
 		return 0;
 

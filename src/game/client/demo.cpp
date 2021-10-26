@@ -18,6 +18,7 @@
 #include "demo_api.h"
 #include <memory.h>
 #include "Exports.h"
+#include "svc_messages.h"
 #include "hud/timer.h"
 
 int g_demosniper = 0;
@@ -98,6 +99,9 @@ void CL_DLLEXPORT Demo_ReadBuffer(int size, unsigned char *buffer)
 	case TYPE_CUSTOM_TIMER:
 	case TYPE_NEXTMAP:
 		CHudTimer::Get()->ReadDemoTimerBuffer(type, buffer + i);
+		break;
+	case TYPE_SVC_STATUS:
+		CSvcMessages::Get().ReadDemoBuffer(type, buffer + i);
 		break;
 	default:
 		gEngfuncs.Con_DPrintf("Unknown demo buffer type, skipping.\n");

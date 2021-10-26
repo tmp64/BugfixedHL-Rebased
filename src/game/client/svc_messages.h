@@ -133,6 +133,11 @@ public:
 	 */
 	bool SanitizeCommands(char *str);
 
+	/**
+	 * Reads a message from the demo.
+	 */
+	void ReadDemoBuffer(int type, const uint8_t *buffer);
+
 private:
 	enum class StatusRequestState
 	{
@@ -151,6 +156,8 @@ private:
 	static constexpr float STATUS_REQUEST_TIMEOUT = 1.0f; //<! Maximum waiting time for response
 	static constexpr float STATUS_REQUEST_PERIOD = 2.0f; //<! Minimum time between status requests
 	static constexpr float STATUS_REQUEST_CONN_DELAY = 3.f; //<! Only begin sending requests some time after connection established
+
+	static constexpr unsigned DEMO_MAGIC = 2498416793; //!< A random magic number
 
 	StatusRequestState m_iStatusRequestState = StatusRequestState::Idle;
 	float m_flStatusRequestLastTime = 0.0f;

@@ -18,6 +18,7 @@ enum
 	TYPE_TIMER,
 	TYPE_CUSTOM_TIMER,
 	TYPE_NEXTMAP,
+	TYPE_SVC_STATUS, //!< CSvcMessages::SendStatusRequest
 };
 
 void Demo_WriteBuffer(int type, int size, unsigned char *buffer);

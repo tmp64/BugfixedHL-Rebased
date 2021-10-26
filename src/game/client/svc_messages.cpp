@@ -15,6 +15,8 @@
 
 #include "hud.h"
 #include "cl_util.h"
+#include <demo_api.h>
+#include "demo.h"
 #include "svc_messages.h"
 #include "engine_patches.h"
 #include "parsemsg.h"
@@ -134,6 +136,10 @@ void CSvcMessages::VidInit()
 
 void CSvcMessages::SendStatusRequest()
 {
+	// Ignore when playing a demo
+	if (gEngfuncs.pDemoAPI->IsPlayingback())
+		return;
+
 	// Check if svc_print is hooked
 	if (!CEnginePatches::Get().GetSvcArray())
 		return;
@@ -143,15 +149,16 @@ void CSvcMessages::SendStatusRequest()
 		return;
 
 	m_iStatusRequestLastFrame = gHUD.GetFrameCount();
+	float absTime = gEngfuncs.GetAbsoluteTime();
 
-	if (m_iStatusRequestState != StatusRequestState::Idle && m_flStatusRequestLastTime + STATUS_REQUEST_TIMEOUT > gEngfuncs.GetAbsoluteTime())
+	if (m_iStatusRequestState != StatusRequestState::Idle && m_flStatusRequestLastTime + STATUS_REQUEST_TIMEOUT > absTime)
 	{
 		// Request is in progress, delay it
 		m_flStatusRequestNextTime = m_flStatusRequestLastTime + STATUS_REQUEST_PERIOD;
 		return;
 	}
 
-	if (m_flStatusRequestLastTime + STATUS_REQUEST_PERIOD >= gEngfuncs.GetAbsoluteTime())
+	if (m_flStatusRequestLastTime + STATUS_REQUEST_PERIOD >= absTime)
 	{
 		// Delay request if it was called recently (to not spam the server)
 		m_flStatusRequestNextTime = m_flStatusRequestLastTime + STATUS_REQUEST_PERIOD;
@@ -159,9 +166,19 @@ void CSvcMessages::SendStatusRequest()
 	}
 
 	m_iStatusRequestState = StatusRequestState::Sent;
+
+	// Send the command to the server
 	ServerCmd("status");
-	gEngfuncs.Con_DPrintf("%.3f status request sent (delta %.3f)\n", gEngfuncs.GetAbsoluteTime(), gEngfuncs.GetAbsoluteTime() - m_flStatusRequestLastTime);
-	m_flStatusRequestLastTime = gEngfuncs.GetAbsoluteTime();
+	gEngfuncs.Con_DPrintf("%.3f status request sent (delta %.3f)\n", absTime, absTime - m_flStatusRequestLastTime);
+	m_flStatusRequestLastTime = absTime;
+
+	if (gEngfuncs.pDemoAPI->IsRecording())
+	{
+		// Write into the demo that a status command was sent
+		uint8_t buf[sizeof(DEMO_MAGIC)];
+		memcpy(buf, &DEMO_MAGIC, sizeof(DEMO_MAGIC));
+		Demo_WriteBuffer(TYPE_SVC_STATUS, sizeof(buf), buf);
+	}
 }
 
 void CSvcMessages::CheckDelayedSendStatusRequest()
@@ -282,6 +299,36 @@ bool CSvcMessages::SanitizeCommands(char *str)
 		}
 	}
 	return changed;
+}
+
+void CSvcMessages::ReadDemoBuffer(int type, const uint8_t *buffer)
+{
+	switch (type)
+	{
+	case TYPE_SVC_STATUS:
+	{
+		// Check the magic
+		// It prevents the game from interpreting messages recorded in other mods
+		unsigned magic;
+		memcpy(&magic, buffer, sizeof(magic));
+		if (magic != DEMO_MAGIC)
+		{
+			gEngfuncs.Con_DPrintf("CSvcMessages::ReadDemoBuffer: Invalid magic %u\n", magic);
+			return;
+		}
+
+		// Simulate SendStatusRequest
+		float absTime = gEngfuncs.GetAbsoluteTime();
+		m_iStatusRequestState = StatusRequestState::Sent;
+		gEngfuncs.Con_DPrintf("%.3f status request sent in demo\n", absTime, absTime - m_flStatusRequestLastTime);
+		m_flStatusRequestLastTime = absTime;
+		return;
+	}
+	default:
+	{
+		Assert(!("Invalid type sent from Demo_ReadBuffer"));
+	}
+	}
 }
 
 bool CSvcMessages::RegexMatch(const char *str, const char *regex)

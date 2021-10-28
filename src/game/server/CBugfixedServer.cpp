@@ -61,6 +61,10 @@ void CBugfixedServer::ClientConnect(edict_t *pEntity)
 		else
 			QueryClientCvars(pEntity);
 	}
+	else
+	{
+		QueryUnsupportedClientCvars(pEntity);
+	}
 }
 
 void CBugfixedServer::PlayerPostThink(edict_t *pEntity)

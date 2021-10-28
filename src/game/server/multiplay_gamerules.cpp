@@ -439,7 +439,6 @@ extern int gmsgTeamInfo;
 extern int gmsgTeamNames;
 extern int gmsgSpectator;
 extern int gmsgAllowSpec;
-extern int gmsgTeamScore;
 
 void CHalfLifeMultiplay ::UpdateGameMode(CBasePlayer *pPlayer)
 {
@@ -552,18 +551,6 @@ void CHalfLifeMultiplay ::InitHUD(CBasePlayer *pl)
 		MESSAGE_BEGIN(MSG_ONE, SVC_INTERMISSION, NULL, pl->edict());
 		MESSAGE_END();
 	}
-
-	/*MESSAGE_BEGIN(MSG_ALL, gmsgTeamNames);
-		WRITE_BYTE(2);
-		WRITE_STRING("Robots");
-		WRITE_STRING("Human Grunts");
-	MESSAGE_END();*/
-
-	MESSAGE_BEGIN(MSG_ALL, gmsgTeamScore);
-	WRITE_STRING("robo");
-	WRITE_SHORT(1337);
-	WRITE_SHORT(228);
-	MESSAGE_END();
 }
 
 //=========================================================

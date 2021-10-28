@@ -4,12 +4,17 @@
 #include "edict.h"
 #include "cbase.h"
 #include "gamerules.h"
+#include "convar.h"
 #include "CBugfixedServer.h"
 #include <appversion.h>
 #include "player.h"
 
 static CBugfixedServer g_staticserver;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CBugfixedServer, IBugfixedServer, IBUGFIXEDSERVER_NAME, g_staticserver);
+
+ConVar sv_bhl_query_vars("sv_bhl_query_vars", "0", FCVAR_SERVER, "Enable querying of client capability and version cvars");
+ConVar sv_bhl_query_wait_for_id("sv_bhl_query_wait_for_id", "0", FCVAR_SERVER, "Wait for a valid SteamID before querying");
+ConVar sv_bhl_defer_motd("sv_bhl_defer_motd", "0", FCVAR_SERVER, "Wait for client cvars before sending the MOTD");
 
 CBugfixedServer *serverapi()
 {
@@ -27,8 +32,6 @@ CBugfixedServer::CBugfixedServer()
 
 void CBugfixedServer::Init()
 {
-	m_pLanCvar = CVAR_GET_POINTER("sv_lan");
-	CVAR_REGISTER(&m_NoQueryCvar);
 }
 
 void CBugfixedServer::ClientConnect(edict_t *pEntity)
@@ -36,11 +39,27 @@ void CBugfixedServer::ClientConnect(edict_t *pEntity)
 	int idx = ENTINDEX(pEntity);
 
 	ResetPlayerData(idx);
+	const char *authId = GETPLAYERAUTHID(pEntity);
 
 	// Bots can't receive network messages
 	if (pEntity->v.flags & FL_FAKECLIENT)
 	{
 		m_pClientInfo[idx].isAuthed = true;
+	}
+
+	if (!sv_bhl_query_wait_for_id.GetBool())
+	{
+		// SteamID is not used when sv_bhl_query_wait_for_id is 0.
+		// Assume the player is authed.
+		m_pClientInfo[idx].isAuthed = true;
+	}
+
+	if (sv_bhl_query_vars.GetBool())
+	{
+		if (sv_bhl_query_wait_for_id.GetBool())
+			CheckClientSteamID(pEntity);
+		else
+			QueryClientCvars(pEntity);
 	}
 }
 
@@ -48,49 +67,11 @@ void CBugfixedServer::PlayerPostThink(edict_t *pEntity)
 {
 	int idx = ENTINDEX(pEntity);
 
-	if (!m_pClientInfo[idx].isAuthed && gpGlobals->time >= m_pClientInfo[idx].nextAuthCheck)
+	if (sv_bhl_query_vars.GetBool()
+	    && !m_pClientInfo[idx].isAuthed
+	    && gpGlobals->time >= m_pClientInfo[idx].nextAuthCheck)
 	{
-		CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pEntity);
-		if (pPlayer->m_bIsBot || m_NoQueryCvar.value)
-		{
-			// Bots can't receive network messages
-			// If sv_disable_cvar_query = 1, don't query
-			m_pClientInfo[idx].isAuthed = true;
-		}
-		else
-		{
-			bool allowQuery = false;
-			const char *authId = GETPLAYERAUTHID(pEntity);
-			if (m_pLanCvar->value)
-			{
-				// If sv_lan = 1, all SteamID are STEAM_ID_LAN
-				m_pClientInfo[idx].isAuthed = true;
-				allowQuery = true;
-			}
-			else if (authId)
-			{
-				if (strcmp(authId, "STEAM_ID_PENDING") != 0)
-				{
-					m_pClientInfo[idx].isAuthed = true;
-
-					if (!strcmp(authId, "STEAM_ID_LAN") || !strncmp(authId, "VALVE_", 6))
-					{
-						// p47 clients don't support QueryClientCvarValue2
-						allowQuery = false;
-					}
-					else
-					{
-						allowQuery = true;
-					}
-				}
-			}
-
-			if (allowQuery)
-			{
-				QueryClientCvars(pEntity);
-			}
-		}
-
+		CheckClientSteamID(pEntity);
 		m_pClientInfo[idx].nextAuthCheck = gpGlobals->time + 0.1;
 	}
 }
@@ -100,6 +81,7 @@ void CBugfixedServer::CvarValueCallback(const edict_t *pEnt, int requestID, cons
 	int idx = ENTINDEX(pEnt);
 	if (idx < 1 || idx > gpGlobals->maxClients)
 		return; // Invalid pEnt
+
 	if (requestID == REQUESTID_VERSION)
 	{
 		// aghl_version
@@ -112,6 +94,7 @@ void CBugfixedServer::CvarValueCallback(const edict_t *pEnt, int requestID, cons
 		if (iValue == ULONG_MAX)
 			iValue = 0;
 		m_pClientInfo[idx].supports = (bhl::E_ClientSupports)iValue;
+		OnClientSupportsReceived(const_cast<edict_t *>(pEnt));
 	}
 	else if (requestID == REQUESTID_COLOR)
 	{
@@ -121,16 +104,83 @@ void CBugfixedServer::CvarValueCallback(const edict_t *pEnt, int requestID, cons
 	}
 }
 
+bool CBugfixedServer::IsClientSupportsReceived(int index)
+{
+	return m_pClientInfo[index].isSupportsReceived;
+}
+
 void CBugfixedServer::ResetPlayerData(int idx)
 {
 	m_pClientInfo[idx] = bhl_client_info_t();
 }
 
+void CBugfixedServer::CheckClientSteamID(edict_t *pEntity)
+{
+	bhl_client_info_t &clientInfo = m_pClientInfo[ENTINDEX(pEntity)];
+
+	if (pEntity->v.flags & FL_FAKECLIENT)
+	{
+		// Bots can't receive network messages
+		clientInfo.isAuthed = true;
+	}
+	else
+	{
+		bool isAuthed = false;
+		bool allowQuery = false;
+		const char *authId = GETPLAYERAUTHID(pEntity);
+
+		if (authId)
+		{
+			if (strcmp(authId, "STEAM_ID_PENDING") != 0)
+			{
+				isAuthed = true;
+				clientInfo.isAuthed = true;
+
+				if (!strcmp(authId, "STEAM_ID_LAN") || !strncmp(authId, "VALVE_", 6))
+				{
+					// p47 clients don't support QueryClientCvarValue2
+					allowQuery = false;
+				}
+				else
+				{
+					allowQuery = true;
+				}
+			}
+		}
+
+		if (isAuthed)
+		{
+			if (allowQuery)
+				QueryClientCvars(pEntity);
+			else
+				QueryUnsupportedClientCvars(pEntity);
+		}
+	}
+}
+
 void CBugfixedServer::QueryClientCvars(edict_t *pEntity)
 {
-	g_engfuncs.pfnQueryClientCvarValue2(pEntity, "aghl_version", REQUESTID_VERSION);
 	g_engfuncs.pfnQueryClientCvarValue2(pEntity, "aghl_supports", REQUESTID_SUPPORTS);
+	g_engfuncs.pfnQueryClientCvarValue2(pEntity, "aghl_version", REQUESTID_VERSION);
 	g_engfuncs.pfnQueryClientCvarValue2(pEntity, "hud_colortext", REQUESTID_COLOR);
+}
+
+void CBugfixedServer::QueryUnsupportedClientCvars(edict_t *pEntity)
+{
+	// Pretend we got something to show the MOTD
+	OnClientSupportsReceived(pEntity);
+}
+
+void CBugfixedServer::OnClientSupportsReceived(edict_t *pEntity)
+{
+	CBasePlayer *pPlayer = static_cast<CBasePlayer *>(CBaseEntity::Instance(pEntity));
+
+	if (pPlayer && pPlayer->m_fGameHUDInitialized
+	    && g_pGameRules->IsMultiplayer()
+	    && sv_bhl_defer_motd.GetBool())
+		static_cast<CHalfLifeMultiplay *>(g_pGameRules)->SendDefaultMOTDToClient(pEntity);
+
+	m_pClientInfo[ENTINDEX(pEntity)].isSupportsReceived = true;
 }
 
 //----------------------------------------------------------------------------------------------------

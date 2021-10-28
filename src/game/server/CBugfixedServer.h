@@ -22,11 +22,9 @@ public:
 	void ClientConnect(edict_t *pEntity);
 	void PlayerPostThink(edict_t *pEntity);
 	void CvarValueCallback(const edict_t *pEnt, int requestID, const char *cvarName, const char *value);
+	bool IsClientSupportsReceived(int index);
 
 private:
-	cvar_t *m_pLanCvar = nullptr;
-	cvar_t m_NoQueryCvar = { "sv_disable_cvar_query", "0", 0 };
-
 	enum E_RequestType
 	{
 		REQUEST_VERSION = 0,
@@ -48,8 +46,9 @@ private:
 		bhl::E_ClientSupports supports = bhl::E_ClientSupports::None;
 		bool isColorEnabled = false;
 
-		bool isAuthed = false;
-		float nextAuthCheck = 0;
+		bool isAuthed = false; //!< Whether the player has received a SteamID
+		float nextAuthCheck = 0; //!< Next time to check for SteamID
+		bool isSupportsReceived = false;
 	};
 
 	bhl_client_info_t m_pClientInfo[MAX_PLAYERS + 1];
@@ -57,7 +56,10 @@ private:
 	bhl::E_MotdType m_nMotdType = bhl::E_MotdType::All;
 
 	void ResetPlayerData(int idx);
+	void CheckClientSteamID(edict_t *pEntity);
 	void QueryClientCvars(edict_t *pEntity);
+	void QueryUnsupportedClientCvars(edict_t *pEntity);
+	void OnClientSupportsReceived(edict_t *pEntity);
 
 public:
 	//----------------------------------------------------------------------------------------------------

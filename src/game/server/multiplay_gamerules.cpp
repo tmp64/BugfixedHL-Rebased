@@ -42,6 +42,8 @@ extern int gmsgServerName;
 
 extern int g_teamplay;
 
+extern ConVar sv_bhl_defer_motd;
+
 #define ITEM_RESPAWN_TIME   30
 #define WEAPON_RESPAWN_TIME 20
 #define AMMO_RESPAWN_TIME   20
@@ -513,42 +515,8 @@ void CHalfLifeMultiplay ::InitHUD(CBasePlayer *pl)
 	// Send server name
 	SendServerNameToClient(pl->edict());
 
-	// Send MOTD
-	// 1. Check if motd TYPE is supported by the client
-	// 2. If it is, then check if it is enabled in API. If not, do nothing.
-	// 3. Try to send MOTD type TYPE. If failed, send the MOTD of next type.
-	// 4. Repeat
-	bool motdret = false;
-	bhl::E_ClientSupports supports = serverapi()->GetClientSupports(ENTINDEX(pl->edict()));
-	if (IsEnumFlagSet(supports, bhl::E_ClientSupports::HtmlMotd))
-	{
-		if (serverapi()->GetAutomaticMotd(bhl::E_MotdType::Html))
-		{
-			motdret = SendHtmlMOTDFileToClient(pl->edict());
-		}
-		else
-			motdret = true; // Handled by Metamod/AMXX/etc, do not send anything
-	}
-
-	if (!motdret && IsEnumFlagSet(supports, bhl::E_ClientSupports::UnicodeMotd))
-	{
-		if (serverapi()->GetAutomaticMotd(bhl::E_MotdType::Unicode))
-		{
-			motdret = SendUnicodeMOTDFileToClient(pl->edict());
-		}
-		else
-			motdret = true; // Handled by Metamod/AMXX/etc, do not send anything
-	}
-
-	if (!motdret)
-	{
-		if (serverapi()->GetAutomaticMotd(bhl::E_MotdType::Plain))
-		{
-			motdret = SendMOTDFileToClient(pl->edict());
-		}
-		else
-			motdret = true; // Handled by Metamod/AMXX/etc, do not send anything
-	}
+	if (!sv_bhl_defer_motd.GetBool() || serverapi()->IsClientSupportsReceived(pl->entindex()))
+		SendDefaultMOTDToClient(pl->edict());
 
 	// loop through all active players and send their score and team info to the new client
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
@@ -1798,6 +1766,41 @@ void CHalfLifeMultiplay::SendServerNameToClient(edict_t *client)
 	MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, client);
 	WRITE_STRING(CVAR_GET_STRING("hostname"));
 	MESSAGE_END();
+}
+
+void CHalfLifeMultiplay::SendDefaultMOTDToClient(edict_t *client)
+{
+	// Send MOTD
+	// 1. Check if motd TYPE is supported by the client
+	// 2. If it is, then check if it is enabled in API. If not, do nothing.
+	// 3. Try to send MOTD type TYPE. If failed, send the MOTD of next type.
+	// 4. Repeat
+	bool motdret = false;
+	bhl::E_ClientSupports supports = serverapi()->GetClientSupports(ENTINDEX(client));
+
+	if (IsEnumFlagSet(supports, bhl::E_ClientSupports::HtmlMotd))
+	{
+		if (serverapi()->GetAutomaticMotd(bhl::E_MotdType::Html))
+			motdret = SendHtmlMOTDFileToClient(client);
+		else
+			motdret = true; // Handled by Metamod/AMXX/etc, do not send anything
+	}
+
+	if (!motdret && IsEnumFlagSet(supports, bhl::E_ClientSupports::UnicodeMotd))
+	{
+		if (serverapi()->GetAutomaticMotd(bhl::E_MotdType::Unicode))
+			motdret = SendUnicodeMOTDFileToClient(client);
+		else
+			motdret = true; // Handled by Metamod/AMXX/etc, do not send anything
+	}
+
+	if (!motdret)
+	{
+		if (serverapi()->GetAutomaticMotd(bhl::E_MotdType::Plain))
+			motdret = SendMOTDFileToClient(client);
+		else
+			motdret = true; // Handled by Metamod/AMXX/etc, do not send anything
+	}
 }
 
 #define MAX_MOTD_CHUNK  60

@@ -358,6 +358,11 @@ protected:
 
 public:
 	/**
+	 * Sends a default MOTD (the one that is sent when the player joins the server).
+	 */
+	void SendDefaultMOTDToClient(edict_t *client);
+
+	/**
 	 * Returns false on error (file not found)
 	 * @param file path to the file or nullptr for default
 	 */

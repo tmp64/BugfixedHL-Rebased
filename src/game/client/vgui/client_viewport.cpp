@@ -153,13 +153,11 @@ void CClientViewport::AddNewPanel(IViewportPanel *panel)
 
 void CClientViewport::ActivateClientUI()
 {
-	SetVisible(true);
+	SetMouseInputEnabled(true);
 }
 
 void CClientViewport::HideClientUI()
 {
-	SetVisible(false);
-
 	// Hide command menu when GameUI is opened
 	if (m_pCommandMenu && m_pCommandMenu->IsVisible())
 		m_pCommandMenu->ShowPanel(false);

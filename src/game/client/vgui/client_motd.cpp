@@ -52,15 +52,6 @@ CClientMOTD::~CClientMOTD()
 	RemoveTempFile();
 }
 
-void CClientMOTD::OnThink()
-{
-	if (IsMouseInputEnabled())
-	{
-		// Refresh input state. It is bugged when GameUI is activated.
-		SetMouseInputEnabled(true);
-	}
-}
-
 void CClientMOTD::SetLabelText(const char *textEntryName, const wchar_t *text)
 {
 	vgui2::Panel *pChild = FindChildByName(textEntryName);
@@ -115,8 +106,7 @@ void CClientMOTD::OnCommand(const char *command)
 	if (!Q_stricmp(command, "okay"))
 	{
 		RemoveTempFile();
-
-		SetVisible(false);
+		ShowPanel(false);
 	}
 
 	BaseClass::OnCommand(command);
@@ -163,6 +153,8 @@ void CClientMOTD::ActivateHtml(const char *title, const char *msg)
 	BaseClass::Activate();
 
 	SetTitle(title, false);
+	SetKeyBoardInputEnabled(true);
+	SetMouseInputEnabled(true);
 	//SetControlString( "serverName", title );
 
 	const char *pszURL = msg;

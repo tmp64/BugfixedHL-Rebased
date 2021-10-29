@@ -52,6 +52,15 @@ CClientMOTD::~CClientMOTD()
 	RemoveTempFile();
 }
 
+void CClientMOTD::OnThink()
+{
+	if (IsMouseInputEnabled())
+	{
+		// Refresh input state. It is bugged when GameUI is activated.
+		SetMouseInputEnabled(true);
+	}
+}
+
 void CClientMOTD::SetLabelText(const char *textEntryName, const wchar_t *text)
 {
 	vgui2::Panel *pChild = FindChildByName(textEntryName);
@@ -217,6 +226,8 @@ void CClientMOTD::ShowPanel(bool state)
 	else
 	{
 		BaseClass::SetVisible(false);
+		SetMouseInputEnabled(false);
+		SetKeyBoardInputEnabled(false);
 	}
 }
 

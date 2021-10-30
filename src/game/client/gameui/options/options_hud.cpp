@@ -49,7 +49,7 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_pOpacityLabel->MoveToFront(); // Obscured by the slider
 
 	// Client sprite renderer only works in hardware mode
-	if (CHudRenderer::Get().IsAvailable())
+	if (!CHudRenderer::Get().IsAvailable())
 	{
 		m_pRenderCheckbox->SetEnabled(false);
 		m_pDeathnoticeVGui->SetEnabled(false);

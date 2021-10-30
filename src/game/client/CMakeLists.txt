@@ -91,12 +91,12 @@ add_sources(
 	../server/tripmine.cpp
 )
 
-if( WIN32 )
+if( PLATFORM_WINDOWS )
 	add_sources(
 		engine_patches_windows.cpp
 		net_windows.cpp
 	)
-elseif( LINUX )
+elseif( PLATFORM_LINUX )
 	add_sources(
 		engine_patches_linux.cpp
 		net_linux.cpp

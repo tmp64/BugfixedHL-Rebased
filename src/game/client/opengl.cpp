@@ -1,3 +1,4 @@
+#include <string_view>
 #include "hud.h"
 #include "cl_util.h"
 #include "opengl.h"

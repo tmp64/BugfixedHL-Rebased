@@ -6,6 +6,7 @@
 #include "texture_manager.h"
 #include "sel_circle_panel.h"
 #include "picker_panel.h"
+#include "opengl.h"
 
 namespace colorpicker
 {
@@ -19,12 +20,6 @@ public:
 		m_tall = BAR_TALL;
 	}
 
-	void SetHue(float hue)
-	{
-		// TODO
-		Assert(false);
-	}
-
 	// Call to Paint the image
 	// Image will draw within the current panel context at the specified position
 	virtual void Paint()
@@ -32,7 +27,49 @@ public:
 		int posX = m_nX + m_offX;
 		int posY = m_nY + m_offY;
 
-		if (gTexMgr.IsReady())
+		if (CClientOpenGL::Get().IsAvailable())
+		{
+			// The code uses hardware linear interpolation instead of textures.
+			// The color is a bit off but it's good enough and doesn't waste VRAM.
+			// Credits to Dear ImGui (ImGui::ColorPicker4 function).
+			constexpr uint8_t hues[6 + 1][4] = {
+				{ 255, 0, 0, 255 },
+				{ 255, 255, 0, 255 },
+				{ 0, 255, 0, 255 },
+				{ 0, 255, 255, 255 },
+				{ 0, 0, 255, 255 },
+				{ 255, 0, 255, 255 },
+				{ 255, 0, 0, 255 }
+			};
+
+			glDisable(GL_TEXTURE_2D);
+			glShadeModel(GL_SMOOTH);
+
+			glBegin(GL_QUADS);
+
+			for (int i = 0; i < 6; i++)
+			{
+				float left = posX + i * (m_wide / 6.0f);
+				float right = left + (m_wide / 6.0f);
+
+				glColor4ubv(hues[i]);
+				glVertex2f(left, posY);
+
+				glColor4ubv(hues[i + 1]);
+				glVertex2f(right, posY);
+
+				glColor4ubv(hues[i + 1]);
+				glVertex2f(right, posY + m_tall);
+
+				glColor4ubv(hues[i]);
+				glVertex2f(left, posY + m_tall);
+			}
+
+			glEnd();
+
+			glEnable(GL_TEXTURE_2D);
+		}
+		else if (gTexMgr.IsReady())
 		{
 			vgui2::surface()->DrawSetTexture(gTexMgr.GetBarTextureId());
 			vgui2::surface()->DrawSetColor(m_Color);

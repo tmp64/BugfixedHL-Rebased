@@ -5,6 +5,7 @@
 #include "../color_picker.h"
 #include "texture_manager.h"
 #include "sel_circle_panel.h"
+#include "opengl.h"
 
 namespace colorpicker
 {
@@ -21,6 +22,7 @@ public:
 	void SetHue(float hue)
 	{
 		m_iTextureIdx = gTexMgr.GetPickerTextureIndex(hue);
+		HSVtoRGB(hue, 100, 100, m_HueColor);
 	}
 
 	// Call to Paint the image
@@ -30,7 +32,51 @@ public:
 		int posX = m_nX + m_offX;
 		int posY = m_nY + m_offY;
 
-		if (gTexMgr.IsReady())
+		if (CClientOpenGL::Get().IsAvailable())
+		{
+			// The code uses hardware linear interpolation instead of textures.
+			// The color is a bit off but it's good enough and doesn't waste VRAM.
+			// It is done by firstly drawing white-saturatedColor horizontal gradient
+			// and then drawing transparent-black vertical gradient to darken the image.
+			// Credits to Dear ImGui (ImGui::ColorPicker4 function).
+			uint8_t hueColor[4] = { (uint8_t)m_HueColor.r(), (uint8_t)m_HueColor.g(), (uint8_t)m_HueColor.b(), 255 };
+
+			glDisable(GL_TEXTURE_2D);
+			glShadeModel(GL_SMOOTH);
+
+			glBegin(GL_QUADS);
+
+			// Colored rect
+			glColor4ub(255, 255, 255, 255);
+			glVertex2f(posX, posY);
+
+			glColor4ubv(hueColor);
+			glVertex2f(posX + m_wide, posY);
+
+			glColor4ubv(hueColor);
+			glVertex2f(posX + m_wide, posY + m_tall);
+
+			glColor4ub(255, 255, 255, 255);
+			glVertex2f(posX, posY + m_tall);
+
+			// Black semi-transparent rect
+			glColor4ub(0, 0, 0, 0);
+			glVertex2f(posX, posY);
+
+			glColor4ub(0, 0, 0, 0);
+			glVertex2f(posX + m_wide, posY);
+
+			glColor4ub(0, 0, 0, 255);
+			glVertex2f(posX + m_wide, posY + m_tall);
+
+			glColor4ub(0, 0, 0, 255);
+			glVertex2f(posX, posY + m_tall);
+
+			glEnd();
+
+			glEnable(GL_TEXTURE_2D);
+		}
+		else if (gTexMgr.IsReady())
 		{
 			vgui2::surface()->DrawSetTexture(gTexMgr.GetPickerTexture(m_iTextureIdx));
 			vgui2::surface()->DrawSetColor(m_Color);
@@ -94,6 +140,7 @@ public:
 
 protected:
 	Color m_Color;
+	Color m_HueColor;
 	int m_iTextureIdx = 0;
 	int m_nX = 0, m_nY = 0;
 	int m_wide = 0, m_tall = 0;

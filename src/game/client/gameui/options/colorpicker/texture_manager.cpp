@@ -2,6 +2,7 @@
 #include "../color_picker.h"
 #include <vgui/ISurface.h>
 #include "hud.h"
+#include "opengl.h"
 
 colorpicker::CTextureManager colorpicker::gTexMgr(colorpicker::PICKER_WIDE, colorpicker::PICKER_TALL);
 
@@ -17,6 +18,12 @@ colorpicker::CTextureManager::CTextureManager(int wide, int tall)
 
 void colorpicker::CTextureManager::Init()
 {
+	if (CClientOpenGL::Get().IsAvailable())
+	{
+		// The color picker will be drawn via OpenGL, textures are not required.
+		return;
+	}
+
 	m_Worker.StartThread();
 
 	// Print VRAM usage

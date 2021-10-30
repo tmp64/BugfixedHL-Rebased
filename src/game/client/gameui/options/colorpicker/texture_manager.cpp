@@ -32,6 +32,9 @@ void colorpicker::CTextureManager::RunFrame()
 {
 	if (!m_bIsReady && !m_bIsError && m_bIsThreadReady)
 	{
+		m_Worker.StopThread();
+		gEngfuncs.Con_DPrintf("ColorPicker: Textures ready at %.3f s\n", gEngfuncs.GetAbsoluteTime());
+
 		int texwide = GetTextureWide();
 		int textall = GetTextureTall();
 

@@ -10,7 +10,7 @@ namespace colorpicker
 class CTextureManager
 {
 public:
-	static double constexpr SCALE = 0.5;
+	static double constexpr SCALE = 0.25;
 
 	class CWorker
 	{

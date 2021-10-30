@@ -1,6 +1,7 @@
 #include "texture_manager.h"
 #include "../color_picker.h"
 #include <vgui/ISurface.h>
+#include "hud.h"
 
 colorpicker::CTextureManager colorpicker::gTexMgr(colorpicker::PICKER_WIDE, colorpicker::PICKER_TALL);
 
@@ -17,6 +18,14 @@ colorpicker::CTextureManager::CTextureManager(int wide, int tall)
 void colorpicker::CTextureManager::Init()
 {
 	m_Worker.StartThread();
+
+	// Print VRAM usage
+	int texwide = GetTextureWide();
+	int textall = GetTextureTall();
+	int barPixels = texwide * 1;
+	int pickerPixels = texwide * textall;
+	int totalPixels = barPixels + pickerPixels * texwide;
+	gEngfuncs.Con_DPrintf("Color Picker textures: %.2f MB\n", totalPixels * 4 / 1024.0 / 1024.0);
 }
 
 void colorpicker::CTextureManager::RunFrame()
@@ -37,7 +46,7 @@ void colorpicker::CTextureManager::RunFrame()
 		    m_iBarTexture,
 		    m_Worker.GetBarRgba().data(),
 		    texwide,
-		    1, false, false);
+		    1, true, false);
 
 		auto picker = m_Worker.GetPickerRgba();
 		m_PickerTextures.resize(picker.size());
@@ -49,7 +58,7 @@ void colorpicker::CTextureManager::RunFrame()
 			    picker[i].data(),
 			    texwide,
 			    textall,
-			    false, false);
+			    true, false);
 		}
 
 		m_Worker.ClearRgba();

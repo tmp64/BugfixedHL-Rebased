@@ -16,7 +16,7 @@ public:
 	CBarImage()
 	{
 		m_wide = PICKER_WIDE;
-		m_tall = PICKER_TALL;
+		m_tall = BAR_TALL;
 	}
 
 	void SetHue(float hue)
@@ -196,7 +196,6 @@ void colorpicker::CBarPanel::ApplySchemeSettings(vgui2::IScheme *pScheme)
 	int wide, tall;
 	GetSize(wide, tall);
 
-	int constexpr BAR_TALL = 8;
 	int panelY = (tall - BAR_TALL) / 2;
 
 	m_pImagePanel->SetBounds(CIRCLE_SIZE / 2, panelY, wide - CIRCLE_SIZE, BAR_TALL);

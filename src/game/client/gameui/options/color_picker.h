@@ -14,6 +14,7 @@ namespace colorpicker
 {
 int constexpr PICKER_WIDE = 300;
 int constexpr PICKER_TALL = 160;
+int constexpr BAR_TALL = 8;
 int constexpr CIRCLE_SIZE = 20;
 
 class CPickerPanel;

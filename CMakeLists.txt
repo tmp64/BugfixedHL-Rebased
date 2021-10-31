@@ -100,6 +100,35 @@ set( GAME_LINKER_FLAGS "" )				# Flags for Game DLL linker
 if( COMPILER_GNU )
 	
 	#-----------------------------------------------------------------
+	# Sanitizers
+	#-----------------------------------------------------------------
+	set( SANITIZERS "" )
+	option( SANITIZE_ADDRESS, "Enable AddressSanitizer" )
+	option( SANITIZE_UNDEFINED, "Enable UndefinedBehaviorSanitizer" )
+	option( SANITIZE_MEMORY, "Enable MemorySanitizer" )
+	
+	if( SANITIZE_ADDRESS )
+		set( SANITIZERS "${SANITIZERS},address" )
+	endif()
+	
+	if( SANITIZE_UNDEFINED )
+		set( SANITIZERS "${SANITIZERS},undefined" )
+	endif()
+
+	if( SANITIZE_MEMORY )
+		set( SANITIZERS "${SANITIZERS},memory" )
+	endif()
+
+	if( SANITIZERS )
+		string( SUBSTRING "${SANITIZERS}" 1 -1 SANITIZERS )
+		message( STATUS "Enabled sanitizers: ${SANITIZERS}" )
+		set( C_CXX_COMPILER_FLAGS "${C_CXX_COMPILER_FLAGS} -fsanitize=${SANITIZERS}" )
+		set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -fsanitize=${SANITIZERS}" )
+	endif()
+	
+	unset( SANITIZERS )
+	
+	#-----------------------------------------------------------------
 	# Linker options
 	#-----------------------------------------------------------------
 	# From the Github 2013 Makefile, match the settings for Unix environments.
@@ -112,20 +141,11 @@ if( COMPILER_GNU )
 	
 	if( PLATFORM_MACOS )
 		set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -momit-leaf-frame-pointer -mtune=core2" )
-	else()
-		# Linux, Cygwin, etc.
 	endif()
 	
 	#-----------------------------------------------------------------
 	# Additional compiler options
 	#-----------------------------------------------------------------
-	# Undefined behavior sanitizer
-	option( GNU_CHECK_FOR_UB "GCC/Clang: Enable run-time checks for undefined behavior" )
-	if( GNU_CHECK_FOR_UB )
-		set( C_CXX_COMPILER_FLAGS       "${C_CXX_COMPILER_FLAGS} -fsanitize=address,undefined -fstack-protector" )
-		set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} -fsanitize=address,undefined -fstack-protector" )
-	endif()
-	
 	# Link-Time Optimizations
 	option( GNU_USE_LTO "GCC/Clang: Enable Link-Time Optimizations (LTO)" )
 	if( GNU_USE_LTO )

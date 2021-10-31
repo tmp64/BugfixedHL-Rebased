@@ -1465,13 +1465,24 @@ int V_FindViewModelByWeaponModel(int weaponindex)
 		int len = strlen(weaponModel->name);
 		int i = 0;
 
-		while (modelmap[i] != NULL)
+		while (modelmap[i][0] != NULL)
 		{
 			if (!_strnicmp(weaponModel->name, modelmap[i][0], len))
 			{
 				return gEngfuncs.pEventAPI->EV_FindModelIndex(modelmap[i][1]);
 			}
 			i++;
+		}
+
+		// Model name not found in the modelmap array (possible for WeaponMod weapons).
+		// Construct view model name based on player model name.
+		char buf[128];
+		safe_strcpy(buf, weaponModel->name, sizeof(buf));
+		if (!strncmp(buf, "models/p_", 9))
+		{
+			// Replace "models/p_" with "models/v_"
+			buf[7] = 'v';
+			return gEngfuncs.pEventAPI->EV_FindModelIndex(buf);
 		}
 
 		return 0;

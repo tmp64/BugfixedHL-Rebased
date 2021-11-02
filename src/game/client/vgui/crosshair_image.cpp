@@ -31,8 +31,10 @@ void CCrosshairImage::Paint()
 		    cx - gap - size - outline + size + outline * 2, cy - thick / 2 - outline + thick + outline * 2);
 		vgui2::surface()->DrawFilledRect(cx - thick / 2 - outline, cy + gap - outline,
 		    cx - thick / 2 - outline + thick + outline * 2, cy + gap - outline + size + outline * 2);
-		vgui2::surface()->DrawFilledRect(cx - thick / 2 - outline, cy - gap - size - outline,
-		    cx - thick / 2 - outline + thick + outline * 2, cy - gap - size - outline + size + outline * 2);
+
+		if (!m_Settings.t)
+			vgui2::surface()->DrawFilledRect(cx - thick / 2 - outline, cy - gap - size - outline,
+			    cx - thick / 2 - outline + thick + outline * 2, cy - gap - size - outline + size + outline * 2);
 	}
 
 	vgui2::surface()->DrawSetColor(m_Settings.color);

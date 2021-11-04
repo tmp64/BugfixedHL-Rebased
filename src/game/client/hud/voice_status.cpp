@@ -86,7 +86,7 @@ void CHudVoiceStatus::RunFrame(float fTime)
 				{
 					if (ClientSteamContext().SteamUtils())
 					{
-						CSteamID steamIDForPlayer(pi->GetSteamID64(), 1, ClientSteamContext().SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual);
+						CSteamID steamIDForPlayer(pi->GetValidSteamID64(), 1, ClientSteamContext().SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual);
 						activeSpeaker.pAvatar->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize32x32);
 					}
 				}

@@ -49,7 +49,8 @@ public:
 	const char *GetModel();
 	int GetTopColor();
 	int GetBottomColor();
-	uint64 GetSteamID64();
+	uint64 GetValidSteamID64(); //!< Returns a valid SteamID that most likely points to a real profile.
+	uint64 GetStatusSteamID64(); //!< Returns the SteamID from `status`.
 
 	// Extra info (from HUD messages)
 	int GetFrags();

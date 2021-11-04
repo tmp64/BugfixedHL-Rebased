@@ -68,9 +68,9 @@ public:
 			data.pInfoAvatar->SetSize(m_pAvatar->GetWide(), m_pAvatar->GetTall());
 		}
 
-		if (ClientSteamContext().SteamUtils() && data.pi->GetSteamID64())
+		if (ClientSteamContext().SteamUtils() && data.pi->GetValidSteamID64())
 		{
-			CSteamID steamIDForPlayer(data.pi->GetSteamID64());
+			CSteamID steamIDForPlayer(data.pi->GetValidSteamID64());
 			data.pInfoAvatar->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
 		}
 

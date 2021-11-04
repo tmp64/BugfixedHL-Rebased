@@ -252,7 +252,7 @@ int CPlayerInfo::GetBottomColor()
 	return m_EngineInfo.bottomcolor;
 }
 
-uint64 CPlayerInfo::GetSteamID64()
+uint64 CPlayerInfo::GetValidSteamID64()
 {
 	Assert(m_bIsConnected);
 
@@ -277,6 +277,12 @@ uint64 CPlayerInfo::GetSteamID64()
 
 		return ParseSteamID(m_szSteamID);
 	}
+}
+
+uint64 CPlayerInfo::GetStatusSteamID64()
+{
+	Assert(m_bIsConnected);
+	return ParseSteamID(m_szSteamID);
 }
 
 int CPlayerInfo::GetFrags()
@@ -379,15 +385,15 @@ CPlayerInfo *CPlayerInfo::Update()
 			}
 		}
 
-		if (!m_bRealNameChecked)
+		if (!m_bRealNameChecked && m_szSteamID[0])
 		{
 			m_bRealNameChecked = true;
 
 			if (!s_RealNames.empty())
 			{
 				// Find real name
-				uint64_t steamid64 = GetSteamID64();
-				auto it = s_RealNames.find(GetSteamID64());
+				uint64_t steamid64 = GetStatusSteamID64();
+				auto it = s_RealNames.find(steamid64);
 
 				if (it != s_RealNames.end())
 				{

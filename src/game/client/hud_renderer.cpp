@@ -54,6 +54,12 @@ void CHudRenderer::SpriteDrawAdditive(int frame, int x, int y, const wrect_t *pr
 
 void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float height, const wrect_t *prc, SpriteDrawMode mode)
 {
+	if (m_hPic <= 0)
+	{
+		gEngfuncs.Con_DPrintf("CHudRenderer::DrawSprite: Invalid sprite %d\n", m_hPic);
+		return;
+	}
+
 	// This function is based on Xash3D code
 	if (width == -1 && height == -1)
 	{
@@ -93,6 +99,13 @@ void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float he
 	}
 
 	const model_t *spriteModel = gEngfuncs.GetSpritePointer(m_hPic);
+
+	if (!spriteModel)
+	{
+		gEngfuncs.Con_DPrintf("CHudRenderer::DrawSprite: Null model for sprite %d\n", m_hPic);
+		return;
+	}
+
 	gEngfuncs.pTriAPI->Color4ub(m_SpriteColor[0], m_SpriteColor[1], m_SpriteColor[2], m_SpriteColor[3]);
 	gEngfuncs.pTriAPI->SpriteTexture(spriteModel, frame);
 

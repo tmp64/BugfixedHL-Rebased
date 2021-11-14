@@ -30,7 +30,7 @@ include( GetGitRevisionDescription )
 # Also needs to be changed in scripts/BuildRelease.py
 set( BHL_REPO_VERSION_MAJOR 1 )
 set( BHL_REPO_VERSION_MINOR 7 )
-set( BHL_REPO_VERSION_PATCH 0 )
+set( BHL_REPO_VERSION_PATCH 1 )
 set( BHL_REPO_VERSION_TAG "dev" )
 
 if( NOT BHL_VERSION_MAJOR )

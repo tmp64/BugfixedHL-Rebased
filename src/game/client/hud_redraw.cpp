@@ -48,6 +48,8 @@ void CHud::Think(void)
 	m_scrinfo.iSize = sizeof(m_scrinfo);
 	GetScreenInfo(&m_scrinfo);
 
+	g_pViewport->GetAllPlayersInfo();
+	CTeamInfo::UpdateAllTeams();
 	m_Rainbow.Think();
 	CResults::Get().Think();
 

@@ -450,8 +450,6 @@ void CHud::Frame(double time)
 	IN_RunFrame();
 
 	CHudVoiceStatus::Get()->RunFrame(time);
-	g_pViewport->GetAllPlayersInfo();
-	CTeamInfo::UpdateAllTeams();
 	CResults::Get().Frame();
 
 #if USE_UPDATER

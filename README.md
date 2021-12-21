@@ -139,3 +139,4 @@ Thanks
   - JetBrains company for free access to great developer tools.
 - Solokiller for [Half-Life Enhanced](https://github.com/Solokiller/HLEnhanced) and GoldSrc engine research.
 - AGHL.RU community for bug reporting and suggestions.
+- YaLTeR and contributors for [OpenAG](https://github.com/YaLTeR/OpenAG) features

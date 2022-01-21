@@ -597,8 +597,8 @@ void CClientViewport::MsgFunc_TeamScore(const char *pszName, int iSize, void *pb
 	// use this new score data instead of combined player scores
 	CTeamInfo *ti = GetTeamInfo(i);
 	ti->m_bScoreOverriden = true;
-	ti->m_iFrags = READ_SHORT();
-	ti->m_iDeaths = READ_SHORT();
+	ti->m_iFrags = frags;
+	ti->m_iDeaths = deaths;
 }
 
 void CClientViewport::MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf)

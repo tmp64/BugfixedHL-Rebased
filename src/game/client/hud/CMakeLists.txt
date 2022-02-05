@@ -40,6 +40,8 @@ add_sources(
 	status_icons.h
 	statusbar.cpp
 	statusbar.h
+	strafeguide.cpp
+	strafeguide.h
 	text_message.cpp
 	text_message.h
 	timer.cpp

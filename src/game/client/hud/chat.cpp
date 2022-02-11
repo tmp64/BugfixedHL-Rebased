@@ -426,10 +426,20 @@ CHudChatHistory *CHudChat::GetChatHistory(void)
 	return m_pChatHistory;
 }
 
+static CmdFunction s_pfnEngineMsgMode = nullptr;
+static CmdFunction s_pfnEngineMsgMode2 = nullptr;
+
 static void MessageModeVGUI2()
 {
 	if (gEngfuncs.GetMaxClients() == 1)
 		return;
+
+	if (gEngfuncs.Cmd_Argc() != 1)
+	{
+		s_pfnEngineMsgMode();
+		return;
+	}
+
 	CHudChat::Get()->StartMessageMode(MM_SAY);
 }
 
@@ -437,6 +447,13 @@ static void MessageMode2VGUI2()
 {
 	if (gEngfuncs.GetMaxClients() == 1)
 		return;
+
+	if (gEngfuncs.Cmd_Argc() != 1)
+	{
+		s_pfnEngineMsgMode2();
+		return;
+	}
+
 	CHudChat::Get()->StartMessageMode(MM_SAY_TEAM);
 }
 
@@ -465,6 +482,8 @@ void CHudChat::Init(void)
 	}
 	else
 	{
+		s_pfnEngineMsgMode = msgMode->function;
+		s_pfnEngineMsgMode2 = msgMode2->function;
 		msgMode->function = MessageModeVGUI2;
 		msgMode2->function = MessageMode2VGUI2;
 	}

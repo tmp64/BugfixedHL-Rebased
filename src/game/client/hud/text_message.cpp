@@ -32,6 +32,8 @@
 
 DEFINE_HUD_ELEM(CHudTextMessage);
 
+ConVar cl_hide_center_messages("cl_hide_center_messages", "0", FCVAR_BHL_ARCHIVE, "Hide the center messages, useful when recording HLKZ movies.");
+
 void CHudTextMessage::Init(void)
 {
 	BaseHudClass::Init();
@@ -198,8 +200,10 @@ int CHudTextMessage::MsgFunc_TextMsg(const char *pszName, int iSize, void *pbuf)
 	switch (msg_dest)
 	{
 	case HUD_PRINTCENTER:
-		snprintf(psz, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4);
-		CenterPrint(ConvertCRtoNL(psz));
+		if (!cl_hide_center_messages.GetBool()) {
+			snprintf(psz, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4);
+			CenterPrint(ConvertCRtoNL(psz));
+		}
 		break;
 
 	case HUD_PRINTNOTIFY:

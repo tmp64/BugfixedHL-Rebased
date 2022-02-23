@@ -25,6 +25,13 @@
 #include "results.h"
 #include "svc_messages.h"
 
+#include "hud/crosshair.h"
+#include "hud/speedometer.h"
+#include "hud/strafeguide.h"
+#include "hud/jumpspeed.h"
+#include "hud/death_notice.h"
+#include "hud/message.h"
+
 #define MAX_LOGO_FRAMES 56
 
 int grgLogoFrame[MAX_LOGO_FRAMES] = {
@@ -41,6 +48,9 @@ extern ConVar zoom_sensitivity_ratio;
 ConVar hud_colortext("hud_colortext", "1", FCVAR_BHL_ARCHIVE);
 ConVar hud_takesshots("hud_takesshots", "0", FCVAR_ARCHIVE, "Whether or not to automatically take screenshots at the end of a round");
 ConVar default_fov("default_fov", "90", FCVAR_BHL_ARCHIVE, "Default horizontal field of view");
+
+ConVar cl_draw_deathnotices_always("cl_draw_deathnotices_always", "0", FCVAR_BHL_ARCHIVE, "Display the kill feed even when hud_draw is 0. Useful when recording frag movies.");
+ConVar cl_draw_messages_always("cl_draw_messages_always", "0", FCVAR_BHL_ARCHIVE, "Display the server messages even when hud_draw is 0. Useful when recording HLKZ movies.");
 
 // Think
 void CHud::Think(void)
@@ -179,6 +189,29 @@ int CHud::Redraw(float flTime, int intermission)
 				if (i->m_iFlags & HUD_INTERMISSION)
 					i->Draw(flTime);
 			}
+		}
+	}
+	else
+	{
+		if (!intermission && !(m_iHideHUDDisplay & HIDEHUD_ALL))
+		{
+			if (CHudCrosshair::Get()->m_iFlags & HUD_ACTIVE)
+				CHudCrosshair::Get()->Draw(flTime);
+
+			if (CHudSpeedometer::Get()->m_iFlags & HUD_ACTIVE)
+				CHudSpeedometer::Get()->Draw(flTime);
+
+			if (CHudStrafeGuide::Get()->m_iFlags & HUD_ACTIVE)
+				CHudStrafeGuide::Get()->Draw(flTime);
+
+			if (CHudJumpspeed::Get()->m_iFlags & HUD_ACTIVE)
+				CHudJumpspeed::Get()->Draw(flTime);
+
+			if (cl_draw_deathnotices_always.GetBool() && CHudDeathNotice::Get()->m_iFlags & HUD_ACTIVE)
+				CHudDeathNotice::Get()->Draw(flTime);
+
+			if (cl_draw_messages_always.GetBool() && CHudMessage::Get()->m_iFlags & HUD_ACTIVE)
+				CHudMessage::Get()->Draw(flTime);
 		}
 	}
 

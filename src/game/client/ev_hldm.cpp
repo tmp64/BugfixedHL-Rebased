@@ -451,6 +451,7 @@ void EV_HLDM_FireBullets(int idx, float *forward, float *right, float *up, int c
 				break;
 			case BULLET_PLAYER_BUCKSHOT:
 
+				EV_HLDM_PlayTextureSound(idx, &tr, vecSrc, vecEnd, iBulletType);
 				EV_HLDM_DecalGunshot(&tr, iBulletType);
 
 				break;

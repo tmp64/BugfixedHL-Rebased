@@ -34,7 +34,7 @@ client_textmessage_t g_pCustomMessage;
 char *g_pCustomName = "Custom";
 char g_pCustomText[MAX_MESSAGE_TEXT_LENGTH];
 
-ConVar cl_draw_messages_always("cl_draw_messages_always", "0", FCVAR_BHL_ARCHIVE, "Display the server messages even when hud_draw is 0. Useful when recording HLKZ movies.");
+ConVar hud_message_draw_always("hud_message_draw_always", "0", FCVAR_BHL_ARCHIVE, "Display the server messages even when hud_draw is 0. Useful when recording HLKZ movies.");
 
 DEFINE_HUD_ELEM(CHudMessage);
 
@@ -468,7 +468,7 @@ void CHudMessage::Draw(float fTime)
 
 void CHudMessage::Think()
 {
-	if (cl_draw_messages_always.GetBool())
+	if (hud_message_draw_always.GetBool())
 		m_iFlags |= HUD_DRAW_ALWAYS;
 	else
 		m_iFlags &= ~HUD_DRAW_ALWAYS;

@@ -13,7 +13,7 @@ public:
 	void Update(struct ref_params_s *ppmove);
 
 private:
-	double angles[6] = {0.};
+	double angles[6] = { 0. };
 
 	std::complex<double> lastSimvel = 0.;
 };

@@ -6,7 +6,8 @@
 #include "pm_movevars.h"
 #include "strafeguide.h"
 
-enum border {
+enum border
+{
 	RED_GREEN,
 	GREEN_WHITE,
 	WHITE_GREEN,
@@ -37,11 +38,11 @@ void CHudStrafeGuide::Draw(float time)
 	if (!hud_strafeguide.GetBool())
 		return;
 
-	double fov  = default_fov.GetFloat() / 180 * M_PI / 2;
+	double fov = default_fov.GetFloat() / 180 * M_PI / 2;
 	double zoom = hud_strafeguide_zoom.GetFloat();
 
 	int size = gHUD.m_iFontHeight;
-	int height = ScreenHeight / 2 - 2*size;
+	int height = ScreenHeight / 2 - 2 * size;
 
 	if (hud_strafeguide_size.GetBool())
 		size = hud_strafeguide_size.GetFloat();
@@ -49,19 +50,31 @@ void CHudStrafeGuide::Draw(float time)
 	if (hud_strafeguide_height.GetBool())
 		height = hud_strafeguide_height.GetFloat();
 
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < 4; ++i)
+	{
 		int r, g, b;
-		switch (i) {
-			case RED_GREEN: case WHITE_GREEN:
-				r = 0; g = 255; b = 0; break;
-			case GREEN_WHITE:
-				r = 255; g = 255; b = 255; break;
-			case GREEN_RED:
-				r = 255; g = 0; b = 0; break;
+		switch (i)
+		{
+		case RED_GREEN:
+		case WHITE_GREEN:
+			r = 0;
+			g = 255;
+			b = 0;
+			break;
+		case GREEN_WHITE:
+			r = 255;
+			g = 255;
+			b = 255;
+			break;
+		case GREEN_RED:
+			r = 255;
+			g = 0;
+			b = 0;
+			break;
 		}
 
-		double boxLeftBase  = -angles[i];
-		double boxRightBase = -angles[(i+1)%4];
+		double boxLeftBase = -angles[i];
+		double boxRightBase = -angles[(i + 1) % 4];
 
 		if (std::abs(boxLeftBase - boxRightBase) < 1e-10)
 			continue;
@@ -70,36 +83,41 @@ void CHudStrafeGuide::Draw(float time)
 		if (std::abs(boxLeftBase - boxRightBase) < 1e-10)
 			continue;
 
-		for (int iCopy = -8; iCopy <= 8; ++iCopy) {
-			double boxLeft  = boxLeftBase  + iCopy * 2 * M_PI;
+		for (int iCopy = -8; iCopy <= 8; ++iCopy)
+		{
+			double boxLeft = boxLeftBase + iCopy * 2 * M_PI;
 			double boxRight = boxRightBase + iCopy * 2 * M_PI;
-			boxLeft  *= zoom;
+			boxLeft *= zoom;
 			boxRight *= zoom;
 
 			if (std::abs(boxLeft) > fov && std::abs(boxRight) > fov && boxRight * boxLeft > 0)
 				continue;
 
-			boxLeft  = boxLeft  > fov ? fov : boxLeft  < -fov ? -fov : boxLeft;
-			boxRight = boxRight > fov ? fov : boxRight < -fov ? -fov : boxRight;
+			boxLeft = boxLeft > fov ? fov : boxLeft < -fov ? -fov
+			                                               : boxLeft;
+			boxRight = boxRight > fov ? fov : boxRight < -fov ? -fov
+			                                                  : boxRight;
 
-			boxLeft  = std::tan(boxLeft) / std::tan(fov);
+			boxLeft = std::tan(boxLeft) / std::tan(fov);
 			boxRight = std::tan(boxRight) / std::tan(fov);
 
-			int boxLeftI  = boxLeft / 1 * ScreenWidth / 2;
-			int boxRightI = boxRight/ 1 * ScreenWidth / 2;
-			boxLeftI  += ScreenWidth / 2;
+			int boxLeftI = boxLeft / 1 * ScreenWidth / 2;
+			int boxRightI = boxRight / 1 * ScreenWidth / 2;
+			boxLeftI += ScreenWidth / 2;
 			boxRightI += ScreenWidth / 2;
 
-			FillRGBA(boxLeftI, height, boxRightI-boxLeftI, size, r, g, b, 60);
+			FillRGBA(boxLeftI, height, boxRightI - boxLeftI, size, r, g, b, 60);
 		}
 	}
 }
 
 static double angleReduce(double a)
 {
-	double tmp = std::fmod(a, 2*M_PI);
-	if (tmp < 0) tmp += 2*M_PI;
-	if (tmp > M_PI) tmp -= 2*M_PI;
+	double tmp = std::fmod(a, 2 * M_PI);
+	if (tmp < 0)
+		tmp += 2 * M_PI;
+	if (tmp > M_PI)
+		tmp -= 2 * M_PI;
 	return tmp;
 }
 
@@ -109,8 +127,10 @@ void CHudStrafeGuide::Update(struct ref_params_s *pparams)
 	auto input = std::complex<double>(pparams->cmd->forwardmove, pparams->cmd->sidemove);
 	double viewAngle = pparams->viewangles[1] / 180 * M_PI;
 
-	if (std::norm(input) == 0) {
-		for (int i = 0; i < 4; ++i) {
+	if (std::norm(input) == 0)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
 			if (i < 2)
 				angles[i] = M_PI;
 			else
@@ -160,7 +180,8 @@ void CHudStrafeGuide::Update(struct ref_params_s *pparams)
 	else
 		velocityAngle = std::log(velocity).imag();
 
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < 4; ++i)
+	{
 		angles[i] += velocityAngle + inputAngle - viewAngle;
 		angles[i] = angleReduce(angles[i]);
 	}

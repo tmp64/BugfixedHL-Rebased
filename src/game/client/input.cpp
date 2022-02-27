@@ -145,11 +145,11 @@ static void HandleAutojump(usercmd_t *cmd)
 		bool shouldReleaseJump = (!PM_GetOnGround() && !inWater && isWalking);
 
 		/*
-			 * Spam pressing and releasing jump if we're stuck in a spot where jumping still results in
-			 * being onground in the end of the frame. Without this check, +jump would remain held and
-			 * when the player exits this spot they would have to release and press the jump button to
-			 * start jumping again. This also helps with exiting water or ladder right onto the ground.
-			 */
+		 * Spam pressing and releasing jump if we're stuck in a spot where jumping still results in
+		 * being onground in the end of the frame. Without this check, +jump would remain held and
+		 * when the player exits this spot they would have to release and press the jump button to
+		 * start jumping again. This also helps with exiting water or ladder right onto the ground.
+		 */
 		if (s_bJumpWasDownLastFrame && PM_GetOnGround() && !inWater && isWalking)
 			shouldReleaseJump = true;
 
@@ -163,25 +163,17 @@ static void HandleAutojump(usercmd_t *cmd)
 static void HandleDucktap(usercmd_t *cmd)
 {
 	static bool s_bDuckWasDownLastFrame = false;
-	static bool s_bShouldReleaseDuck;
 
-	bool duck_is_pressed = false;
 	bool inWater = PM_GetWaterLevel() > 1;
 	bool isWalking = PM_GetMoveType() == MOVETYPE_WALK;
+	bool duckIsPressed = in_duck.state & 1;
 
-	if (in_duck.state & 1)
-		duck_is_pressed = true;
-	else
-		duck_is_pressed = false;
-
-	s_bShouldReleaseDuck = (!PM_GetOnGround() && !inWater && isWalking && !duck_is_pressed);
+	bool shouldReleaseDuck = (!PM_GetOnGround() && !inWater && isWalking && !duckIsPressed);
 
 	if (s_bDuckWasDownLastFrame && PM_GetOnGround() && !inWater && isWalking)
-	{
-		s_bShouldReleaseDuck = true;
-	}
+		shouldReleaseDuck = true;
 
-	if (s_bShouldReleaseDuck)
+	if (shouldReleaseDuck)
 	{
 		cmd->buttons &= ~IN_DUCK;
 		in_duck.state &= 0;

@@ -23,7 +23,7 @@ CHudCrosshair::CHudCrosshair()
 
 void CHudCrosshair::Init()
 {
-	m_iFlags |= HUD_ACTIVE;
+	m_iFlags |= HUD_ACTIVE | HUD_DRAW_ALWAYS;
 }
 
 void CHudCrosshair::Draw(float flTime)

@@ -46,6 +46,7 @@ ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE, "Play a bell sound o
 ConVar hud_deathnotice_time("hud_deathnotice_time", "6", FCVAR_BHL_ARCHIVE, "How long should death notice stay up for");
 ConVar hud_deathnotice_color("hud_deathnotice_color", "255 80 0", FCVAR_BHL_ARCHIVE, "Color of death notice sprite");
 ConVar hud_deathnotice_color_tk("hud_deathnotice_color_tk", "10 240 10", FCVAR_BHL_ARCHIVE, "Color of death notice teamkill sprite");
+ConVar cl_draw_deathnotices_always("cl_draw_deathnotices_always", "0", FCVAR_BHL_ARCHIVE, "Display the kill feed even when hud_draw is 0. Useful when recording frag movies.");
 
 #define MAX_DEATHNOTICES 4
 static int DEATHNOTICE_DISPLAY_TIME = 6;
@@ -138,6 +139,14 @@ void CHudDeathNotice::Draw(float flTime)
 			}
 		}
 	}
+}
+
+void CHudDeathNotice::Think()
+{
+	if (cl_draw_deathnotices_always.GetBool())
+		m_iFlags |= HUD_DRAW_ALWAYS;
+	else
+		m_iFlags &= ~HUD_DRAW_ALWAYS;
 }
 
 // This message handler may be better off elsewhere

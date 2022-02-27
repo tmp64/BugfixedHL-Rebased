@@ -13,7 +13,7 @@ DEFINE_HUD_ELEM(CHudSpeedometer);
 
 void CHudSpeedometer::Init()
 {
-	m_iFlags = HUD_ACTIVE;
+	m_iFlags = HUD_ACTIVE | HUD_DRAW_ALWAYS;
 }
 
 void CHudSpeedometer::VidInit()

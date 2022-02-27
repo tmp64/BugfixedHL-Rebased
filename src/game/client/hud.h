@@ -50,6 +50,7 @@
 
 #define HUD_ACTIVE       1
 #define HUD_INTERMISSION 2
+#define HUD_DRAW_ALWAYS  4 //!< Draw even if hud_draw = 0
 
 namespace vgui2
 {

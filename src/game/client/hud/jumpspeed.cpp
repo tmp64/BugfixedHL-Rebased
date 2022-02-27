@@ -13,7 +13,7 @@ DEFINE_HUD_ELEM(CHudJumpspeed);
 
 void CHudJumpspeed::Init()
 {
-	m_iFlags = HUD_ACTIVE;
+	m_iFlags = HUD_ACTIVE | HUD_DRAW_ALWAYS;
 }
 
 void CHudJumpspeed::VidInit()

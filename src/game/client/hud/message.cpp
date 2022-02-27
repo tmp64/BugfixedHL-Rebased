@@ -34,6 +34,8 @@ client_textmessage_t g_pCustomMessage;
 char *g_pCustomName = "Custom";
 char g_pCustomText[MAX_MESSAGE_TEXT_LENGTH];
 
+ConVar hud_message_draw_always("hud_message_draw_always", "0", FCVAR_BHL_ARCHIVE, "Display the server messages even when hud_draw is 0. Useful when recording HLKZ movies.");
+
 DEFINE_HUD_ELEM(CHudMessage);
 
 void CHudMessage::Init(void)
@@ -462,6 +464,14 @@ void CHudMessage::Draw(float fTime)
 	// Don't call until we get another message
 	if (!drawn)
 		m_iFlags &= ~HUD_ACTIVE;
+}
+
+void CHudMessage::Think()
+{
+	if (hud_message_draw_always.GetBool())
+		m_iFlags |= HUD_DRAW_ALWAYS;
+	else
+		m_iFlags &= ~HUD_DRAW_ALWAYS;
 }
 
 void CHudMessage::MessageAdd(const char *pName, float time)

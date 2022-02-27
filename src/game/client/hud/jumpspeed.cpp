@@ -13,7 +13,7 @@ DEFINE_HUD_ELEM(CHudJumpspeed);
 
 void CHudJumpspeed::Init()
 {
-	m_iFlags = HUD_ACTIVE;
+	m_iFlags = HUD_ACTIVE | HUD_DRAW_ALWAYS;
 }
 
 void CHudJumpspeed::VidInit()
@@ -63,7 +63,10 @@ void CHudJumpspeed::Draw(float flTime)
 		y = ScreenHeight / 2 + gHUD.m_iFontHeight / 2 + yoffset;
 	}
 
-	a *= gHUD.GetHudTransparency();
+	if (hud_draw.GetFloat() > 0)
+		a *= gHUD.GetHudTransparency();
+	else
+		a *= 1;
 	gHUD.GetHudColor(HudPart::Common, 0, r, g, b);
 	ScaleColors(r, g, b, a);
 

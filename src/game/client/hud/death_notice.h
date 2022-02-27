@@ -9,6 +9,7 @@ public:
 	void InitHudData();
 	void VidInit();
 	void Draw(float flTime);
+	void Think();
 	int MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf);
 
 private:

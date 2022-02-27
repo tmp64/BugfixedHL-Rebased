@@ -32,6 +32,7 @@ public:
 	void Init();
 	void VidInit();
 	void Draw(float flTime);
+	void Think();
 	int MsgFunc_HudText(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_GameTitle(const char *pszName, int iSize, void *pbuf);
 

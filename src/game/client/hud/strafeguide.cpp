@@ -22,7 +22,7 @@ DEFINE_HUD_ELEM(CHudStrafeGuide);
 
 void CHudStrafeGuide::Init()
 {
-	m_iFlags = HUD_ACTIVE;
+	m_iFlags = HUD_ACTIVE | HUD_DRAW_ALWAYS;
 }
 
 void CHudStrafeGuide::VidInit()

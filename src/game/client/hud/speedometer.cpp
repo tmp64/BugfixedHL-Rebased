@@ -13,7 +13,7 @@ DEFINE_HUD_ELEM(CHudSpeedometer);
 
 void CHudSpeedometer::Init()
 {
-	m_iFlags = HUD_ACTIVE;
+	m_iFlags = HUD_ACTIVE | HUD_DRAW_ALWAYS;
 }
 
 void CHudSpeedometer::VidInit()
@@ -62,7 +62,10 @@ void CHudSpeedometer::Draw(float time)
 		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2 - yoffset;
 	}
 
-	a *= gHUD.GetHudTransparency();
+	if (hud_draw.GetFloat() > 0)
+		a *= gHUD.GetHudTransparency();
+	else
+		a *= 1;
 	gHUD.GetHudColor(HudPart::Common, 0, r, g, b);
 	ScaleColors(r, g, b, a);
 	gHUD.DrawHudNumberCentered(ScreenWidth / 2, y, m_iSpeed, r, g, b);

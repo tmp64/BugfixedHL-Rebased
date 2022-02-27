@@ -181,6 +181,15 @@ int CHud::Redraw(float flTime, int intermission)
 			}
 		}
 	}
+	else if (!intermission && !(m_iHideHUDDisplay & HIDEHUD_ALL))
+	{
+		// Draw elements marked to be always drawn
+		for (CHudElem *i : m_HudList)
+		{
+			if (i->m_iFlags & HUD_DRAW_ALWAYS)
+				i->Draw(flTime);
+		}
+	}
 
 	// are we in demo mode? do we need to draw the logo in the top corner?
 	if (m_iLogo)

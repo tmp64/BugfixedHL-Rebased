@@ -200,7 +200,8 @@ int CHudTextMessage::MsgFunc_TextMsg(const char *pszName, int iSize, void *pbuf)
 	switch (msg_dest)
 	{
 	case HUD_PRINTCENTER:
-		if (!hud_hide_center_messages.GetBool()) {
+		if (!hud_hide_center_messages.GetBool())
+		{
 			snprintf(psz, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4);
 			CenterPrint(ConvertCRtoNL(psz));
 		}

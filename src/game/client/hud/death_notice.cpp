@@ -267,12 +267,10 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	DEATHNOTICE_DISPLAY_TIME = hud_deathnotice_time.GetInt();
 	rgDeathNoticeList[i].flDisplayTime = gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME;
 
-	const char *killsnd = cl_killsound_path.GetString();
-
 	// Play kill sound
-	if (killerInfo && killerInfo->IsThisPlayer() && !rgDeathNoticeList[i].iNonPlayerKill && !rgDeathNoticeList[i].iSuicide && cl_killsound.GetBool())
+	if (killerInfo && killerInfo->IsThisPlayer() && !rgDeathNoticeList[i].iNonPlayerKill && !rgDeathNoticeList[i].iSuicide && cl_killsound.GetFloat() > 0)
 	{
-		PlaySound(killsnd, 1.0f);
+		PlaySound(cl_killsound_path.GetString(), cl_killsound.GetFloat());
 	}
 
 	// Set color of own kills/deaths to yellow

@@ -582,6 +582,7 @@ target_compile_definitions( hl PRIVATE
 	${SOURCE_SDK_DEFINES}
 	SERVER_DLL
 	MATHLIB_USE_C_ASSERT
+	MATHLIB_VECTOR_NONTRIVIAL
 )
 
 # Dependencies

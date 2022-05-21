@@ -645,6 +645,7 @@ target_compile_definitions( bugfixedapi_amxx PRIVATE
 	USE_METAMOD
 	HAVE_STDINT_H
 	MATHLIB_USE_C_ASSERT
+	MATHLIB_VECTOR_NONTRIVIAL
 )
 
 # Dependencies

@@ -68,10 +68,15 @@ public:
 			data.pInfoAvatar->SetSize(m_pAvatar->GetWide(), m_pAvatar->GetTall());
 		}
 
-		if (ClientSteamContext().SteamUtils() && data.pi->GetValidSteamID64())
+		uint64_t steamId = data.pi->GetValidSteamID64();
+		if (ClientSteamContext().SteamUtils() && steamId != 0)
 		{
-			CSteamID steamIDForPlayer(data.pi->GetValidSteamID64());
+			CSteamID steamIDForPlayer(steamId);
 			data.pInfoAvatar->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
+		}
+		else
+		{
+			data.pInfoAvatar->ClearAvatarSteamID();
 		}
 
 		m_pAvatar->SetImage(data.pInfoAvatar);

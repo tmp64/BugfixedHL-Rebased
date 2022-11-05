@@ -28,6 +28,7 @@
 
 ConVar hud_scores("hud_scores", "0", FCVAR_BHL_ARCHIVE, "Maximum number of lines for HUD scoreboard, 0 to disable");
 ConVar hud_scores_pos("hud_scores_pos", "30 50", FCVAR_BHL_ARCHIVE, "Position of HUD scoreboard, 'x y' in pixels");
+ConVar hud_scores_alpha("hud_scores_alpha", "20", FCVAR_BHL_ARCHIVE, "Alpha of HUD scoreboard");
 
 DEFINE_HUD_ELEM(CHudScores);
 
@@ -71,7 +72,8 @@ void CHudScores::Draw(float flTime)
 		r = data.color.r();
 		g = data.color.g();
 		b = data.color.b();
-		FillRGBA(xpos - 10, ypos + 2, m_iOverLay, gHUD.m_scrinfo.iCharHeight * 0.9, r, g, b, gHUD.m_Teamplay ? 20 : 10);
+		const uint8_t alpha = static_cast<uint8_t>(clamp(hud_scores_alpha.GetInt(), 0, 255));
+		FillRGBA(xpos - 10, ypos + 2, m_iOverLay, gHUD.m_scrinfo.iCharHeight * 0.9, r, g, b, alpha);
 
 		ScaleColors(r, g, b, 135);
 

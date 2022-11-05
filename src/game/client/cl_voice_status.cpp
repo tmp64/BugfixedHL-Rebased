@@ -233,11 +233,14 @@ void CVoiceStatus::CreateEntities()
 
 void CVoiceStatus::UpdateSpeakerStatus(int entindex, qboolean bTalking)
 {
+	// gEngfuncs.GetLocalPlayer() returns garbage before VidInit
 	if (!m_VoiceHeadModel)
-	{
-		// gEngfuncs.GetLocalPlayer() returns garbage before VidInit
 		return;
-	}
+
+	// gEngfuncs.GetLocalPlayer() returns nullptr+offset after disconnecting because cl_entities is nullptr
+	// GetEntityByIndex(idx) { return cl_entities[idx]; }
+	if (!gEngfuncs.GetEntityByIndex(0))
+		return;
 
 	cvar_t *pVoiceLoopback = NULL;
 

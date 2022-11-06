@@ -43,7 +43,10 @@ private:
 	CrosshairSettings m_Settings;
 	int m_nX = 0, m_nY = 0;
 	int m_wide = 0, m_tall = 0;
-	int m_offX = 0, m_offY = 0;
+
+	void DrawVLine(int x0, int y0, int len, int thick);
+	void DrawHLine(int x0, int y0, int len, int thick);
+	void DrawDot(int x, int y, int size);
 };
 
 #endif

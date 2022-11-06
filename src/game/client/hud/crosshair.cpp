@@ -7,7 +7,7 @@ static ConVar cl_cross_enable("cl_cross_enable", "1", FCVAR_BHL_ARCHIVE);
 static ConVar cl_cross_red("cl_cross_red", "0", FCVAR_BHL_ARCHIVE);
 static ConVar cl_cross_green("cl_cross_green", "255", FCVAR_BHL_ARCHIVE);
 static ConVar cl_cross_blue("cl_cross_blue", "255", FCVAR_BHL_ARCHIVE);
-static ConVar cl_cross_gap("cl_cross_gap", "8", FCVAR_BHL_ARCHIVE);
+static ConVar cl_cross_gap("cl_cross_gap", "4", FCVAR_BHL_ARCHIVE);
 static ConVar cl_cross_size("cl_cross_size", "6", FCVAR_BHL_ARCHIVE);
 static ConVar cl_cross_thickness("cl_cross_thickness", "2", FCVAR_BHL_ARCHIVE);
 static ConVar cl_cross_outline_thickness("cl_cross_outline_thickness", "0", FCVAR_BHL_ARCHIVE);

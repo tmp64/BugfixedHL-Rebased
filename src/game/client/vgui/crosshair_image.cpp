@@ -1,4 +1,5 @@
 #include <cmath>
+#include <mathlib/mathlib.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/Controls.h>
 #include "crosshair_image.h"
@@ -107,7 +108,7 @@ void CCrosshairImage::DrawVLine(int x0, int y0, int len, int thick)
 
 	// Restore CW vertex order
 	if (len < 0)
-		std::swap(ry0, ry1);
+		V_swap(ry0, ry1);
 
 	vgui2::surface()->DrawFilledRect(rx0, ry0, rx1, ry1);
 }
@@ -130,7 +131,7 @@ void CCrosshairImage::DrawHLine(int x0, int y0, int len, int thick)
 
 	// Restore CW vertex order
 	if (len < 0)
-		std::swap(rx0, rx1);
+		V_swap(rx0, rx1);
 
 	vgui2::surface()->DrawFilledRect(rx0, ry0, rx1, ry1);
 }

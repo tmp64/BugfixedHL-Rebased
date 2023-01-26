@@ -367,7 +367,7 @@ void CHudAmmo::Think(void)
 		return;
 
 	// has the player selected one?
-	if (gHUD.m_iKeyBits & IN_ATTACK)
+	if (gHUD.m_iKeyBits & IN_ATTACK || CVAR_GET_FLOAT("hud_fastswitch") == 2)
 	{
 		if (gpActiveSel != (WEAPON *)1)
 		{

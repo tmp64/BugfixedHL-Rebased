@@ -367,7 +367,7 @@ void CHudAmmo::Think(void)
 		return;
 
 	// has the player selected one?
-	if (gHUD.m_iKeyBits & IN_ATTACK)
+	if (gHUD.m_iKeyBits & IN_ATTACK || hud_fastswitch.GetInt() == 2)
 	{
 		if (gpActiveSel != (WEAPON *)1)
 		{
@@ -429,7 +429,7 @@ void WeaponsResource::SelectSlot(int iSlot, int fAdvance, int iDirection)
 		return;
 
 	WEAPON *p = NULL;
-	bool fastSwitch = hud_fastswitch.GetBool();
+	bool fastSwitch = hud_fastswitch.GetInt() != 0;
 
 	if ((gpActiveSel == NULL) || (gpActiveSel == (WEAPON *)1) || (iSlot != gpActiveSel->iSlot))
 	{

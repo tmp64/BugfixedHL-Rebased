@@ -18,7 +18,7 @@ jobs:
   build:
     strategy:
       matrix:
-        runs-on: [windows-2019, ubuntu-18.04]
+        runs-on: [windows-2019, ubuntu-20.04]
         target: [client, server]
     
     # The type of runner that the job will run on
@@ -31,13 +31,13 @@ jobs:
         with:
           submodules: recursive
       
-      - name: Set up Python 3.7
+      - name: Set up Python 3.8
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: 3.7
+          python-version: 3.8
       
       - name: Install Ubuntu packages
-        if: matrix.runs-on == 'ubuntu-18.04'
+        if: matrix.runs-on == 'ubuntu-20.04'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true

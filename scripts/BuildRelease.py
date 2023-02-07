@@ -313,12 +313,13 @@ class BuildScript:
 
         # Set artifact name
         if args.ci:
-            print('::set-output name=artifact_name::BugfixedHL-{}-{}-{}-{}'.format(
-                self.release_version.replace('+', '-'),
-                self.build_target_name,
-                get_platform_type(),
-                self.git_hash
-            ))
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                f.write('artifact_name=BugfixedHL-{}-{}-{}-{}'.format(
+                    self.release_version.replace('+', '-'),
+                    self.build_target_name,
+                    get_platform_type(),
+                    self.git_hash
+                ))
 
         out_dir = args.out_dir
         if out_dir:

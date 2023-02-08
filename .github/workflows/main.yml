@@ -18,7 +18,7 @@ jobs:
   build:
     strategy:
       matrix:
-        runs-on: [windows-2019, ubuntu-18.04]
+        runs-on: [windows-2019, ubuntu-20.04]
         target: [client, server]
     
     # The type of runner that the job will run on
@@ -27,17 +27,17 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.3.0
         with:
           submodules: recursive
       
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4.5.0
         with:
-          python-version: 3.7
+          python-version: 3.8
       
       - name: Install Ubuntu packages
-        if: matrix.runs-on == 'ubuntu-18.04'
+        if: matrix.runs-on == 'ubuntu-20.04'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
@@ -54,7 +54,7 @@ jobs:
           ctest -R ${{ matrix.target }} --build-config RelWithDebInfo --output-on-failure
 
       - name: Upload build result
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: ${{ steps.build.outputs.artifact_name }}
           path: ./_build_out/BugfixedHL-*.zip

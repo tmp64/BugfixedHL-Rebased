@@ -8,6 +8,9 @@
 #include "event_api.h"
 #include "ag_location.h"
 
+//! Maximum location file size. The file is read into memory so this is just an arbitrary sane limit.
+constexpr int MAX_LOCATION_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
+
 DEFINE_HUD_ELEM(AgHudLocation);
 
 AgHudLocation::Location::Location()
@@ -178,11 +181,11 @@ void AgHudLocation::Load()
 	}
 	m_locations[ARRAYSIZE(m_locations) - 1].m_nextLocation = NULL;
 
-	char szData[8196];
+	std::vector<char> szData;
 	char szFile[MAX_PATH];
 	const char *gameDirectory = gEngfuncs.pfnGetGameDirectory();
 	sprintf(szFile, "%s/locs/%s.loc", gameDirectory, m_szMap);
-	FILE *pFile = fopen(szFile, "r");
+	FILE *pFile = fopen(szFile, "rb");
 	if (!pFile)
 	{
 		// file error
@@ -192,10 +195,42 @@ void AgHudLocation::Load()
 		return;
 	}
 
-	const int iRead = fread(szData, sizeof(char), sizeof(szData) - 2, pFile);
-	fclose(pFile);
-	if (iRead <= 0)
+	// Get file size
+	fseek(pFile, 0, SEEK_END);
+	int locFileSize = (int)ftell(pFile);
+
+	if (locFileSize < 0)
+	{
+		ConPrintf("%s: ftell failed\n", szFile);
+		fclose(pFile);
 		return;
+	}
+
+	if (locFileSize == 0)
+	{
+		ConPrintf("%s: file is empty\n", szFile);
+		fclose(pFile);
+		return;
+	}
+
+	if (locFileSize == MAX_LOCATION_FILE_SIZE)
+	{
+		ConPrintf("%s: file is too large\n", szFile);
+		fclose(pFile);
+		return;
+	}
+
+	szData.resize(locFileSize + 1);
+	const int iRead = fread(szData.data(), sizeof(char), locFileSize, pFile);
+	fclose(pFile);
+	pFile = nullptr;
+
+	if (iRead != locFileSize)
+	{
+		ConPrintf("%s: failed to read the file\n", szFile);
+		return;
+	}
+
 	szData[iRead] = '\0';
 
 	enum class ParseState
@@ -208,7 +243,7 @@ void AgHudLocation::Load()
 	ParseState parseState = ParseState::Location;
 	Location *lastLocation = NULL;
 	m_firstLocation = m_freeLocation;
-	char *pszParse = strtok(szData, "#");
+	char *pszParse = strtok(szData.data(), "#");
 	if (pszParse)
 	{
 		while (pszParse)

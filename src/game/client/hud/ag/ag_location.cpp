@@ -213,7 +213,7 @@ void AgHudLocation::Load()
 		return;
 	}
 
-	if (locFileSize == MAX_LOCATION_FILE_SIZE)
+	if (locFileSize >= MAX_LOCATION_FILE_SIZE)
 	{
 		ConPrintf("%s: file is too large\n", szFile);
 		fclose(pFile);

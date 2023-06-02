@@ -83,7 +83,7 @@ void LoadAuthID()
 
 	if (hFile == FILESYSTEM_INVALID_HANDLE)
 	{
-		ConPrintf(ConColor::Red, "Failed to open realnames.txt");
+		ConPrintf(ConColor::Red, "Failed to open realnames.txt\n");
 		return;
 	}
 

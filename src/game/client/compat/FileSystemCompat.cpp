@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <tier0/dbg.h>
 #include "compat/FileSystemCompat.h"
 

@@ -195,6 +195,13 @@ typedef struct packet_entities_s
 	entity_state_t *entities;
 } packet_entities_t;
 
+typedef struct packet_entities_9884_s
+{
+	int num_entities;
+	uint8_t flags[128];
+	entity_state_t *entities;
+} packet_entities_9884_t;
+
 typedef struct frame_s
 {
 	double receivedtime;
@@ -216,5 +223,27 @@ typedef struct frame_s
 	uint16_t voicebytes;
 	uint16_t msgbytes;
 } frame_t;
+
+typedef struct frame_9884_s
+{
+	double receivedtime;
+	double latency;
+	qboolean invalid;
+	qboolean choked;
+	entity_state_t playerstate[32];
+	double time;
+	clientdata_t clientdata;
+	weapon_data_t weapondata[64];
+	packet_entities_9884_t packet_entities;
+	uint16_t clientbytes;
+	uint16_t playerinfobytes;
+	uint16_t packetentitybytes;
+	uint16_t tentitybytes;
+	uint16_t soundbytes;
+	uint16_t eventbytes;
+	uint16_t usrbytes;
+	uint16_t voicebytes;
+	uint16_t msgbytes;
+} frame_9884_t;
 
 #endif

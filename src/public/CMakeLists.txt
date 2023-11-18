@@ -3,7 +3,6 @@ add_sources(
 	cl_dll/IGameClientExports.h
 	steam/steamtypes.h
 	archtypes.h
-	FileSystem.h
 	keydefs.h
 	particleman.h
 	pman_particlemem.h

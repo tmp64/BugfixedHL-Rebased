@@ -7,6 +7,15 @@
 struct SvcHandler;
 struct UserMessage;
 
+//! Probably the last version before SteamPipe.
+constexpr int ENGINE_BUILD_PRE_STEAMPIPE = 4554;
+
+//! First builds of SteamPipe.
+constexpr int ENGINE_BUILD_STEAMPIPE = 6000;
+
+//! First build of the Anniversary Update (2023-11-16).
+constexpr int ENGINE_BUILD_ANNIVERSARY = 9884;
+
 /**
  * Engine patching includes fixing some bugs and 
  */

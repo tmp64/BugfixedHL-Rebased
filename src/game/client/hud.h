@@ -202,7 +202,6 @@ public:
 
 	ColorCodeAction GetColorCodeAction();
 	Color GetColorCodeColor(int code);
-	const char *GetEngineVersion();
 
 	/**
 	 * Returns a color for client.
@@ -221,6 +220,12 @@ public:
 	 */
 	inline int GetFrameCount() { return m_iFrameCount; }
 
+	//! @returns The engine version string (value of sv_version cvar).
+	const char *GetEngineVersion();
+
+	//! @returns The engine build number.
+	int GetEngineBuild() const { return m_iEngineBuildNumber; }
+
 private:
 	struct SpriteName
 	{
@@ -237,6 +242,7 @@ private:
 	std::vector<CHudElem *> m_HudList;
 	std::unordered_map<int, int> m_CharWidths;
 	char m_szEngineVersion[128];
+	int m_iEngineBuildNumber = 0;
 
 	// the memory for these arrays are allocated in the first call
 	// to CHud::VidInit(), when the hud.txt and associated sprites are loaded.

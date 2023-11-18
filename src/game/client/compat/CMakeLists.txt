@@ -1,0 +1,11 @@
+add_sources(
+	CMakeLists.txt
+	anniversary_compat.cpp
+	anniversary_compat.h
+	FileSystemCompat.cpp
+	FileSystemCompat.h
+	ISchemeCompat.cpp
+	ISchemeCompat.h
+	ISurfaceCompat.cpp
+	ISurfaceCompat.h
+)

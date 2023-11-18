@@ -13,6 +13,9 @@
 #include "client_vgui.h"
 #include "vgui/client_viewport.h"
 #include "gameui/gameui_viewport.h"
+#include "hud.h"
+#include "engine_patches.h"
+#include "compat/anniversary_compat.h"
 
 EXPOSE_SINGLE_INTERFACE(CClientVGUI, IClientVGUI, ICLIENTVGUI_NAME);
 
@@ -28,8 +31,26 @@ HScheme VGui_GetDefaultScheme()
 
 void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 {
-	ConnectTier1Libraries(pFactories, iNumFactories);
-	ConnectTier2Libraries(pFactories, iNumFactories);
+	std::vector<CreateInterfaceFn> factoryList;
+	factoryList.insert(factoryList.end(), pFactories, pFactories + iNumFactories);
+
+	if (gHUD.GetEngineBuild() < ENGINE_BUILD_ANNIVERSARY)
+	{
+		// Old builds require interface wrappers
+		CreateInterfaceFn pfnCompatFactory = Compat_CreateFactory(factoryList.data(), factoryList.size());
+
+		if (pfnCompatFactory)
+		{
+			factoryList.insert(factoryList.begin(), pfnCompatFactory);
+		}
+		else
+		{
+			AssertFatal(!("Failed to intialize compatibility factory"));
+		}
+	}
+
+	ConnectTier1Libraries(factoryList.data(), factoryList.size());
+	ConnectTier2Libraries(factoryList.data(), factoryList.size());
 
 	if (!vgui2::VGui_InitInterfacesList("CLIENT", pFactories, iNumFactories))
 	{
@@ -38,7 +59,7 @@ void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 	}
 
 	// Add language files
-	g_pVGuiLocalize->AddFile(g_pFullFileSystem, VGUI2_ROOT_DIR "resource/language/bugfixedhl_%language%.txt");
+	g_pVGuiLocalize->AddFile(g_pEngineFileSystem, VGUI2_ROOT_DIR "resource/language/bugfixedhl_%language%.txt");
 
 	new CClientViewport();
 	new CGameUIViewport();

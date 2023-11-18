@@ -108,6 +108,7 @@ else()
 	)
 endif()
 
+add_subdirectory( compat )
 add_subdirectory( gameui )
 add_subdirectory( hl )
 add_subdirectory( hud )

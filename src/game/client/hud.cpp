@@ -511,9 +511,24 @@ void CHud::SaveEngineVersion()
 {
 	cvar_t *sv_version = sv_version = gEngfuncs.pfnGetCvarPointer("sv_version");
 	if (sv_version)
+	{
 		Q_strncpy(m_szEngineVersion, sv_version->string, sizeof(m_szEngineVersion));
+
+		// Parse build number
+		std::string_view version = m_szEngineVersion;
+		size_t lastComma = version.rfind(',');
+
+		if (lastComma != std::string::npos)
+		{
+			const char *buildStr = m_szEngineVersion + lastComma + 1;
+			m_iEngineBuildNumber = atoi(buildStr);
+		}
+	}
 	else
+	{
 		Q_strncpy(m_szEngineVersion, "< sv_version not found >", sizeof(m_szEngineVersion));
+		m_iEngineBuildNumber = -1;
+	}
 }
 
 bool CHud::IsAG()

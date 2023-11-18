@@ -54,10 +54,8 @@ public:
 
 	virtual float GetProportionalScale() override
 	{
-		constexpr int BASE_HEIGHT = 480;
-		int wide, tall;
-		surface()->GetScreenSize(wide, tall);
-		return (float)tall / BASE_HEIGHT;
+		// Not used. Overriden by CClientVGUI
+		return 0.0f;
 	}
 
 	virtual int GetProportionalScaledValue(int normalizedValue) override

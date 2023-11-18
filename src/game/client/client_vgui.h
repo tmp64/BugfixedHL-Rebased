@@ -19,6 +19,8 @@ public:
 	virtual void Shutdown();
 
 private:
+	//! @returns The VGUI propertional scale factor.
+	static float GetProportionalScale();
 };
 
 #endif

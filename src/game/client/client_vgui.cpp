@@ -7,6 +7,7 @@
 #include <KeyValues.h>
 #include <vgui/IPanel.h>
 #include <vgui/ILocalize.h>
+#include <vgui/ISurface.h>
 #include <vgui_controls/Controls.h>
 #include <convar.h>
 #include "console.h"
@@ -58,6 +59,9 @@ void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 		Assert(false);
 	}
 
+	// Override propertional scale
+	vgui2::VGui_SetProportionalScaleCallback(&GetProportionalScale);
+
 	// Add language files
 	g_pVGuiLocalize->AddFile(g_pEngineFileSystem, VGUI2_ROOT_DIR "resource/language/bugfixedhl_%language%.txt");
 
@@ -103,6 +107,14 @@ void CClientVGUI::Shutdown()
 {
 	// Warning! Only called for CS & CZ
 	// Do not use!
+}
+
+float CClientVGUI::GetProportionalScale()
+{
+	constexpr int BASE_HEIGHT = 480;
+	int wide, tall;
+	g_pVGuiSurface->GetScreenSize(wide, tall);
+	return (float)tall / BASE_HEIGHT;
 }
 
 static void DumpPanel(vgui2::VPANEL panel, int offset, bool bParentVisible, bool bDumpAll)

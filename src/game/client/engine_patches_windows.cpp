@@ -252,27 +252,55 @@ void CEnginePatchesWindows::PlatformLatePatching()
 
 void CEnginePatchesWindows::FindMsgBuf()
 {
-	// Find and get engine messages buffer variables in READ_CHAR function
-	const char data1[] = "A1283DCD02 8B1530E67602 8D4801 3BCA 7E0E C7052C3DCD0201000000 83C8FFC3 8B1528E67602 890D283DCD02";
-	const char mask1[] = "FF00000000 FFFF00000000 FFFFFF FFFF FF00 FFFF0000000000000000 FFFFFFFF FFFF00000000 FFFF00000000";
-	size_t addr1 = MemoryFindForward(m_EngineModule.iBase, m_EngineModule.iEnd, data1, mask1);
-	if (!addr1)
+	if (gHUD.GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY)
 	{
-		ConPrintf(ConColor::Red, "Engine patch: offsets of EngineBuffer variables not found.\n");
-		return;
-	}
+		// Find and get engine messages buffer variables in READ_CHAR function
+		//                    mov          lea    cmp          jle  mov                  or     retn mov      movzx    mov          retn
+		const char data1[] = "8B0DC45E2311 8D5101 3B1530F52211 7E0E C705C05E231101000000 83C8FF C3 A128F52211 0FBE0408 8915C45E2311 C3";
+		const char mask1[] = "FFFF00000000 FFFFFF FFFF00000000 FFFF FFFF00000000FFFFFFFF FFFFFF FF FF00000000 FFFFFFFF FFFF00000000 FF";
+		size_t addr1 = MemoryFindForward(m_EngineModule.iBase, m_EngineModule.iEnd, data1, mask1);
+		if (!addr1)
+		{
+			ConPrintf(ConColor::Red, "Engine patch: offsets of EngineBuffer variables not found.\n");
+			return;
+		}
 
-	// We have two references of EngineReadPos, compare them
-	if ((int *)*(size_t *)(addr1 + 1) != (int *)*(size_t *)(addr1 + 40))
+		// We have two references of EngineReadPos, compare them
+		if ((int *)*(size_t *)(addr1 + 2) != (int *)*(size_t *)(addr1 + 42))
+		{
+			ConPrintf(ConColor::Red, "Engine patch: offsets of EngineReadPos didn't match.\n");
+			return;
+		}
+
+		// Pointers to buffer, its size and current buffer read position
+		m_MsgBuf.m_EngineBuf = (void **)*(size_t *)(addr1 + 32);
+		m_MsgBuf.m_EngineBufSize = (int *)(*(size_t *)(addr1 + 32) + 8);
+		m_MsgBuf.m_EngineReadPos = (int *)*(size_t *)(addr1 + 2);
+	}
+	else
 	{
-		ConPrintf(ConColor::Red, "Engine patch: offsets of EngineReadPos didn't match.\n");
-		return;
-	}
+		// Find and get engine messages buffer variables in READ_CHAR function
+		const char data1[] = "A1283DCD02 8B1530E67602 8D4801 3BCA 7E0E C7052C3DCD0201000000 83C8FFC3 8B1528E67602 890D283DCD02";
+		const char mask1[] = "FF00000000 FFFF00000000 FFFFFF FFFF FF00 FFFF0000000000000000 FFFFFFFF FFFF00000000 FFFF00000000";
+		size_t addr1 = MemoryFindForward(m_EngineModule.iBase, m_EngineModule.iEnd, data1, mask1);
+		if (!addr1)
+		{
+			ConPrintf(ConColor::Red, "Engine patch: offsets of EngineBuffer variables not found.\n");
+			return;
+		}
 
-	// Pointers to buffer, its size and current buffer read position
-	m_MsgBuf.m_EngineBuf = (void **)*(size_t *)(addr1 + 34);
-	m_MsgBuf.m_EngineBufSize = (int *)*(size_t *)(addr1 + 7);
-	m_MsgBuf.m_EngineReadPos = (int *)*(size_t *)(addr1 + 1);
+		// We have two references of EngineReadPos, compare them
+		if ((int *)*(size_t *)(addr1 + 1) != (int *)*(size_t *)(addr1 + 40))
+		{
+			ConPrintf(ConColor::Red, "Engine patch: offsets of EngineReadPos didn't match.\n");
+			return;
+		}
+
+		// Pointers to buffer, its size and current buffer read position
+		m_MsgBuf.m_EngineBuf = (void **)*(size_t *)(addr1 + 34);
+		m_MsgBuf.m_EngineBufSize = (int *)*(size_t *)(addr1 + 7);
+		m_MsgBuf.m_EngineReadPos = (int *)*(size_t *)(addr1 + 1);
+	}
 }
 
 void CEnginePatchesWindows::FindSvcArray()

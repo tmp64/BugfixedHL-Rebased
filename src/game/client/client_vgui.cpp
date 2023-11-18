@@ -60,7 +60,9 @@ void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 	}
 
 	// Override propertional scale
-	vgui2::VGui_SetProportionalScaleCallback(&GetProportionalScale);
+	// The Anniverssary Update changed the base resolution from 640x480 to 1280x720.
+	// This causes all old UI to be down-scaled.
+	vgui2::VGui_SetProportionalBaseCallback(&GetProportionalBase);
 
 	// Add language files
 	g_pVGuiLocalize->AddFile(g_pEngineFileSystem, VGUI2_ROOT_DIR "resource/language/bugfixedhl_%language%.txt");
@@ -109,12 +111,10 @@ void CClientVGUI::Shutdown()
 	// Do not use!
 }
 
-float CClientVGUI::GetProportionalScale()
+void CClientVGUI::GetProportionalBase(int &wide, int &tall)
 {
-	constexpr int BASE_HEIGHT = 480;
-	int wide, tall;
-	g_pVGuiSurface->GetScreenSize(wide, tall);
-	return (float)tall / BASE_HEIGHT;
+	wide = 640;
+	tall = 480;
 }
 
 static void DumpPanel(vgui2::VPANEL panel, int offset, bool bParentVisible, bool bDumpAll)

@@ -123,6 +123,7 @@ void CSvcMessages::Init()
 	m_Handlers.funcs.pfnSvcSendCvarValue2 = CallMember<&CSvcMessages::SvcSendCvarValue2>;
 
 	CEnginePatches::Get().HookSvcHandlers(m_Handlers.array);
+	m_bInitialized = true;
 }
 
 void CSvcMessages::VidInit()
@@ -141,7 +142,7 @@ void CSvcMessages::SendStatusRequest()
 		return;
 
 	// Check if svc_print is hooked
-	if (!CEnginePatches::Get().GetSvcArray())
+	if (!m_bInitialized)
 		return;
 
 	// Only send or delay once per frame

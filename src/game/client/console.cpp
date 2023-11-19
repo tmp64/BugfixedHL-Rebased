@@ -255,12 +255,12 @@ void console::HookConsoleColor()
 
 		if (*pColor != compare)
 		{
-			if (target)
+			if (!target)
 			{
 				ConPrintf(ConColor::Red,
 				    "  Offset: 0x%X\n"
-				    "  Expected: %d %d %d %d\n"
-				    "  Got: %d %d %d %d.\n",
+				    "    Expected: %d %d %d %d\n"
+				    "    Got: %d %d %d %d.\n",
 					offset,
 				    compare.r(), compare.g(), compare.b(), compare.a(),
 				    pColor->r(), pColor->g(), pColor->b(), pColor->a());

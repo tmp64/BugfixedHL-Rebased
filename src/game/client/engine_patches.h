@@ -14,7 +14,12 @@ constexpr int ENGINE_BUILD_PRE_STEAMPIPE = 4554;
 constexpr int ENGINE_BUILD_STEAMPIPE = 6000;
 
 //! First build of the Anniversary Update (2023-11-16).
+//! Changes a bunch of interfaces (see https://github.com/ValveSoftware/halflife/issues/3442)
 constexpr int ENGINE_BUILD_ANNIVERSARY = 9884;
+
+//! Third build of the Anniversary Update (2023-11-16).
+//! Reverts the interface changes (see https://github.com/ValveSoftware/halflife/issues/3442).
+constexpr int ENGINE_BUILD_ANNIVERSARY_3 = 9886;
 
 /**
  * Engine patching includes fixing some bugs and 

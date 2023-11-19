@@ -35,7 +35,8 @@ void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 	std::vector<CreateInterfaceFn> factoryList;
 	factoryList.insert(factoryList.end(), pFactories, pFactories + iNumFactories);
 
-	if (gHUD.GetEngineBuild() < ENGINE_BUILD_ANNIVERSARY)
+	// FIXME 2023-11-19: Interface changes reverted. Remove the whole compat thing.
+	if (gHUD.GetEngineBuild() < ENGINE_BUILD_ANNIVERSARY || gHUD.GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY_3)
 	{
 		// Old builds require interface wrappers
 		CreateInterfaceFn pfnCompatFactory = Compat_CreateFactory(factoryList.data(), factoryList.size());

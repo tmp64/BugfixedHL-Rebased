@@ -381,13 +381,30 @@ void CEnginePatchesWindows::FindSvcArray()
 
 void CEnginePatchesWindows::FindUserMessageList()
 {
-	// Search for registered user messages chain entry
-	const char data1[] = "81FB00010000 0F8D1B010000 8B3574FF6C03 85F6740B";
-	const char mask1[] = "FFFFFFFFFFFF FFFF0000FFFF FFFF00000000 FFFFFF00";
+	const char *data1;
+	const char *mask1;
+	size_t offset;
+
+	if (gHUD.GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY)
+	{
+		// Search for gClientUserMsgs in DispatchUserMsg (inlined in CL_ParseServerMessage)
+		//       cmp          jge          mov          test jz  nop cmp  jz
+		data1 = "81FF00010000 0F8D32010000 8B35B8DF3210 85F6 740C 90 393E 7412";
+		mask1 = "FFFFFFFFFFFF FFFF0000FFFF FFFF00000000 FFFF FF00 FF FFFF FF00";
+		offset = 14;
+	}
+	else
+	{
+		// Search for registered user messages chain entry
+		data1 = "81FB00010000 0F8D1B010000 8B3574FF6C03 85F6740B";
+		mask1 = "FFFFFFFFFFFF FFFF0000FFFF FFFF00000000 FFFFFF00";
+		offset = 14;
+	}
+
 	size_t addr1 = MemoryFindForward(m_EngineModule.iBase, m_EngineModule.iEnd, data1, mask1);
 	if (addr1)
 	{
-		m_pUserMsgList = (UserMessage **)*(size_t *)(addr1 + 14);
+		m_pUserMsgList = (UserMessage **)*(size_t *)(addr1 + offset);
 	}
 	else
 	{

@@ -1122,6 +1122,9 @@ int CHudAmmo::DrawWList(float flTime)
 			if (p)
 				iWidth = p->rcActive.right - p->rcActive.left;
 
+			HSPRITE hSprSelection = gHUD.GetSprite(m_HUD_selection);
+			const wrect_t &rcSprSelection = gHUD.GetSpriteRect(m_HUD_selection);
+
 			for (int iPos = 0; iPos < MAX_WEAPON_POSITIONS; iPos++)
 			{
 				p = gWR.GetWeaponSlot(i, iPos);
@@ -1138,11 +1141,19 @@ int CHudAmmo::DrawWList(float flTime)
 					a = 255 * gHUD.GetHudTransparency();
 					ScaleColors(r, g, b, a);
 
-					SPR_Set(p->hActive, r, g, b);
-					SPR_DrawAdditive(0, x, y, &p->rcActive);
+					if (p->hActive)
+					{
+						SPR_Set(p->hActive, r, g, b);
+						SPR_DrawAdditive(0, x, y, &p->rcActive);
+					}
+					else
+					{
+						// Pink rect
+						gEngfuncs.pfnFillRGBA(x, y, rcSprSelection.right - rcSprSelection.left, rcSprSelection.bottom - rcSprSelection.top, 64, 0, 64, a);
+					}
 
-					SPR_Set(gHUD.GetSprite(m_HUD_selection), r, g, b);
-					SPR_DrawAdditive(0, x, y, &gHUD.GetSpriteRect(m_HUD_selection));
+					SPR_Set(hSprSelection, r, g, b);
+					SPR_DrawAdditive(0, x, y, &rcSprSelection);
 				}
 				else
 				{
@@ -1160,15 +1171,23 @@ int CHudAmmo::DrawWList(float flTime)
 						ScaleColors(r, g, b, a);
 					}
 
-					SPR_Set(p->hInactive, r, g, b);
-					SPR_DrawAdditive(0, x, y, &p->rcInactive);
+					if (p->hInactive)
+					{
+						SPR_Set(p->hInactive, r, g, b);
+						SPR_DrawAdditive(0, x, y, &p->rcInactive);
+					}
+					else
+					{
+						// Pink rect
+						gEngfuncs.pfnFillRGBA(x, y, rcSprSelection.right - rcSprSelection.left, rcSprSelection.bottom - rcSprSelection.top, 48, 0, 48, a);
+					}
 				}
 
 				// Draw Ammo Bar
 
 				DrawAmmoBar(p, x + giABWidth / 2, y, giABWidth, giABHeight);
 
-				y += p->rcActive.bottom - p->rcActive.top + 5;
+				y += rcSprSelection.bottom - rcSprSelection.top + 5;
 			}
 
 			x += iWidth + 5;

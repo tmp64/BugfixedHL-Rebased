@@ -20,6 +20,7 @@
 
 #include <cstring>
 #include <cstdio>
+#include <FileSystem.h>
 #include <vgui/IScheme.h>
 #include <vgui_controls/AnimationController.h>
 #include <vgui_controls/Controls.h>
@@ -42,6 +43,7 @@
 #include "bhlcfg.h"
 #include "results.h"
 #include "svc_messages.h"
+#include "sdl_rt.h"
 
 #if USE_UPDATER
 #include "updater/update_checker.h"
@@ -87,6 +89,35 @@
 #include "hud/ag/ag_timeout.h"
 #include "hud/ag/ag_vote.h"
 
+struct HudScaleInfo
+{
+	//! The sprite resolution.
+	int iRes = 0;
+
+	//! The minimum height for this scale to be selected automatically.
+	int iHeight = 0;
+
+	//! Enum value.
+	EHudScale nScale = EHudScale::Auto;
+
+	//! The file to test for support.
+	const char *szTestFile = nullptr;
+
+	//! @returns Whether this scale is supported by the given max scale.
+	bool IsSupported(EHudScale maxScale) const
+	{
+		return nScale <= maxScale;
+	}
+};
+
+//! The list of allowed HUD sizes.
+static constexpr HudScaleInfo HUD_SCALE_INFO[] = {
+	HudScaleInfo { 320,  240,  EHudScale ::X05, "sprites/320hud1.spr" },
+	HudScaleInfo { 640,  480,  EHudScale ::X1,  "sprites/640hud1.spr" },
+	HudScaleInfo { 1280, 960,  EHudScale ::X2,  "sprites/1280/hud_bucket0.spr" },
+	HudScaleInfo { 2560, 1920, EHudScale ::X4,  "sprites/2560/hud_bucket0.spr" },
+};
+
 extern cvar_t *cl_lw;
 
 ConVar cl_bhopcap("cl_bhopcap", "2", FCVAR_BHL_ARCHIVE, "Enables/disables bhop speed cap, '2' - detect automatically");
@@ -96,6 +127,7 @@ ConVar hud_color2("hud_color2", "255 160 0", FCVAR_BHL_ARCHIVE, "HUD color when 
 ConVar hud_color3("hud_color3", "255 96 0", FCVAR_BHL_ARCHIVE, "HUD color when (25%; 50%)");
 ConVar hud_draw("hud_draw", "1", FCVAR_ARCHIVE, "Opacity of the HUD");
 ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
+ConVar hud_scale("hud_scale", "0", FCVAR_BHL_ARCHIVE, "HUD Scale: Auto, 50%, 100%, 200%, 400% (restart required)");
 ConVar hud_capturemouse("hud_capturemouse", "1", FCVAR_ARCHIVE);
 ConVar hud_classautokill("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Whether or not to suicide immediately on TF class switch");
 ConVar cl_autowepswitch("cl_autowepswitch", "1", FCVAR_BHL_ARCHIVE | FCVAR_USERINFO, "Controls autoswitching to best weapon on pickup\n  0 - never, 1 - always, 2 - unless firing");
@@ -170,6 +202,49 @@ static void AboutCommand(void)
 	ConPrintf("Discussion forum: " BHL_FORUM_URL "\n");
 }
 
+//! Gets the current HUD size (either user-selected or auto-detected).
+//! @returns iRes.
+static int GetHudSize(const SCREENINFO &screenInfo, EHudScale maxScale)
+{
+	EHudScale userScale = hud_scale.GetEnumClamped<EHudScale>();
+
+	if (userScale != EHudScale::Auto)
+	{
+		// Use user override
+		userScale = clamp(userScale, EHudScale::X05, maxScale);
+		const HudScaleInfo &info = *std::find_if(std::begin(HUD_SCALE_INFO), std::end(HUD_SCALE_INFO), [&](const HudScaleInfo &x)
+		    { return x.nScale == userScale; });
+
+		gEngfuncs.Con_DPrintf("HUD Size Override: %dx%d\n", info.iRes, info.iHeight);
+		return info.iRes;
+	}
+
+	// Auto-detect
+	for (auto it = std::rbegin(HUD_SCALE_INFO); it != std::rend(HUD_SCALE_INFO); ++it)
+	{
+		if (!it->IsSupported(maxScale))
+			continue;
+
+		if (screenInfo.iHeight >= it->iHeight)
+		{
+			// Found the largest one.
+			gEngfuncs.Con_DPrintf(
+				"HUD Size Auto-detect: %dx%d for screen %dx%d\n",
+				it->iRes, it->iHeight,
+			    screenInfo.iWidth, screenInfo.iHeight);
+			return it->iRes;
+		}
+	}
+
+	// Too low resolution. Fall back to the smallest one.
+	const HudScaleInfo &fallbackInfo = HUD_SCALE_INFO[0];
+	gEngfuncs.Con_DPrintf(
+	    "HUD Size Auto-detect: fallback %dx%d for too small screen %dx%d\n",
+	    fallbackInfo.iRes, fallbackInfo.iHeight,
+	    screenInfo.iWidth, screenInfo.iHeight);
+	return fallbackInfo.iRes;
+}
+
 CHud::CHud()
 {
 }
@@ -194,6 +269,8 @@ void CHud::Init(void)
 	// Check for AG
 	m_bIsAg = !strcmp(gEngfuncs.pfnGetGameDirectory(), "ag");
 	PM_SetIsAG(m_bIsAg);
+
+	m_MaxHudScale = DetectMaxHudScale();
 
 	HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
 	HookHudMessage<&CHud::MsgFunc_ResetHUD>("ResetHUD");
@@ -353,10 +430,9 @@ void CHud::VidInit(void)
 
 	m_hsprLogo = 0;
 
-	if (ScreenWidth < 640)
-		m_iRes = 320;
-	else
-		m_iRes = 640;
+	// Only update the scale once - otherwise sprites break
+	if (m_iRes == -1)
+		m_iRes = GetHudSize(m_scrinfo, GetMaxHudScale());
 
 	// Only load this once
 	if (!m_pSpriteList)
@@ -730,6 +806,34 @@ void CHud::UpdateSupportsCvar()
 	char buf[64];
 	snprintf(buf, sizeof(buf), "aghl_supports %u", static_cast<unsigned int>(supports));
 	gEngfuncs.pfnClientCmd(buf);
+}
+
+EHudScale CHud::DetectMaxHudScale()
+{
+	const HudScaleInfo *pMaxScaleInfo = nullptr;
+
+	for (const HudScaleInfo& i : HUD_SCALE_INFO)
+	{
+		if (g_pFullFileSystem->FileExists(i.szTestFile))
+		{
+			pMaxScaleInfo = &i;
+		}
+		else
+		{
+			// If i is not supported, then i + 1 isn't supported as well.
+			// Limited by the use of "x <= maxScale" check.
+			break;
+		}
+	}
+
+	if (!pMaxScaleInfo)
+	{
+		GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "BugfixedHL Error", "HUD sprites are missing. Verify game files.");
+		std::abort();
+	}
+
+	gEngfuncs.Con_DPrintf("Maximum HUD scale: %dx%d\n", pMaxScaleInfo->iRes, pMaxScaleInfo->iHeight);
+	return pMaxScaleInfo->nScale;
 }
 
 CON_COMMAND(append, "Puts a command into the end of the command buffer")

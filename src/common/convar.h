@@ -1,6 +1,7 @@
 #ifndef CONVAR_H
 #define CONVAR_H
 #include <cvardef.h>
+#include <MinMax.h>
 
 enum class ConItemType
 {
@@ -51,6 +52,14 @@ public:
 	int GetInt();
 	bool GetBool();
 	const char *GetString();
+
+	template <typename T>
+	T GetEnumClamped()
+	{
+		int minValue = (int)T::_Min;
+		int maxValue = (int)T::_Max;
+		return (T)clamp(GetInt(), minValue, maxValue);
+	}
 
 	void SetValue(float val);
 	void SetValue(int val);

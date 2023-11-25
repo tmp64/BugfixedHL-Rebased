@@ -43,6 +43,7 @@
 #include "results.h"
 #include "opengl.h"
 #include "engfuncs.h"
+#include "engine_builds.h"
 
 CHud gHUD;
 
@@ -105,6 +106,33 @@ void CheckWorkingDirectory()
 		GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Internal error", buf);
 	}
 #endif
+}
+
+//! Checks that the game is not running on an unsupported game build.
+//! @returns Whether the build is supported.
+static bool CheckForInvalidBuilds(int buildNumber)
+{
+	constexpr char TITLE[] = "BugfixedHL - Unsupported game";
+
+	if (buildNumber < ENGINE_BUILD_P48)
+	{
+		GetSDL()->ShowSimpleMessageBox(
+		    SDL_MESSAGEBOX_ERROR, TITLE,
+			"Your game is too old. Please, update to the latest Steam version.");
+		return false;
+	}
+
+	if (buildNumber >= ENGINE_BUILD_ANNIVERSARY_FIRST && buildNumber < ENGINE_BUILD_ANNIVERSARY_FIXED_INTERFACES)
+	{
+		GetSDL()->ShowSimpleMessageBox(
+		    SDL_MESSAGEBOX_ERROR, TITLE,
+			"You are playing one of the first Half-Life 25th Anniversary Update builds.\n"
+		    "This build broke compatibility with most mods and is not supported.\n"
+			"Please, update to the latest Steam version.");
+		return false;
+	}
+
+	return true;
 }
 
 /*
@@ -214,6 +242,9 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 	// Save engine version before everything els
 	// (in case the game crashes there, crash handler will know the engine version)
 	gHUD.SaveEngineVersion();
+	
+	if (!CheckForInvalidBuilds(gHUD.GetEngineBuild()))
+		return 0;
 
 	console::Initialize();
 	CvarSystem::RegisterCvars();

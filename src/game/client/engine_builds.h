@@ -8,6 +8,9 @@
 #define LINUX_OFFSET 0
 #endif
 
+//! Protocol 48 builds.
+constexpr int ENGINE_BUILD_P48 = 4000;
+
 //! Probably the last version before SteamPipe.
 constexpr int ENGINE_BUILD_PRE_STEAMPIPE = 4617;
 

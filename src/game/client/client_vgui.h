@@ -19,6 +19,8 @@ public:
 	virtual void Shutdown();
 
 private:
+	//! Gets the base resolution for VGUI propertional scaling.
+	static void GetProportionalBase(int &wide, int &tall);
 };
 
 #endif

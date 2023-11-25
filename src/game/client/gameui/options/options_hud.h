@@ -19,7 +19,6 @@ class CHudSubOptions : public vgui2::PropertyPage
 public:
 	CHudSubOptions(vgui2::Panel *parent);
 
-	void PerformLayout() override;
 	void OnResetData() override;
 	void OnApplyChanges() override;
 
@@ -43,8 +42,8 @@ private:
 
 	CCvarCheckButton *m_pDeathnoticeVGui = nullptr;
 
-	vgui2::Label *m_pTimerLabel = nullptr;
 	CCVarComboBox *m_pTimerBox = nullptr;
+	CCVarComboBox *m_pScaleBox = nullptr;
 
 	MESSAGE_FUNC_PARAMS(OnSliderMoved, "SliderMoved", kv);
 	MESSAGE_FUNC_PARAMS(OnCvarTextChanged, "CvarTextChanged", kv);

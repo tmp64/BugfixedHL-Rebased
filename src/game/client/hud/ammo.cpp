@@ -1271,8 +1271,7 @@ client_sprite_t *GetSpriteFromList(client_sprite_t *pList, const char *pszNameSt
 				pFallback = p;
 			}
 		}
-		if (p->iRes == iRes && !strncmp(pszNameStart, p->szName, len))
-			return p;
+
 		p++;
 	}
 

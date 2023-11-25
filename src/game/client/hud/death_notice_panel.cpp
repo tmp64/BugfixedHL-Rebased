@@ -31,6 +31,12 @@ CHudDeathNoticePanel::CHudDeathNoticePanel()
 void CHudDeathNoticePanel::VidInit()
 {
 	m_HUD_d_skull = gHUD.GetSpriteIndex("d_skull");
+
+	int cornerWide, cornerTall;
+	GetCornerTextureSize(cornerWide, cornerTall);
+
+	int minRowTall = std::max(cornerTall * 2, gHUD.GetSpriteRect(m_HUD_d_skull).GetHeight());
+	m_iRowTall = std::max(m_iRowHeight, minRowTall);
 }
 
 void CHudDeathNoticePanel::InitHudData()
@@ -184,12 +190,6 @@ void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *kille
 void CHudDeathNoticePanel::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
-
-	int cornerWide, cornerTall;
-	GetCornerTextureSize(cornerWide, cornerTall);
-
-	int minRowTall = std::max(cornerTall * 2, SKULL_SPRITE_HEIGHT);
-	m_iRowTall = std::max(m_iRowHeight, minRowTall);
 }
 
 void CHudDeathNoticePanel::PaintBackground()

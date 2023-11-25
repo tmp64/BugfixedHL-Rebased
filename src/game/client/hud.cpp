@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <FileSystem.h>
 #include <vgui/IScheme.h>
+#include <vgui/ISurface.h>
 #include <vgui_controls/AnimationController.h>
 #include <vgui_controls/Controls.h>
 
@@ -434,6 +435,8 @@ void CHud::VidInit(void)
 	if (m_iRes == -1)
 		m_iRes = GetHudSize(m_scrinfo, GetMaxHudScale());
 
+	m_iTextSize = GetTextSize();
+
 	// Only load this once
 	if (!m_pSpriteList)
 	{
@@ -834,6 +837,23 @@ EHudScale CHud::DetectMaxHudScale()
 
 	gEngfuncs.Con_DPrintf("Maximum HUD scale: %dx%d\n", pMaxScaleInfo->iRes, pMaxScaleInfo->iHeight);
 	return pMaxScaleInfo->nScale;
+}
+
+int CHud::GetTextSize()
+{
+	vgui2::HScheme hScheme = g_pVGuiSchemeManager->GetDefaultScheme();
+	if (!hScheme)
+		return 0;
+
+	vgui2::IScheme *pScheme = g_pVGuiSchemeManager->GetIScheme(hScheme);
+	if (!pScheme)
+		return 0;
+
+	vgui2::HFont hFont = pScheme->GetFont("CreditsFont", true);
+	if (!hFont)
+		return 0;
+
+	return g_pVGuiSurface->GetFontTall(hFont);
 }
 
 CON_COMMAND(append, "Puts a command into the end of the command buffer")

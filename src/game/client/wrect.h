@@ -11,6 +11,9 @@
 typedef struct rect_s
 {
 	int left, right, top, bottom;
+
+	int GetWidth() const { return right - left; }
+	int GetHeight() const { return bottom - top; }
 } wrect_t;
 
 #endif

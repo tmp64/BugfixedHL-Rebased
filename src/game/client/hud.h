@@ -124,6 +124,7 @@ public:
 	int m_Teamplay;
 	int m_iRes = -1;
 	int m_iFontHeight;
+	int m_iTextSize = 0;
 	int m_iWeaponBits;
 	int m_fPlayerDead;
 	int m_iIntermission;
@@ -302,6 +303,9 @@ private:
 
 	//! Detects the maximum supported HUD scale.
 	EHudScale DetectMaxHudScale();
+
+	//! @returns The font size used by engine text draw functions.
+	int GetTextSize();
 
 	template <typename T>
 	inline T *RegisterHudElem()

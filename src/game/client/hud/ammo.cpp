@@ -1149,7 +1149,7 @@ int CHudAmmo::DrawWList(float flTime)
 					else
 					{
 						// Pink rect
-						gEngfuncs.pfnFillRGBA(x, y, rcSprSelection.right - rcSprSelection.left, rcSprSelection.bottom - rcSprSelection.top, 64, 0, 64, a);
+						gEngfuncs.pfnFillRGBA(x, y, rcSprSelection.GetWidth(), rcSprSelection.GetHeight(), 64, 0, 64, a);
 					}
 
 					SPR_Set(hSprSelection, r, g, b);
@@ -1179,7 +1179,7 @@ int CHudAmmo::DrawWList(float flTime)
 					else
 					{
 						// Pink rect
-						gEngfuncs.pfnFillRGBA(x, y, rcSprSelection.right - rcSprSelection.left, rcSprSelection.bottom - rcSprSelection.top, 48, 0, 48, a);
+						gEngfuncs.pfnFillRGBA(x, y, rcSprSelection.GetWidth(), rcSprSelection.GetHeight(), 48, 0, 48, a);
 					}
 				}
 

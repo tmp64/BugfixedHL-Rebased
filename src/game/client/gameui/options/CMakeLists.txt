@@ -6,6 +6,8 @@ add_sources(
 	cvar_check_button.h
 	cvar_color.cpp
 	cvar_color.h
+	cvar_combo_box.cpp
+	cvar_combo_box.h
 	cvar_slider.cpp
 	cvar_slider.h
 	cvar_text_entry.cpp

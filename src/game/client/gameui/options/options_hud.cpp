@@ -39,11 +39,11 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 	m_pDeathnoticeVGui = new CCvarCheckButton(this, "DeathnoticeCheckbox", "#BHL_AdvOptions_HUD_Deathnotice", "hud_deathnotice_vgui");
 
 	m_pTimerLabel = new vgui2::Label(this, "TimerLabel", "#BHL_AdvOptions_Hud_Timer");
-	m_pTimerBox = new vgui2::ComboBox(this, "TimerBox", 4, false);
-	m_TimerItems[0] = m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer0", new KeyValues("Off", "value", 0));
-	m_TimerItems[1] = m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer1", new KeyValues("TimeLeft", "value", 1));
-	m_TimerItems[2] = m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer2", new KeyValues("TimePassed", "value", 2));
-	m_TimerItems[3] = m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer3", new KeyValues("LocalTime", "value", 3));
+	m_pTimerBox = new CCVarComboBox(this, "TimerBox", "hud_timer");
+	m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer0", "0");
+	m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer1", "1");
+	m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer2", "2");
+	m_pTimerBox->AddItem("#BHL_AdvOptions_Hud_Timer3", "3");
 
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/HudSubOptions.res");
 	m_pOpacityLabel->MoveToFront(); // Obscured by the slider
@@ -102,7 +102,7 @@ void CHudSubOptions::OnResetData()
 	else
 		m_pDeathnoticeVGui->SetSelected(false);
 
-	TimerResetData();
+	m_pTimerBox->ResetData();
 }
 
 void CHudSubOptions::OnApplyChanges()
@@ -124,26 +124,7 @@ void CHudSubOptions::OnApplyChanges()
 	if (m_pDeathnoticeVGui->IsEnabled())
 		m_pDeathnoticeVGui->ApplyChanges();
 
-	TimerApplyChanges();
-}
-
-void CHudSubOptions::TimerResetData()
-{
-	int timer = gEngfuncs.pfnGetCvarFloat("hud_timer");
-	timer = clamp(timer, 0, 3);
-	m_pTimerBox->ActivateItem(m_TimerItems[timer]);
-}
-
-void CHudSubOptions::TimerApplyChanges()
-{
-	KeyValues *userdata = m_pTimerBox->GetActiveItemUserData();
-	Assert(userdata);
-	int sel = userdata->GetInt("value", 0);
-	Assert(sel >= 0 && sel <= 3);
-
-	char buf[128];
-	snprintf(buf, sizeof(buf), "hud_timer %d", sel);
-	gEngfuncs.pfnClientCmd(buf);
+	m_pTimerBox->ApplyChanges();
 }
 
 void CHudSubOptions::OnSliderMoved(KeyValues *kv)

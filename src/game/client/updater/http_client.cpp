@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <FileSystem.h>
 #include <tier2/tier2.h>
 #include "hud.h"

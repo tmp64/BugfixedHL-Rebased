@@ -52,6 +52,9 @@
 #define HUD_INTERMISSION 2
 #define HUD_DRAW_ALWAYS  4 //!< Draw even if hud_draw = 0
 
+//! Fallback sprite resolution if the current one can't be found.
+constexpr int HUD_FALLBACK_RES = 640;
+
 namespace vgui2
 {
 class IScheme;

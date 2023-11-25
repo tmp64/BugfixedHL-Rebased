@@ -78,12 +78,8 @@ int WeaponsResource::HasAmmo(WEAPON *p)
 
 void WeaponsResource::LoadWeaponSprites(WEAPON *pWeapon)
 {
-	int i, iRes;
-
-	if (ScreenWidth < 640)
-		iRes = 320;
-	else
-		iRes = 640;
+	int i = 0;
+	int iRes = gHUD.m_iRes;
 
 	char sz[256];
 
@@ -1259,12 +1255,27 @@ client_sprite_t *GetSpriteFromList(client_sprite_t *pList, const char *pszNameSt
 
 	int len = strlen(pszNameStart);
 	client_sprite_t *p = pList;
+	client_sprite_t *pFallback = nullptr; //!< Fallback sprite if can't find for current HUD scale
 	while (iCount--)
 	{
+		if (!strncmp(pszNameStart, p->szName, len))
+		{
+			if (p->iRes == iRes)
+			{
+				// Found the requested sprite
+				return p;
+			}
+			else if (p->iRes == HUD_FALLBACK_RES)
+			{
+				// At least found a fallbcak
+				pFallback = p;
+			}
+		}
 		if (p->iRes == iRes && !strncmp(pszNameStart, p->szName, len))
 			return p;
 		p++;
 	}
 
-	return NULL;
+	// Return the fallback. It may be null but that's fine.
+	return pFallback;
 }

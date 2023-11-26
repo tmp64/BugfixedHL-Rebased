@@ -1,0 +1,35 @@
+FROM bhl-build
+
+# Install build script dependencies
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update
+RUN apt-get install -y \
+    python3.8 \
+    python3.8-venv \
+    python3.8-distutils \
+    git
+
+# Install build dependencies
+RUN apt-get update
+RUN apt-get install -y \
+    zlib1g:i386 \
+    zlib1g-dev:i386
+
+WORKDIR /build/bhl
+COPY . .
+
+RUN python3.8 ./scripts/BuildRelease.py \
+    --target client \
+    --build-type release \
+    --vs 2019 --toolset v141_xp \
+    --linux-compiler gcc-9 \
+    --out-dir ./_build_out_client \
+    --cmake-args="-DWARNINGS_ARE_ERRORS=ON"
+
+RUN python3.8 ./scripts/BuildRelease.py \
+    --target server \
+    --build-type release \
+    --vs 2019 --toolset v141_xp \
+    --linux-compiler gcc-9 \
+    --out-dir ./_build_out_server \
+    --cmake-args="-DWARNINGS_ARE_ERRORS=ON"

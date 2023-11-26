@@ -5,3 +5,6 @@ Build order:
 3. build-libzip.sh
 4. build-mbedtls.sh
 5. build-bhl.sh
+
+To open bash
+  docker run --rm -it --entrypoint bash bhl-build

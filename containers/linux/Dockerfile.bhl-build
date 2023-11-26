@@ -1,0 +1,53 @@
+FROM ubuntu:18.04
+
+ENV BUILD_DATE="2023-11-26.1"
+ENV CMAKE_VERSION="3.27.8"
+
+# Update the system
+RUN dpkg --add-architecture i386
+RUN apt-get update
+RUN apt-get dist-upgrade
+
+# Add custom repos
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+
+# Install dependencies
+RUN apt-get update
+RUN apt-get install -y \
+    libc6:i386 \
+    gcc-9-multilib \
+    g++-9-multilib \
+    ninja-build \
+    make \
+    build-essential \
+    curl
+
+# Build cmake
+WORKDIR /build/cmake
+
+RUN apt-get install -y \
+    libssl-dev
+
+RUN curl -f -L \
+    https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz \
+    -o cmake.tar.gz
+RUN tar -xvf cmake.tar.gz
+
+WORKDIR cmake-${CMAKE_VERSION}
+RUN ./bootstrap && \
+    make -j`nproc` && \
+    make install && \
+    cd .. && \
+    rm -rf cmake-${CMAKE_VERSION}
+
+# Use GCC 9
+ENV CC=gcc-9
+ENV CXX=g++-9
+
+# Copy toolchain files
+COPY cmake/. /opt/bhl/cmake/
+ENV CMAKE_MODULE_PATH=/opt/bhl/cmake
+ENV BHL_TOOLCHAIN=${CMAKE_MODULE_PATH}/ToolchainLinuxGCC9.cmake
+ENV BHL_PREFIX_PATH=/opt/bhl/prefix
+ENV CMAKE_PREFIX_PATH=${BHL_PREFIX_PATH}

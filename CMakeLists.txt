@@ -408,11 +408,11 @@ if( USE_UPDATER )
 	if( NOT HAS_STD_FILESYSTEM )
 		message( FATAL_ERROR "Updater requires support for std::filesystem." )
 	endif()
-
-	option( CURL_STATICLIB "Enable if cURL was built as a static library" 0 )
-	option( CURL_REPO_LIBS "Use static curl from external/curl" 1 )
-
+	
 	if( WIN32 )
+		option( CURL_STATICLIB "Enable if cURL was built as a static library" 0 )
+		option( CURL_REPO_LIBS "Use static curl from external/curl" 1 )
+		
 		if( CURL_REPO_LIBS )
 			set( CURL_STATICLIB 1 CACHE BOOL "" FORCE )
 			set( CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/include" CACHE PATH "" FORCE )
@@ -422,51 +422,63 @@ if( USE_UPDATER )
 		endif()
 		
 		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/libzip/lib/cmake" NO_DEFAULT_PATH )
-	else()
-		if( CURL_REPO_LIBS )
-			set( CURL_STATICLIB 1 CACHE BOOL "" FORCE )
-			set( CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/curl_linux/include" CACHE PATH "" FORCE )
-			set( CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/external/curl_linux/lib/libcurl.a" CACHE FILEPATH "" FORCE )
-		endif()
-
-		find_package( ZLIB REQUIRED )
-		find_package( OpenSSL REQUIRED )
-		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/libzip_linux/lib/cmake" NO_DEFAULT_PATH )
-
-		set( UPDATER_LIBS OpenSSL::Crypto OpenSSL::SSL OpenSSL::Crypto OpenSSL::SSL )
-	endif()
-
-	find_package( CURL MODULE REQUIRED )
-	set( UPDATER_LIBS
-		${CURL_LIBRARIES}
-		${UPDATER_LIBS}
-		nlohmann_json
-		libzip::zip
-	)
-
-	set( UPDATER_INCLUDE_PATHS
-		${CURL_INCLUDE_DIRS}
-	)
-	
-	set( UPDATER_DEFINES
-		USE_UPDATER=1
-	)
-	
-	if( CURL_STATICLIB )
-		set( UPDATER_DEFINES
-			${UPDATER_DEFINES}
-			CURL_STATICLIB=1
+		
+		find_package( CURL MODULE REQUIRED )
+		set( UPDATER_LIBS
+			${CURL_LIBRARIES}
+			${UPDATER_LIBS}
+			nlohmann_json
+			libzip::zip
 		)
-		if( WIN32 )
-			set( UPDATER_LIBS
-				${UPDATER_LIBS}
-				wldap32.lib
-				Crypt32.lib
-				Ws2_32.lib
+		
+		set( UPDATER_INCLUDE_PATHS
+			${CURL_INCLUDE_DIRS}
+		)
+		
+		set( UPDATER_DEFINES
+			USE_UPDATER=1
+		)
+		
+		if( CURL_STATICLIB )
+			set( UPDATER_DEFINES
+				${UPDATER_DEFINES}
+				CURL_STATICLIB=1
 			)
+			if( WIN32 )
+				set( UPDATER_LIBS
+					${UPDATER_LIBS}
+					wldap32.lib
+					Crypt32.lib
+					Ws2_32.lib
+				)
+			endif()
 		endif()
+	else()
+		set( LINUX_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/linux")
+		
+		# FIXME 2023-11-26: CMake completely ignores this directory.
+		# FIXME 2023-11-26: But the system library works just fine
+		# set( ZLIB_INCLUDE_DIRS "${LINUX_LIB_PATH}/zlib/include" )
+		# set( ZLIB_LIBRARIES "${LINUX_LIB_PATH}/zlib/lib/libz.a" )
+		# set( ZLIB_USE_STATIC_LIBS ON )
+		# find_package( ZLIB REQUIRED )
+		
+		set( libzip_DIR "${LINUX_LIB_PATH}/libzip/lib/cmake/libzip" )
+		find_package( libzip REQUIRED NO_DEFAULT_PATH )
+		
+		set( MbedTLS_DIR "${LINUX_LIB_PATH}/mbedtls/lib/cmake/MbedTLS" )
+		find_package( MbedTLS REQUIRED NO_DEFAULT_PATH )
+		
+		set( CURL_DIR "${LINUX_LIB_PATH}/libcurl/lib/cmake/CURL" )
+		find_package( CURL REQUIRED NO_DEFAULT_PATH )
+
+		set( UPDATER_LIBS
+			ZLIB::ZLIB
+			libzip::zip
+			MbedTLS::mbedtls
+			CURL::libcurl
+		)
 	endif()
-	
 endif()
 
 #-----------------------------------------------------------------

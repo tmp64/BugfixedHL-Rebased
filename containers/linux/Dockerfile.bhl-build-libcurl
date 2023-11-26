@@ -1,0 +1,39 @@
+FROM bhl-build
+
+ENV BUILD_DATE="2023-11-26.1"
+ENV LIBZIP_VERSION="8.4.0"
+
+# Download and extract
+WORKDIR /build/libzip
+
+RUN curl -f -L \
+    https://curl.se/download/curl-${LIBZIP_VERSION}.tar.xz \
+    -o libcurl.tar.xz
+
+RUN tar -xvf libcurl.tar.xz
+
+# Copy dependencies
+COPY out/zlib/. ${BHL_PREFIX_PATH}
+COPY out/mbedtls/. ${BHL_PREFIX_PATH}
+
+# Build
+WORKDIR curl-${LIBZIP_VERSION}/_build
+RUN cmake .. \
+    -GNinja \
+    -DCMAKE_TOOLCHAIN_FILE=${BHL_TOOLCHAIN} \
+    -DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH} \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_INSTALL_PREFIX=/opt/bhl/prefix-out \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_CURL_EXE=OFF \
+    -DBUILD_STATIC_CURL=ON \
+    -DBUILD_STATIC_LIBS=ON \
+    -DBUILD_TESTING=OFF \
+    -DCURL_ENABLE_SSL=ON \
+    -DCURL_USE_OPENSSL=OFF \
+    -DCURL_USE_MBEDTLS=ON \
+    -DCURL_ZLIB=ON \
+    -DUSE_LIBIDN2=OFF
+
+RUN cmake --build . && cmake --install .

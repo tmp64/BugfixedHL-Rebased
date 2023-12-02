@@ -415,13 +415,13 @@ if( USE_UPDATER )
 		
 		if( CURL_REPO_LIBS )
 			set( CURL_STATICLIB 1 CACHE BOOL "" FORCE )
-			set( CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/include" CACHE PATH "" FORCE )
+			set( CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/windows/curl/include" CACHE PATH "" FORCE )
 			set( CURL_LIBRARY "" CACHE FILEPATH "" FORCE )
-			set( CURL_LIBRARY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/lib/libcurl_static_debug.lib" CACHE FILEPATH "" FORCE )
-			set( CURL_LIBRARY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/lib/libcurl_static.lib" CACHE FILEPATH "" FORCE )
+			set( CURL_LIBRARY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/external/windows/curl/lib/libcurl_static_debug.lib" CACHE FILEPATH "" FORCE )
+			set( CURL_LIBRARY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/external/windows/curl/lib/libcurl_static.lib" CACHE FILEPATH "" FORCE )
 		endif()
 		
-		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/libzip/lib/cmake" NO_DEFAULT_PATH )
+		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/windows/libzip/lib/cmake" NO_DEFAULT_PATH )
 		
 		find_package( CURL MODULE REQUIRED )
 		set( UPDATER_LIBS

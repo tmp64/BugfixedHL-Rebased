@@ -41,6 +41,9 @@ class PlatformWindows:
         elif self.script.vs_version == '2019':
             args.extend(['-G', 'Visual Studio 16 2019'])
             args.extend(['-A', 'Win32'])
+        elif self.script.vs_version == '2022':
+            args.extend(['-G', 'Visual Studio 17 2022'])
+            args.extend(['-A', 'Win32'])
 
         args.extend(['-T', self.script.vs_toolset])
 
@@ -180,8 +183,8 @@ class BuildScript:
     allowed_targets = ['client', 'server']
     allowed_build_types = ['debug', 'release']
 
-    allowed_vs_versions = ['2017', '2019']
-    allowed_vs_toolsets = ['v141', 'v141_xp', 'v142']
+    allowed_vs_versions = ['2017', '2019', '2022']
+    allowed_vs_toolsets = ['v141', 'v141_xp', 'v142', 'v143']
 
     allowed_linux_compilers = ['gcc', 'gcc-8', 'gcc-9']
 

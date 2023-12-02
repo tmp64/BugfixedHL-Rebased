@@ -1,0 +1,21 @@
+FROM bhl-build
+
+# Build
+WORKDIR /build/bhl
+COPY . .
+
+RUN python ./scripts/BuildRelease.py \
+    --target client \
+    --build-type release \
+    --vs 2022 --toolset v143 \
+    --linux-compiler gcc-9 \
+    --out-dir ./_build_out_client \
+    --cmake-args=-DWARNINGS_ARE_ERRORS=ON
+
+RUN python ./scripts/BuildRelease.py \
+    --target server \
+    --build-type release \
+    --vs 2022 --toolset v143 \
+    --linux-compiler gcc-9 \
+    --out-dir ./_build_out_server \
+    --cmake-args=-DWARNINGS_ARE_ERRORS=ON

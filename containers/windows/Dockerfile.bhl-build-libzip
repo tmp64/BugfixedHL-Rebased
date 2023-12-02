@@ -1,0 +1,50 @@
+# escape=`
+
+FROM bhl-build
+
+ENV BHL_BUILD_DATE="2023-11-29.1"
+ENV BHL_LIBZIP_VERSION="1.10.1"
+
+# Download and extract
+WORKDIR C:/build/libzip
+
+RUN curl.exe -f -L `
+    https://libzip.org/download/libzip-${env:BHL_LIBZIP_VERSION}.tar.gz `
+    -o libzip.tar.gz
+
+RUN tar -xvf libzip.tar.gz
+
+# Copy dependencies
+COPY out/zlib/. ${BHL_PREFIX_PATH}
+
+# Build
+WORKDIR libzip-${BHL_LIBZIP_VERSION}/_build
+
+RUN cmake .. `
+    '-GNinja Multi-Config' `
+    '-DCMAKE_MODULE_PATH=C:/bhl/prefix' `
+    '-DCMAKE_INSTALL_PREFIX=C:/bhl/prefix-out' `
+    '-DCMAKE_POSITION_INDEPENDENT_CODE=ON' `
+    '-DCMAKE_POLICY_DEFAULT_CMP0091=NEW' `
+    '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$^<$^<CONFIG:Debug^>:Debug^>' `
+    '-DCMAKE_DEBUG_POSTFIX=d' `
+    '-DBUILD_DOC=OFF' `
+    '-DBUILD_EXAMPLES=OFF' `
+    '-DBUILD_REGRESS=OFF' `
+    '-DBUILD_SHARED_LIBS=OFF' `
+    '-DBUILD_TOOLS=OFF' `
+    '-DENABLE_BZIP2=OFF' `
+    '-DENABLE_COMMONCRYPTO=OFF' `
+    '-DENABLE_GNUTLS=OFF' `
+    '-DENABLE_LZMA=OFF' `
+    '-DENABLE_MBEDTLS=OFF' `
+    '-DENABLE_OPENSSL=OFF' `
+    '-DENABLE_WINDOWS_CRYPTO=OFF' `
+    '-DENABLE_ZSTD=OFF'
+
+RUN `
+    cmake --build   . --config Debug && `
+    cmake --install . --config Debug && `
+    cmake --build   . --config RelWithDebInfo && `
+    cmake --install . --config RelWithDebInfo && `
+    ninja clean

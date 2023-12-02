@@ -1,13 +1,13 @@
 FROM bhl-build
 
 ENV BUILD_DATE="2023-11-26.1"
-ENV LIBZIP_VERSION="8.4.0"
+ENV CURL_VERSION="8.4.0"
 
 # Download and extract
-WORKDIR /build/libzip
+WORKDIR /build/curl
 
 RUN curl -f -L \
-    https://curl.se/download/curl-${LIBZIP_VERSION}.tar.xz \
+    https://curl.se/download/curl-${CURL_VERSION}.tar.xz \
     -o libcurl.tar.xz
 
 RUN tar -xvf libcurl.tar.xz
@@ -17,7 +17,7 @@ COPY out/zlib/. ${BHL_PREFIX_PATH}
 COPY out/mbedtls/. ${BHL_PREFIX_PATH}
 
 # Build
-WORKDIR curl-${LIBZIP_VERSION}/_build
+WORKDIR curl-${CURL_VERSION}/_build
 RUN cmake .. \
     -GNinja \
     -DCMAKE_TOOLCHAIN_FILE=${BHL_TOOLCHAIN} \

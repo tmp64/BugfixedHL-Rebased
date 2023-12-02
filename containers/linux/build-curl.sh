@@ -2,10 +2,10 @@
 
 set -e
 
-IMAGE_TAG="bhl-build-libcurl"
+IMAGE_TAG="bhl-build-curl"
 TEMP_CONT="${IMAGE_TAG}-temp"
 DOCKERFILE="Dockerfile.$IMAGE_TAG"
-OUT_DIR="out/libcurl"
+OUT_DIR="out/curl"
 
 mkdir -p $OUT_DIR
 

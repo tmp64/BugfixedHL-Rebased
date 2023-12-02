@@ -424,16 +424,9 @@ if( USE_UPDATER )
 	endif()
 
 	# Find libraries
-	if( PLATFORM_WINDOWS )
-		set( ZLIB_ROOT "${PLAT_EXTERNAL_PATH}/zlib" )
-		set( ZLIB_USE_STATIC_LIBS ON )
-		find_package( ZLIB REQUIRED )
-	elseif ( PLATFORM_LINUX )
-		# FIXME 2023-11-26: CMake completely ignores PLAT_EXTERNAL_PATH on Linux.
-		# FIXME 2023-11-26: But the system library works just fine
-		set( ZLIB_USE_STATIC_LIBS ON )
-		find_package( ZLIB REQUIRED )
-	endif()
+	set( ZLIB_ROOT "${PLAT_EXTERNAL_PATH}/zlib" )
+	set( ZLIB_USE_STATIC_LIBS ON )
+	find_package( ZLIB REQUIRED )
 
 	set( libzip_DIR "${PLAT_EXTERNAL_PATH}/libzip/lib/cmake/libzip" )
 	find_package( libzip REQUIRED NO_DEFAULT_PATH )

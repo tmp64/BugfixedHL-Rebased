@@ -460,6 +460,7 @@ void CHud::VidInit(void)
 			m_rghSprites.resize(m_iSpriteCount);
 			m_rgrcRects.resize(m_iSpriteCount);
 			m_rgszSpriteNames.resize(m_iSpriteCount);
+			m_rgSpritePaths.resize(m_iSpriteCount);
 
 			p = m_pSpriteList;
 			int index = 0;
@@ -472,6 +473,7 @@ void CHud::VidInit(void)
 					m_rghSprites[index] = SPR_Load(sz);
 					m_rgrcRects[index] = p->rc;
 					Q_strncpy(m_rgszSpriteNames[index].name, p->szName, MAX_SPRITE_NAME_LENGTH);
+					m_rgSpritePaths[index] = sz;
 
 					index++;
 				}
@@ -497,19 +499,14 @@ void CHud::VidInit(void)
 	{
 		// we have already have loaded the sprite reference from hud.txt, but
 		// we need to make sure all the sprites have been loaded (we've gone through a transition, or loaded a save game)
-		client_sprite_t *p = m_pSpriteList;
-		int index = 0;
-		for (int j = 0; j < m_iSpriteCountAllRes; j++)
-		{
-			if (p->iRes == m_iRes)
-			{
-				char sz[256];
-				sprintf(sz, "sprites/%s.spr", p->szSprite);
-				m_rghSprites[index] = SPR_Load(sz);
-				index++;
-			}
+		Assert(m_rghSprites.size() == m_iSpriteCount);
+		Assert(m_rgrcRects.size() == m_iSpriteCount);
+		Assert(m_rgszSpriteNames.size() == m_iSpriteCount);
+		Assert(m_rgSpritePaths.size() == m_iSpriteCount);
 
-			p++;
+		for (int i = 0; i < m_iSpriteCount; i++)
+		{
+			m_rghSprites[i] = SPR_Load(m_rgSpritePaths[i].c_str());
 		}
 	}
 
@@ -651,11 +648,14 @@ void CHud::AddSprite(const client_sprite_t &p)
 	m_rgszSpriteNames.push_back({});
 	Q_strncpy(m_rgszSpriteNames[m_iSpriteCount].name, p.szName, MAX_SPRITE_NAME_LENGTH);
 
+	m_rgSpritePaths.emplace_back(sz);
+
 	m_iSpriteCount++;
 
 	Assert(m_rghSprites.size() == m_iSpriteCount);
 	Assert(m_rgrcRects.size() == m_iSpriteCount);
 	Assert(m_rgszSpriteNames.size() == m_iSpriteCount);
+	Assert(m_rgSpritePaths.size() == m_iSpriteCount);
 }
 
 float g_lastFOV = 0.0;

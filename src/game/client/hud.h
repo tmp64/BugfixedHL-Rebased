@@ -26,6 +26,7 @@
 #include <vector>
 #include <queue>
 #include <unordered_map>
+#include <string>
 #include <tier0/dbg.h>
 #include <Color.h>
 #include "global_consts.h"
@@ -283,6 +284,7 @@ private:
 	std::vector<HSPRITE> m_rghSprites; /*[HUD_SPRITE_COUNT]*/ // the sprites loaded from hud.txt
 	std::vector<wrect_t> m_rgrcRects; /*[HUD_SPRITE_COUNT]*/
 	std::vector<SpriteName> m_rgszSpriteNames; /*[HUD_SPRITE_COUNT].name*/
+	std::vector<std::string> m_rgSpritePaths;
 
 	std::queue<std::function<void()>> m_NextFrameQueue;
 

@@ -915,8 +915,9 @@ void CScorePanel::OpenPlayerMenu(int itemID)
 	}
 
 	// Player muting
+	bool isMuted = GetClientVoiceMgr()->IsPlayerBlocked(m_MenuData.nClient);
 	bool thisPlayer = kv->GetBool("thisplayer", 0);
-	if (thisPlayer)
+	if (thisPlayer && !isMuted)
 	{
 		// Can't mute yourself
 		m_pPlayerMenu->UpdateMenuItem(m_MenuData.nMuteItemID, "#BHL_Scores_MenuMute", new KeyValues("Command", "command", "MenuMute"));
@@ -925,7 +926,7 @@ void CScorePanel::OpenPlayerMenu(int itemID)
 	else
 	{
 		m_pPlayerMenu->SetItemEnabled(m_MenuData.nMuteItemID, true);
-		if (GetClientVoiceMgr()->IsPlayerBlocked(m_MenuData.nClient))
+		if (isMuted)
 		{
 			m_pPlayerMenu->UpdateMenuItem(m_MenuData.nMuteItemID, "#BHL_Scores_MenuUnmute", new KeyValues("Command", "command", "MenuMute"));
 		}
@@ -949,9 +950,6 @@ void CScorePanel::OnPlayerMenuCommand(MenuAction command)
 	{
 	case MenuAction::Mute:
 	{
-		if (pi->IsThisPlayer())
-			return;
-
 		if (GetClientVoiceMgr()->IsPlayerBlocked(pi->GetIndex()))
 		{
 			// Unmute
@@ -961,7 +959,7 @@ void CScorePanel::OnPlayerMenuCommand(MenuAction command)
 			snprintf(string1, sizeof(string1), CHudTextMessage::BufferedLocaliseTextString("#Unmuted"), pi->GetDisplayName(true));
 			CHudChat::Get()->ChatPrintf(0, "** %s", string1);
 		}
-		else
+		else if (!pi->IsThisPlayer())
 		{
 			// Mute
 			GetClientVoiceMgr()->SetPlayerBlockedState(pi->GetIndex(), true);

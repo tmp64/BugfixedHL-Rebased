@@ -26,6 +26,7 @@
 #include "menu.h"
 #include "vgui/client_viewport.h"
 #include "text_message.h"
+#include "chat.h"
 
 #define MAX_MENU_STRING 512
 char g_szMenuString[MAX_MENU_STRING];
@@ -141,6 +142,7 @@ void CHudMenu::Draw(float flTime)
 		return;
 
 	// draw the menu, along the left-hand side of the screen
+	const int lineHeight = gHUD.m_iTextSize;
 
 	// count the number of newlines
 	int nlc = 0;
@@ -151,8 +153,7 @@ void CHudMenu::Draw(float flTime)
 			nlc++;
 	}
 
-	// center it
-	int y = (ScreenHeight / 2) - ((nlc / 2) * 12) - 40; // make sure it is above the say text
+	int y = GetStartY(nlc, lineHeight);
 
 	menu_r = 255;
 	menu_g = 255;
@@ -171,8 +172,8 @@ void CHudMenu::Draw(float flTime)
 		else if (*sptr == '\n')
 		{
 			menu_ralign = FALSE;
-			menu_x = 20;
-			y += (16);
+			menu_x = SPR_RES_SCALED(20);
+			y += lineHeight;
 
 			sptr++;
 		}
@@ -216,6 +217,32 @@ void CHudMenu::SelectMenuItem(int menu_item)
 		m_fMenuDisplayed = 0;
 		m_iFlags &= ~HUD_ACTIVE;
 	}
+}
+
+int CHudMenu::GetStartY(int lineCount, int lineHeight)
+{
+	int height = (lineCount + 1) * lineHeight; // +1 to account for the last line missing a \n
+	int top = (ScreenHeight / 2) - (height / 2); // Centered vertically
+	int bottom = top + height;
+
+	// Make sure menu doesn't occlude the chat
+	int chatY = CHudChat::Get()->GetYPos();
+	if (bottom > chatY)
+	{
+		int delta = bottom - chatY;
+		top -= delta;
+		bottom -= delta;
+	}
+
+	// Make sure the menu doesn't go out of bounds
+	constexpr int MARGIN_TOP = 10;
+	if (top < MARGIN_TOP)
+	{
+		top += MARGIN_TOP;
+		bottom += MARGIN_TOP;
+	}
+
+	return top;
 }
 
 // Message handler for ShowMenu message

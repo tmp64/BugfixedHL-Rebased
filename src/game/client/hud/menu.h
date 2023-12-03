@@ -18,6 +18,10 @@ public:
 	int m_bitsValidSlots;
 	float m_flShutoffTime;
 	int m_fWaitingForMore;
+
+private:
+	//! Calculates the top Y coordinate for menu rendering.
+	int GetStartY(int lineCount, int lineHeight);
 };
 
 #endif

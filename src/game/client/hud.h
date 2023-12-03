@@ -123,8 +123,8 @@ public:
 	int m_iFOV;
 	int m_Teamplay;
 	int m_iRes = -1;
-	int m_iFontHeight;
-	int m_iTextSize = 0;
+	int m_iFontHeight;		//!< Sprite font height
+	int m_iTextSize = 0;	//!< Text font height
 	int m_iWeaponBits;
 	int m_fPlayerDead;
 	int m_iIntermission;

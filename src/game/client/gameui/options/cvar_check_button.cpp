@@ -21,13 +21,15 @@ void CCvarCheckButton::ResetData()
 		bool val = !!m_pCvar->value;
 		if (m_bInverse)
 			val = !val;
-		BaseClass::SetSelected(val);
+
+		SetSelected(val);
+		m_bPendingChange = false;
 	}
 }
 
 void CCvarCheckButton::ApplyChanges()
 {
-	if (m_pCvar)
+	if (m_pCvar && m_bPendingChange)
 	{
 		char buf[256];
 		bool val = IsSelected();
@@ -36,5 +38,14 @@ void CCvarCheckButton::ApplyChanges()
 
 		snprintf(buf, sizeof(buf), "%s \"%s\"", m_pCvar->name, (val ? "1" : "0"));
 		gEngfuncs.pfnClientCmd(buf);
+		m_bPendingChange = false;
 	}
+}
+
+void CCvarCheckButton::SetSelected(bool state)
+{
+	BaseClass::SetSelected(state);
+
+	if (IsCheckButtonCheckable())
+		m_bPendingChange = true;
 }

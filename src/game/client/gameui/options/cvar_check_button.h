@@ -13,9 +13,13 @@ public:
 	void ResetData();
 	void ApplyChanges();
 
+	// vgui2::CheckButton
+	virtual void SetSelected(bool state) override;
+
 private:
 	cvar_t *m_pCvar = nullptr;
 	bool m_bInverse = false;
+	bool m_bPendingChange = false;
 };
 
 #endif

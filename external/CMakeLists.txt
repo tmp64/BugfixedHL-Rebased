@@ -1,3 +1,5 @@
+set( CMAKE_FOLDER "External" )
+
 add_subdirectory( glad )
 add_subdirectory( nlohmann_json )
 add_subdirectory( pcre )

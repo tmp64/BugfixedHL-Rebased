@@ -1340,8 +1340,8 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 		line->InsertAndColorizeText(wbuf, iPlayerIndex);
 	}
 
-	if (hud_saytext.GetBool() && hud_saytext_sound.GetBool())
-		PlaySound(m_pszChatSoundPath, 1);
+	if (hud_saytext.GetBool() && hud_saytext_sound.GetFloat() > 0)
+		PlaySound(m_pszChatSoundPath, hud_saytext_sound.GetFloat());
 
 	// Print to console
 	time_t now;

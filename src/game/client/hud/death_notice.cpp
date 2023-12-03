@@ -42,7 +42,8 @@ struct DeathNoticeItem
 };
 
 extern ConVar hud_deathnotice_vgui;
-ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE, "Play a bell sound on kill");
+ConVar cl_killsound("cl_killsound", "1", FCVAR_BHL_ARCHIVE, "Play a sound on kill");
+ConVar cl_killsound_path("cl_killsound_path", "buttons/bell1.wav", FCVAR_BHL_ARCHIVE, "Path to a sound on kill");
 ConVar hud_deathnotice_time("hud_deathnotice_time", "6", FCVAR_BHL_ARCHIVE, "How long should death notice stay up for");
 ConVar hud_deathnotice_color("hud_deathnotice_color", "255 80 0", FCVAR_BHL_ARCHIVE, "Color of death notice sprite");
 ConVar hud_deathnotice_color_tk("hud_deathnotice_color_tk", "10 240 10", FCVAR_BHL_ARCHIVE, "Color of death notice teamkill sprite");
@@ -267,9 +268,9 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	rgDeathNoticeList[i].flDisplayTime = gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME;
 
 	// Play kill sound
-	if (killerInfo && killerInfo->IsThisPlayer() && !rgDeathNoticeList[i].iNonPlayerKill && !rgDeathNoticeList[i].iSuicide && cl_killsound.GetBool())
+	if (killerInfo && killerInfo->IsThisPlayer() && !rgDeathNoticeList[i].iNonPlayerKill && !rgDeathNoticeList[i].iSuicide && cl_killsound.GetFloat() > 0)
 	{
-		PlaySound("buttons/bell1.wav", 1.0f);
+		PlaySound(cl_killsound_path.GetString(), cl_killsound.GetFloat());
 	}
 
 	// Set color of own kills/deaths to yellow

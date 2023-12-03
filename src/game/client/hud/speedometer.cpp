@@ -50,7 +50,7 @@ void CHudSpeedometer::Draw(float time)
 	int y;
 	if (hud_speedometer_below_cross.GetBool())
 	{
-		y = ScreenHeight / 2 + gHUD.m_iFontHeight / 2;
+		y = ScreenHeight / 2 + gHUD.m_iFontHeight;
 	}
 	else
 	{

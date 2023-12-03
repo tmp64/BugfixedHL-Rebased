@@ -60,7 +60,7 @@ void CHudJumpspeed::Draw(float flTime)
 		if (hud_speedometer.GetBool() && hud_speedometer_below_cross.GetBool())
 			yoffset = gHUD.m_iFontHeight;
 
-		y = ScreenHeight / 2 + gHUD.m_iFontHeight / 2 + yoffset;
+		y = ScreenHeight / 2 + gHUD.m_iFontHeight + yoffset;
 	}
 
 	if (hud_draw.GetFloat() > 0)

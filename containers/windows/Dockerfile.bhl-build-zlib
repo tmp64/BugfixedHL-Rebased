@@ -1,0 +1,32 @@
+# escape=`
+
+FROM bhl-build
+
+ENV BHL_BUILD_DATE="2023-11-29.1"
+ENV BHL_ZLIB_VERSION="1.3"
+
+# Download and extract
+WORKDIR C:/build/zlib
+
+RUN curl.exe -f -L `
+    https://www.zlib.net/fossils/zlib-${env:BHL_ZLIB_VERSION}.tar.gz `
+    -o zlib.tar.gz
+
+RUN tar -xvf zlib.tar.gz
+
+# Build
+WORKDIR zlib-${BHL_ZLIB_VERSION}/_build
+
+RUN cmake .. `
+    '-GNinja Multi-Config' `
+    '-DCMAKE_INSTALL_PREFIX=C:/bhl/prefix-out' `
+    '-DCMAKE_POSITION_INDEPENDENT_CODE=ON' `
+    '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$^<$^<CONFIG:Debug^>:Debug^>' `
+    '-DBUILD_SHARED_LIBS=OFF' 
+
+RUN `
+    cmake --build   . --config Debug && `
+    cmake --install . --config Debug && `
+    cmake --build   . --config RelWithDebInfo && `
+    cmake --install . --config RelWithDebInfo && `
+    ninja clean

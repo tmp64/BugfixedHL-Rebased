@@ -4,7 +4,7 @@
 /_build
 /_build_*
 /cmake-build-*
-/containers
+/containers/*/out
 
 # macOS garbage
 .DS_Store

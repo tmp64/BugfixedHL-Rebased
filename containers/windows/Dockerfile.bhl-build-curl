@@ -1,0 +1,46 @@
+# escape=`
+
+FROM bhl-build
+
+ENV BHL_BUILD_DATE="2023-11-29.1"
+ENV BHL_CURL_VERSION="8.4.0"
+
+# Download and extract
+WORKDIR C:/build/curl
+
+RUN curl.exe -f -L `
+    https://curl.se/download/curl-${env:BHL_CURL_VERSION}.tar.gz `
+    -o curl.tar.gz
+
+RUN tar -xvf curl.tar.gz
+
+# Copy dependencies
+COPY out/zlib/. ${BHL_PREFIX_PATH}
+
+# Build
+WORKDIR curl-${BHL_CURL_VERSION}/_build
+
+RUN cmake .. `
+    '-GNinja Multi-Config' `
+    '-DCMAKE_MODULE_PATH=C:/bhl/prefix' `
+    '-DCMAKE_INSTALL_PREFIX=C:/bhl/prefix-out' `
+    '-DCMAKE_POSITION_INDEPENDENT_CODE=ON' `
+    '-DBUILD_CURL_EXE=OFF' `
+    '-DBUILD_SHARED_LIBS=OFF' `
+    '-DBUILD_STATIC_CURL=ON' `
+    '-DBUILD_STATIC_LIBS=ON' `
+    '-DBUILD_TESTING=OFF' `
+    '-DCURL_ENABLE_SSL=ON' `
+    '-DCURL_STATIC_CRT=ON' `
+    '-DCURL_TARGET_WINDOWS_VERSION=0x0601' `
+    '-DCURL_USE_SCHANNEL=ON' `
+    '-DCURL_ZLIB=ON' `
+    '-DUSE_LIBIDN2=OFF' `
+    '-DUSE_WIN32_LDAP=OFF'
+
+RUN `
+    cmake --build   . --config Debug && `
+    cmake --install . --config Debug && `
+    cmake --build   . --config RelWithDebInfo && `
+    cmake --install . --config RelWithDebInfo && `
+    ninja clean

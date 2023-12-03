@@ -177,10 +177,9 @@ elseif( COMPILER_MSVC )
 	# Set Windows subsystem
 	set( GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} /SUBSYSTEM:WINDOWS " )
 	
-	# Set target OS to WinXP for XP toolsets
-	if( CMAKE_VS_PLATFORM_TOOLSET MATCHES ".*_xp$" )
-		add_compile_definitions( _WIN32_WINNT=0x0501 )
-	endif()
+	# Target Windows 7
+	add_compile_definitions( _WIN32_WINNT=0x0601 )
+	add_compile_definitions( WINVER=0x0601 )
 endif()
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_CXX_COMPILER_FLAGS}" )

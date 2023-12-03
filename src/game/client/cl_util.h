@@ -88,6 +88,8 @@ inline struct cvar_s *CVAR_CREATE(const char *cv, const char *val, const int fla
 #define XRES(x) (x * ((float)ScreenWidth / 640))
 #define YRES(y) (y * ((float)ScreenHeight / 480))
 
+#define SPR_RES_SCALED(x) (x * ((float)gHUD.m_iRes / HUD_FALLBACK_RES))
+
 #define GetScreenInfo   (*gEngfuncs.pfnGetScreenInfo)
 #define ServerCmd       (*gEngfuncs.pfnServerCmd)
 #define EngineClientCmd (*gEngfuncs.pfnClientCmd)

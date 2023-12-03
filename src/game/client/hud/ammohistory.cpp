@@ -107,6 +107,11 @@ void HistoryResource::CheckClearHistory(void)
 //
 int HistoryResource::DrawAmmoHistory(float flTime)
 {
+	//! Margin from the right screen border to sprite center
+	const int itemMarginRight = SPR_RES_SCALED(24);
+	const int weaponMarginRight = SPR_RES_SCALED(16);
+	const int itemWidth = SPR_RES_SCALED(16);
+
 	for (int i = 0; i < MAX_HISTORY; i++)
 	{
 		if (rgAmmoHistory[i].type)
@@ -134,15 +139,16 @@ int HistoryResource::DrawAmmoHistory(float flTime)
 
 				// Draw the pic
 				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
-				int xpos = ScreenWidth - 24;
+				int xpos = ScreenWidth - itemMarginRight;
 				if (spr && *spr) // weapon isn't loaded yet so just don't draw the pic
 				{ // the dll has to make sure it has sent info the weapons you need
 					SPR_Set(*spr, r, g, b);
-					SPR_DrawAdditive(0, xpos, ypos, &rcPic);
+					SPR_DrawAdditive(0, xpos - rcPic.GetWidth() / 2, ypos, &rcPic);
 				}
 
 				// Draw the number
-				gHUD.DrawHudNumberString(xpos - 10, ypos, xpos - 100, rgAmmoHistory[i].iCount, r, g, b);
+				int yposText = ypos + rcPic.GetHeight() / 2 - gHUD.m_iTextSize / 2;
+				gHUD.DrawHudNumberString(xpos - itemWidth, yposText, xpos - 100, rgAmmoHistory[i].iCount, r, g, b);
 			}
 			else if (rgAmmoHistory[i].type == HISTSLOT_WEAP)
 			{
@@ -165,7 +171,7 @@ int HistoryResource::DrawAmmoHistory(float flTime)
 				ScaleColors(r, g, b, a);
 
 				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
-				int xpos = ScreenWidth - (weap->rcInactive.right - weap->rcInactive.left);
+				int xpos = ScreenWidth - weap->rcInactive.GetWidth() - weaponMarginRight;
 				SPR_Set(weap->hInactive, r, g, b);
 				SPR_DrawAdditive(0, xpos, ypos, &weap->rcInactive);
 			}
@@ -186,7 +192,7 @@ int HistoryResource::DrawAmmoHistory(float flTime)
 				ScaleColors(r, g, b, a);
 
 				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
-				int xpos = ScreenWidth - (rect.right - rect.left) - 10;
+				int xpos = ScreenWidth - rect.GetWidth() / 2 - itemMarginRight;
 
 				SPR_Set(gHUD.GetSprite(rgAmmoHistory[i].iId), r, g, b);
 				SPR_DrawAdditive(0, xpos, ypos, &rect);

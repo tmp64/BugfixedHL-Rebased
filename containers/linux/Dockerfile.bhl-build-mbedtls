@@ -1,0 +1,34 @@
+FROM bhl-build
+
+ENV BUILD_DATE="2023-11-26.1"
+ENV MBEDTLS_VERSION="3.5.1"
+
+# Download and extract
+WORKDIR /build/mbedtls
+
+RUN curl -f -L \
+    https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${MBEDTLS_VERSION}.tar.gz \
+    -o mbedtls.tar.xz
+
+RUN tar -xvf mbedtls.tar.xz
+
+# Copy custom config
+WORKDIR mbedtls-${MBEDTLS_VERSION}/_build
+COPY mbedtls_config_bhl.h .
+
+# Build
+RUN cmake .. \
+    -GNinja \
+    -DCMAKE_TOOLCHAIN_FILE=${BHL_TOOLCHAIN} \
+    -DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH} \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DENABLE_PROGRAMS=OFF \
+    -DENABLE_TESTING=OFF \
+    -DUSE_SHARED_MBEDTLS_LIBRARY=OFF \
+    -DUSE_STATIC_MBEDTLS_LIBRARY=ON \
+    -DCMAKE_INSTALL_PREFIX=/opt/bhl/prefix-out \
+    -DMBEDTLS_USER_CONFIG_FILE=./mbedtls_config_bhl.h
+
+RUN cmake --build . && cmake --install .

@@ -256,6 +256,9 @@ if( COMPILER_GNU )
 		set( WARNING_LEVEL_C_CXX "${WARNING_LEVEL_C_CXX} -Werror" )
 	endif()
 elseif( COMPILER_MSVC )
+	# LNK4099: PDB  was not found with 'xxx.lib(yyy.obj)' or at ''; linking object as if no debug info
+	set(GAME_LINKER_FLAGS "${GAME_LINKER_FLAGS} /IGNORE:4099")
+
 	if( WARNINGS_ARE_ERRORS )
 		set( WARNING_LEVEL_C_CXX "${WARNING_LEVEL_C_CXX} /WX" )
 	endif()
@@ -409,64 +412,42 @@ if( USE_UPDATER )
 		message( FATAL_ERROR "Updater requires support for std::filesystem." )
 	endif()
 
-	option( CURL_STATICLIB "Enable if cURL was built as a static library" 0 )
-	option( CURL_REPO_LIBS "Use static curl from external/curl" 1 )
-
-	if( WIN32 )
-		if( CURL_REPO_LIBS )
-			set( CURL_STATICLIB 1 CACHE BOOL "" FORCE )
-			set( CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/include" CACHE PATH "" FORCE )
-			set( CURL_LIBRARY "" CACHE FILEPATH "" FORCE )
-			set( CURL_LIBRARY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/lib/libcurl_static_debug.lib" CACHE FILEPATH "" FORCE )
-			set( CURL_LIBRARY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/external/curl/lib/libcurl_static.lib" CACHE FILEPATH "" FORCE )
-		endif()
-		
-		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/libzip/lib/cmake" NO_DEFAULT_PATH )
+	# Set platform path
+	if( PLATFORM_WINDOWS )
+		set( PLAT_EXTERNAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/windows")
+	elseif( PLATFORM_LINUX )
+		set( PLAT_EXTERNAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/linux")
+	elseif( PLATFORM_MACOS )
+		set( PLAT_EXTERNAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/macos")
 	else()
-		if( CURL_REPO_LIBS )
-			set( CURL_STATICLIB 1 CACHE BOOL "" FORCE )
-			set( CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/curl_linux/include" CACHE PATH "" FORCE )
-			set( CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/external/curl_linux/lib/libcurl.a" CACHE FILEPATH "" FORCE )
-		endif()
-
-		find_package( ZLIB REQUIRED )
-		find_package( OpenSSL REQUIRED )
-		find_package( libzip REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/external/libzip_linux/lib/cmake" NO_DEFAULT_PATH )
-
-		set( UPDATER_LIBS OpenSSL::Crypto OpenSSL::SSL OpenSSL::Crypto OpenSSL::SSL )
+		message(FATAL_ERROR "Unknown platform")
 	endif()
 
-	find_package( CURL MODULE REQUIRED )
+	# Find libraries
+	set( ZLIB_ROOT "${PLAT_EXTERNAL_PATH}/zlib" )
+	set( ZLIB_USE_STATIC_LIBS ON )
+	find_package( ZLIB REQUIRED )
+
+	set( libzip_DIR "${PLAT_EXTERNAL_PATH}/libzip/lib/cmake/libzip" )
+	find_package( libzip REQUIRED NO_DEFAULT_PATH )
+
+	if( PLATFORM_LINUX )
+		# The bundled curl statically links with the bundled MbedTLS
+		set( MbedTLS_DIR "${PLAT_EXTERNAL_PATH}/mbedtls/lib/cmake/MbedTLS" )
+		find_package( MbedTLS REQUIRED NO_DEFAULT_PATH )
+	endif()
+
+	set( CURL_DIR "${PLAT_EXTERNAL_PATH}/curl/lib/cmake/CURL" )
+	find_package( CURL REQUIRED NO_DEFAULT_PATH )
+
 	set( UPDATER_LIBS
-		${CURL_LIBRARIES}
-		${UPDATER_LIBS}
-		nlohmann_json
 		libzip::zip
+		CURL::libcurl
 	)
 
-	set( UPDATER_INCLUDE_PATHS
-		${CURL_INCLUDE_DIRS}
-	)
-	
 	set( UPDATER_DEFINES
 		USE_UPDATER=1
 	)
-	
-	if( CURL_STATICLIB )
-		set( UPDATER_DEFINES
-			${UPDATER_DEFINES}
-			CURL_STATICLIB=1
-		)
-		if( WIN32 )
-			set( UPDATER_LIBS
-				${UPDATER_LIBS}
-				wldap32.lib
-				Crypt32.lib
-				Ws2_32.lib
-			)
-		endif()
-	endif()
-	
 endif()
 
 #-----------------------------------------------------------------

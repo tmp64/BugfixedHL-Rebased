@@ -159,6 +159,8 @@ private:
 
 	static constexpr unsigned DEMO_MAGIC = 2498416793; //!< A random magic number
 
+	bool m_bInitialized = false;
+
 	StatusRequestState m_iStatusRequestState = StatusRequestState::Idle;
 	float m_flStatusRequestLastTime = 0.0f;
 	float m_flStatusRequestNextTime = 0.0f;

@@ -5,7 +5,7 @@ add_subdirectory( SDL2 )
 add_subdirectory( semver.c )
 
 if (WIN32)
-    add_subdirectory( stackwalker )
+    add_subdirectory( windows )
 endif()
 
 set( SDL2_INCLUDE_FILES "${SDL2_INCLUDE_FILES}" PARENT_SCOPE )

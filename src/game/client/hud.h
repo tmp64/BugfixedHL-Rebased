@@ -52,6 +52,9 @@
 #define HUD_INTERMISSION 2
 #define HUD_DRAW_ALWAYS  4 //!< Draw even if hud_draw = 0
 
+//! Fallback sprite resolution if the current one can't be found.
+constexpr int HUD_FALLBACK_RES = 640;
+
 namespace vgui2
 {
 class IScheme;
@@ -80,6 +83,27 @@ enum class ColorCodeAction
 	Strip = 2, //!< Color codes don't change the color but are removed from the string.
 };
 
+enum class EHudScale
+{
+	//! Detect automatically based on resolution.
+	Auto,
+
+	//! 50% scale (320_x.spr).
+	X05,
+
+	//! 100% scale (640_x.spr).
+	X1,
+
+	//! 200% scale (1280_x.spr).
+	X2,
+
+	//! 400% scale (2560_x.spr).
+	X4,
+
+	_Min = Auto,
+	_Max = X4,
+};
+
 struct NoTeamColor
 {
 	static const Color Orange;
@@ -98,8 +122,9 @@ public:
 	int m_iHideHUDDisplay;
 	int m_iFOV;
 	int m_Teamplay;
-	int m_iRes;
+	int m_iRes = -1;
 	int m_iFontHeight;
+	int m_iTextSize = 0;
 	int m_iWeaponBits;
 	int m_fPlayerDead;
 	int m_iIntermission;
@@ -202,7 +227,6 @@ public:
 
 	ColorCodeAction GetColorCodeAction();
 	Color GetColorCodeColor(int code);
-	const char *GetEngineVersion();
 
 	/**
 	 * Returns a color for client.
@@ -221,6 +245,18 @@ public:
 	 */
 	inline int GetFrameCount() { return m_iFrameCount; }
 
+	//! @returns The engine version string (value of sv_version cvar).
+	const char *GetEngineVersion();
+
+	//! @returns The engine build number.
+	int GetEngineBuild() const { return m_iEngineBuildNumber; }
+
+	//! @returns Maximum supported HUD scale by the game version.
+	EHudScale GetMaxHudScale() const { return m_MaxHudScale; }
+
+	//! @returns Currently loaded sprite size. Returns Auto if not loaded.
+	EHudScale GetCurrentHudScale() const { return m_CurrentHudScale; }
+
 private:
 	struct SpriteName
 	{
@@ -237,6 +273,10 @@ private:
 	std::vector<CHudElem *> m_HudList;
 	std::unordered_map<int, int> m_CharWidths;
 	char m_szEngineVersion[128];
+	int m_iEngineBuildNumber = 0;
+
+	EHudScale m_MaxHudScale = EHudScale::Auto;		//! Maximum supported HUD scale by the game version.
+	EHudScale m_CurrentHudScale = EHudScale::Auto;	//! Currently loaded sprite size.
 
 	// the memory for these arrays are allocated in the first call
 	// to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
@@ -260,6 +300,12 @@ private:
 
 	void UpdateHudColors();
 	void UpdateSupportsCvar();
+
+	//! Detects the maximum supported HUD scale.
+	EHudScale DetectMaxHudScale();
+
+	//! @returns The font size used by engine text draw functions.
+	int GetTextSize();
 
 	template <typename T>
 	inline T *RegisterHudElem()

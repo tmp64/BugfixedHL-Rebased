@@ -78,12 +78,8 @@ int WeaponsResource::HasAmmo(WEAPON *p)
 
 void WeaponsResource::LoadWeaponSprites(WEAPON *pWeapon)
 {
-	int i, iRes;
-
-	if (ScreenWidth < 640)
-		iRes = 320;
-	else
-		iRes = 640;
+	int i = 0;
+	int iRes = gHUD.m_iRes;
 
 	char sz[256];
 
@@ -317,16 +313,8 @@ void CHudAmmo::VidInit()
 	// If we've already loaded weapons, let's get new sprites
 	gWR.LoadAllWeaponSprites();
 
-	if (ScreenWidth >= 640)
-	{
-		giABWidth = 20;
-		giABHeight = 4;
-	}
-	else
-	{
-		giABWidth = 10;
-		giABHeight = 2;
-	}
+	giABWidth = SPR_RES_SCALED(20);
+	giABHeight = SPR_RES_SCALED(4);
 }
 
 //
@@ -1126,6 +1114,9 @@ int CHudAmmo::DrawWList(float flTime)
 			if (p)
 				iWidth = p->rcActive.right - p->rcActive.left;
 
+			HSPRITE hSprSelection = gHUD.GetSprite(m_HUD_selection);
+			const wrect_t &rcSprSelection = gHUD.GetSpriteRect(m_HUD_selection);
+
 			for (int iPos = 0; iPos < MAX_WEAPON_POSITIONS; iPos++)
 			{
 				p = gWR.GetWeaponSlot(i, iPos);
@@ -1142,11 +1133,19 @@ int CHudAmmo::DrawWList(float flTime)
 					a = 255 * gHUD.GetHudTransparency();
 					ScaleColors(r, g, b, a);
 
-					SPR_Set(p->hActive, r, g, b);
-					SPR_DrawAdditive(0, x, y, &p->rcActive);
+					if (p->hActive)
+					{
+						SPR_Set(p->hActive, r, g, b);
+						SPR_DrawAdditive(0, x, y, &p->rcActive);
+					}
+					else
+					{
+						// Pink rect
+						gEngfuncs.pfnFillRGBA(x, y, rcSprSelection.GetWidth(), rcSprSelection.GetHeight(), 64, 0, 64, a);
+					}
 
-					SPR_Set(gHUD.GetSprite(m_HUD_selection), r, g, b);
-					SPR_DrawAdditive(0, x, y, &gHUD.GetSpriteRect(m_HUD_selection));
+					SPR_Set(hSprSelection, r, g, b);
+					SPR_DrawAdditive(0, x, y, &rcSprSelection);
 				}
 				else
 				{
@@ -1164,15 +1163,23 @@ int CHudAmmo::DrawWList(float flTime)
 						ScaleColors(r, g, b, a);
 					}
 
-					SPR_Set(p->hInactive, r, g, b);
-					SPR_DrawAdditive(0, x, y, &p->rcInactive);
+					if (p->hInactive)
+					{
+						SPR_Set(p->hInactive, r, g, b);
+						SPR_DrawAdditive(0, x, y, &p->rcInactive);
+					}
+					else
+					{
+						// Pink rect
+						gEngfuncs.pfnFillRGBA(x, y, rcSprSelection.GetWidth(), rcSprSelection.GetHeight(), 48, 0, 48, a);
+					}
 				}
 
 				// Draw Ammo Bar
 
 				DrawAmmoBar(p, x + giABWidth / 2, y, giABWidth, giABHeight);
 
-				y += p->rcActive.bottom - p->rcActive.top + 5;
+				y += rcSprSelection.bottom - rcSprSelection.top + 5;
 			}
 
 			x += iWidth + 5;
@@ -1259,12 +1266,26 @@ client_sprite_t *GetSpriteFromList(client_sprite_t *pList, const char *pszNameSt
 
 	int len = strlen(pszNameStart);
 	client_sprite_t *p = pList;
+	client_sprite_t *pFallback = nullptr; //!< Fallback sprite if can't find for current HUD scale
 	while (iCount--)
 	{
-		if (p->iRes == iRes && !strncmp(pszNameStart, p->szName, len))
-			return p;
+		if (!strncmp(pszNameStart, p->szName, len))
+		{
+			if (p->iRes == iRes)
+			{
+				// Found the requested sprite
+				return p;
+			}
+			else if (p->iRes == HUD_FALLBACK_RES)
+			{
+				// At least found a fallbcak
+				pFallback = p;
+			}
+		}
+
 		p++;
 	}
 
-	return NULL;
+	// Return the fallback. It may be null but that's fine.
+	return pFallback;
 }

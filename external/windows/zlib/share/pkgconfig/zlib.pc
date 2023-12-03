@@ -1,0 +1,13 @@
+prefix=C:/bhl/prefix-out
+exec_prefix=C:/bhl/prefix-out
+libdir=C:/bhl/prefix-out/lib
+sharedlibdir=C:/bhl/prefix-out/lib
+includedir=C:/bhl/prefix-out/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.3
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}

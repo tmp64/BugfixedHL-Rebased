@@ -15,6 +15,7 @@
 #include "Exports.h"
 #include "hud/spectator.h"
 #include "cl_voice_status.h"
+#include "engine_builds.h"
 
 #include "particleman.h"
 extern IParticleMan *g_pParticleMan;
@@ -93,10 +94,21 @@ void CL_DLLEXPORT HUD_TxferLocalOverrides(struct entity_state_s *state, const st
 	// So have to hack in here. Called once per packet.
 	if (!r_dynamic_ent_light.GetBool())
 	{
-		frame_t *frame = (frame_t *)((byte *)client - offsetof(frame_t, clientdata));
-		for (int i = 0; i < frame->packet_entities.num_entities; i++)
+		if (gHUD.GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY_FIRST)
 		{
-			frame->packet_entities.entities[i].effects &= ~(EF_BRIGHTLIGHT | EF_DIMLIGHT | EF_LIGHT);
+			frame_9884_t *frame = (frame_9884_t *)((byte *)client - offsetof(frame_9884_t, clientdata));
+			for (int i = 0; i < frame->packet_entities.num_entities; i++)
+			{
+				frame->packet_entities.entities[i].effects &= ~(EF_BRIGHTLIGHT | EF_DIMLIGHT | EF_LIGHT);
+			}
+		}
+		else
+		{
+			frame_t *frame = (frame_t *)((byte *)client - offsetof(frame_t, clientdata));
+			for (int i = 0; i < frame->packet_entities.num_entities; i++)
+			{
+				frame->packet_entities.entities[i].effects &= ~(EF_BRIGHTLIGHT | EF_DIMLIGHT | EF_LIGHT);
+			}
 		}
 	}
 

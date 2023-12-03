@@ -18,13 +18,23 @@ namespace console
 // Ambiguity between ::Color (Source SDK) and vgui::Color (VGUI1)
 using ::Color;
 
+struct ColorOffset
+{
+	size_t printOffset;
+	size_t dprintOffset;
+};
+
+constexpr ColorOffset COLOR_OFFSETS[] = {
 #ifdef PLATFORM_WINDOWS
-constexpr size_t PRINT_COLOR_OFFSET = 0x128;
-constexpr size_t DPRINT_COLOR_OFFSET = 0x12C;
+	ColorOffset { 0x128, 0x12C }, // Pre-9884
+	ColorOffset { 0x12C, 0x130 }, // 9884
+	ColorOffset { 0x130, 0x134 }, // 9891
 #else
-constexpr size_t PRINT_COLOR_OFFSET = 0x124;
-constexpr size_t DPRINT_COLOR_OFFSET = 0x128;
+	ColorOffset { 0x124, 0x128 }, // Pre-9884
+	ColorOffset { 0x128, 0x12C }, // 9884
+	ColorOffset { 0x12C, 0x130 }, // 9891
 #endif
+};
 
 class CGameConsolePrototype : public IGameConsole
 {
@@ -240,27 +250,50 @@ void console::HookConsoleColor()
 		return;
 	}
 
-	auto fnHookSpecificColor = [&](size_t offset, Color compare, Color *&target) -> bool {
+	auto fnTryHookSpecificColor = [&](size_t offset, Color compare, Color **target) -> bool
+	{
 		size_t iColorPtr = reinterpret_cast<size_t>(pGameConsole->m_pConsole) + offset;
 		Color *pColor = reinterpret_cast<Color *>(iColorPtr);
 
 		if (*pColor != compare)
 		{
-			ConPrintf(ConColor::Red,
-			    "HookConsoleColor: check failed.\n"
-			    "  Expected: %d %d %d %d\n"
-			    "  Got: %d %d %d %d.\n",
-			    compare.r(), compare.g(), compare.b(), compare.a(),
-			    pColor->r(), pColor->g(), pColor->b(), pColor->a());
+			if (!target)
+			{
+				ConPrintf(ConColor::Red,
+				    "  Offset: 0x%X\n"
+				    "    Expected: %d %d %d %d\n"
+				    "    Got: %d %d %d %d.\n",
+					offset,
+				    compare.r(), compare.g(), compare.b(), compare.a(),
+				    pColor->r(), pColor->g(), pColor->b(), pColor->a());
+			}
 			return false;
 		}
 
-		target = pColor;
+		if (target)
+			*target = pColor;
+
 		return true;
 	};
 
-	if (fnHookSpecificColor(PRINT_COLOR_OFFSET, s_DefaultColor, s_ConColor) && fnHookSpecificColor(DPRINT_COLOR_OFFSET, s_DefaultDColor, s_ConDColor))
+	Color *pPrintColor = nullptr;
+	Color *pDPrintColor = nullptr;
+
+	// Try different offsets
+	for (const ColorOffset& offset : COLOR_OFFSETS)
 	{
+		if (fnTryHookSpecificColor(offset.printOffset, s_DefaultColor, &pPrintColor) &&
+			fnTryHookSpecificColor(offset.dprintOffset, s_DefaultDColor, &pDPrintColor))
+		{
+			// Found the offset
+			break;
+		}
+	}
+
+	if (pPrintColor && pDPrintColor)
+	{
+		s_ConColor = pPrintColor;
+		s_ConDColor = pDPrintColor;
 #ifdef _DEBUG
 		ConPrintf(ConColor::Cyan, "HookConsoleColor: Success!\n");
 #endif
@@ -268,6 +301,13 @@ void console::HookConsoleColor()
 	else
 	{
 		ConPrintf(ConColor::Red, "Failed to hook console color.\n");
+
+		// Print offsets and values
+		for (const ColorOffset &offset : COLOR_OFFSETS)
+		{
+			fnTryHookSpecificColor(offset.printOffset, s_DefaultColor, nullptr);
+			fnTryHookSpecificColor(offset.dprintOffset, s_DefaultDColor, nullptr);
+		}
 	}
 }
 

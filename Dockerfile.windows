@@ -4,6 +4,9 @@ FROM bhl-build
 WORKDIR /build/bhl
 COPY . .
 
+# Refresh Git index after .git is copied
+RUN git update-index --refresh
+
 RUN python ./scripts/BuildRelease.py \
     --target client \
     --build-type release \

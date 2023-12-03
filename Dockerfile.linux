@@ -18,6 +18,9 @@ RUN apt-get install -y \
 WORKDIR /build/bhl
 COPY . .
 
+# Refresh Git index after .git is copied
+RUN git update-index --refresh
+
 RUN python3.8 ./scripts/BuildRelease.py \
     --target client \
     --build-type release \

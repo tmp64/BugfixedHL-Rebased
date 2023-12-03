@@ -35,6 +35,12 @@ class CPlayerInfo;
 CPlayerInfo *GetPlayerInfo(int idx);
 CPlayerInfo *GetThisPlayerInfo();
 
+//! Gets the player info for player index. Checks that the index
+//! is valid and the player is connected.
+//! @param	idx		Player index in the range [1; MAX_PLAYERS].
+//! @returns Player info or nullptr.
+CPlayerInfo *GetPlayerInfoSafe(int idx);
+
 class CPlayerInfo
 {
 public:

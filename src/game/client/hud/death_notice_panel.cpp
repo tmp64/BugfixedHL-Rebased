@@ -83,8 +83,8 @@ void CHudDeathNoticePanel::Think()
 void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *killedwith)
 {
 	Entry e;
-	CPlayerInfo *killer = (killerId >= 1 && killerId <= MAX_PLAYERS) ? GetPlayerInfo(killerId) : nullptr;
-	CPlayerInfo *victim = (victimId >= 1 && victimId <= MAX_PLAYERS) ? GetPlayerInfo(victimId) : nullptr;
+	CPlayerInfo *killer = GetPlayerInfoSafe(killerId);
+	CPlayerInfo *victim = GetPlayerInfoSafe(victimId);
 	int thisPlayerId = GetThisPlayerInfo()->GetIndex();
 
 	// Check for suicide

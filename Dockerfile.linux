@@ -1,5 +1,7 @@
 FROM bhl-build
 
+ARG BHL_VER_TAG="dev"
+
 # Install build script dependencies
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update
@@ -19,7 +21,7 @@ WORKDIR /build/bhl
 COPY . .
 
 # Refresh Git index after .git is copied
-RUN git update-index --refresh
+RUN git update-index -q --refresh
 
 RUN python3.8 ./scripts/BuildRelease.py \
     --target client \
@@ -27,7 +29,8 @@ RUN python3.8 ./scripts/BuildRelease.py \
     --vs 2019 --toolset v141_xp \
     --linux-compiler gcc-9 \
     --out-dir ./_build_out_client \
-    --cmake-args="-DWARNINGS_ARE_ERRORS=ON"
+    --cmake-args="-DWARNINGS_ARE_ERRORS=ON" \
+    --v-tag=${BHL_VER_TAG}
 
 RUN python3.8 ./scripts/BuildRelease.py \
     --target server \
@@ -35,4 +38,5 @@ RUN python3.8 ./scripts/BuildRelease.py \
     --vs 2019 --toolset v141_xp \
     --linux-compiler gcc-9 \
     --out-dir ./_build_out_server \
-    --cmake-args="-DWARNINGS_ARE_ERRORS=ON"
+    --cmake-args="-DWARNINGS_ARE_ERRORS=ON" \
+    --v-tag=${BHL_VER_TAG}

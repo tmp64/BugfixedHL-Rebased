@@ -1,11 +1,13 @@
 FROM bhl-build
 
+ARG BHL_VER_TAG="dev"
+
 # Build
 WORKDIR /build/bhl
 COPY . .
 
 # Refresh Git index after .git is copied
-RUN git update-index --refresh
+RUN git update-index -q --refresh
 
 RUN python ./scripts/BuildRelease.py \
     --target client \
@@ -13,7 +15,8 @@ RUN python ./scripts/BuildRelease.py \
     --vs 2022 --toolset v143 \
     --linux-compiler gcc-9 \
     --out-dir ./_build_out_client \
-    --cmake-args=-DWARNINGS_ARE_ERRORS=ON
+    --cmake-args=-DWARNINGS_ARE_ERRORS=ON \
+    --v-tag=${env:BHL_VER_TAG}
 
 RUN python ./scripts/BuildRelease.py \
     --target server \
@@ -21,4 +24,5 @@ RUN python ./scripts/BuildRelease.py \
     --vs 2022 --toolset v143 \
     --linux-compiler gcc-9 \
     --out-dir ./_build_out_server \
-    --cmake-args=-DWARNINGS_ARE_ERRORS=ON
+    --cmake-args=-DWARNINGS_ARE_ERRORS=ON \
+    --v-tag=${env:BHL_VER_TAG}

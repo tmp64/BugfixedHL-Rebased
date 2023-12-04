@@ -11,7 +11,7 @@ cd ../..
 rm -r -fo -ea 0 $OutDir
 mkdir $OutDir -ea 0
 
-Invoke-Call -ScriptBlock { docker build -f $DockerFile -t $ImageTag . }
+Invoke-Call -ScriptBlock { docker build -f $DockerFile -t $ImageTag --build-arg BHL_VER_TAG . }
 Invoke-Call -ScriptBlock { docker container create --name $TempCont $ImageTag }
 Invoke-Call -ScriptBlock { docker container cp ${TempCont}:C:/build/bhl/_build_out_client $OutDir }
 Invoke-Call -ScriptBlock { docker container cp ${TempCont}:C:/build/bhl/_build_out_server $OutDir }

@@ -13,7 +13,8 @@ public:
 	//! Adds an item to the combo box.
 	//! @param	itemText	Disaply text. Can be localized.
 	//! @param	cvarValue	CVar value.
-	void AddItem(const char *itemText, const char *cvarValue);
+	//! @returns Item ID.
+	int AddItem(const char *itemText, const char *cvarValue);
 
 	void ResetData();
 	void ApplyChanges();

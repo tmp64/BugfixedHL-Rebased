@@ -113,10 +113,10 @@ struct HudScaleInfo
 
 //! The list of allowed HUD sizes.
 static constexpr HudScaleInfo HUD_SCALE_INFO[] = {
-	HudScaleInfo { 320,  240,  EHudScale ::X05, "sprites/320hud1.spr" },
-	HudScaleInfo { 640,  480,  EHudScale ::X1,  "sprites/640hud1.spr" },
-	HudScaleInfo { 1280, 960,  EHudScale ::X2,  "sprites/1280/hud_bucket0.spr" },
-	HudScaleInfo { 2560, 1920, EHudScale ::X4,  "sprites/2560/hud_bucket0.spr" },
+	HudScaleInfo { 320,  240,  EHudScale::X05, "sprites/320hud1.spr" },
+	HudScaleInfo { 640,  480,  EHudScale::X1,  "sprites/640hud1.spr" },
+	HudScaleInfo { 1280, 960,  EHudScale::X2,  "sprites/1280/hud_bucket0.spr" },
+	HudScaleInfo { 2560, 1920, EHudScale::X4,  "sprites/2560/hud_bucket0.spr" },
 };
 
 extern cvar_t *cl_lw;

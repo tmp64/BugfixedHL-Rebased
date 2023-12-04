@@ -12,10 +12,11 @@ CCVarComboBox::CCVarComboBox(vgui2::Panel *parent, const char *panelName, const 
 	}
 }
 
-void CCVarComboBox::AddItem(const char *itemText, const char *cvarValue)
+int CCVarComboBox::AddItem(const char *itemText, const char *cvarValue)
 {
-	BaseClass::AddItem(itemText, new KeyValues("Item", "value", cvarValue));
+	int id = BaseClass::AddItem(itemText, new KeyValues("Item", "value", cvarValue));
 	SetNumberOfEditLines(GetMenu()->GetItemCount());
+	return id;
 }
 
 void CCVarComboBox::ResetData()
@@ -28,9 +29,10 @@ void CCVarComboBox::ResetData()
 
 		for (int i = 0; i < itemCount; i++)
 		{
+			// Null for disabled items
 			KeyValues *pUserData = pMenu->GetItemUserData(i);
 
-			if (!strcmp(pUserData->GetString("value"), m_pCvar->string))
+			if (pUserData && !strcmp(pUserData->GetString("value"), m_pCvar->string))
 			{
 				// Found it
 				ActivateItem(i);

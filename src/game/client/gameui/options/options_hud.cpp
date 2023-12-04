@@ -46,10 +46,18 @@ CHudSubOptions::CHudSubOptions(vgui2::Panel *parent)
 
 	m_pScaleBox = new CCVarComboBox(this, "ScaleBox", "hud_scale");
 	m_pScaleBox->AddItem("#BHL_AdvOptions_Hud_ScaleAuto", "0");
-	m_pScaleBox->AddItem("50%", "1");
-	m_pScaleBox->AddItem("100%", "2");
-	m_pScaleBox->AddItem("200%", "3");
-	m_pScaleBox->AddItem("400%", "5");
+
+	constexpr const char *SCALES[] = { "50%", "100%", "200%", "400%" };
+
+	for (int i = 1; i <= std::size(SCALES); i++)
+	{
+		char buf[16];
+		snprintf(buf, sizeof(buf), "%d", i);
+		int itemId = m_pScaleBox->AddItem(SCALES[i - 1], buf);
+
+		bool isSupported = i <= (int)gHUD.GetMaxHudScale();
+		m_pScaleBox->SetItemEnabled(itemId, isSupported);
+	}
 
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/HudSubOptions.res");
 	m_pOpacityLabel->MoveToFront(); // Obscured by the slider

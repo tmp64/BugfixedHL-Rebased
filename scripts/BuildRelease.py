@@ -298,7 +298,7 @@ class BuildScript:
 
         # Parse version
         self.release_version = "{}.{}.{}".format(args.v_major, args.v_minor, args.v_patch)
-        if args.v_tag:
+        if args.v_tag and len(args.v_tag) != 0:
             self.release_version = "{}-{}".format(self.release_version, args.v_tag)
         if args.v_meta:
             self.release_version = "{}+{}".format(self.release_version, args.v_meta)

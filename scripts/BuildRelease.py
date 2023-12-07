@@ -297,13 +297,18 @@ class BuildScript:
             self.build_type = 'RelWithDebInfo'
 
         # Parse version
+        v_tag = args.v_tag
+        if v_tag is None or v_tag == 'no_tag':
+            v_tag = ''
+
         self.release_version = "{}.{}.{}".format(args.v_major, args.v_minor, args.v_patch)
-        if args.v_tag and len(args.v_tag) != 0:
-            self.release_version = "{}-{}".format(self.release_version, args.v_tag)
+        if len(v_tag) != 0:
+            self.release_version = "{}-{}".format(self.release_version, v_tag)
         if args.v_meta:
             self.release_version = "{}+{}".format(self.release_version, args.v_meta)
 
-        self.release_version_array = [args.v_major, args.v_minor, args.v_patch, args.v_tag]
+        self.release_version_array = [args.v_major, args.v_minor, args.v_patch, v_tag]
+        print(f'Version: {self.release_version_array}')
 
         # Set output directory
         self.out_dir_name = 'BugfixedHL-{}-{}-{}-{}-{}'.format(

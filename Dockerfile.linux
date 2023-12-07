@@ -1,7 +1,5 @@
 FROM bhl-build
 
-ARG BHL_VER_TAG="dev"
-
 # Install build script dependencies
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update
@@ -22,6 +20,8 @@ COPY . .
 
 # Refresh Git index after .git is copied
 RUN git update-index -q --refresh
+
+ARG BHL_VER_TAG="dev"
 
 RUN python3.8 ./scripts/BuildRelease.py \
     --target client \

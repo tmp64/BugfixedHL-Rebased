@@ -6,6 +6,7 @@
 #include <tier1/interface.h>
 #include <tier1/strtools.h>
 #include <tier2/tier2.h>
+#include <vgui/IScheme.h>
 #include <IGameConsole.h>
 #include <convar.h>
 
@@ -58,9 +59,13 @@ static void UnloadGameUI();
 //-----------------------------------------------------
 // Console color hook
 //-----------------------------------------------------
-// Default color for checking that offset is correct
+// Default color if scheme fails to load
 static const Color s_DefaultColor = Color(216, 222, 211, 255);
 static const Color s_DefaultDColor = Color(196, 181, 80, 255);
+
+// Color for checking that offset is correct
+static Color s_ExpectedColor;
+static Color s_ExpectedDColor;
 
 // Used when failed to find color in GameUI
 static Color s_StubColor = s_DefaultColor;
@@ -70,6 +75,7 @@ static Color s_StubDColor = s_DefaultDColor;
 static Color *s_ConColor = &s_StubColor;
 static Color *s_ConDColor = &s_StubDColor;
 
+static void ReadSchemeColors();
 static void HookConsoleColor();
 
 //-----------------------------------------------------
@@ -194,8 +200,8 @@ void console::SetColor(::Color c)
 
 void console::ResetColor()
 {
-	*s_ConColor = s_DefaultColor;
-	*s_ConDColor = s_DefaultDColor;
+	*s_ConColor = s_ExpectedColor;
+	*s_ConDColor = s_ExpectedDColor;
 }
 
 //-----------------------------------------------------
@@ -226,6 +232,32 @@ void console::UnloadGameUI()
 //-----------------------------------------------------
 // Console color hook
 //-----------------------------------------------------
+void console::ReadSchemeColors()
+{
+	// Set the default color (in case scheme fails to load)
+	s_ExpectedColor = s_DefaultColor;
+	s_ExpectedDColor = s_DefaultDColor;
+
+	constexpr char SCHEME_NAME[] = "BaseUI";
+
+	vgui2::HScheme hScheme = g_pVGuiSchemeManager->GetScheme(SCHEME_NAME);
+	if (!hScheme)
+	{
+		ConPrintf(ConColor::Red, "Console Color: Failed to open scheme %s\n", SCHEME_NAME);
+		return;
+	}
+
+	vgui2::IScheme* pScheme = g_pVGuiSchemeManager->GetIScheme(hScheme);
+	if (!pScheme)
+	{
+		ConPrintf(ConColor::Red, "Console Color: Failed to get pointer to scheme %s [%lu]\n", SCHEME_NAME, hScheme);
+		return;
+	}
+
+	s_ExpectedColor = pScheme->GetColor("FgColor", s_DefaultColor);
+	s_ExpectedDColor = pScheme->GetColor("BrightControlText", s_DefaultDColor);
+}
+
 void console::HookConsoleColor()
 {
 	LoadGameUI();
@@ -249,6 +281,11 @@ void console::HookConsoleColor()
 		ConPrintf(ConColor::Red, "HookConsoleColor: console not initialized\n");
 		return;
 	}
+
+	// Read console colors from the GameUI scheme
+	ReadSchemeColors();
+	s_StubColor = s_ExpectedColor;
+	s_StubDColor = s_ExpectedDColor;
 
 	auto fnTryHookSpecificColor = [&](size_t offset, Color compare, Color **target) -> bool
 	{
@@ -282,8 +319,8 @@ void console::HookConsoleColor()
 	// Try different offsets
 	for (const ColorOffset& offset : COLOR_OFFSETS)
 	{
-		if (fnTryHookSpecificColor(offset.printOffset, s_DefaultColor, &pPrintColor) &&
-			fnTryHookSpecificColor(offset.dprintOffset, s_DefaultDColor, &pDPrintColor))
+		if (fnTryHookSpecificColor(offset.printOffset, s_ExpectedColor, &pPrintColor) &&
+			fnTryHookSpecificColor(offset.dprintOffset, s_ExpectedDColor, &pDPrintColor))
 		{
 			// Found the offset
 			break;
@@ -305,8 +342,8 @@ void console::HookConsoleColor()
 		// Print offsets and values
 		for (const ColorOffset &offset : COLOR_OFFSETS)
 		{
-			fnTryHookSpecificColor(offset.printOffset, s_DefaultColor, nullptr);
-			fnTryHookSpecificColor(offset.dprintOffset, s_DefaultDColor, nullptr);
+			fnTryHookSpecificColor(offset.printOffset, s_ExpectedColor, nullptr);
+			fnTryHookSpecificColor(offset.dprintOffset, s_ExpectedDColor, nullptr);
 		}
 	}
 }
@@ -373,8 +410,8 @@ static void console::RedirectedConPrintf(const char *pszFormat, ...)
 {
 	// Print redirected messages with Con_Printf color instead of Con_DPrintf
 	// But only if color wasn't changed.
-	if (*s_ConColor == s_DefaultColor)
-		*s_ConDColor = s_DefaultColor;
+	if (*s_ConColor == s_ExpectedColor)
+		*s_ConDColor = s_ExpectedColor;
 
 	va_list args;
 	va_start(args, pszFormat);
@@ -385,8 +422,8 @@ static void console::RedirectedConPrintf(const char *pszFormat, ...)
 
 	va_end(args);
 
-	if (*s_ConColor == s_DefaultColor)
-		*s_ConDColor = s_DefaultDColor;
+	if (*s_ConColor == s_ExpectedColor)
+		*s_ConDColor = s_ExpectedDColor;
 }
 
 void console::EnableRedirection()

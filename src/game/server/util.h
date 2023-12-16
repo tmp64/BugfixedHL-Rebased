@@ -276,8 +276,19 @@ extern void UTIL_EmitAmbientSound(edict_t *entity, const Vector &vecOrigin, cons
 extern void UTIL_ParticleEffect(const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount);
 extern void UTIL_ScreenShake(const Vector &center, float amplitude, float frequency, float duration, float radius);
 extern void UTIL_ScreenShakeAll(const Vector &center, float amplitude, float frequency, float duration);
+
+//! Splits any lines in a string longer than 68 characters.
+//! Not UTF-8-aware. Will split by words if possible.
+//! Prevents a client crash due to a buffer overflow.
+//! See tmp64/BugfixedHL-Rebased#198 and ValveSoftware/halflife#3705.
+//! @param  src		Original message text. Size after splitting is limited to 511 bytes.
+//! @returns Pointer to a static buffer.
+extern char *UTIL_SplitHudMessage(const char *src);
+
+extern void UTIL_ShowMessageRaw(const char *pString, CBaseEntity *pPlayer);
 extern void UTIL_ShowMessage(const char *pString, CBaseEntity *pPlayer);
 extern void UTIL_ShowMessageAll(const char *pString);
+
 extern void UTIL_ScreenFadeAll(const Vector &color, float fadeTime, float holdTime, int alpha, int flags);
 extern void UTIL_ScreenFade(CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags);
 
@@ -376,6 +387,7 @@ typedef struct hudtextparms_s
 // prints as transparent 'title' to the HUD
 extern void UTIL_HudMessageAll(const hudtextparms_t &textparms, const char *pMessage);
 extern void UTIL_HudMessage(CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage);
+extern void UTIL_HudMessageRaw(CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage);
 
 // for handy use with ClientPrint params
 extern char *UTIL_dtos1(int d);

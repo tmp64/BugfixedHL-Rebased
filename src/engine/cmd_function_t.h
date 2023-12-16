@@ -3,26 +3,11 @@
 
 using CmdFunction = void (*)();
 
-namespace CmdFlag
-{
-enum CmdFlag
-{
-	/**
-	*	This is a HUD (client library) command.
-	*/
-	IS_HUD_CMD = 1 << 0,
-
-	/**
-	*	This is a game (server library) command.
-	*/
-	IS_GAME_CMD = 1 << 1,
-
-	/**
-	*	This is a wrapper (GameUI library) command.
-	*/
-	IS_WRAPPER_CMD = 1 << 2
-};
-}
+constexpr int FCMD_HUD_COMMAND = 1 << 0;        //!< This is a HUD (client library) command.
+constexpr int FCMD_GAME_COMMAND = 1 << 1;       //!< This is a game (server library) command.
+constexpr int FCMD_WRAPPER_COMMAND = 1 << 2;    //!< This is a wrapper (GameUI library) command.
+constexpr int FCMD_FILTERED_COMMAND = 1 << 3;   //!< Can only be executed by the local client (not a remote server or a config file).
+constexpr int FCMD_RESTRICTED_COMMAND = 1 << 4; //!< Can only be executed by the local client if cl_filterstuffcmd is true.
 
 /**
 *	Represents a command function that can be executed.

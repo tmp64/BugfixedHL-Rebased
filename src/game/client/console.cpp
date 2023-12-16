@@ -466,6 +466,66 @@ void ConPrintf(::Color color, const char *fmt, ...)
 
 CON_COMMAND(find, "Searches cvars and commands for a string.")
 {
+	constexpr const char *CVAR_FLAG_NAMES[32] = {
+		"archive", // 0
+		"userinfo", // 1
+		"server", // 2
+		"extdll", // 3
+		"client", // 4
+		"protected", // 5
+		"sponly", // 6
+		"printonly", // 7
+		"unlogged", // 8
+		"noextraws", // 9
+		nullptr, // 10
+		nullptr, // 11
+		nullptr, // 12
+		nullptr, // 13
+		nullptr, // 14
+		nullptr, // 15
+		nullptr, // 16
+		nullptr, // 17
+		nullptr, // 18
+		nullptr, // 19
+		nullptr, // 20
+		nullptr, // 21
+		"bhl_archive", // 22
+		"devonly", // 23
+	};
+
+	constexpr const char *CMD_FLAG_NAMES[32] = {
+		"hud",        // 0
+		"game",       // 1
+		"wrapper",    // 2
+		"filtered",   // 3
+		"restricted", // 4
+	};
+
+	auto fnPrintFlags = [](int flags, const char *const *flagNames)
+	{
+		bool isFirstPrinted = false;
+
+		for (unsigned i = 0; i < 32; i++)
+		{
+			unsigned flag = 1 << i;
+
+			if (flags & flag)
+			{
+				if (isFirstPrinted)
+					ConPrintf(" ");
+
+				isFirstPrinted = true;
+
+				if (flagNames[i])
+					ConPrintf("%s", flagNames[i]);
+				else
+					ConPrintf("unknown_%d", i);
+			}
+		}
+
+		return isFirstPrinted;
+	};
+
 	struct FindResult
 	{
 		const char *name;
@@ -537,57 +597,6 @@ CON_COMMAND(find, "Searches cvars and commands for a string.")
 		return strcmp(lhs->name, rhs->name);
 	});
 
-	auto fnPrintFlags = [](int flags) {
-		constexpr const char *flagName[32] = {
-			"archive", // 0
-			"userinfo", // 1
-			"server", // 2
-			"extdll", // 3
-			"client", // 4
-			"protected", // 5
-			"sponly", // 6
-			"printonly", // 7
-			"unlogged", // 8
-			"noextraws", // 9
-			nullptr, // 10
-			nullptr, // 11
-			nullptr, // 12
-			nullptr, // 13
-			nullptr, // 14
-			nullptr, // 15
-			nullptr, // 16
-			nullptr, // 17
-			nullptr, // 18
-			nullptr, // 19
-			nullptr, // 20
-			nullptr, // 21
-			"bhl_archive", // 22
-			"devonly", // 23
-		};
-
-		bool isFirstPrinted = false;
-
-		for (unsigned i = 0; i < 32; i++)
-		{
-			unsigned flag = 1 << i;
-
-			if (flags & flag)
-			{
-				if (isFirstPrinted)
-					ConPrintf(" ");
-
-				isFirstPrinted = true;
-
-				if (flagName[i])
-					ConPrintf("%s", flagName[i]);
-				else
-					ConPrintf("unknown_%d", i);
-			}
-		}
-
-		return isFirstPrinted;
-	};
-
 	// Display results
 	for (FindResult &i : found)
 	{
@@ -602,7 +611,7 @@ CON_COMMAND(find, "Searches cvars and commands for a string.")
 			else
 				ConPrintf("\n");
 
-			if (fnPrintFlags(i.cvar->flags))
+			if (fnPrintFlags(i.cvar->flags, CVAR_FLAG_NAMES))
 				ConPrintf("\n");
 
 			if (cv && cv->GetDescription()[0])
@@ -614,7 +623,7 @@ CON_COMMAND(find, "Searches cvars and commands for a string.")
 
 			ConPrintf(ConColor::Yellow, "\"%s\"\n", i.name);
 
-			if (fnPrintFlags(i.cmd->flags))
+			if (fnPrintFlags(i.cmd->flags, CMD_FLAG_NAMES))
 				ConPrintf("\n");
 
 			if (cv)

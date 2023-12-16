@@ -1360,6 +1360,14 @@ struct cl_enginefunc_t
 	*	@param y Y offset.
 	*/
 	void (*pfnVguiWrap2_GetMouseDelta)(int *x, int *y);
+
+	/**
+	*	Enqueues a command for execution for the local client.
+	*   The command is validated prior to execution. If it contains unsafe commands, it won't be executed.
+	*	@param pszCmdString Command string.
+	*	@return true if the command was enqueued, false otherwise.
+	*/
+	void (*pfnEngDst_pfnFilteredClientCmd)(const char **);
 };
 
 #endif

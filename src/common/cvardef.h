@@ -25,6 +25,9 @@
 #define FCVAR_PRINTABLEONLY    (1 << 7) // This cvar's string cannot contain unprintable characters ( e.g., used for player name etc ).
 #define FCVAR_UNLOGGED         (1 << 8) // If this is a FCVAR_SERVER, don't log changes to the log file / console if we are creating a log
 #define FCVAR_NOEXTRAWHITEPACE (1 << 9) // strip trailing/leading white space from this cvar
+#define FCVAR_PRIVILEGED       (1 << 10) // only available in privileged mode
+#define FCVAR_FILTERABLE       (1 << 11) // filtered in unprivileged mode if cl_filterstuffcmd is 1
+
 #define FCVAR_BHL_ARCHIVE      (1 << 22) // (Client only) Will be saved to bugfixedhl.cfg
 #define FCVAR_DEVELOPMENTONLY  (1 << 23) // (Client only) Cvar won't be registered unless game is running with -dev flag
 

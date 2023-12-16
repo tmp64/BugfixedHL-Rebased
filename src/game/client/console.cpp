@@ -477,8 +477,8 @@ CON_COMMAND(find, "Searches cvars and commands for a string.")
 		"printonly", // 7
 		"unlogged", // 8
 		"noextraws", // 9
-		nullptr, // 10
-		nullptr, // 11
+		"privileged", // 10
+		"filterable", // 11
 		nullptr, // 12
 		nullptr, // 13
 		nullptr, // 14

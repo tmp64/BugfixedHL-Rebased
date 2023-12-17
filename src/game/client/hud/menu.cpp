@@ -142,7 +142,7 @@ void CHudMenu::Draw(float flTime)
 		return;
 
 	// draw the menu, along the left-hand side of the screen
-	const int lineHeight = gHUD.m_iTextSize;
+	const int lineHeight = gHUD.GetHudFontSize();
 
 	// count the number of newlines
 	int nlc = 0;

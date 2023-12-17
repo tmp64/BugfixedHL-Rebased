@@ -399,6 +399,22 @@ void CHudSpectator::SetWayInterpolation(cameraWayPoint_t *prev, cameraWayPoint_t
 	}
 }
 
+bool CHudSpectator::ShouldDrawOverview()
+{
+	// draw only in sepctator mode
+	if (!g_iUser1)
+		return false;
+
+	// Only draw the overview if Map Mode is selected for this view
+	if (m_iDrawCycle == 0 && ((g_iUser1 != OBS_MAP_FREE) && (g_iUser1 != OBS_MAP_CHASE)))
+		return false;
+
+	if (m_iDrawCycle == 1 && m_pip->value < INSET_MAP_FREE)
+		return false;
+
+	return true;
+}
+
 bool CHudSpectator::GetDirectorCamera(Vector &position, Vector &angle)
 {
 	float now = gHUD.m_flTime;
@@ -1654,15 +1670,7 @@ void CHudSpectator::DrawOverviewEntities()
 
 void CHudSpectator::DrawOverview()
 {
-	// draw only in sepctator mode
-	if (!g_iUser1)
-		return;
-
-	// Only draw the overview if Map Mode is selected for this view
-	if (m_iDrawCycle == 0 && ((g_iUser1 != OBS_MAP_FREE) && (g_iUser1 != OBS_MAP_CHASE)))
-		return;
-
-	if (m_iDrawCycle == 1 && m_pip->value < INSET_MAP_FREE)
+	if (!ShouldDrawOverview())
 		return;
 
 	DrawOverviewLayer();
@@ -1686,6 +1694,11 @@ void CHudSpectator::CheckOverviewEntities()
 
 bool CHudSpectator::AddOverviewEntity(int type, struct cl_entity_s *ent, const char *modelname)
 {
+	// AddOverviewEntity is called every frame. Overview entity list is only cleared
+	// when it is drawn. So don't add any entities if not rendering.
+	if (!ShouldDrawOverview())
+		return false;
+
 	HSPRITE hSprite = 0;
 	double duration = -1.0f; // duration -1 means show it only this frame;
 

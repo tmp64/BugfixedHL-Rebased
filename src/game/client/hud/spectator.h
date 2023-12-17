@@ -151,6 +151,9 @@ private:
 	int m_lastSecondaryObject;
 
 	cameraWayPoint_t m_CamPath[MAX_CAM_WAYPOINTS];
+
+	//! @returns Whether overview should be rendered this frame.
+	bool ShouldDrawOverview();
 };
 
 #endif // SPECTATOR_H

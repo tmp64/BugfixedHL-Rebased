@@ -1484,6 +1484,8 @@ void CHudSpectator::DrawOverviewEntities()
 		if (!m_OverviewEntities[i].hSprite)
 			continue;
 
+		Assert(m_OverviewEntities[i].entity);
+		Assert(GetPlayerInfo(m_OverviewEntities[i].entity->index)->IsConnected());
 		hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer(m_OverviewEntities[i].hSprite);
 		ent = m_OverviewEntities[i].entity;
 

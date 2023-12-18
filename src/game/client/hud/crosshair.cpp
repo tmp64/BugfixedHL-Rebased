@@ -37,14 +37,14 @@ void CHudCrosshair::Draw(float flTime)
 	if (!(m_iFlags & HUD_ACTIVE))
 		return;
 
-	if (gEngfuncs.GetMaxClients() == 1)
-	{
-		// These checks are limited to singleplayer since HL servers
-		// reset the HUD incorrectly on full update (e.g. when starting a demo recording).
-		// This causes ammo count and crosshair to disappear.
-		if ((gHUD.m_iHideHUDDisplay & HIDEHUD_WEAPONS) || !CHudAmmo::Get()->m_pWeapon)
-			return;
-	}
+	if (!CHudAmmo::Get()->m_pWeapon)
+		return;
+
+	// These checks are limited to singleplayer since HL servers
+	// reset the HUD incorrectly on full update (e.g. when starting a demo recording).
+	// This causes ammo count and crosshair to disappear.
+	if (gEngfuncs.GetMaxClients() == 1 && gHUD.m_iHideHUDDisplay & HIDEHUD_WEAPONS)
+		return;
 
 	bool isZoomed = gHUD.m_iFOV < 90;
 	bool shouldDrawZoomed = cl_cross_zoom.GetInt() == 1 || cl_cross_zoom.GetInt() == 2;

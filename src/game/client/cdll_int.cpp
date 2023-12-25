@@ -284,6 +284,7 @@ int CL_DLLEXPORT HUD_VidInit(void)
 	PM_ResetBHopDetection();
 	CResults::Get().Stop();
 	GetClientVoiceMgr()->VidInit();
+	gHUD.white_sprite = gEngfuncs.pfnSPR_Load("sprites/white.spr");
 
 	return 1;
 }

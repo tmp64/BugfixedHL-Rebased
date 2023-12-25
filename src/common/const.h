@@ -705,6 +705,7 @@ enum
 	kRenderFxGlowShell, // Glowing Shell
 	kRenderFxClampMinScale, // Keep this sprite from getting very small (SPRITES only!)
 	kRenderFxLightMultiplier, //CTM !!!CZERO added to tell the studiorender that the value in iuser2 is a lightmultiplier
+	kRenderFxTrigger = 241,
 };
 
 typedef unsigned int func_t;

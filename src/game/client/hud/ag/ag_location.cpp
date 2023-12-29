@@ -1,6 +1,8 @@
 // Martin Webrant (BulliT)
 
 #include <tier0/platform.h>
+#include <tier2/tier2.h>
+#include <FileSystem.h>
 #include "hud.h"
 #include "cl_entity.h"
 #include "cl_util.h"
@@ -181,57 +183,37 @@ void AgHudLocation::Load()
 	}
 	m_locations[ARRAYSIZE(m_locations) - 1].m_nextLocation = NULL;
 
+	// fread stopped working after HL25 for some reason (issue #205).
+	// g_pFullFileSystem works fine though.
+	char szFileName[MAX_PATH];
+	sprintf(szFileName, "locs/%s.loc", m_szMap);
+	FileHandle_t hFile = g_pFullFileSystem->Open(szFileName, "rb");
+
+	if (hFile == FILESYSTEM_INVALID_HANDLE)
+	{
+		ConPrintf(ConColor::Red, "Couldn't open location file %s.\n", szFileName);
+		return;
+	}
+
 	std::vector<char> szData;
-	char szFile[MAX_PATH];
-	const char *gameDirectory = gEngfuncs.pfnGetGameDirectory();
-	sprintf(szFile, "%s/locs/%s.loc", gameDirectory, m_szMap);
-	FILE *pFile = fopen(szFile, "rb");
-	if (!pFile)
+	int iFileSize = g_pFullFileSystem->Size(hFile);
+	szData.resize(iFileSize + 1); // +1 for null-terminator
+	int iReadBytes = g_pFullFileSystem->Read(szData.data(), iFileSize, hFile);
+	g_pFullFileSystem->Close(hFile);
+
+	if (iFileSize == 0)
 	{
-		// file error
-		char szMsg[1024];
-		snprintf(szMsg, sizeof(szMsg), "Couldn't open location file %s.\n", szFile);
-		ConsolePrint(szMsg);
+		ConPrintf(ConColor::Red, "%s: file is empty\n", szFileName);
 		return;
 	}
 
-	// Get file size
-	fseek(pFile, 0, SEEK_END);
-	int locFileSize = (int)ftell(pFile);
-
-	if (locFileSize < 0)
+	if (iReadBytes != iFileSize)
 	{
-		ConPrintf("%s: ftell failed\n", szFile);
-		fclose(pFile);
+		ConPrintf(ConColor::Red, "%s: failed to read the file\n", szFileName);
 		return;
 	}
 
-	if (locFileSize == 0)
-	{
-		ConPrintf("%s: file is empty\n", szFile);
-		fclose(pFile);
-		return;
-	}
-
-	if (locFileSize >= MAX_LOCATION_FILE_SIZE)
-	{
-		ConPrintf("%s: file is too large\n", szFile);
-		fclose(pFile);
-		return;
-	}
-
-	szData.resize(locFileSize + 1);
-	const int iRead = fread(szData.data(), sizeof(char), locFileSize, pFile);
-	fclose(pFile);
-	pFile = nullptr;
-
-	if (iRead != locFileSize)
-	{
-		ConPrintf("%s: failed to read the file\n", szFile);
-		return;
-	}
-
-	szData[iRead] = '\0';
+	szData[iFileSize] = '\0';
 
 	enum class ParseState
 	{

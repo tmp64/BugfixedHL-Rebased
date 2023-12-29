@@ -17,11 +17,7 @@
 
 #include "archtypes.h" // DAL
 
-#ifdef HLDEMO_BUILD
-#define INTERFACE_VERSION 001
-#else // !HLDEMO_BUILD, i.e., regular version of HL
 #define INTERFACE_VERSION 140
-#endif // !HLDEMO_BUILD
 
 #include <stdio.h>
 #include "custom.h"
@@ -732,7 +728,7 @@ typedef struct enginefuncs_s
 	*	@param iEntIndex Entity index.
 	*	@return	If the given index is not valid, returns null.
 	*			Otherwise, if the entity at the given index is not in use, returns null.
-	*			Otherwise, if the entity at the given index is not a player and does not have a CBaseEntity instance, returns null.
+	*			Otherwise, if the entity at the given index is equal or more than svs.maxclients and does not have a CBaseEntity instance, returns null.
 	*			Otherwise, returns the entity.
 	*/
 	edict_t *(*pfnPEntityOfEntIndex)(int iEntIndex);
@@ -1422,9 +1418,19 @@ typedef struct enginefuncs_s
 	*	@return Key index in the command line buffer, or 0 if it wasn't found.
 	*/
 	int (*pfnCheckParm)(const char *pchCmdLineToken, char **ppnext);
+
+	/**
+	*	Gets the edict at the given entity index.
+	*	@param iEntIndex Entity index.
+	*	@return	If the given index is not valid, returns null.
+	*			Otherwise, if the entity at the given index is not in use, returns null.
+	*			Otherwise, if the entity at the given index is more than svs.maxclients and does not have a CBaseEntity instance, returns null.
+	*			Otherwise, returns the entity.
+	*/
+	edict_t *(*pfnPEntityOfEntIndexAllEntities)(int iEntIndex);
 } enginefuncs_t;
 
-// ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.  INTERFACE VERSION IS FROZEN AT 138
+// ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.  INTERFACE VERSION IS FROZEN AT 140
 
 // Passed to pfnKeyValue
 typedef struct KeyValueData_s

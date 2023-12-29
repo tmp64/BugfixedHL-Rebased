@@ -91,12 +91,23 @@ typedef struct texture_s
 {
 	char name[16];
 	unsigned width, height;
+
+#ifndef SOFTWARE_BUILD
+	int	gl_texturenum; // gl texture binding
+	struct msurface_s *texturechain; // for sort-by-texture world drawing
+#endif
+
 	int anim_total; // total tenths in sequence ( 0 = no)
 	int anim_min, anim_max; // time for this frame min <=time< max
 	struct texture_s *anim_next; // in the animation sequence
 	struct texture_s *alternate_anims; // bmodels in frame 1 use these
 	unsigned offsets[MIPLEVELS]; // four mip maps stored
+
+#ifdef SOFTWARE_BUILD
 	unsigned paloffset;
+#else
+	byte *pPal;
+#endif
 } texture_t;
 
 typedef struct
@@ -115,7 +126,11 @@ typedef struct mnode_s
 	int contents; // 0, to differentiate from leafs
 	int visframe; // node needs to be traversed if current
 
+#ifdef SOFTWARE_BUILD
 	short minmaxs[6]; // for bounding box culling
+#else
+	float minmaxs[6]; // for bounding box culling
+#endif
 
 	struct mnode_s *parent;
 
@@ -135,11 +150,20 @@ struct decal_s
 {
 	decal_t *pnext; // linked list for each surface
 	msurface_t *psurface; // Surface id for persistence / unlinking
+
+#ifdef SOFTWARE_BUILD
 	short dx; // Offsets into surface texture (in texture coordinates, so we don't need floats)
 	short dy;
 	short texture; // Decal texture
 	byte scale; // Pixel scale
 	byte flags; // Decal flags
+#else
+	float dx;
+	float dy;
+	float scale; // Pixel scale
+	short texture; // Decal texture
+	short flags; // Decal flags
+#endif
 
 	short entityIndex; // Entity this is attached to
 };
@@ -150,7 +174,11 @@ typedef struct mleaf_s
 	int contents; // wil be a negative contents number
 	int visframe; // node needs to be traversed if current
 
+#ifdef SOFTWARE_BUILD
 	short minmaxs[6]; // for bounding box culling
+#else
+	float minmaxs[6]; // for bounding box culling
+#endif
 
 	struct mnode_s *parent;
 
@@ -164,6 +192,26 @@ typedef struct mleaf_s
 	byte ambient_sound_level[NUM_AMBIENTS];
 } mleaf_t;
 
+#define VERTEXSIZE 7
+
+typedef struct glpoly_s
+{
+	struct glpoly_s *next;
+	struct glpoly_s *chain;
+	int numverts;
+	int flags;
+	float verts[4][VERTEXSIZE];
+} glpoly_t;
+
+typedef struct mdisplaylist_s // Half-Life 25th Anniversary Update
+{
+	unsigned gl_displaylist;
+	int rendermode;
+	float scrolloffset;
+	int renderDetailTexture;
+} mdisplaylist_t;
+
+#ifdef SOFTWARE_BUILD
 struct msurface_s
 {
 	int visframe; // should be drawn when node is crossed
@@ -194,6 +242,42 @@ struct msurface_s
 
 	decal_t *pdecals;
 };
+#else
+struct msurface_s
+{
+	int visframe; // should be drawn when node is 
+
+	mplane_t *plane; // pointer to shared plane
+	int flags; // see SURF_ #defines
+
+	int firstedge; // look up in model->surfedges[], negative numbers
+	int numedges; // are backwards edges
+
+	short texturemins[2]; // smallest s/t position on the surface.
+	short extents[2]; // ?? s/t texture size, 1..256 for all non-sky surfaces
+
+	int light_s, light_t; // gl lightmap coordinates
+
+	glpoly_t *polys; // multiple if warped
+	struct msurface_s *texturechain;
+
+	mtexinfo_t *texinfo;
+
+	int dlightframe; // last frame the surface was checked by an animated light
+	int dlightbits; // dynamically generated. Indicates if the surface illumination
+		// is modified by an animated light.
+
+	int lightmaptexturenum;
+	unsigned char styles[MAXLIGHTMAPS];
+	int cached_light[MAXLIGHTMAPS]; // values currently used in lightmap
+	qboolean cached_dlight; // true if dynamic light in cache
+
+	color24 *samples; // note: this is the actual lightmap data for this surface
+	decal_t *pdecals;
+
+	//mdisplaylist_t displaylist; // Half-Life 25th Anniversary Update
+};
+#endif
 
 typedef struct
 {

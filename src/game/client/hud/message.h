@@ -59,6 +59,7 @@ private:
 	int m_HUD_title_half;
 
 	void CStrToWide(const char *pString, std::wstring &wstr);
+	void CheckLineLength(const char *pText);
 };
 
 #endif

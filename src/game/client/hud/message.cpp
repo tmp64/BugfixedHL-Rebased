@@ -38,6 +38,35 @@ ConVar hud_message_draw_always("hud_message_draw_always", "0", FCVAR_BHL_ARCHIVE
 
 DEFINE_HUD_ELEM(CHudMessage);
 
+CON_COMMAND(hud_text_bug, "")
+{
+	CHudMessage::Get()->MessageAdd(
+		"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam lec80",
+	    1);
+	CHudMessage::Get()->MessageAdd(
+	    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam le79",
+	    1);
+	CHudMessage::Get()->MessageAdd(
+	    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam l78",
+	    1);
+	CHudMessage::Get()->MessageAdd(
+	    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam 77",
+	    1);
+
+	CHudMessage::Get()->MessageAdd(
+	    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam le79\n",
+	    1);
+
+	
+	CHudMessage::Get()->MessageAdd(
+	    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam lec80\n"
+	    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam le79\n"
+	    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam l78\n"
+	    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam 77\n"
+	    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque quam76",
+	    1);
+}
+
 void CHudMessage::Init(void)
 {
 	BaseHudClass::Init();
@@ -70,6 +99,50 @@ void CHudMessage::CStrToWide(const char *pString, std::wstring &wstr)
 	wchar_t wTextBuf[MAX_MESSAGE_TEXT_LENGTH];
 	Q_UTF8ToWString(pString, wTextBuf, sizeof(wTextBuf), STRINGCONVERT_REPLACE);
 	wstr = wTextBuf;
+}
+
+void CHudMessage::CheckLineLength(const char *pOrigText)
+{
+	constexpr int MAX_LENGTH = 78;
+
+	const char *pText = pOrigText;
+
+	// Count lines
+	int lines = 1;
+	while (*pText)
+	{
+		if (*pText == '\n')
+		{
+			lines++;
+		}
+		pText++;
+	}
+
+	pText = pOrigText;
+
+	for (int i = 0; i < lines; i++)
+	{
+		const char *pLineStart = pText;
+		int lineLength = 0;
+
+		while (*pText && *pText != '\n')
+		{
+			lineLength++;
+			pText++;
+		}
+
+		pText++; // Skip LF
+
+		if (lineLength >= MAX_LENGTH)
+		{
+			ConPrintf(ConColor::Red, "BUGBUGBUG - Text message line too long.\n");
+			ConPrintf(ConColor::Red, "Line (size=%d):\n", lineLength);
+			ConPrintf(ConColor::Red, "%s\n", std::string(pLineStart, pText - pLineStart).c_str());
+			ConPrintf(ConColor::Red, "Full message:\n");
+			ConPrintf(ConColor::Red, "%s\n", pOrigText);
+			ConPrintf(ConColor::Red, "BUGBUGBUG - END.\n\n");
+		}
+	}
 }
 
 float CHudMessage::FadeBlend(float fadein, float fadeout, float hold, float localTime)
@@ -529,6 +602,7 @@ void CHudMessage::MessageAdd(const char *pName, float time)
 			if (!strcmp(tempMessage->pMessage, m_pMessages[j]->pMessage))
 			{
 				// Convert the string to std::wstring
+				CheckLineLength(m_pMessages[j]->pMessage);
 				CStrToWide(m_pMessages[j]->pMessage, m_sMessageStrings[j]);
 				return;
 			}
@@ -545,6 +619,7 @@ void CHudMessage::MessageAdd(const char *pName, float time)
 		}
 
 		// Convert the string to std::wstring
+		CheckLineLength(tempMessage->pMessage);
 		CStrToWide(tempMessage->pMessage, m_sMessageStrings[i]);
 
 		m_pMessages[i] = tempMessage;
@@ -599,6 +674,7 @@ void CHudMessage::MessageAdd(client_textmessage_t *newMessage)
 		{
 			m_pMessages[i] = newMessage;
 			m_startTime[i] = gHUD.m_flTime;
+			CheckLineLength(newMessage->pMessage);
 			CStrToWide(newMessage->pMessage, m_sMessageStrings[i]);
 			return;
 		}

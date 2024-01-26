@@ -43,6 +43,7 @@ extern int gmsgServerName;
 extern int g_teamplay;
 
 extern ConVar sv_bhl_defer_motd;
+extern ConVar mp_weapondrop_all;
 
 #define ITEM_RESPAWN_TIME   30
 #define WEAPON_RESPAWN_TIME 20
@@ -1180,14 +1181,14 @@ float CHalfLifeMultiplay::FlHEVChargerRechargeTime(void)
 //=========================================================
 int CHalfLifeMultiplay::DeadPlayerWeapons(CBasePlayer *pPlayer)
 {
-	return GR_PLR_DROP_GUN_ACTIVE;
+	return mp_weapondrop_all.GetBool() ? GR_PLR_DROP_GUN_ALL : GR_PLR_DROP_GUN_ACTIVE;
 }
 
 //=========================================================
 //=========================================================
 int CHalfLifeMultiplay::DeadPlayerAmmo(CBasePlayer *pPlayer)
 {
-	return GR_PLR_DROP_AMMO_ACTIVE;
+	return mp_weapondrop_all.GetBool() ? GR_PLR_DROP_AMMO_ALL : GR_PLR_DROP_AMMO_ACTIVE;
 }
 
 edict_t *CHalfLifeMultiplay::GetPlayerSpawnSpot(CBasePlayer *pPlayer)

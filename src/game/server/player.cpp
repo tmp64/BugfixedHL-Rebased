@@ -56,6 +56,7 @@ extern CGraph WorldGraph;
 ConVar mp_teamspawn("mp_teamspawn", "0", FCVAR_SERVER, "When teamplay is enabled, players will be spawned on team spawns if the map has them");
 ConVar mp_weaponbox_time("mp_weaponbox_time", "120", FCVAR_SERVER, "Dead player's weapons will stay for this many seconds, 0 disables them, -1 forever");
 ConVar mp_weapondrop_time("mp_weapondrop_time", "0", FCVAR_SERVER, "Manually dropped weapons will stay for this many seconds, 0 forever");
+ConVar mp_weapondrop_all("mp_weapondrop_all", "0", FCVAR_SERVER, "Drop all weapons");
 
 #define TRAIN_ACTIVE  0x80
 #define TRAIN_NEW     0xc0

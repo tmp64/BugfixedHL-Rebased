@@ -153,6 +153,12 @@ void CHudDeathNotice::Think()
 // This message handler may be better off elsewhere
 int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf)
 {
+	if (!GetThisPlayerInfo())
+	{
+		// Not yet connected
+		return 1;
+	}
+
 	m_iFlags |= HUD_ACTIVE;
 
 	BEGIN_READ(pbuf, iSize);

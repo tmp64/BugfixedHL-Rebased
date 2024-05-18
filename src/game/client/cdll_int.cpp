@@ -226,8 +226,7 @@ int CL_DLLEXPORT Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 
 	if (bIsInitialized)
 	{
-		GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "BugfixedHL Fatal Error", "The engine failed to unload client library during restart.");
-		std::abort();
+		HUD_FatalError("The engine failed to unload client library during restart.");
 		return 0;
 	}
 
@@ -506,6 +505,18 @@ extern "C" void CL_DLLEXPORT F(void *pv)
 	};
 
 	*pcldll_func = cldll_func;
+}
+
+void HUD_FatalError(const char *fmt, ...)
+{
+	char buf[4096];
+	va_list va;
+	va_start(va, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, va);
+	va_end(va);
+
+	GetSDL()->ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "BugfixedHL Fatal Error", buf);
+	std::abort();
 }
 
 //-----------------------------------------------------------------------------

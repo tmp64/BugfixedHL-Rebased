@@ -45,3 +45,7 @@ typedef float vec_t;
 #include "cdll_dll.h"
 
 extern cl_enginefunc_t gEngfuncs;
+
+//! Causes a fatal client error. Shows a dialog and crashes the game.
+//! @param  fmt     Printf arguments.
+[[noreturn]] void HUD_FatalError(const char *fmt, ...);

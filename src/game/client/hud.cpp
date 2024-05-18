@@ -246,6 +246,19 @@ static int GetHudSize(const SCREENINFO &screenInfo, EHudScale maxScale)
 	return fallbackInfo.iRes;
 }
 
+static int CountSpritesOfRes(const client_sprite_t* pSpriteList, int nTotalCount, int iRes)
+{
+	int count = 0;
+
+	for (int i = 0; i < nTotalCount; i++)
+	{
+		if (pSpriteList[i].iRes == iRes)
+			count++;
+	}
+
+	return count;
+}
+
 CHud::CHud()
 {
 }
@@ -441,56 +454,58 @@ void CHud::VidInit(void)
 		// we need to load the hud.txt, and all sprites within
 		m_pSpriteList = SPR_GetList("sprites/hud.txt", &m_iSpriteCountAllRes);
 
-		if (m_pSpriteList)
+		if (!m_pSpriteList)
+			HUD_FatalError("Failed to load sprites/hud.txt.\nYour game is corrupted.");
+
+		// count the number of sprites of the appropriate res
+		m_iSpriteCount = CountSpritesOfRes(m_pSpriteList, m_iSpriteCountAllRes, m_iRes);
+
+		if (m_iSpriteCount == 0)
 		{
-			// count the number of sprites of the appropriate res
-			m_iSpriteCount = 0;
-			client_sprite_t *p = m_pSpriteList;
-			int j;
-			for (j = 0; j < m_iSpriteCountAllRes; j++)
+			Warning("Found no sprites with resolution of %d. Defaulting to %d.\n", m_iRes, HUD_FALLBACK_RES);
+			m_iRes = HUD_FALLBACK_RES;
+			m_iSpriteCount = CountSpritesOfRes(m_pSpriteList, m_iSpriteCountAllRes, m_iRes);
+		}
+
+		if (m_iSpriteCount == 0)
+			HUD_FatalError("Failed to find sprites with resolution of %d in sprites/hud.txt.\nYour game is corrupted.", m_iRes);
+
+		// allocated memory for sprite handle arrays
+		m_rghSprites.resize(m_iSpriteCount);
+		m_rgrcRects.resize(m_iSpriteCount);
+		m_rgszSpriteNames.resize(m_iSpriteCount);
+		m_rgSpritePaths.resize(m_iSpriteCount);
+
+		client_sprite_t *p = m_pSpriteList;
+		int index = 0;
+		for (int j = 0; j < m_iSpriteCountAllRes; j++)
+		{
+			if (p->iRes == m_iRes)
 			{
-				if (p->iRes == m_iRes)
-					m_iSpriteCount++;
-				p++;
+				char sz[256];
+				sprintf(sz, "sprites/%s.spr", p->szSprite);
+				m_rghSprites[index] = SPR_Load(sz);
+				m_rgrcRects[index] = p->rc;
+				Q_strncpy(m_rgszSpriteNames[index].name, p->szName, MAX_SPRITE_NAME_LENGTH);
+				m_rgSpritePaths[index] = sz;
+
+				index++;
 			}
 
-			// allocated memory for sprite handle arrays
-			m_rghSprites.resize(m_iSpriteCount);
-			m_rgrcRects.resize(m_iSpriteCount);
-			m_rgszSpriteNames.resize(m_iSpriteCount);
-			m_rgSpritePaths.resize(m_iSpriteCount);
+			p++;
+		}
 
-			p = m_pSpriteList;
-			int index = 0;
-			for (j = 0; j < m_iSpriteCountAllRes; j++)
-			{
-				if (p->iRes == m_iRes)
-				{
-					char sz[256];
-					sprintf(sz, "sprites/%s.spr", p->szSprite);
-					m_rghSprites[index] = SPR_Load(sz);
-					m_rgrcRects[index] = p->rc;
-					Q_strncpy(m_rgszSpriteNames[index].name, p->szName, MAX_SPRITE_NAME_LENGTH);
-					m_rgSpritePaths[index] = sz;
-
-					index++;
-				}
-
-				p++;
-			}
-
-			// Add AG CTF sprites on non-AG clients
-			// AG has them in hud.txt
-			if (!IsAG())
-			{
-				AddSprite(client_sprite_t { "item_flag_team1", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
-				AddSprite(client_sprite_t { "item_flag_team2", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
-				AddSprite(client_sprite_t { "icon_ctf_home", "ag_ctf", 0, 640, wrect_t { 0, 40, 0, 40 } });
-				AddSprite(client_sprite_t { "icon_ctf_stolen", "ag_ctf", 0, 640, wrect_t { 40, 80, 0, 40 } });
-				AddSprite(client_sprite_t { "icon_ctf_lost", "ag_ctf", 0, 640, wrect_t { 80, 120, 0, 40 } });
-				AddSprite(client_sprite_t { "icon_ctf_carry", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
-				AddSprite(client_sprite_t { "icon_ctf_score", "ag_ctf_score", 0, 640, wrect_t { 0, 16, 0, 16 } });
-			}
+		// Add AG CTF sprites on non-AG clients
+		// AG has them in hud.txt
+		if (!IsAG())
+		{
+			AddSprite(client_sprite_t { "item_flag_team1", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
+			AddSprite(client_sprite_t { "item_flag_team2", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
+			AddSprite(client_sprite_t { "icon_ctf_home", "ag_ctf", 0, 640, wrect_t { 0, 40, 0, 40 } });
+			AddSprite(client_sprite_t { "icon_ctf_stolen", "ag_ctf", 0, 640, wrect_t { 40, 80, 0, 40 } });
+			AddSprite(client_sprite_t { "icon_ctf_lost", "ag_ctf", 0, 640, wrect_t { 80, 120, 0, 40 } });
+			AddSprite(client_sprite_t { "icon_ctf_carry", "ag_ctf", 0, 640, wrect_t { 120, 160, 0, 40 } });
+			AddSprite(client_sprite_t { "icon_ctf_score", "ag_ctf_score", 0, 640, wrect_t { 0, 16, 0, 16 } });
 		}
 	}
 	else
@@ -510,6 +525,9 @@ void CHud::VidInit(void)
 
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
 	m_HUD_number_0 = GetSpriteIndex("number_0");
+
+	if (m_HUD_number_0 == -1)
+		HUD_FatalError("Failed to find sprite 'number_0' in the sprite list.\nYour game is corrupted.");
 
 	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
 

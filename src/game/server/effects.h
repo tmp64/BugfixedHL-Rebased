@@ -225,9 +225,9 @@ public:
 	virtual void KeyValue(KeyValueData *pkvd);
 
 public:
-	int m_iStartDist;
-	int m_iEndDist;
-	float m_fDensity;
+	int m_iStartDist = 0;
+	int m_iEndDist = 0;
+	float m_fDensity = 0.0f;
 };
 
 #endif //EFFECTS_H

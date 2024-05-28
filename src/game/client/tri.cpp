@@ -21,6 +21,7 @@
 
 #include "particleman.h"
 #include "tri.h"
+#include "fog.h"
 
 CSysModule *g_hParticleManModule = NULL;
 IParticleMan *g_pParticleMan = NULL;
@@ -100,6 +101,8 @@ void CL_DLLEXPORT HUD_DrawTransparentTriangles(void)
 #if defined(_TFC)
 	RunEventList();
 #endif
+
+	gFog.RenderFog();
 
 	if (g_pParticleMan)
 		g_pParticleMan->Update();

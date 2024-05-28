@@ -27,6 +27,8 @@
 #include "particleman.h"
 extern IParticleMan *g_pParticleMan;
 
+#include "fog.h"
+
 #define MAX_CLIENTS 32
 
 #if !defined(_TFC)
@@ -185,5 +187,35 @@ int CHud::MsgFunc_Concuss(const char *pszName, int iSize, void *pbuf)
 		CHudStatusIcons::Get()->EnableIcon("dmg_concuss", 255, 160, 0);
 	else
 		CHudStatusIcons::Get()->DisableIcon("dmg_concuss");
+	return 1;
+}
+
+int CHud::MsgFunc_Fog(const char *pszName, int iSize, void *pbuf)
+{
+	FogParams fogParams;
+	float density;
+
+	// Reset fog parameters
+	gFog.ClearFog();
+
+	BEGIN_READ(pbuf, iSize);
+
+	fogParams.color[0] = (float)READ_BYTE(); // r
+	fogParams.color[1] = (float)READ_BYTE(); // g
+	fogParams.color[2] = (float)READ_BYTE(); // b
+
+	density = READ_FLOAT();
+
+	if (READ_OK())
+	{
+		fogParams.density = density;
+		fogParams.fogSkybox = true;
+		gFog.SetFogParameters(fogParams);
+	}
+	else
+	{
+		gFog.ClearFog();
+	}
+
 	return 1;
 }

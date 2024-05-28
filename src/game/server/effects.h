@@ -218,4 +218,16 @@ public:
 	Vector m_firePosition;
 };
 
+class CClientFog : public CBaseEntity
+{
+public:
+	virtual void Spawn();
+	virtual void KeyValue(KeyValueData *pkvd);
+
+public:
+	int m_iStartDist = 0;
+	int m_iEndDist = 0;
+	float m_fDensity = 0.0f;
+};
+
 #endif //EFFECTS_H

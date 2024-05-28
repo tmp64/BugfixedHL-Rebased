@@ -45,6 +45,7 @@
 #include "results.h"
 #include "svc_messages.h"
 #include "sdl_rt.h"
+#include "fog.h"
 
 #if USE_UPDATER
 #include "updater/update_checker.h"
@@ -294,6 +295,7 @@ void CHud::Init(void)
 	HookHudMessage<&CHud::MsgFunc_SetFOV>("SetFOV");
 	HookHudMessage<&CHud::MsgFunc_Concuss>("Concuss");
 	HookHudMessage<&CHud::MsgFunc_Logo>("Logo");
+	HookHudMessage<&CHud::MsgFunc_Fog>("Fog");
 
 	// TFFree CommandMenu
 	HookCommand("+commandmenu", [] {
@@ -530,6 +532,8 @@ void CHud::VidInit(void)
 		HUD_FatalError("Failed to find sprite 'number_0' in the sprite list.\nYour game is corrupted.");
 
 	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
+
+	gFog.ClearFog();
 
 	for (CHudElem *i : m_HudList)
 		i->VidInit();

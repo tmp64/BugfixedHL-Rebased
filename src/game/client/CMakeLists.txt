@@ -30,6 +30,8 @@ add_sources(
 	events.cpp
 	eventscripts.h
 	Exports.h
+	fog.cpp
+	fog.h
 	GameStudioModelRenderer.cpp
 	GameStudioModelRenderer.h
 	global_consts.h

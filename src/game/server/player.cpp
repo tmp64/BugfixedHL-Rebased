@@ -205,6 +205,8 @@ const char *const gCustomMessages[] = {
 	NULL
 };
 
+int gmsgFog = 0;
+
 void LinkUserMessages(void)
 {
 	// Already taken care of?
@@ -263,6 +265,8 @@ void LinkUserMessages(void)
 	{
 		REG_USER_MSG(gCustomMessages[i], 0);
 	}
+
+	gmsgFog = REG_USER_MSG("Fog", 7);
 }
 
 LINK_ENTITY_TO_CLASS(player, CBasePlayer);
@@ -4089,6 +4093,36 @@ void CBasePlayer ::UpdateClientData(void)
 				MESSAGE_BEGIN(MSG_ONE, gmsgSpectator, NULL, pev);
 				WRITE_BYTE(ENTINDEX(plr->edict())); // index number of primary entity
 				WRITE_BYTE(1);
+				MESSAGE_END();
+			}
+
+			// Send fog message
+			CBaseEntity *pEntity = UTIL_FindEntityByClassname(nullptr, "env_fog");
+			if (pEntity)
+			{
+				CClientFog *pFog = static_cast<CClientFog *>(pEntity);
+
+				int r = clamp(int(pFog->pev->rendercolor[0]), 0, 255);
+				int g = clamp(int(pFog->pev->rendercolor[1]), 0, 255);
+				int b = clamp(int(pFog->pev->rendercolor[2]), 0, 255);
+
+				union
+				{
+					float f;
+					char b[4];
+
+				} density;
+
+				density.f = pFog->m_fDensity;
+
+				MESSAGE_BEGIN(MSG_ONE, gmsgFog, nullptr, pev);
+				WRITE_BYTE(r);
+				WRITE_BYTE(g);
+				WRITE_BYTE(b);
+				WRITE_BYTE(density.b[0]);
+				WRITE_BYTE(density.b[1]);
+				WRITE_BYTE(density.b[2]);
+				WRITE_BYTE(density.b[3]);
 				MESSAGE_END();
 			}
 

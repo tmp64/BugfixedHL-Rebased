@@ -79,6 +79,9 @@ Vector g_vViewForward;
 Vector g_vViewRight;
 Vector g_vViewUp;
 
+// Used in fog code
+int g_iWaterlevel;
+
 cvar_t *scr_ofsx;
 cvar_t *scr_ofsy;
 cvar_t *scr_ofsz;
@@ -1699,6 +1702,7 @@ void CL_DLLEXPORT V_CalcRefdef(struct ref_params_s *pparams)
 	g_vViewForward = pparams->forward;
 	g_vViewRight = pparams->right;
 	g_vViewUp = pparams->up;
+	g_iWaterlevel = pparams->waterlevel;
 
 	/*
 // Example of how to overlay the whole screen with red at 50 % alpha

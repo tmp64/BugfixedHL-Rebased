@@ -198,6 +198,7 @@ public:
 	int MsgFunc_ViewMode(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_Concuss(const char *pszName, int iSize, void *pbuf);
+	int MsgFunc_Fog(const char *pszName, int iSize, void *pbuf);
 
 	float GetSensitivity();
 	BHopCap GetBHopCapState();

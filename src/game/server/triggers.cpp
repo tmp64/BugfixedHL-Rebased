@@ -26,6 +26,7 @@
 #include "player.h"
 #include "saverestore.h"
 #include "trains.h" // trigger_camera has train functionality
+#include "effects.h" // fog
 #include "gamerules.h"
 
 #define SF_TRIGGER_PUSH_START_OFF       2 //spawnflag that makes trigger_push spawn turned OFF
@@ -2332,4 +2333,44 @@ void CTriggerCamera::Move()
 
 	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ((pev->movedir * pev->speed) * fraction) + (pev->velocity * (1 - fraction));
+}
+
+LINK_ENTITY_TO_CLASS(env_fog, CClientFog)
+
+void CClientFog::KeyValue(KeyValueData *pkvd)
+{
+#if 0
+	if (FStrEq(pkvd->szKeyName, "startdist"))
+	{
+		m_iStartDist = Q_atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "enddist"))
+	{
+		m_iEndDist = Q_atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+#endif
+	if (FStrEq(pkvd->szKeyName, "density"))
+	{
+		m_fDensity = atof(pkvd->szValue);
+
+		if (m_fDensity < 0 || m_fDensity > 0.01)
+			m_fDensity = 0;
+
+		pkvd->fHandled = TRUE;
+	}
+	else
+	{
+		CBaseEntity::KeyValue(pkvd);
+	}
+}
+
+void CClientFog::Spawn()
+{
+	pev->movetype = MOVETYPE_NOCLIP;
+	pev->solid = SOLID_NOT; // Remove model & collisions
+	pev->renderamt = 0; // The engine won't draw this model if this is set to 0 and blending is on
+	pev->rendermode = kRenderTransTexture;
 }

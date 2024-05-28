@@ -6,9 +6,9 @@ constexpr float FOG_END_DISTANCE = 2000.0f;
 
 struct FogParams
 {
-	bool fogSkybox;
-	float color[3];
-	float density;
+	bool fogSkybox = false;
+	float color[3] = {0.0f, 0.0f, 0.0f};
+	float density = 0.0f;
 };
 
 class CFog

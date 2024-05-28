@@ -213,7 +213,9 @@ int CHud::MsgFunc_Fog(const char *pszName, int iSize, void *pbuf)
 		gFog.SetFogParameters(fogParams);
 	}
 	else
+	{
 		gFog.ClearFog();
+	}
 
 	return 1;
 }

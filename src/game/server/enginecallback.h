@@ -86,7 +86,7 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float *pOrigin = NUL
 inline void WRITE_FLOAT(float val)
 {
 	char bytes[sizeof(val)];
-	std::memcpy(bytes, &val, sizeof(bytes));
+	memcpy(bytes, &val, sizeof(bytes));
 
 	for (int i = 0; i < sizeof(bytes); i++)
 	{

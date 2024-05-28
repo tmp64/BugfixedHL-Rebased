@@ -194,6 +194,7 @@ int gmsgAllowSpec = 0;
 int gmsgViewMode = 0;
 int gmsgVGUIMenu = 0;
 int gmsgStatusIcon = 0;
+int gmsgFog = 0;
 
 const char *const gCustomMessages[] = {
 	"IconInfo",
@@ -204,8 +205,6 @@ const char *const gCustomMessages[] = {
 	"IconInfo",
 	NULL
 };
-
-int gmsgFog = 0;
 
 void LinkUserMessages(void)
 {

@@ -15,12 +15,14 @@ class CFog
 {
 public:
 	CFog();
+	void SetWaterLevel(int waterLevel);
 	void SetFogParameters(const FogParams &params);
 	FogParams GetFogParameters() const;
 	void RenderFog();
 	void ClearFog();
 private:
 	FogParams m_FogParams;
+	int m_iWaterLevel;
 };
 
 extern CFog gFog;

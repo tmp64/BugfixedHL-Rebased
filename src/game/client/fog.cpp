@@ -2,13 +2,16 @@
 #include "fog.h"
 #include "triangleapi.h"
 
-extern int g_iWaterlevel;
-
 CFog gFog;
 
 CFog::CFog()
 {
 	ClearFog();
+}
+
+void CFog::SetWaterLevel(int waterLevel)
+{
+	m_iWaterLevel = waterLevel;
 }
 
 void CFog::SetFogParameters(const FogParams &params)
@@ -25,7 +28,7 @@ void CFog::RenderFog()
 {
 	bool bFog;
 
-	if (g_iWaterlevel <= 2) // checking if player is not underwater
+	if (m_iWaterLevel <= 2) // checking if player is not underwater
 		bFog = (m_FogParams.density > 0.0f) ? true : false;
 	else
 		bFog = false;

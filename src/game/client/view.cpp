@@ -23,6 +23,7 @@
 #include "hud/speedometer.h"
 #include "hud/jumpspeed.h"
 #include "hud/strafeguide.h"
+#include "fog.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846 // matches value in gcc v2 math.h
@@ -78,9 +79,6 @@ Vector g_vViewOrigin;
 Vector g_vViewForward;
 Vector g_vViewRight;
 Vector g_vViewUp;
-
-// Used in fog code
-int g_iWaterlevel;
 
 cvar_t *scr_ofsx;
 cvar_t *scr_ofsy;
@@ -1682,6 +1680,8 @@ void CL_DLLEXPORT V_CalcRefdef(struct ref_params_s *pparams)
 	CHudSpeedometer::Get()->UpdateSpeed(pparams->simvel);
 	CHudJumpspeed::Get()->UpdateSpeed(pparams->simvel);
 	CHudStrafeGuide::Get()->Update(pparams);
+	
+	gFog.SetWaterLevel(pparams->waterlevel);
 
 	// intermission / finale rendering
 	if (pparams->intermission)
@@ -1702,7 +1702,6 @@ void CL_DLLEXPORT V_CalcRefdef(struct ref_params_s *pparams)
 	g_vViewForward = pparams->forward;
 	g_vViewRight = pparams->right;
 	g_vViewUp = pparams->up;
-	g_iWaterlevel = pparams->waterlevel;
 
 	/*
 // Example of how to overlay the whole screen with red at 50 % alpha

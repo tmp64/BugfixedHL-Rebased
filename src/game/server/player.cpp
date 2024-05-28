@@ -4105,23 +4105,11 @@ void CBasePlayer ::UpdateClientData(void)
 				int g = clamp(int(pFog->pev->rendercolor[1]), 0, 255);
 				int b = clamp(int(pFog->pev->rendercolor[2]), 0, 255);
 
-				union
-				{
-					float f;
-					char b[4];
-
-				} density;
-
-				density.f = pFog->m_fDensity;
-
 				MESSAGE_BEGIN(MSG_ONE, gmsgFog, nullptr, pev);
 				WRITE_BYTE(r);
 				WRITE_BYTE(g);
 				WRITE_BYTE(b);
-				WRITE_BYTE(density.b[0]);
-				WRITE_BYTE(density.b[1]);
-				WRITE_BYTE(density.b[2]);
-				WRITE_BYTE(density.b[3]);
+				WRITE_FLOAT(pFog->m_fDensity);
 				MESSAGE_END();
 			}
 

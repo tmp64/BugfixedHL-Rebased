@@ -1,8 +1,8 @@
 #ifndef FOG_H
 #define FOG_H
 
-#define FOG_START_DISTANCE	1500.0f
-#define FOG_END_DISTANCE	2000.0f
+constexpr float FOG_START_DISTANCE = 1500.0f;
+constexpr float FOG_END_DISTANCE = 2000.0f;
 
 struct FogParams
 {

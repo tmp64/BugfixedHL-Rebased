@@ -829,6 +829,35 @@ void CHudAmmo::UserCmd_PrevWeapon(void)
 	gpActiveSel = NULL;
 }
 
+CON_COMMAND(_toggleweapon, "Change to weapon if available, otherwise fallbacks to default weapon.")
+{
+	int argc = gEngfuncs.Cmd_Argc();
+	if (argc <= 2 || argc > 3)
+	{
+		ConPrintf("usage: _toggleweapon <weapon_name> <default_weapon>\n");
+		return;
+	}
+
+	char arg1[MAX_WEAPON_NAME]; // weapon to toggle
+	char arg2[MAX_WEAPON_NAME]; // fallback weapon
+
+	sprintf(arg1, "%s", gEngfuncs.Cmd_Argv(1));
+	sprintf(arg2, "%s", gEngfuncs.Cmd_Argv(2));
+
+	for (int i = MAX_WEAPONS - 1; i > 0; i--)
+	{
+		WEAPON *p = gWR.GetWeapon(i);
+
+		if (p && (gHUD.m_iWeaponBits & (1 << p->iId)) && strcmp(p->szName, arg1) == 0)
+		{
+			ServerCmd(arg1);
+			return;
+		}
+	}
+
+	ServerCmd(arg2);
+}
+
 //-------------------------------------------------------------------------
 // Drawing code
 //-------------------------------------------------------------------------

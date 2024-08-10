@@ -20,9 +20,9 @@ RUN apt-get update && \
     g++-9-multilib \
     gcc-9-multilib \
     libc6:i386 \
-    libssl-dev
+    libssl-dev \
     make \
-    ninja-build \
+    ninja-build
 
 # Build cmake
 WORKDIR /build/cmake

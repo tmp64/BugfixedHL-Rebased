@@ -1,33 +1,31 @@
 FROM ubuntu:18.04
 
-ENV BUILD_DATE="2023-11-26.1"
-ENV CMAKE_VERSION="3.27.8"
+ENV BUILD_DATE="2024-08-10.1"
+ENV CMAKE_VERSION="3.30.1"
 
 # Update the system
-RUN dpkg --add-architecture i386
-RUN apt-get update
-RUN apt-get dist-upgrade
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
+    apt-get -y dist-upgrade
 
 # Add custom repos
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 
 # Install dependencies
-RUN apt-get update
-RUN apt-get install -y \
-    libc6:i386 \
-    gcc-9-multilib \
-    g++-9-multilib \
-    ninja-build \
-    make \
+RUN apt-get update && \
+    apt-get install -y \
     build-essential \
-    curl
+    curl \
+    g++-9-multilib \
+    gcc-9-multilib \
+    libc6:i386 \
+    libssl-dev
+    make \
+    ninja-build \
 
 # Build cmake
 WORKDIR /build/cmake
-
-RUN apt-get install -y \
-    libssl-dev
 
 RUN curl -f -L \
     https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz \

@@ -82,7 +82,7 @@ if( NOT CMAKE_SIZEOF_VOID_P EQUAL 4 )
 			set( PLAT_ERROR "Check your compiler options." )
 		endif()
 		
-		message( FATAL_ERROR "You are not building for 32 bit systems. ${PLAT_ERROR} Use NO_SIZEOF_VOID_P_CHECK to disable this error." )
+		message( FATAL_ERROR "You are not building for 32 bit systems. ${PLAT_ERROR}" )
 	endif()
 endif()
 

@@ -164,10 +164,12 @@ void CPython::PrimaryAttack()
 	if (m_iClip <= 0)
 	{
 		if (!m_fFireOnEmpty)
+		{
 			Reload();
+		}
 		else
 		{
-			EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/357_cock1.wav", 0.8, ATTN_NORM);
+			PlayEmptySound();
 			m_flNextPrimaryAttack = 0.15;
 		}
 

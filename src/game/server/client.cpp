@@ -259,7 +259,7 @@ void ClientPutInServer(edict_t *pEntity)
 
 	// Setup some fields initially
 	pPlayer->m_fNextSuicideTime = 0;
-	pPlayer->m_iAutoWeaponSwitch = 1;
+	pPlayer->m_iAutoWepSwitch = 1;
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
@@ -645,6 +645,14 @@ void ClientCommand(edict_t *pEntity)
 		strncpy(command, pcmd, 127);
 		command[127] = '\0';
 
+		// First parse the name and remove any %'s
+		for (char *pApersand = command; pApersand != NULL && *pApersand != 0; pApersand++)
+		{
+			// Replace it with a space
+			if (*pApersand == '%')
+				*pApersand = ' ';
+		}
+
 		// tell the user they entered an unknown command
 		ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Unknown command: %s\n", command));
 	}
@@ -718,7 +726,7 @@ void ClientUserInfoChanged(edict_t *pEntity, char *infobuffer)
 
 	// Get weapon switching vars
 	char *autowepswitch = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
-	pPlayer->m_iAutoWeaponSwitch = autowepswitch[0] == 0 ? 1 : atoi(autowepswitch);
+	pPlayer->m_iAutoWepSwitch = autowepswitch[0] == 0 ? 1 : atoi(autowepswitch);
 
 	g_pGameRules->ClientUserInfoChanged(pPlayer, infobuffer);
 }
@@ -908,6 +916,7 @@ void ClientPrecache(void)
 	PRECACHE_SOUND("debris/wood3.wav");
 
 	PRECACHE_SOUND("plats/train_use1.wav"); // use a train
+	PRECACHE_SOUND("plats/vehicle_ignition.wav");
 
 	PRECACHE_SOUND("buttons/spark5.wav"); // hit computer texture
 	PRECACHE_SOUND("buttons/spark6.wav");
@@ -1320,6 +1329,12 @@ int AddToFullPack(struct entity_state_s *state, int e, edict_t *ent, edict_t *ho
 		state->movetype = MOVETYPE_NONE;
 		state->solid = SOLID_NOT;
 	}
+
+	CBaseEntity *pEntity = static_cast<CBaseEntity *>(GET_PRIVATE(ent));
+	if (pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE)
+		state->eflags |= EFLAG_FLESH_SOUND;
+	else
+		state->eflags &= ~EFLAG_FLESH_SOUND;
 
 	return 1;
 }

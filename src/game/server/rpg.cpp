@@ -109,8 +109,8 @@ CRpgRocket *CRpgRocket::CreateRpgRocket(Vector vecOrigin, Vector vecAngles, CBas
 	pRocket->pev->angles = vecAngles;
 	pRocket->Spawn();
 	pRocket->SetTouch(&CRpgRocket::RocketTouch);
-	pRocket->m_pLauncher = pLauncher; // remember what RPG fired me.
-	pRocket->m_pLauncher->m_cActiveRockets++; // register this missile as active for the launcher
+	pLauncher->m_cActiveRockets++; // register this missile as active for the launcher
+	pRocket->m_hLauncher = pLauncher; // remember what RPG fired me.
 	pRocket->pev->owner = pOwner->edict();
 
 	return pRocket;
@@ -150,14 +150,33 @@ void CRpgRocket ::Spawn(void)
 //=========================================================
 void CRpgRocket ::RocketTouch(CBaseEntity *pOther)
 {
-	if (m_pLauncher)
+	//ALERT( at_console, "RpgRocket RocketTouch, m_pLauncher: %u\n", GetLauncher() );
+
+	if (GetLauncher())
 	{
 		// my launcher is still around, tell it I'm dead.
-		m_pLauncher->m_cActiveRockets--;
+		GetLauncher()->m_cActiveRockets--;
 	}
 
 	STOP_SOUND(edict(), CHAN_VOICE, "weapons/rocket1.wav");
 	ExplodeTouch(pOther);
+}
+
+//=========================================================
+void CRpgRocket::Explode(TraceResult *pTrace, int bitsDamageType)
+{
+	//ALERT( at_console, "RpgRocket Explode, m_pLauncher: %u\n", GetLauncher() );
+
+	STOP_SOUND(edict(), CHAN_VOICE, "weapons/rocket1.wav");
+
+	if (GetLauncher())
+	{
+		// my launcher is still around, tell it I'm dead.
+		GetLauncher()->m_cActiveRockets--;
+		m_hLauncher = nullptr;
+	}
+
+	CGrenade::Explode(pTrace, bitsDamageType);
 }
 
 //=========================================================
@@ -201,6 +220,14 @@ void CRpgRocket ::IgniteThink(void)
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
+CRpg *CRpgRocket::GetLauncher()
+{
+	if (!m_hLauncher)
+		return NULL;
+
+	return (CRpg *)((CBaseEntity *)m_hLauncher);
+}
+
 void CRpgRocket ::FollowThink(void)
 {
 	CBaseEntity *pOther = NULL;
@@ -217,8 +244,17 @@ void CRpgRocket ::FollowThink(void)
 	// Examine all entities within a reasonable radius
 	while ((pOther = UTIL_FindEntityByClassname(pOther, "laser_spot")) != NULL)
 	{
-		UTIL_TraceLine(pev->origin, pOther->pev->origin, dont_ignore_monsters, ENT(pev), &tr);
-		// ALERT( at_console, "%f\n", tr.flFraction );
+		Vector vSpotLocation = pOther->pev->origin;
+
+		if (UTIL_PointContents(vSpotLocation) == CONTENTS_SKY)
+		{
+			//ALERT( at_console, "laser spot is in the sky...\n");
+		}
+
+		UTIL_TraceLine(pev->origin, vSpotLocation, dont_ignore_monsters, ENT(pev), &tr);
+
+		//ALERT( at_console, "fraction: %f\n", tr.flFraction );
+
 		if (tr.flFraction >= 0.90)
 		{
 			vecDir = pOther->pev->origin - pev->origin;
@@ -267,15 +303,36 @@ void CRpgRocket ::FollowThink(void)
 		pev->velocity = pev->velocity * 0.2 + vecTarget * flSpeed * 0.798;
 		if (pev->waterlevel == 0 && pev->velocity.Length() < 1500)
 		{
-			if (m_pLauncher)
+			if (GetLauncher())
 			{
 				// my launcher is still around, tell it I'm dead.
-				m_pLauncher->m_cActiveRockets--;
+				GetLauncher()->m_cActiveRockets--;
+				m_hLauncher = nullptr;
 			}
 			Detonate();
 		}
 	}
-	// ALERT( at_console, "%.0f\n", flSpeed );
+
+	if (GetLauncher())
+	{
+		float flDistance = (pev->origin - GetLauncher()->pev->origin).Length();
+
+		// if we've travelled more than max distance the player can send a spot, stop tracking the original launcher (allow it to reload)
+		if (flDistance > 8192.0f || gpGlobals->time - m_flIgniteTime > 6.0f)
+		{
+			//ALERT( at_console, "RPG too far (%f)!\n", flDistance );
+			GetLauncher()->m_cActiveRockets--;
+			m_hLauncher = NULL;
+		}
+
+		//ALERT( at_console, "%.0f, m_pLauncher: %u, flDistance: %f\n", flSpeed, GetLauncher(), flDistance );
+	}
+
+	if ((UTIL_PointContents(pev->origin) == CONTENTS_SKY))
+	{
+		//ALERT( at_console, "Rocket is in the sky, detonating...\n");
+		Detonate();
+	}
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -371,7 +428,7 @@ int CRpg::GetItemInfo(ItemInfo *p)
 	p->iSlot = 3;
 	p->iPosition = 0;
 	p->iId = m_iId = WEAPON_RPG;
-	p->iFlags = 0;
+	p->iFlags = ITEM_FLAG_NOAUTOSWITCHTO;
 	p->iWeight = RPG_WEIGHT;
 
 	return 1;
@@ -473,6 +530,8 @@ void CRpg::PrimaryAttack()
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+
+	ResetEmptySound();
 }
 
 void CRpg::SecondaryAttack()
@@ -492,7 +551,7 @@ void CRpg::SecondaryAttack()
 
 void CRpg::WeaponIdle(void)
 {
-	ResetEmptySound();
+	UpdateSpot();
 
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
@@ -517,6 +576,7 @@ void CRpg::WeaponIdle(void)
 		}
 
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 88.0 / 15.0; // model contains 91 frame, but 88 is more close to animation cycle, dunno why yet
+		ResetEmptySound();
 		SendWeaponAnim(iAnim);
 	}
 	else

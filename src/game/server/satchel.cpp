@@ -202,7 +202,25 @@ int CSatchel::AddDuplicate(CBasePlayerItem *pOriginal)
 	{
 		pSatchel = (CSatchel *)pOriginal;
 
-		if (pSatchel->m_chargeReady != SATCHEL_IDLE)
+		if (!pOriginal->m_pPlayer)
+			return TRUE;
+
+		int nSatchelsInPocket = pSatchel->m_pPlayer->m_rgAmmo[pSatchel->PrimaryAmmoIndex()];
+		int nNumSatchels = 0;
+		CBaseEntity *pLiveSatchel = NULL;
+
+		while ((pLiveSatchel = UTIL_FindEntityInSphere(pLiveSatchel, pOriginal->m_pPlayer->pev->origin, 4096)) != NULL)
+		{
+			if (FClassnameIs(pLiveSatchel->pev, "monster_satchel"))
+			{
+				if (pLiveSatchel->pev->owner == pOriginal->m_pPlayer->edict())
+				{
+					nNumSatchels++;
+				}
+			}
+		}
+
+		if (pSatchel->m_chargeReady != SATCHEL_IDLE && (nSatchelsInPocket + nNumSatchels) >= SATCHEL_MAX_CARRY)
 		{
 			// player has some satchels deployed. Refuse to add more.
 			return FALSE;
@@ -325,7 +343,15 @@ void CSatchel::Holster(int skiplocal /* = 0 */)
 	}
 }
 
-void CSatchel::PrimaryAttack()
+void CSatchel::PrimaryAttack(void)
+{
+	if (m_chargeReady != SATCHEL_RELOAD)
+	{
+		Throw();
+	}
+}
+
+void CSatchel::SecondaryAttack()
 {
 	switch (m_chargeReady)
 	{
@@ -365,14 +391,6 @@ void CSatchel::PrimaryAttack()
 		{
 		}
 		break;
-	}
-}
-
-void CSatchel::SecondaryAttack(void)
-{
-	if (m_chargeReady != SATCHEL_RELOAD)
-	{
-		Throw();
 	}
 }
 

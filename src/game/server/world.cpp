@@ -232,7 +232,7 @@ void CopyToBodyQue(entvars_t *pev)
 	if (mp_hidecorpses.GetBool())
 		return; // Don't spawn the corpse
 
-	if (pev->effects & EF_NODRAW)
+	if (pev->effects & EF_NODRAW || pev->modelindex == 0)
 		return;
 
 	entvars_t *pevHead = VARS(g_pBodyQueueHead);

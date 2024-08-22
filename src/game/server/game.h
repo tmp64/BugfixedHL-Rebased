@@ -66,6 +66,7 @@ extern cvar_t mp_dmg_m203;
 // Engine Cvars
 extern cvar_t *g_psv_gravity;
 extern cvar_t *g_psv_aim;
+extern cvar_t *g_psv_allow_autoaim;
 extern cvar_t *g_footsteps;
 
 // AMXX

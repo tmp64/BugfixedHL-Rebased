@@ -141,7 +141,7 @@ ConVar aghl_version("aghl_version", APP_VERSION, 0, "BugfixedHL version");
 ConVar aghl_supports("aghl_supports", "0", 0, "Bitfield of features supported by this client");
 ConVar cl_enable_html_motd("cl_enable_html_motd", "1", FCVAR_BHL_ARCHIVE, "Enables/disables support for HTML MOTDs");
 
-ConVar zoom_sensitivity_ratio("zoom_sensitivity_ratio", "1.2", 0);
+ConVar zoom_sensitivity_ratio("zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE | FCVAR_BHL_ARCHIVE);
 
 static Color s_DefaultColorCodeColors[10] = {
 	Color(0xFF, 0xAA, 0x00, 0xFF), // ^0 orange/reset
@@ -418,6 +418,9 @@ void CHud::Init(void)
 #endif
 
 	UpdateSupportsCvar();
+
+	gEngfuncs.pfnClientCmd("richpresence_gamemode\n"); // reset
+	gEngfuncs.pfnClientCmd("richpresence_update\n");
 }
 
 void CHud::VidInit(void)

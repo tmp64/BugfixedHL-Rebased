@@ -220,6 +220,7 @@ void CHudHealth::Draw(float flTime)
 		SPR_DrawAdditive(0, x, y - iOffset, &m_rcCross);
 
 		x = CrossWidth + HealthWidth / 2;
+		y += (int)(gHUD.m_iFontHeight * 0.2f);
 
 		x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b);
 

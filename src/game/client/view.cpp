@@ -397,9 +397,6 @@ void V_CalcGunAngle(struct ref_params_s *pparams)
 	// don't apply all of the v_ipitch to prevent normally unseen parts of viewmodel from coming into view.
 	viewent->angles[PITCH] -= v_idlescale * sin(pparams->time * v_ipitch_cycle.value) * (v_ipitch_level.value * 0.5);
 	viewent->angles[YAW] -= v_idlescale * sin(pparams->time * v_iyaw_cycle.value) * v_iyaw_level.value;
-
-	VectorCopy(viewent->angles, viewent->curstate.angles);
-	VectorCopy(viewent->angles, viewent->latched.prevangles);
 }
 
 /*
@@ -869,6 +866,15 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 			v_angles = pparams->viewangles;
 		}
 	}
+
+	// Update the latched view origin/angles here, this was
+	// previously done in V_CalcGunAngle but that happens
+	// before a bunch of other stuff happens, which nukes
+	// a bunch of the viewbob fx.
+	VectorCopy(view->origin, view->curstate.origin);
+	VectorCopy(view->origin, view->latched.prevorigin);
+	VectorCopy(view->angles, view->curstate.angles);
+	VectorCopy(view->angles, view->latched.prevangles);
 
 	lasttime = pparams->time;
 
@@ -1768,7 +1774,7 @@ void V_Init(void)
 	v_centerspeed = gEngfuncs.pfnRegisterVariable("v_centerspeed", "500", 0);
 
 	cl_bobcycle = gEngfuncs.pfnRegisterVariable("cl_bobcycle", "0.8", 0); // best default for my experimental gun wag (sjb)
-	cl_bob = gEngfuncs.pfnRegisterVariable("cl_bob", "0.01", 0); // best default for my experimental gun wag (sjb)
+	cl_bob = gEngfuncs.pfnRegisterVariable("cl_bob", "0.01", FCVAR_ARCHIVE | FCVAR_BHL_ARCHIVE); // best default for my experimental gun wag (sjb)
 	cl_bobup = gEngfuncs.pfnRegisterVariable("cl_bobup", "0.5", 0);
 	cl_waterdist = gEngfuncs.pfnRegisterVariable("cl_waterdist", "4", 0);
 	cl_chasedist = gEngfuncs.pfnRegisterVariable("cl_chasedist", "112", 0);

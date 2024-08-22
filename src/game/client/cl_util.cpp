@@ -25,6 +25,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include <string.h>
+#include "engine_builds.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846 // matches value in gcc v2 math.h
@@ -79,6 +80,14 @@ void VectorInverse(float *v)
 	v[0] = -v[0];
 	v[1] = -v[1];
 	v[2] = -v[2];
+}
+
+int EngineFilteredClientCmd(const char *const pszCmdString)
+{
+	if (gHUD.GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY_FIRST)
+		return gEngfuncs.pfnFilteredClientCmd(pszCmdString);
+	else
+		return gEngfuncs.pfnClientCmd(pszCmdString);
 }
 
 void ConsolePrint(const char *string)

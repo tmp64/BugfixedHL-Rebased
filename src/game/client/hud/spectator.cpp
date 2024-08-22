@@ -158,7 +158,7 @@ void UTIL_StringToVector(float *pVector, const char *pString)
 	char *pstr, *pfront, tempString[128];
 	int j;
 
-	strcpy(tempString, pString);
+	V_strcpy_safe(tempString, pString);
 	pstr = pfront = tempString;
 
 	for (j = 0; j < 3; j++)
@@ -765,7 +765,7 @@ void CHudSpectator::DirectorMessage(int iSize, void *pbuf)
 		CSvcMessages::Get().SanitizeCommands(string);
 		if (string[0] != 0)
 		{
-			EngineClientCmd(string);
+			EngineFilteredClientCmd(string);
 		}
 		break;
 

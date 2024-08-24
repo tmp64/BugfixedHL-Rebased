@@ -66,8 +66,6 @@ extern cvar_t *cl_forwardspeed;
 extern cvar_t *cl_pitchspeed;
 extern cvar_t *cl_movespeedkey;
 
-static double s_flRawInputUpdateTime = 0.0f;
-static bool m_bRawInput = false;
 static bool m_bMouseThread = false;
 extern globalvars_t *gpGlobals;
 
@@ -668,18 +666,11 @@ void IN_ResetMouse(void)
 {
 	// no work to do in SDL
 #ifdef _WIN32
-	if (!m_bRawInput && mouseactive && gEngfuncs.GetWindowCenterX && gEngfuncs.GetWindowCenterY)
+	if (m_mode == MouseMode::WindowsCursor && mouseactive && gEngfuncs.GetWindowCenterX && gEngfuncs.GetWindowCenterY)
 	{
 		SetCursorPos(gEngfuncs.GetWindowCenterX(), gEngfuncs.GetWindowCenterY());
 		ThreadInterlockedExchange(&old_mouse_pos.x, gEngfuncs.GetWindowCenterX());
 		ThreadInterlockedExchange(&old_mouse_pos.y, gEngfuncs.GetWindowCenterY());
-	}
-
-	if (gpGlobals && gpGlobals->time - s_flRawInputUpdateTime > 1.0f)
-	{
-		s_flRawInputUpdateTime = gpGlobals->time;
-		if (m_bRawInput)
-			m_bRawInput = m_rawinput->value != 0;
 	}
 #endif
 }
@@ -1486,19 +1477,15 @@ void IN_Init(void)
 
 	if (!IsWindows())
 	{
-		// All non-Windows version of the game should have m_rawinput.
+		// All non-Windows versions of the game should have m_rawinput.
 		Assert(m_rawinput);
 	}
 
 #ifdef _WIN32
-	if (m_rawinput)
-		m_bRawInput = m_rawinput->value != 0;
-	else
-		m_bRawInput = false;
 	m_bMouseThread = gEngfuncs.CheckParm("-mousethread", NULL) != NULL;
 	m_mousethread_sleep = gEngfuncs.pfnRegisterVariable("m_mousethread_sleep", "10", FCVAR_ARCHIVE);
 
-	if (!m_bRawInput && m_bMouseThread && m_mousethread_sleep)
+	if (m_bMouseThread && m_mousethread_sleep)
 	{
 		s_mouseDeltaX = s_mouseDeltaY = 0;
 

@@ -89,6 +89,7 @@ void CSDLRuntime::InitWindows()
 	m_bIsGood = m_bIsGood && fnLoadSym(NumJoysticks, "SDL_NumJoysticks");
 	m_bIsGood = m_bIsGood && fnLoadSym(IsGameController, "SDL_IsGameController");
 	m_bIsGood = m_bIsGood && fnLoadSym(GameControllerOpen, "SDL_GameControllerOpen");
+	m_bIsGood = m_bIsGood && fnLoadSym(GameControllerClose, "SDL_GameControllerClose");
 	m_bIsGood = m_bIsGood && fnLoadSym(GameControllerName, "SDL_GameControllerName");
 	m_bIsGood = m_bIsGood && fnLoadSym(GameControllerGetAxis, "SDL_GameControllerGetAxis");
 	m_bIsGood = m_bIsGood && fnLoadSym(GameControllerGetButton, "SDL_GameControllerGetButton");

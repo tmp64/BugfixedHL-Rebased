@@ -154,6 +154,7 @@ cvar_t *joy_advaxisz;
 cvar_t *joy_advaxisr;
 cvar_t *joy_advaxisu;
 cvar_t *joy_advaxisv;
+cvar_t *joy_supported;
 cvar_t *joy_forwardthreshold;
 cvar_t *joy_sidethreshold;
 cvar_t *joy_pitchthreshold;
@@ -1030,11 +1031,9 @@ IN_StartupJoystick
 void IN_StartupJoystick(void)
 {
 	// abort startup if user requests no joystick
-	if (gEngfuncs.CheckParm("-nojoy", NULL))
+	static bool noJoy = gEngfuncs.CheckParm("-nojoy", NULL);
+	if (noJoy)
 		return;
-
-	// assume no joystick
-	joy_avail = 0;
 
 	// Joystick only with SDL
 	if (!GetSDL()->IsGood())
@@ -1043,36 +1042,53 @@ void IN_StartupJoystick(void)
 		return;
 	}
 
+	static float flLastCheck = 0.0f;
+	if (flLastCheck > 0.0f && (gEngfuncs.GetAbsoluteTime() - flLastCheck) < 1.0f)
+		return;
+	flLastCheck = gEngfuncs.GetAbsoluteTime();
+
 	int nJoysticks = GetSDL()->NumJoysticks();
 	if (nJoysticks > 0)
 	{
-		for (int i = 0; i < nJoysticks; i++)
+		if (!s_pJoystick)
 		{
-			if (GetSDL()->IsGameController(i))
+			for (int i = 0; i < nJoysticks; i++)
 			{
-				s_pJoystick = GetSDL()->GameControllerOpen(i);
-				if (s_pJoystick)
+				if (GetSDL()->IsGameController(i))
 				{
-					//save the joystick's number of buttons and POV status
-					joy_numbuttons = SDL_CONTROLLER_BUTTON_MAX;
-					joy_haspov = 0;
+					s_pJoystick = GetSDL()->GameControllerOpen(i);
+					if (s_pJoystick)
+					{
+						//save the joystick's number of buttons and POV status
+						joy_numbuttons = SDL_CONTROLLER_BUTTON_MAX;
+						joy_haspov = 0;
 
-					// old button and POV states default to no buttons pressed
-					joy_oldbuttonstate = joy_oldpovstate = 0;
+						// old button and POV states default to no buttons pressed
+						joy_oldbuttonstate = joy_oldpovstate = 0;
 
-					// mark the joystick as available and advanced initialization not completed
-					// this is needed as cvars are not available during initialization
-					gEngfuncs.Con_Printf("joystick found\n\n", GetSDL()->GameControllerName(s_pJoystick));
-					joy_avail = 1;
-					joy_advancedinit = 0;
-					break;
+						// mark the joystick as available and advanced initialization not completed
+						// this is needed as cvars are not available during initialization
+						gEngfuncs.Con_Printf("joystick found %s\n", GetSDL()->GameControllerName(s_pJoystick));
+						joy_avail = 1;
+						joy_advancedinit = 0;
+						break;
+					}
 				}
 			}
 		}
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("joystick not found -- driver not present\n\n");
+		if (s_pJoystick)
+			GetSDL()->GameControllerClose(s_pJoystick);
+
+		s_pJoystick = nullptr;
+
+		if (joy_avail)
+		{
+			joy_avail = 0;
+			gEngfuncs.Con_DPrintf("joystick not found -- driver not present\n\n");
+		}
 	}
 }
 
@@ -1260,6 +1276,9 @@ void IN_JoyMove(float frametime, usercmd_t *cmd)
 		joy_advancedinit = 1;
 	}
 
+	// re-scan for joystick presence
+	IN_StartupJoystick();
+
 	// verify joystick is available and that the user wants to use it
 	if (!joy_avail || !in_joystick->value)
 	{
@@ -1446,7 +1465,7 @@ IN_Init
 void IN_Init(void)
 {
 	m_filter = gEngfuncs.pfnRegisterVariable("m_filter", "0", FCVAR_ARCHIVE);
-	sensitivity = gEngfuncs.pfnRegisterVariable("sensitivity", "3", FCVAR_ARCHIVE); // user mouse sensitivity setting.
+	sensitivity = gEngfuncs.pfnRegisterVariable("sensitivity", "3", FCVAR_ARCHIVE | FCVAR_FILTERSTUFFTEXT); // user mouse sensitivity setting.
 
 	in_joystick = gEngfuncs.pfnRegisterVariable("joystick", "0", FCVAR_ARCHIVE);
 	joy_name = gEngfuncs.pfnRegisterVariable("joyname", "joystick", 0);
@@ -1457,6 +1476,7 @@ void IN_Init(void)
 	joy_advaxisr = gEngfuncs.pfnRegisterVariable("joyadvaxisr", "0", 0);
 	joy_advaxisu = gEngfuncs.pfnRegisterVariable("joyadvaxisu", "0", 0);
 	joy_advaxisv = gEngfuncs.pfnRegisterVariable("joyadvaxisv", "0", 0);
+	joy_supported = gEngfuncs.pfnRegisterVariable("joysupported", "1", 0);
 	joy_forwardthreshold = gEngfuncs.pfnRegisterVariable("joyforwardthreshold", "0.15", 0);
 	joy_sidethreshold = gEngfuncs.pfnRegisterVariable("joysidethreshold", "0.15", 0);
 	joy_pitchthreshold = gEngfuncs.pfnRegisterVariable("joypitchthreshold", "0.15", 0);

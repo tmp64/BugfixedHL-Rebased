@@ -28,6 +28,7 @@
 #include <cstring>
 #include <algorithm>
 #include <tier0/dbg.h>
+#include <tier1/strtools.h>
 #include "cvardef.h"
 #include <convar.h>
 #include "console.h"
@@ -123,19 +124,6 @@ void ConsolePrint(const char *string);
 inline void CenterPrint(const char *string)
 {
 	gEngfuncs.pfnCenterPrint(string);
-}
-
-inline char *safe_strcpy(char *dst, const char *src, int len_dst)
-{
-	if (len_dst <= 0)
-	{
-		return NULL; // this is bad
-	}
-
-	strncpy(dst, src, len_dst);
-	dst[len_dst - 1] = '\0';
-
-	return dst;
 }
 
 // sound functions

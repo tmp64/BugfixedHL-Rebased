@@ -173,23 +173,28 @@ int CHudTextMessage::MsgFunc_TextMsg(const char *pszName, int iSize, void *pbuf)
 
 	static char szBuf[6][MSG_BUF_SIZE];
 	char *msg_text = LookupString(READ_STRING(), &msg_dest);
-	msg_text = safe_strcpy(szBuf[0], msg_text, MSG_BUF_SIZE);
+	V_strcpy_safe(szBuf[0], msg_text);
+	msg_text = szBuf[0];
 
 	// keep reading strings and using C format strings for subsituting the strings into the localised text string
 	char *sstr1 = LookupString(READ_STRING());
-	sstr1 = safe_strcpy(szBuf[1], sstr1, MSG_BUF_SIZE);
+	V_strcpy_safe(szBuf[1], sstr1);
+	sstr1 = szBuf[1];
 	StripEndNewlineFromString(sstr1); // these strings are meant for subsitution into the main strings, so cull the automatic end newlines
 
 	char *sstr2 = LookupString(READ_STRING());
-	sstr2 = safe_strcpy(szBuf[2], sstr2, MSG_BUF_SIZE);
+	V_strcpy_safe(szBuf[2], sstr2);
+	sstr2 = szBuf[2];
 	StripEndNewlineFromString(sstr2);
 
 	char *sstr3 = LookupString(READ_STRING());
-	sstr3 = safe_strcpy(szBuf[3], sstr3, MSG_BUF_SIZE);
+	V_strcpy_safe(szBuf[3], sstr3);
+	sstr3 = szBuf[3];
 	StripEndNewlineFromString(sstr3);
 
 	char *sstr4 = LookupString(READ_STRING());
-	sstr4 = safe_strcpy(szBuf[4], sstr4, MSG_BUF_SIZE);
+	V_strcpy_safe(szBuf[4], sstr4);
+	sstr4 = szBuf[4];
 	StripEndNewlineFromString(sstr4);
 
 	char *psz = szBuf[5];

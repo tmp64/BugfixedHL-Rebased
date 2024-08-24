@@ -1485,7 +1485,7 @@ int V_FindViewModelByWeaponModel(int weaponindex)
 		// Model name not found in the modelmap array (possible for WeaponMod weapons).
 		// Construct view model name based on player model name.
 		char buf[128];
-		safe_strcpy(buf, weaponModel->name, sizeof(buf));
+		V_strcpy_safe(buf, weaponModel->name);
 		if (!strncmp(buf, "models/p_", 9))
 		{
 			// Replace "models/p_" with "models/v_"

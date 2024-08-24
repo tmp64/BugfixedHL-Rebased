@@ -91,6 +91,7 @@ add_sources(
 	../server/shotgun.cpp
 	../server/squeakgrenade.cpp
 	../server/tripmine.cpp
+	../server/util_shared.cpp
 )
 
 if( PLATFORM_WINDOWS )

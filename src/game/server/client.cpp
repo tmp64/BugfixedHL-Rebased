@@ -155,7 +155,7 @@ void CheckPlayerModel(CBasePlayer *pPlayer, char *infobuffer)
 		if (mdls[0] == 0 || strlen(mdls) > MAX_TEAM_NAME - 1 || !IsValidFilename(mdls))
 		{
 			if (prevModel[0] == 0)
-				strcpy(prevModel, "gordon"); // default model if empty
+				UTIL_strncpy(prevModel, "gordon", MAX_TEAM_NAME); // default model if empty
 
 			// Set previous model back into info buffer
 			g_engfuncs.pfnSetClientKeyValue(clientIndex, infobuffer, "model", prevModel);
@@ -172,7 +172,7 @@ void CheckPlayerModel(CBasePlayer *pPlayer, char *infobuffer)
 			g_engfuncs.pfnSetClientKeyValue(clientIndex, infobuffer, "model", mdls);
 
 		// Remember model player has set
-		strcpy(prevModel, mdls);
+		UTIL_strncpy(prevModel, mdls, MAX_TEAM_NAME);
 	}
 }
 
@@ -1760,7 +1760,7 @@ void UpdateClientData(const struct edict_s *ent, int sendweapons, struct clientd
 	cd->flSwimTime = pev->flSwimTime;
 	cd->waterjumptime = pev->teleport_time;
 
-	strcpy(cd->physinfo, ENGINE_GETPHYSINFO(ent));
+	UTIL_strcpy(cd->physinfo, ENGINE_GETPHYSINFO(ent));
 
 	cd->maxspeed = pev->maxspeed;
 	cd->fov = pev->fov;

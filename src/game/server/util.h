@@ -603,4 +603,14 @@ float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
 
 float UTIL_WeaponTimeBase(void);
 
+//! Safer version of strncpy that null-terminates.
+char *UTIL_strncpy(char *dst, const char *src, int len_dst);
+
+//! strcpy that automatically deduces the destination array size.
+template <size_t maxLenInChars>
+inline void UTIL_strcpy(OUT_Z_ARRAY char (&pDest)[maxLenInChars], const char *pSrc)
+{
+	UTIL_strncpy(pDest, pSrc, (int)maxLenInChars);
+}
+
 #endif

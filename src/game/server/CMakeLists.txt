@@ -137,6 +137,7 @@ add_sources(
 	turret.cpp
 	util.cpp
 	util.h
+	util_shared.cpp
 	vehicle.cpp
 	voice_gamemgr.cpp
 	voice_gamemgr.h

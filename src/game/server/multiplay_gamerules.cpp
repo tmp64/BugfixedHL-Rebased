@@ -893,19 +893,19 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	if ( pKiller->flags & FL_MONSTER )
 	{
 		// killed by a monster
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
+		UTIL_strcpy ( szText, STRING( pVictim->pev->netname ) );
 		strcat ( szText, " was killed by a monster.\n" );
 		return;
 	}
 
 	if ( pKiller == pVictim->pev )
 	{
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
+		UTIL_strcpy ( szText, STRING( pVictim->pev->netname ) );
 		strcat ( szText, " commited suicide.\n" );
 	}
 	else if ( pKiller->flags & FL_CLIENT )
 	{
-		strcpy ( szText, STRING( pKiller->netname ) );
+		UTIL_strcpy ( szText, STRING( pKiller->netname ) );
 
 		strcat( szText, " : " );
 		strcat( szText, killer_weapon_name );
@@ -916,17 +916,17 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer *pVictim, entvars_t *pKiller, e
 	}
 	else if ( FClassnameIs ( pKiller, "worldspawn" ) )
 	{
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
+		UTIL_strcpy ( szText, STRING( pVictim->pev->netname ) );
 		strcat ( szText, " fell or drowned or something.\n" );
 	}
 	else if ( pKiller->solid == SOLID_BSP )
 	{
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
+		UTIL_strcpy ( szText, STRING( pVictim->pev->netname ) );
 		strcat ( szText, " was mooshed.\n" );
 	}
 	else
 	{
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
+		UTIL_strcpy ( szText, STRING( pVictim->pev->netname ) );
 		strcat ( szText, " died mysteriously.\n" );
 	}
 
@@ -1419,7 +1419,7 @@ int ReloadMapCycleFile(char *filename, mapcycle_t *cycle)
 
 				item = new mapcycle_item_s;
 
-				strcpy(item->mapname, szMap);
+				UTIL_strcpy(item->mapname, szMap);
 
 				item->minplayers = 0;
 				item->maxplayers = 0;
@@ -1448,7 +1448,7 @@ int ReloadMapCycleFile(char *filename, mapcycle_t *cycle)
 					g_engfuncs.pfnInfo_RemoveKey(szBuffer, "minplayers");
 					g_engfuncs.pfnInfo_RemoveKey(szBuffer, "maxplayers");
 
-					strcpy(item->rulebuffer, szBuffer);
+					UTIL_strcpy(item->rulebuffer, szBuffer);
 				}
 
 				item->next = cycle->items;
@@ -1590,7 +1590,7 @@ void CHalfLifeMultiplay ::ChangeLevel(void)
 	char szCommands[1500];
 	char szRules[1500];
 	int minplayers = 0, maxplayers = 0;
-	strcpy(szFirstMapInList, "hldm1"); // the absolute default level is hldm1
+	UTIL_strcpy(szFirstMapInList, "hldm1"); // the absolute default level is hldm1
 
 	int curplayers;
 	BOOL do_cycle = TRUE;
@@ -1607,7 +1607,7 @@ void CHalfLifeMultiplay ::ChangeLevel(void)
 	// Has the map cycle filename changed?
 	if (_stricmp(mapcfile, szPreviousMapCycleFile))
 	{
-		strcpy(szPreviousMapCycleFile, mapcfile);
+		UTIL_strcpy(szPreviousMapCycleFile, mapcfile);
 
 		DestroyMapCycle(&mapcycle);
 
@@ -1625,8 +1625,8 @@ void CHalfLifeMultiplay ::ChangeLevel(void)
 		mapcycle_item_s *item;
 
 		// Assume current map
-		strcpy(szNextMap, STRING(gpGlobals->mapname));
-		strcpy(szFirstMapInList, STRING(gpGlobals->mapname));
+		UTIL_strcpy(szNextMap, STRING(gpGlobals->mapname));
+		UTIL_strcpy(szFirstMapInList, STRING(gpGlobals->mapname));
 
 		// Traverse list
 		for (item = mapcycle.next_item; item->next != mapcycle.next_item; item = item->next)
@@ -1677,15 +1677,15 @@ void CHalfLifeMultiplay ::ChangeLevel(void)
 		mapcycle.next_item = item->next;
 
 		// Perform logic on current item
-		strcpy(szNextMap, item->mapname);
+		UTIL_strcpy(szNextMap, item->mapname);
 
 		ExtractCommandString(item->rulebuffer, szCommands);
-		strcpy(szRules, item->rulebuffer);
+		UTIL_strcpy(szRules, item->rulebuffer);
 	}
 
 	if (!IS_MAP_VALID(szNextMap))
 	{
-		strcpy(szNextMap, szFirstMapInList);
+		UTIL_strcpy(szNextMap, szFirstMapInList);
 	}
 
 	g_fGameOver = TRUE;
@@ -1775,16 +1775,7 @@ void CHalfLifeMultiplay::SendMOTDToClient(edict_t *client, char *string)
 	while (pFileList && *pFileList && char_count < MAX_MOTD_LENGTH)
 	{
 		char chunk[MAX_MOTD_CHUNK + 1];
-
-		if (strlen(pFileList) < MAX_MOTD_CHUNK)
-		{
-			strcpy(chunk, pFileList);
-		}
-		else
-		{
-			strncpy(chunk, pFileList, MAX_MOTD_CHUNK);
-			chunk[MAX_MOTD_CHUNK] = 0; // strncpy doesn't always append the null terminator
-		}
+		UTIL_strcpy(chunk, pFileList);
 
 		char_count += strlen(chunk);
 		if (char_count < MAX_MOTD_LENGTH)
@@ -1824,16 +1815,7 @@ void CHalfLifeMultiplay::SendUnicodeMOTDToClient(edict_t *client, char *string)
 	while (pFileList && *pFileList && char_count < MAX_UNICODE_MOTD_LENGTH)
 	{
 		char chunk[MAX_MOTD_CHUNK + 1];
-
-		if (strlen(pFileList) < MAX_MOTD_CHUNK)
-		{
-			strcpy(chunk, pFileList);
-		}
-		else
-		{
-			strncpy(chunk, pFileList, MAX_MOTD_CHUNK);
-			chunk[MAX_MOTD_CHUNK] = 0; // strncpy doesn't always append the null terminator
-		}
+		UTIL_strcpy(chunk, pFileList);
 
 		char_count += strlen(chunk);
 		if (char_count < MAX_UNICODE_MOTD_LENGTH)
@@ -1871,16 +1853,7 @@ void CHalfLifeMultiplay::SendHtmlMOTDToClient(edict_t *client, char *string)
 	while (pFileList && *pFileList && char_count < MAX_UNICODE_MOTD_LENGTH)
 	{
 		char chunk[MAX_MOTD_CHUNK + 1];
-
-		if (strlen(pFileList) < MAX_MOTD_CHUNK)
-		{
-			strcpy(chunk, pFileList);
-		}
-		else
-		{
-			strncpy(chunk, pFileList, MAX_MOTD_CHUNK);
-			chunk[MAX_MOTD_CHUNK] = 0; // strncpy doesn't always append the null terminator
-		}
+		UTIL_strcpy(chunk, pFileList);
 
 		char_count += strlen(chunk);
 		if (char_count < MAX_UNICODE_MOTD_LENGTH)

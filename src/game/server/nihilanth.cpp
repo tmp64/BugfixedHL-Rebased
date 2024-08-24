@@ -297,17 +297,17 @@ void CNihilanth ::Spawn(void)
 	m_iTeleport = 1;
 
 	if (m_szRechargerTarget[0] == '\0')
-		strcpy(m_szRechargerTarget, "n_recharger");
+		UTIL_strcpy(m_szRechargerTarget, "n_recharger");
 	if (m_szDrawUse[0] == '\0')
-		strcpy(m_szDrawUse, "n_draw");
+		UTIL_strcpy(m_szDrawUse, "n_draw");
 	if (m_szTeleportUse[0] == '\0')
-		strcpy(m_szTeleportUse, "n_leaving");
+		UTIL_strcpy(m_szTeleportUse, "n_leaving");
 	if (m_szTeleportTouch[0] == '\0')
-		strcpy(m_szTeleportTouch, "n_teleport");
+		UTIL_strcpy(m_szTeleportTouch, "n_teleport");
 	if (m_szDeadUse[0] == '\0')
-		strcpy(m_szDeadUse, "n_dead");
+		UTIL_strcpy(m_szDeadUse, "n_dead");
 	if (m_szDeadTouch[0] == '\0')
-		strcpy(m_szDeadTouch, "n_ending");
+		UTIL_strcpy(m_szDeadTouch, "n_ending");
 
 	// near death
 	/*

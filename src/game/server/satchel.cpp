@@ -437,12 +437,12 @@ void CSatchel::WeaponIdle(void)
 	case SATCHEL_IDLE:
 		SendWeaponAnim(SATCHEL_FIDGET1);
 		// use tripmine animations
-		strcpy(m_pPlayer->m_szAnimExtention, "trip");
+		UTIL_strcpy(m_pPlayer->m_szAnimExtention, "trip");
 		break;
 	case SATCHEL_READY:
 		SendWeaponAnim(SATCHEL_RADIO_FIDGET1);
 		// use hivehand animations
-		strcpy(m_pPlayer->m_szAnimExtention, "hive");
+		UTIL_strcpy(m_pPlayer->m_szAnimExtention, "hive");
 		break;
 	case SATCHEL_RELOAD:
 		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
@@ -462,7 +462,7 @@ void CSatchel::WeaponIdle(void)
 		SendWeaponAnim(SATCHEL_DRAW);
 
 		// use tripmine animations
-		strcpy(m_pPlayer->m_szAnimExtention, "trip");
+		UTIL_strcpy(m_pPlayer->m_szAnimExtention, "trip");
 
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;

@@ -1,0 +1,80 @@
+FROM bhl-build
+
+ENV BUILD_DATE="2024-08-24.1"
+ENV GNUTLS_VERSION_MAJOR="3"
+ENV GNUTLS_VERSION_MINOR="7"
+ENV GNUTLS_VERSION_PATCH="1"
+
+ENV GMP_VERSION="6.3.0"
+ENV NETTLE_VERSION="3.10"
+
+ENV CFLAGS="-m32 -I/opt/bhl/prefix-out/include"
+ENV CXXFLAGS="-m32 -I/opt/bhl/prefix-out/include"
+ENV LDFLAGS="-m32 -L/opt/bhl/prefix-out/lib -L/opt/bhl/prefix-out/lib32"
+ENV PKG_CONFIG_PATH="/opt/bhl/prefix-out/lib/pkgconfig:/opt/bhl/prefix-out/lib32/pkgconfig"
+
+RUN apt update && apt install -y pkg-config m4
+
+#------------------------------------------------------
+# GMP
+#------------------------------------------------------
+WORKDIR /build/gmp
+
+RUN curl -f -L \
+    https://ftp.gnu.org/gnu/gmp/gmp-${GMP_VERSION}.tar.xz \
+    -o gmp.tar.xz
+
+RUN tar -xvf gmp.tar.xz
+WORKDIR gmp-${GMP_VERSION}
+
+RUN \
+    ./configure --prefix=/opt/bhl/prefix-out --enable-static=yes --enable-shared=no ABI=32 && \
+    make -j`nproc` && \
+    make install-strip
+
+#------------------------------------------------------
+# Nettle
+#------------------------------------------------------
+WORKDIR /build/nettle
+
+RUN curl -f -L \
+    https://ftp.gnu.org/gnu/nettle/nettle-${NETTLE_VERSION}.tar.gz \
+    -o nettle.tar.gz
+
+RUN tar -xvf nettle.tar.gz
+WORKDIR nettle-${NETTLE_VERSION}
+
+RUN \
+    ./configure --prefix=/opt/bhl/prefix-out --enable-static=yes --enable-shared=no && \
+    make -j`nproc` && \
+    make install
+
+#------------------------------------------------------
+# GnuTLS
+#------------------------------------------------------
+
+# Download and extract
+WORKDIR /build/gnutls
+
+RUN curl -f -L \
+    https://www.gnupg.org/ftp/gcrypt/gnutls/v${GNUTLS_VERSION_MAJOR}.${GNUTLS_VERSION_MINOR}/gnutls-${GNUTLS_VERSION_MAJOR}.${GNUTLS_VERSION_MINOR}.${GNUTLS_VERSION_PATCH}.tar.xz \
+    -o gnutls.tar.xz
+
+RUN tar -xvf gnutls.tar.xz
+WORKDIR gnutls-${GNUTLS_VERSION_MAJOR}.${GNUTLS_VERSION_MINOR}.${GNUTLS_VERSION_PATCH}
+
+# Build
+RUN \
+    ./configure \
+        --prefix=/opt/bhl/prefix-out \
+        --build x86_64-pc-linux-gnu \
+        --target i386-pc-linux-gnu \
+        --enable-static=yes \
+        --enable-shared=no \
+        --with-included-libtasn1 \
+        --with-included-unistring \
+        --without-p11-kit \
+        --disable-hardware-acceleration \
+        && \
+    make -j`nproc` && \
+    make install-strip

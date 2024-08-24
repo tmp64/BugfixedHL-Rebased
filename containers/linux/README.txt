@@ -3,7 +3,8 @@ Build order:
 1. create-bhl-build.sh
 2. build-zlib.sh
 3. build-libzip.sh
-4. build-mbedtls.sh
+4. build-gnutls.sh
+4. build-curl.sh
 5. build-bhl.sh
 
 To open bash

@@ -1,7 +1,11 @@
 FROM bhl-build
 
-ENV BUILD_DATE="2023-11-26.1"
-ENV CURL_VERSION="8.4.0"
+ENV BUILD_DATE="2024-08-24.1"
+ENV CURL_VERSION="8.9.1"
+
+ENV PKG_CONFIG_PATH="${BHL_PREFIX_PATH}/lib/pkgconfig:${BHL_PREFIX_PATH}/lib32/pkgconfig"
+
+RUN apt update && apt install -y pkg-config
 
 # Download and extract
 WORKDIR /build/curl
@@ -14,7 +18,7 @@ RUN tar -xvf libcurl.tar.xz
 
 # Copy dependencies
 COPY out/zlib/. ${BHL_PREFIX_PATH}
-COPY out/mbedtls/. ${BHL_PREFIX_PATH}
+COPY out/gnutls/. ${BHL_PREFIX_PATH}
 
 # Build
 WORKDIR curl-${CURL_VERSION}/_build
@@ -32,7 +36,7 @@ RUN cmake .. \
     -DBUILD_TESTING=OFF \
     -DCURL_ENABLE_SSL=ON \
     -DCURL_USE_OPENSSL=OFF \
-    -DCURL_USE_MBEDTLS=ON \
+    -DCURL_USE_GNUTLS=ON \
     -DCURL_ZLIB=ON \
     -DUSE_LIBIDN2=OFF
 

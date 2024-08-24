@@ -340,8 +340,7 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon(CBasePlayer *pPlayer, CBasePlayerIt
 		// player disabled auto weapon switching
 		return FALSE;
 	}
-
-	if (pPlayer->m_iAutoWepSwitch == 2)
+	else if (pPlayer->m_iAutoWepSwitch == 2)
 	{
 		// player disabled auto weapon switching when firing
 		if (pPlayer->m_afButtonLast & (IN_ATTACK | IN_ATTACK2))
@@ -1870,8 +1869,6 @@ void CHalfLifeMultiplay::SendHtmlMOTDToClient(edict_t *client, char *string)
 
 void CHalfLifeMultiplay ::ClientUserInfoChanged(CBasePlayer *pPlayer, char *infobuffer)
 {
-	// Set preferences
-	pPlayer->SetPrefsFromUserinfo(infobuffer);
 }
 
 //=========================================================
@@ -2132,10 +2129,9 @@ void CMultiplayBusters::PlayerGotWeapon(CBasePlayer *pPlayer, CBasePlayerItem *p
 
 void CMultiplayBusters::ClientUserInfoChanged(CBasePlayer *pPlayer, char *infobuffer)
 {
-	SetPlayerModel(pPlayer);
+	CHalfLifeMultiplay::ClientUserInfoChanged(pPlayer, infobuffer);
 
-	// Set preferences
-	pPlayer->SetPrefsFromUserinfo(infobuffer);
+	SetPlayerModel(pPlayer);
 }
 
 void CMultiplayBusters::PlayerSpawn(CBasePlayer *pPlayer)

@@ -724,9 +724,7 @@ void ClientUserInfoChanged(edict_t *pEntity, char *infobuffer)
 		}
 	}
 
-	// Get weapon switching vars
-	char *autowepswitch = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
-	pPlayer->m_iAutoWepSwitch = autowepswitch[0] == 0 ? 1 : atoi(autowepswitch);
+	pPlayer->SetPrefsFromUserinfo(infobuffer);
 
 	g_pGameRules->ClientUserInfoChanged(pPlayer, infobuffer);
 }

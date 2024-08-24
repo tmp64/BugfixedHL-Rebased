@@ -10,6 +10,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "engine_patches.h"
+#include "sdl_rt.h"
 
 extern ConVar m_input;
 
@@ -51,11 +52,9 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/GeneralSubOptions.res");
 
 	// Disable unsupported input methods
-	if (!IsWindows())
-		m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[1], false);
-
-	if (!CEnginePatches::Get().IsSDLEngine())
-		m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[2], false);
+	m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[0], IsWindows()); // WindowsCursor
+	m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[1], IsWindows()); // DirectInput
+	m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[2], GetSDL()->IsGood()); // RawInput
 
 	// Disable HTML MOTD if SteamAPI not available
 	if (!SteamAPI_IsAvailable())

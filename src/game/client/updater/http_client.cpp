@@ -1,11 +1,9 @@
 #include <stdexcept>
+#include <filesystem>
 #include <FileSystem.h>
-#include <tier2/tier2.h>
 #include "hud.h"
 #include "cl_util.h"
 #include "http_client.h"
-
-constexpr char CA_FILE_PATH[] = "ui/resource/ca-certificates.crt";
 
 CHttpClient &CHttpClient::Get()
 {
@@ -148,6 +146,13 @@ void CHttpClient::WorkerThreadFunc() noexcept
 		curl_easy_setopt(hCurl, CURLOPT_SSL_VERIFYPEER, 0);
 		LogPrintf(ConColor::Yellow, "HTTP Client: Warning! SSL certificate check disabled with -bhl_no_ssl_check\n");
 	}
+
+	if (gEngfuncs.CheckParm("-bhl_curl_verbose", nullptr))
+		curl_easy_setopt(hCurl, CURLOPT_VERBOSE, 1);
+
+#if PLATFORM_LINUX
+	curl_easy_setopt(hCurl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
+#endif
 
 	for (;;)
 	{

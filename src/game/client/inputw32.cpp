@@ -340,6 +340,7 @@ void IN_RunFrame()
 			else
 			{
 				m_input.SetValue((int)MouseMode::RawInput);
+				rawinput.SetValue(true);
 				IN_UpdateMouseMode();
 				ConPrintf(ConColor::Cyan, "Linux only supports Raw Input mode.\n");
 			}

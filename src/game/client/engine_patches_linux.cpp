@@ -10,6 +10,7 @@
 
 #include "hud.h"
 #include "cl_util.h"
+#include "cl_dll.h"
 #include "engine_patches.h"
 
 static const int MPROTECT_PAGESIZE = sysconf(_SC_PAGE_SIZE);
@@ -38,7 +39,7 @@ protected:
 	virtual void FindUserMessageList() override;
 
 private:
-	std::map<size_t, int> g_AddrToProtect;
+	std::map<uintptr_t, std::pair<uintptr_t, int>> g_AddrToProtect;
 	void *m_hEngineModule = nullptr;
 
 	/**
@@ -305,19 +306,37 @@ bool CEnginePatchesLinux::LoadProtectFromProc()
 			if (line.empty())
 				break;
 
-			size_t start = std::stoul(line.substr(0, 8), nullptr, 16);
-			std::string protectStr = line.substr(19, 4);
-			int protect = 0;
-			for (char i : protectStr)
+			size_t dash = line.find('-');
+			if (dash == std::string::npos)
+				throw std::runtime_error("Invalid mem map: " + line);
+
+			size_t space = line.find(' ');
+			if (space == std::string::npos)
+				throw std::runtime_error("Invalid mem map: " + line);
+
+			size_t end = line.find_first_not_of("rwxp-", space + 1);
+			if (end == std::string::npos)
+				throw std::runtime_error("Invalid mem map: " + line);
+
+			std::string addrBeginStr = line.substr(0, dash);
+			std::string addrEndStr = line.substr(dash + 1, space - dash - 1);
+			std::string flagsStr = line.substr(space + 1, end - space - 1);
+
+			size_t addrBegin = std::stoul(addrBeginStr, nullptr, 16);
+			size_t addrEnd = std::stoul(addrEndStr, nullptr, 16);
+			int flags = 0;
+
+			for (char i : flagsStr)
 			{
 				if (i == 'r')
-					protect |= PROT_READ;
+					flags |= PROT_READ;
 				else if (i == 'w')
-					protect |= PROT_WRITE;
+					flags |= PROT_WRITE;
 				else if (i == 'x')
-					protect |= PROT_EXEC;
+					flags |= PROT_EXEC;
 			}
-			g_AddrToProtect[start] = protect;
+
+			g_AddrToProtect[addrBegin] = std::make_pair(addrEnd, flags);
 		}
 
 		return true;
@@ -325,7 +344,7 @@ bool CEnginePatchesLinux::LoadProtectFromProc()
 	catch (const std::exception &e)
 	{
 		ConPrintf(ConColor::Red, "Engine patch: LoadProtectFromProc()\n");
-		ConPrintf(ConColor::Red, "Exception occured: %s\n", e.what());
+		ConPrintf(ConColor::Red, "Exception occurred: %s\n", e.what());
 		return false;
 	}
 }
@@ -334,8 +353,21 @@ int CEnginePatchesLinux::GetProtectForAddr(uintptr_t addr)
 {
 	Assert(g_AddrToProtect.size() > 0);
 	auto it = g_AddrToProtect.upper_bound(addr);
+
+	if (it == g_AddrToProtect.end())
+		HUD_FatalError("Failed to find protect flags for address %08llX", (unsigned long long)addr);
+
 	it--;
-	return it->second;
+
+	if (addr >= it->second.first)
+	{
+		HUD_FatalError("Address %08llX is out of range for protect entry %08llX-%08llX and no other entry was found",
+		    (unsigned long long)addr,
+		    it->first,
+		    it->second.first);
+	}
+
+	return it->second.second;
 }
 
 uint32_t CEnginePatchesLinux::HookDWord(uintptr_t origAddr, uint32_t newDWord)

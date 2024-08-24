@@ -111,6 +111,7 @@ void CSDLRuntime::InitOther()
 	NumJoysticks = &SDL_NumJoysticks;
 	IsGameController = &SDL_IsGameController;
 	GameControllerOpen = &SDL_GameControllerOpen;
+	GameControllerClose = &SDL_GameControllerClose;
 	GameControllerName = &SDL_GameControllerName;
 	GameControllerGetAxis = &SDL_GameControllerGetAxis;
 	GameControllerGetButton = &SDL_GameControllerGetButton;

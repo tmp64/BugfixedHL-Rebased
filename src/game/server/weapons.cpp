@@ -55,6 +55,9 @@ MULTIDAMAGE gMultiDamage;
 
 #define TRACER_FREQ 4 // Tracers fire every fourth bullet
 
+extern bool IsBustingGame();
+extern bool IsPlayerBusting(CBaseEntity *pPlayer);
+
 //=========================================================
 // MaxAmmoCarry - pass in a name and this function will tell
 // you the maximum amount of that type of ammunition that a
@@ -479,6 +482,19 @@ void CBasePlayerItem::FallThink(void)
 		pev->angles.z = 0;
 
 		Materialize();
+	}
+	else if (m_pPlayer != NULL)
+	{
+		SetThink(NULL);
+	}
+
+	//This weapon is an egon, it has no owner and we're in busting mode, so just remove it when it hits the ground
+	if (IsBustingGame() && FNullEnt(pev->owner))
+	{
+		if (!strcmp("weapon_egon", STRING(pev->classname)))
+		{
+			UTIL_Remove(this);
+		}
 	}
 }
 
@@ -919,7 +935,7 @@ BOOL CBasePlayerWeapon ::IsUseable(void)
 		if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0 && iMaxAmmo1() != -1)
 		{
 			// clip is empty (or nonexistant) and the player has no more ammo of this type.
-			return FALSE;
+			return CanDeploy();
 		}
 	}
 
@@ -964,7 +980,7 @@ BOOL CBasePlayerWeapon ::DefaultDeploy(char *szViewModel, char *szWeaponModel, i
 	m_pPlayer->TabulateAmmo();
 	m_pPlayer->pev->viewmodel = MAKE_STRING(szViewModel);
 	m_pPlayer->pev->weaponmodel = MAKE_STRING(szWeaponModel);
-	strcpy(m_pPlayer->m_szAnimExtention, szAnimExt);
+	UTIL_strcpy(m_pPlayer->m_szAnimExtention, szAnimExt);
 	SendWeaponAnim(iAnim, skiplocal, body);
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
@@ -1097,6 +1113,9 @@ void CBasePlayerAmmo ::DefaultTouch(CBaseEntity *pOther)
 	{
 		return;
 	}
+
+	if (IsPlayerBusting(pOther))
+		return;
 
 	if (AddAmmo(pOther))
 	{
@@ -1533,7 +1552,7 @@ IMPLEMENT_SAVERESTORE(CRpg, CBasePlayerWeapon);
 
 TYPEDESCRIPTION CRpgRocket::m_SaveData[] = {
 	DEFINE_FIELD(CRpgRocket, m_flIgniteTime, FIELD_TIME),
-	DEFINE_FIELD(CRpgRocket, m_pLauncher, FIELD_CLASSPTR),
+	DEFINE_FIELD(CRpgRocket, m_hLauncher, FIELD_EHANDLE),
 };
 IMPLEMENT_SAVERESTORE(CRpgRocket, CGrenade);
 

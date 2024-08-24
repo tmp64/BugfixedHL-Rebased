@@ -155,7 +155,7 @@ void CheckPlayerModel(CBasePlayer *pPlayer, char *infobuffer)
 		if (mdls[0] == 0 || strlen(mdls) > MAX_TEAM_NAME - 1 || !IsValidFilename(mdls))
 		{
 			if (prevModel[0] == 0)
-				strcpy(prevModel, "gordon"); // default model if empty
+				UTIL_strncpy(prevModel, "gordon", MAX_TEAM_NAME); // default model if empty
 
 			// Set previous model back into info buffer
 			g_engfuncs.pfnSetClientKeyValue(clientIndex, infobuffer, "model", prevModel);
@@ -172,7 +172,7 @@ void CheckPlayerModel(CBasePlayer *pPlayer, char *infobuffer)
 			g_engfuncs.pfnSetClientKeyValue(clientIndex, infobuffer, "model", mdls);
 
 		// Remember model player has set
-		strcpy(prevModel, mdls);
+		UTIL_strncpy(prevModel, mdls, MAX_TEAM_NAME);
 	}
 }
 
@@ -259,7 +259,7 @@ void ClientPutInServer(edict_t *pEntity)
 
 	// Setup some fields initially
 	pPlayer->m_fNextSuicideTime = 0;
-	pPlayer->m_iAutoWeaponSwitch = 1;
+	pPlayer->m_iAutoWepSwitch = 1;
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
@@ -645,6 +645,14 @@ void ClientCommand(edict_t *pEntity)
 		strncpy(command, pcmd, 127);
 		command[127] = '\0';
 
+		// First parse the name and remove any %'s
+		for (char *pApersand = command; pApersand != NULL && *pApersand != 0; pApersand++)
+		{
+			// Replace it with a space
+			if (*pApersand == '%')
+				*pApersand = ' ';
+		}
+
 		// tell the user they entered an unknown command
 		ClientPrint(pev, HUD_PRINTCONSOLE, UTIL_VarArgs("Unknown command: %s\n", command));
 	}
@@ -716,9 +724,7 @@ void ClientUserInfoChanged(edict_t *pEntity, char *infobuffer)
 		}
 	}
 
-	// Get weapon switching vars
-	char *autowepswitch = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
-	pPlayer->m_iAutoWeaponSwitch = autowepswitch[0] == 0 ? 1 : atoi(autowepswitch);
+	pPlayer->SetPrefsFromUserinfo(infobuffer);
 
 	g_pGameRules->ClientUserInfoChanged(pPlayer, infobuffer);
 }
@@ -908,6 +914,7 @@ void ClientPrecache(void)
 	PRECACHE_SOUND("debris/wood3.wav");
 
 	PRECACHE_SOUND("plats/train_use1.wav"); // use a train
+	PRECACHE_SOUND("plats/vehicle_ignition.wav");
 
 	PRECACHE_SOUND("buttons/spark5.wav"); // hit computer texture
 	PRECACHE_SOUND("buttons/spark6.wav");
@@ -1320,6 +1327,12 @@ int AddToFullPack(struct entity_state_s *state, int e, edict_t *ent, edict_t *ho
 		state->movetype = MOVETYPE_NONE;
 		state->solid = SOLID_NOT;
 	}
+
+	CBaseEntity *pEntity = static_cast<CBaseEntity *>(GET_PRIVATE(ent));
+	if (pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE)
+		state->eflags |= EFLAG_FLESH_SOUND;
+	else
+		state->eflags &= ~EFLAG_FLESH_SOUND;
 
 	return 1;
 }
@@ -1745,7 +1758,7 @@ void UpdateClientData(const struct edict_s *ent, int sendweapons, struct clientd
 	cd->flSwimTime = pev->flSwimTime;
 	cd->waterjumptime = pev->teleport_time;
 
-	strcpy(cd->physinfo, ENGINE_GETPHYSINFO(ent));
+	UTIL_strcpy(cd->physinfo, ENGINE_GETPHYSINFO(ent));
 
 	cd->maxspeed = pev->maxspeed;
 	cd->fov = pev->fov;

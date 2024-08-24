@@ -28,6 +28,7 @@
 #include <cstring>
 #include <algorithm>
 #include <tier0/dbg.h>
+#include <tier1/strtools.h>
 #include "cvardef.h"
 #include <convar.h>
 #include "console.h"
@@ -90,11 +91,13 @@ inline struct cvar_s *CVAR_CREATE(const char *cv, const char *val, const int fla
 
 #define SPR_RES_SCALED(x) (x * ((float)gHUD.m_iRes / HUD_FALLBACK_RES))
 
-#define GetScreenInfo   (*gEngfuncs.pfnGetScreenInfo)
-#define ServerCmd       (*gEngfuncs.pfnServerCmd)
-#define EngineClientCmd (*gEngfuncs.pfnClientCmd)
-#define SetCrosshair    (*gEngfuncs.pfnSetCrosshair)
-#define AngleVectors    (*gEngfuncs.pfnAngleVectors)
+#define GetScreenInfo           (*gEngfuncs.pfnGetScreenInfo)
+#define ServerCmd               (*gEngfuncs.pfnServerCmd)
+#define EngineClientCmd         (*gEngfuncs.pfnClientCmd)
+#define SetCrosshair            (*gEngfuncs.pfnSetCrosshair)
+#define AngleVectors            (*gEngfuncs.pfnAngleVectors)
+
+int EngineFilteredClientCmd(const char *const pszCmdString);
 
 // Gets the height & width of a sprite,  at the specified frame
 inline int SPR_Height(HSPRITE x, int f) { return gEngfuncs.pfnSPR_Height(x, f); }
@@ -121,19 +124,6 @@ void ConsolePrint(const char *string);
 inline void CenterPrint(const char *string)
 {
 	gEngfuncs.pfnCenterPrint(string);
-}
-
-inline char *safe_strcpy(char *dst, const char *src, int len_dst)
-{
-	if (len_dst <= 0)
-	{
-		return NULL; // this is bad
-	}
-
-	strncpy(dst, src, len_dst);
-	dst[len_dst - 1] = '\0';
-
-	return dst;
 }
 
 // sound functions

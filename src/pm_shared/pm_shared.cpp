@@ -673,7 +673,8 @@ void PM_UpdateStepSound(void)
 	speed = pmove->velocity.Length();
 
 	// determine if we are on a ladder
-	fLadder = (pmove->movetype == MOVETYPE_FLY); // IsOnLadder();
+	// The Barnacle Grapple sets the FL_IMMUNE_LAVA flag to indicate that the player is not on a ladder - Solokiller
+	fLadder = (pmove->movetype == MOVETYPE_FLY) && !(pmove->flags & FL_IMMUNE_LAVA); // IsOnLadder();
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!
 	if ((pmove->flags & FL_DUCKING) || fLadder)
@@ -1057,7 +1058,12 @@ int PM_FlyMove(void)
 		//
 		// modify original_velocity so it parallels all of the clip planes
 		//
-		if (pmove->movetype == MOVETYPE_WALK && ((pmove->onground == -1) || (pmove->friction != 1))) // relfect player velocity
+		// relfect player velocity
+		// Only give this a try for first impact plane because you can get yourself stuck in an acute corner by jumping in place
+		//  and pressing forward and nobody was really using this bounce/reflection feature anyway...
+		if (numplanes == 1 &&
+			pmove->movetype == MOVETYPE_WALK &&
+			((pmove->onground == -1) || (pmove->friction != 1)))
 		{
 			for (i = 0; i < numplanes; i++)
 			{
@@ -1822,9 +1828,9 @@ int PM_CheckStuck(void)
 
 	VectorCopy(pmove->origin, base);
 
-	// Deal with precision error in network.
+	// Deal with precision error in network and cases where the player can get stuck on level transitions in singleplayer.
 	// Only an issue on the client.
-	if (!pmove->server)
+	if (!pmove->server || !pmove->multiplayer)
 	{
 		i = 0;
 		do
@@ -2984,6 +2990,15 @@ void PM_CheckParamters(void)
 		pmove->maxspeed = min(maxspeed, pmove->maxspeed);
 	}
 
+	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
+	//
+	// JoshA: Moved this to CheckParamters rather than working on the velocity,
+	// as otherwise it affects every integration step incorrectly.
+	if ((pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
+	{
+		pmove->maxspeed *= 1.0f / 3.0f;
+	}
+
 	if ((spd != 0.0) && (spd > pmove->maxspeed))
 	{
 		float fRatio = pmove->maxspeed / spd;
@@ -3104,7 +3119,13 @@ void PM_PlayerMove(qboolean server)
 	{
 		if (PM_CheckStuck())
 		{
-			return; // Can't move, we're stuck
+			// Let the user try to duck to get unstuck
+			PM_Duck();
+
+			if (PM_CheckStuck())
+			{
+				return; // Can't move, we're stuck
+			}
 		}
 	}
 
@@ -3151,12 +3172,6 @@ void PM_PlayerMove(qboolean server)
 			//  it will be set immediately again next frame if necessary
 			pmove->movetype = MOVETYPE_WALK;
 		}
-	}
-
-	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
-	if ((pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
-	{
-		VectorScale(pmove->velocity, 0.3, pmove->velocity);
 	}
 
 	// Handle movement

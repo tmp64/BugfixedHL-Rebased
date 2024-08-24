@@ -66,12 +66,12 @@ void AgHudVote::Draw(float fTime)
 	}
 	else if (VoteStatus::Accepted == m_iVoteStatus)
 	{
-		strcpy(szText, "Accepted!");
+		V_strcpy_safe(szText, "Accepted!");
 		gHUD.DrawHudString(ScreenWidth / 20, ScreenHeight / 8 + gHUD.m_scrinfo.iCharHeight * 2, 0, szText, r, g, b);
 	}
 	else if (VoteStatus::Denied == m_iVoteStatus)
 	{
-		strcpy(szText, "Denied!");
+		V_strcpy_safe(szText, "Denied!");
 		gHUD.DrawHudString(ScreenWidth / 20, ScreenHeight / 8 + gHUD.m_scrinfo.iCharHeight * 2, 0, szText, r, g, b);
 	}
 }
@@ -83,9 +83,9 @@ int AgHudVote::MsgFunc_Vote(const char *pszName, int iSize, void *pbuf)
 	m_iFor = READ_BYTE();
 	m_iAgainst = READ_BYTE();
 	m_iUndecided = READ_BYTE();
-	strcpy(m_szVote, READ_STRING());
-	strcpy(m_szValue, READ_STRING());
-	strcpy(m_szCalled, READ_STRING());
+	V_strcpy_safe(m_szVote, READ_STRING());
+	V_strcpy_safe(m_szValue, READ_STRING());
+	V_strcpy_safe(m_szCalled, READ_STRING());
 
 	m_flTurnoff = gHUD.m_flTime + 4; // Hold for 4 seconds.
 

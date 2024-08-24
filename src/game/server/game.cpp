@@ -66,7 +66,7 @@ cvar_t motdfile_html = { "motdfile_html", "motd.html", FCVAR_SERVER };
 
 cvar_t mp_dmg_crowbar = { "mp_dmg_crowbar", "25", FCVAR_SERVER };
 cvar_t mp_dmg_glock = { "mp_dmg_glock", "12", FCVAR_SERVER };
-cvar_t mp_dmg_357 = { "mp_dmg_357", "40", FCVAR_SERVER };
+cvar_t mp_dmg_357 = { "mp_dmg_357", "50", FCVAR_SERVER };
 cvar_t mp_dmg_mp5 = { "mp_dmg_mp5", "12", FCVAR_SERVER };
 cvar_t mp_dmg_shotgun = { "mp_dmg_shotgun", "20", FCVAR_SERVER };
 cvar_t mp_dmg_xbow_scope = { "mp_dmg_xbow_scope", "120", FCVAR_SERVER };
@@ -84,6 +84,7 @@ cvar_t mp_dmg_m203 = { "mp_dmg_m203", "100", FCVAR_SERVER };
 // Engine Cvars
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
+cvar_t *g_psv_allow_autoaim = NULL;
 cvar_t *g_footsteps = NULL;
 
 // AMXX cvar
@@ -465,6 +466,10 @@ cvar_t sk_player_leg3 = { "sk_player_leg3", "1" };
 
 // END Cvars for Skill Level settings
 
+cvar_t sv_pushable_fixed_tick_fudge = { "sv_pushable_fixed_tick_fudge", "15" };
+
+cvar_t sv_busters = { "sv_busters", "0" };
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit(void)
@@ -473,6 +478,7 @@ void GameDLLInit(void)
 
 	g_psv_gravity = CVAR_GET_POINTER("sv_gravity");
 	g_psv_aim = CVAR_GET_POINTER("sv_aim");
+	g_psv_allow_autoaim = CVAR_GET_POINTER("sv_allow_autoaim");
 	g_footsteps = CVAR_GET_POINTER("mp_footsteps");
 
 	g_amxmodx_version = CVAR_GET_POINTER("amxmodx_version");
@@ -507,6 +513,7 @@ void GameDLLInit(void)
 	CVAR_REGISTER(&allowmonsters);
 
 	CVAR_REGISTER(&mp_chattime);
+	CVAR_REGISTER(&sv_busters);
 	CVAR_REGISTER(&mp_notify_player_status);
 
 	CVAR_REGISTER(&mp_welcomecam);
@@ -906,6 +913,8 @@ void GameDLLInit(void)
 	CVAR_REGISTER(&sk_player_leg2);
 	CVAR_REGISTER(&sk_player_leg3);
 	// END REGISTER CVARS FOR SKILL LEVEL STUFF
+
+	CVAR_REGISTER(&sv_pushable_fixed_tick_fudge);
 
 	// Register cvars from ConVar class
 	CvarSystem::RegisterCvars();

@@ -1367,7 +1367,7 @@ struct cl_enginefunc_t
 	*	@param pszCmdString Command string.
 	*	@return true if the command was enqueued, false otherwise.
 	*/
-	void (*pfnEngDst_pfnFilteredClientCmd)(const char **);
+	int (*pfnFilteredClientCmd)(const char *szCmdString);
 };
 
 #endif

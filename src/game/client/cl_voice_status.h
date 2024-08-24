@@ -88,7 +88,7 @@ public:
 	bool m_bBanMgrInitialized;
 
 	// Cache the game directory for use when we shut down
-	char *m_pchGameDir;
+	std::string m_GameDir;
 };
 
 // Get the (global) voice manager.

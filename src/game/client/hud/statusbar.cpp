@@ -147,12 +147,12 @@ void CHudStatusBar::ParseStatusString(int line_num)
 							GetPlayerInfo(indexval)->Update();
 							if (GetPlayerInfo(indexval)->IsConnected())
 							{
-								safe_strcpy(szRepString, GetPlayerInfo(indexval)->GetDisplayName(false), MAX_PLAYERNAME_LENGTH);
+								V_strcpy_safe(szRepString, GetPlayerInfo(indexval)->GetDisplayName(false));
 								gHUD.GetClientColorAsFloat(indexval, m_pflNameColors[line_num], NoTeamColor::Orange);
 							}
 							else
 							{
-								strcpy(szRepString, "******");
+								V_strcpy_safe(szRepString, "******");
 							}
 
 							break;

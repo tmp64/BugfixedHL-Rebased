@@ -639,8 +639,7 @@ void CSvcMessages::SvcStuffText()
 	char *commands = READ_STRING();
 
 	char str[MAX_CMD_LINE];
-	strncpy(str, commands, sizeof(str));
-	str[sizeof(str) - 1] = 0;
+	V_strcpy_safe(str, commands);
 
 	if (SanitizeCommands(str))
 	{
@@ -659,8 +658,10 @@ void CSvcMessages::SvcStuffText()
 		}
 
 		// strcpy is safe since strlen(str) <= strlen(commands)
+		// so use memcpy instead
+		// Modified command is put to the end of the string and read position is incremented
 		int diff = l1 - l2;
-		strcpy(commands + diff, str);
+		memcpy(commands + diff, str, l2); // Don't copy null-terminator: already exists in the string
 		GetMsgBuf().GetReadPos() += diff;
 	}
 

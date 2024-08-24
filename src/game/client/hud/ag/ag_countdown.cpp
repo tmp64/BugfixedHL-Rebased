@@ -53,7 +53,7 @@ void AgHudCountdown::Draw(float fTime)
 		else
 		{
 			// Write match text.
-			strcpy(szText, "Match about to start");
+			V_strcpy_safe(szText, "Match about to start");
 			AgDrawHudStringCentered(ScreenWidth / 2, gHUD.m_scrinfo.iCharHeight * 7, ScreenWidth, szText, r, g, b);
 		}
 	}
@@ -66,7 +66,7 @@ void AgHudCountdown::Draw(float fTime)
 		}
 		else
 		{
-			strcpy(szText, "Waiting for players to get ready");
+			V_strcpy_safe(szText, "Waiting for players to get ready");
 			AgDrawHudStringCentered(ScreenWidth / 2, gHUD.m_scrinfo.iCharHeight * 7, ScreenWidth, szText, r, g, b);
 		}
 	}
@@ -79,8 +79,8 @@ int AgHudCountdown::MsgFunc_Countdown(const char *pszName, int iSize, void *pbuf
 	// Update data
 	m_btCountdown = READ_BYTE();
 	char btSound = READ_BYTE();
-	strcpy(m_szPlayer1, READ_STRING());
-	strcpy(m_szPlayer2, READ_STRING());
+	V_strcpy_safe(m_szPlayer1, READ_STRING());
+	V_strcpy_safe(m_szPlayer2, READ_STRING());
 
 	if (m_btCountdown >= 0)
 	{

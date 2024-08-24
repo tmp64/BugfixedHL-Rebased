@@ -1273,7 +1273,7 @@ void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick)
 	if (isentenceg < 0 || ipick < 0)
 		return;
 
-	strcpy(buffer, "!");
+	UTIL_strcpy(buffer, "!");
 	strcat(buffer, rgsentenceg[isentenceg].szgroupname);
 	snprintf(sznum, sizeof(sznum), "%d", ipick);
 	strcat(buffer, sznum);
@@ -1343,7 +1343,7 @@ void SENTENCEG_Init()
 		if (strlen(pString) >= CBSENTENCENAME_MAX)
 			ALERT(at_warning, "Sentence %s longer than %d letters\n", pString, CBSENTENCENAME_MAX - 1);
 
-		strcpy(gszallsentencenames[gcallsentences++], pString);
+		UTIL_strcpy(gszallsentencenames[gcallsentences++], pString);
 
 		j--;
 		if (j <= i)
@@ -1374,10 +1374,10 @@ void SENTENCEG_Init()
 				break;
 			}
 
-			strcpy(rgsentenceg[isentencegs].szgroupname, &(buffer[i]));
+			UTIL_strcpy(rgsentenceg[isentencegs].szgroupname, &(buffer[i]));
 			rgsentenceg[isentencegs].count = 1;
 
-			strcpy(szgroup, &(buffer[i]));
+			UTIL_strcpy(szgroup, &(buffer[i]));
 
 			continue;
 		}

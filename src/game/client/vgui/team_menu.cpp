@@ -144,7 +144,7 @@ void CTeamMenu::Update()
 			char *ch;
 
 			// Update the map briefing
-			strcpy(sz, level);
+			V_strcpy_safe(sz, level);
 			ch = strchr(sz, '.');
 			*ch = '\0';
 			strcat(sz, ".txt");

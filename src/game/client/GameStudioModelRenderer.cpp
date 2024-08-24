@@ -185,7 +185,7 @@ int CGameStudioModelRenderer::ParseModels(void)
 			if (!model)
 				continue;
 			// Add to list
-			strcpy(m_szEnemyModels[m_iEnemyModelsCount], buffer);
+			V_strcpy_safe(m_szEnemyModels[m_iEnemyModelsCount], buffer);
 			m_iEnemyModelsCount++;
 			if (m_iEnemyModelsCount >= MAX_TEAMS)
 				break;
@@ -355,7 +355,7 @@ model_t *CGameStudioModelRenderer::GetPlayerModel(int playerIndex)
 	if (Q_stricmp(m_szPlayerActualModel[playerIndex], actualModelName) || m_szPlayerRemapModel[playerIndex][0] == 0)
 	{
 		// Store actual model name for future comparisions
-		strcpy(m_szPlayerActualModel[playerIndex], actualModelName);
+		V_strcpy_safe(m_szPlayerActualModel[playerIndex], actualModelName);
 
 		// Pickup new mapping
 		m_szPlayerRemapModel[playerIndex][0] = 0;
@@ -366,7 +366,7 @@ model_t *CGameStudioModelRenderer::GetPlayerModel(int playerIndex)
 		{
 			if (i == playerIndex || !CHudSpectator::Get()->IsActivePlayer(gEngfuncs.GetEntityByIndex(i + 1)) || Q_stricmp(m_szPlayerActualModel[i], actualModelName))
 				continue;
-			strcpy(m_szPlayerRemapModel[playerIndex], m_szPlayerRemapModel[i]);
+			V_strcpy_safe(m_szPlayerRemapModel[playerIndex], m_szPlayerRemapModel[i]);
 			break;
 		}
 
@@ -377,14 +377,14 @@ model_t *CGameStudioModelRenderer::GetPlayerModel(int playerIndex)
 			{
 				if (!Q_stricmp(m_szEnemyModels[j], actualModelName))
 				{
-					strcpy(m_szPlayerRemapModel[playerIndex], m_szEnemyModels[j]);
+					V_strcpy_safe(m_szPlayerRemapModel[playerIndex], m_szEnemyModels[j]);
 					break;
 				}
 			}
 
 			// Pickup replacement model name
 			if (m_szPlayerRemapModel[playerIndex][0] == 0)
-				strcpy(m_szPlayerRemapModel[playerIndex], GetNextEnemyModel());
+				V_strcpy_safe(m_szPlayerRemapModel[playerIndex], GetNextEnemyModel());
 		}
 
 		// Retrive replacement model

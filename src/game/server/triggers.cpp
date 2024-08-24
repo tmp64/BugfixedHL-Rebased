@@ -313,7 +313,7 @@ void CMultiManager ::KeyValue(KeyValueData *pkvd)
 		{
 			char tmp[128];
 
-			UTIL_StripToken(pkvd->szKeyName, tmp);
+			UTIL_StripToken(pkvd->szKeyName, tmp, sizeof(tmp));
 			m_iTargetName[m_cTargets] = ALLOC_STRING(tmp);
 			m_flTargetDelay[m_cTargets] = atof(pkvd->szValue);
 			m_cTargets++;
@@ -965,9 +965,23 @@ void CBaseTrigger ::HurtTouch(CBaseEntity *pOther)
 #endif
 
 	if (fldmg < 0)
-		pOther->TakeHealth(-fldmg, m_bitsDamageInflict);
+	{
+		BOOL bApplyHeal = TRUE;
+
+		if (g_pGameRules->IsMultiplayer() && pOther->IsPlayer())
+		{
+			bApplyHeal = pOther->pev->deadflag == DEAD_NO;
+		}
+
+		if (bApplyHeal)
+		{
+			pOther->TakeHealth(-fldmg, m_bitsDamageInflict);
+		}
+	}
 	else
+	{
 		pOther->TakeDamage(pev, pev, fldmg, m_bitsDamageInflict);
+	}
 
 	// Store pain time so we can get all of the other entities on this frame
 	pev->pain_finished = gpGlobals->time;
@@ -1322,14 +1336,14 @@ void CChangeLevel ::KeyValue(KeyValueData *pkvd)
 	{
 		if (strlen(pkvd->szValue) >= cchMapNameMost)
 			ALERT(at_error, "Map name '%s' too long (32 chars)\n", pkvd->szValue);
-		strcpy(m_szMapName, pkvd->szValue);
+		UTIL_strcpy(m_szMapName, pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "landmark"))
 	{
 		if (strlen(pkvd->szValue) >= cchMapNameMost)
 			ALERT(at_error, "Landmark name '%s' too long (32 chars)\n", pkvd->szValue);
-		strcpy(m_szLandmarkName, pkvd->szValue);
+		UTIL_strcpy(m_szLandmarkName, pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "changetarget"))
@@ -1448,7 +1462,7 @@ void CChangeLevel ::ChangeLevelNow(CBaseEntity *pActivator)
 		}
 	}
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
-	strcpy(st_szNextMap, m_szMapName);
+	UTIL_strcpy(st_szNextMap, m_szMapName);
 
 	m_hActivator = pActivator;
 	SUB_UseTargets(pActivator, USE_TOGGLE, 0);
@@ -1458,7 +1472,7 @@ void CChangeLevel ::ChangeLevelNow(CBaseEntity *pActivator)
 	pentLandmark = FindLandmark(m_szLandmarkName);
 	if (!FNullEnt(pentLandmark))
 	{
-		strcpy(st_szNextSpot, m_szLandmarkName);
+		UTIL_strcpy(st_szNextSpot, m_szLandmarkName);
 		gpGlobals->vecLandmarkOffset = VARS(pentLandmark)->origin;
 	}
 	//	ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
@@ -1491,8 +1505,8 @@ int CChangeLevel::AddTransitionToList(LEVELLIST *pLevelList, int listCount, cons
 		if (pLevelList[i].pentLandmark == pentLandmark && strcmp(pLevelList[i].mapName, pMapName) == 0)
 			return 0;
 	}
-	strcpy(pLevelList[listCount].mapName, pMapName);
-	strcpy(pLevelList[listCount].landmarkName, pLandmarkName);
+	UTIL_strcpy(pLevelList[listCount].mapName, pMapName);
+	UTIL_strcpy(pLevelList[listCount].landmarkName, pLandmarkName);
 	pLevelList[listCount].pentLandmark = pentLandmark;
 	pLevelList[listCount].vecLandmarkOrigin = VARS(pentLandmark)->origin;
 
@@ -1662,12 +1676,12 @@ void NextLevel(void)
 	{
 		gpGlobals->mapname = ALLOC_STRING("start");
 		pChange = GetClassPtr((CChangeLevel *)NULL);
-		strcpy(pChange->m_szMapName, "start");
+		UTIL_strcpy(pChange->m_szMapName, "start");
 	}
 	else
 		pChange = GetClassPtr((CChangeLevel *)VARS(pent));
 
-	strcpy(st_szNextMap, pChange->m_szMapName);
+	UTIL_strcpy(st_szNextMap, pChange->m_szMapName);
 	g_fGameOver = TRUE;
 
 	if (pChange->pev->nextthink < gpGlobals->time)

@@ -343,7 +343,7 @@ void AgHudLocation::ParseAndEditSayString(int iPlayer, char *pszSay, int pszSayS
 	// Make backup
 	char *pszText = new char[pszSaySize];
 	char *pszSayTemp = pszText;
-	strcpy(pszText, pszSay);
+	V_strncpy(pszText, pszSay, pszSaySize);
 
 	// Now parse for %L and edit it.
 	char *pszSayEnd = pszSay + pszSaySize - 1;
@@ -386,7 +386,7 @@ int AgHudLocation::MsgFunc_Location(const char *pszName, int iSize, void *pbuf)
 int AgHudLocation::MsgFunc_InitLoc(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
-	strcpy(m_szMap, READ_STRING());
+	V_strcpy_safe(m_szMap, READ_STRING());
 	Load();
 
 	return 1;

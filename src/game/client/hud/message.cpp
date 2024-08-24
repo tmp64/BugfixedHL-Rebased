@@ -63,6 +63,7 @@ void CHudMessage::Reset()
 
 	m_gameTitleTime = 0;
 	m_pGameTitle = NULL;
+	m_bEndAfterMessage = false;
 }
 
 void CHudMessage::CStrToWide(const char *pString, std::wstring &wstr)
@@ -146,8 +147,8 @@ int CHudMessage::YPosition(float y, int height)
 
 void CHudMessage::MessageScanNextChar(Color srcColor)
 {
-	int srcRed, srcGreen, srcBlue, destRed, destGreen, destBlue;
-	int blend;
+	int srcRed = 0, srcGreen = 0, srcBlue = 0, destRed = 0, destGreen = 0, destBlue = 0;
+	int blend = 0;
 
 	srcRed = srcColor.r();
 	srcGreen = srcColor.g();
@@ -456,6 +457,12 @@ void CHudMessage::Draw(float fTime)
 			// The message is over
 			m_pMessages[i] = NULL;
 			m_sMessageStrings[i].clear();
+
+			if (m_bEndAfterMessage)
+			{
+				// leave game
+				gEngfuncs.pfnClientCmd("wait\nwait\nwait\nwait\nwait\nwait\nwait\ndisconnect\n");
+			}
 		}
 	}
 
@@ -506,7 +513,7 @@ void CHudMessage::MessageAdd(const char *pName, float time)
 			g_pCustomMessage.holdtime = 5;
 			g_pCustomMessage.pName = g_pCustomName;
 			g_pCustomMessage.pMessage = g_pCustomText;
-			strcpy(g_pCustomText, pName);
+			V_strcpy_safe(g_pCustomText, pName);
 
 			tempMessage = &g_pCustomMessage;
 		}
@@ -558,6 +565,14 @@ int CHudMessage::MsgFunc_HudText(const char *pszName, int iSize, void *pbuf)
 	BEGIN_READ(pbuf, iSize);
 
 	char *pString = READ_STRING();
+
+	bool bIsEnding = false;
+	constexpr std::string_view HL1_ENDING_STR = "END3";
+
+	if (pString == HL1_ENDING_STR)
+	{
+		m_bEndAfterMessage = true;
+	}
 
 	MessageAdd(pString, gHUD.m_flTime);
 	// Remember the time -- to fix up level transitions

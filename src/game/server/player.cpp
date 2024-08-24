@@ -50,6 +50,8 @@ extern void CopyToBodyQue(entvars_t *pev);
 extern Vector VecBModelOrigin(entvars_t *pevBModel);
 extern edict_t *EntSelectSpawnPoint(CBasePlayer *pPlayer);
 
+extern bool IsBustingGame();
+
 // the world node graph
 extern CGraph WorldGraph;
 
@@ -743,8 +745,20 @@ void CBasePlayer::PackDeadPlayerItems(void)
 				case GR_PLR_DROP_GUN_ACTIVE:
 					if (m_pActiveItem && pPlayerItem == m_pActiveItem)
 					{
+						CBasePlayerWeapon *pWeapon = (CBasePlayerWeapon *)pPlayerItem;
+						int nIndex = iPW++;
+
 						// this is the active item. Pack it.
-						rgpPackWeapons[iPW++] = (CBasePlayerWeapon *)pPlayerItem;
+						rgpPackWeapons[nIndex] = pWeapon;
+
+						//Reload the weapon before dropping it if we have ammo
+						int j = min(pWeapon->iMaxClip() - pWeapon->m_iClip, m_rgAmmo[pWeapon->m_iPrimaryAmmoType]);
+
+						// Add them to the clip
+						pWeapon->m_iClip += j;
+						m_rgAmmo[pWeapon->m_iPrimaryAmmoType] -= j;
+
+						TabulateAmmo();
 					}
 					break;
 
@@ -816,23 +830,66 @@ void CBasePlayer::PackDeadPlayerItems(void)
 	iPA = 0;
 	iPW = 0;
 
-	// pack the ammo
-	while (iPackAmmo[iPA] != -1)
+	if (IsBustingGame())
 	{
-		pWeaponBox->PackAmmo(MAKE_STRING(CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName), m_rgAmmo[iPackAmmo[iPA]]);
-		iPA++;
-	}
+		if (HasNamedPlayerItem("weapon_egon"))
+		{
+			for (i = 0; i < MAX_ITEM_TYPES; i++)
+			{
+				CBasePlayerItem *pItem = m_rgpPlayerItems[i];
 
-	// now pack all of the items in the lists
-	while (rgpPackWeapons[iPW])
+				if (pItem)
+				{
+					if (!strcmp("weapon_egon", STRING(pItem->pev->classname)))
+					{
+						pWeaponBox->PackWeapon(pItem);
+
+						SET_MODEL(ENT(pWeaponBox->pev), "models/w_egon.mdl");
+
+						pWeaponBox->pev->velocity = Vector(0, 0, 0);
+						pWeaponBox->pev->renderfx = kRenderFxGlowShell;
+						pWeaponBox->pev->renderamt = 25;
+						pWeaponBox->pev->rendercolor = Vector(0, 75, 250);
+
+						break;
+					}
+				}
+			}
+		}
+	}
+	else
 	{
-		// weapon unhooked from the player. Pack it into der box.
-		pWeaponBox->PackWeapon(rgpPackWeapons[iPW]);
+		bool bPackItems = TRUE;
 
-		iPW++;
+		if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE && iWeaponRules == GR_PLR_DROP_GUN_ACTIVE)
+		{
+			if (FClassnameIs(rgpPackWeapons[0]->pev, "weapon_satchel") && (iPackAmmo[0] == -1 || (m_rgAmmo[iPackAmmo[0]] == 0)))
+			{
+				bPackItems = FALSE;
+			}
+		}
+
+		if (bPackItems)
+		{
+			// pack the ammo
+			while (iPackAmmo[iPA] != -1)
+			{
+				pWeaponBox->PackAmmo(MAKE_STRING(CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName), m_rgAmmo[iPackAmmo[iPA]]);
+				iPA++;
+			}
+
+			// now pack all of the items in the lists
+			while (rgpPackWeapons[iPW])
+			{
+				// weapon unhooked from the player. Pack it into der box.
+				pWeaponBox->PackWeapon(rgpPackWeapons[iPW]);
+
+				iPW++;
+			}
+		}
+
+		pWeaponBox->pev->velocity = pev->velocity * 1.2; // weaponbox has player's velocity, then some.
 	}
-
-	pWeaponBox->pev->velocity = pev->velocity * 1.2; // weaponbox has player's velocity, then some.
 
 	RemoveAllItems(TRUE); // now strip off everything that wasn't handled by the code above.
 }
@@ -921,7 +978,7 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 
 	SetAnimation(PLAYER_DIE);
 
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0;
 	m_flDeathAnimationStartTime = gpGlobals->time;
 
 	pev->modelindex = g_ulModelIndexPlayer; // don't use eyes
@@ -954,6 +1011,12 @@ void CBasePlayer::Killed(entvars_t *pevAttacker, int iGib)
 	MESSAGE_BEGIN(MSG_ONE, gmsgSetFOV, NULL, pev);
 	WRITE_BYTE(0);
 	MESSAGE_END();
+
+	// Adrian: always make the players non-solid in multiplayer when they die
+	if (g_pGameRules->IsMultiplayer())
+	{
+		pev->solid = SOLID_NOT;
+	}
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
 	// UTIL_ScreenFade( edict(), Vector(128,0,0), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
@@ -1065,9 +1128,9 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 
 	case ACT_RANGE_ATTACK1:
 		if (FBitSet(pev->flags, FL_DUCKING)) // crouching
-			strcpy(szAnim, "crouch_shoot_");
+			UTIL_strcpy(szAnim, "crouch_shoot_");
 		else
-			strcpy(szAnim, "ref_shoot_");
+			UTIL_strcpy(szAnim, "ref_shoot_");
 		strcat(szAnim, m_szAnimExtention);
 		animDesired = LookupSequence(szAnim);
 		if (animDesired == -1)
@@ -1093,9 +1156,9 @@ void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 		if (m_Activity != ACT_RANGE_ATTACK1 || m_fSequenceFinished)
 		{
 			if (FBitSet(pev->flags, FL_DUCKING)) // crouching
-				strcpy(szAnim, "crouch_aim_");
+				UTIL_strcpy(szAnim, "crouch_aim_");
 			else
-				strcpy(szAnim, "ref_aim_");
+				UTIL_strcpy(szAnim, "ref_aim_");
 			strcat(szAnim, m_szAnimExtention);
 			animDesired = LookupSequence(szAnim);
 			if (animDesired == -1)
@@ -1328,8 +1391,8 @@ void CBasePlayer::PlayerDeathThink(void)
 
 	if (mp_respawn_fix.value <= 0)
 	{
-		m_iRespawnFrames++;
-		if (m_iRespawnFrames < 120)
+		m_flRespawnTimer += gpGlobals->frametime;
+		if (m_flRespawnTimer < 4.0f) // 120 frames at 30fps -- animations should be no longer than this
 			return;
 	}
 	else
@@ -1343,13 +1406,22 @@ void CBasePlayer::PlayerDeathThink(void)
 	if (pev->frame < 255)
 		pev->frame = 255;
 
+	if (pev->deadflag == DEAD_DYING)
+	{
+		//Once we finish animating, if we're in multiplayer just make a copy of our body right away.
+		if (m_fSequenceFinished && g_pGameRules->IsMultiplayer() && pev->movetype == MOVETYPE_NONE)
+		{
+			CopyToBodyQue(pev);
+			pev->modelindex = 0;
+		}
+
+		pev->deadflag = DEAD_DEAD;
+	}
+
 	// once we're done animating our death and we're on the ground, we want to set movetype to None so our dead body won't do collisions and stuff anymore
 	// this prevents a bug where the dead body would go to a player's head if he walked over it while the dead player was clicking their button to respawn
 	if (pev->movetype != MOVETYPE_NONE && FBitSet(pev->flags, FL_ONGROUND))
 		pev->movetype = MOVETYPE_NONE;
-
-	if (pev->deadflag == DEAD_DYING)
-		pev->deadflag = DEAD_DEAD;
 
 	StopAnimation();
 
@@ -1393,7 +1465,7 @@ void CBasePlayer::PlayerDeathThink(void)
 		return;
 
 	pev->button = 0;
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0.0f;
 	m_flDeathAnimationStartTime = 0;
 
 	//ALERT(at_console, "Respawn\n");
@@ -1601,6 +1673,9 @@ void CBasePlayer::PlayerUse(void)
 			{
 				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 				m_iTrain = TRAIN_NEW | TRAIN_OFF;
+				CBaseEntity *pTrain = CBaseEntity::Instance(pev->groundentity);
+				if (pTrain && (pTrain->Classify() == CLASS_VEHICLE))
+					static_cast<CFuncVehicle *>(pTrain)->m_pDriver = NULL;
 				return;
 			}
 			else
@@ -1612,7 +1687,15 @@ void CBasePlayer::PlayerUse(void)
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
 					m_iTrain |= TRAIN_NEW;
-					EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
+					if (pTrain->Classify() == CLASS_VEHICLE)
+					{
+						EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/vehicle_ignition.wav", 0.8, ATTN_NORM);
+						static_cast<CFuncVehicle *>(pTrain)->m_pDriver = this;
+					}
+					else
+					{
+						EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
+					}
 					return;
 				}
 			}
@@ -1726,6 +1809,20 @@ void CBasePlayer::Jump()
 	{
 		pev->velocity = pev->velocity + pev->basevelocity;
 	}
+
+	// JoshA: CS behaviour does this for tracktrain + train as well,
+	// but let's just do this for func_vehicle to avoid breaking existing content.
+	//
+	// If you're standing on a moving train... then add the velocity of the train to yours.
+	if (pevGround &&
+		/*(
+			!strcmp( "func_tracktrain", STRING(pevGround->classname)) ||
+			!strcmp( "func_train", STRING(pevGround->classname))
+		) ||*/
+	    !strcmp("func_vehicle", STRING(pevGround->classname)))
+	{
+		pev->velocity = pev->velocity + pevGround->velocity;
+	}
 }
 
 // This is a glorious hack to find free space when you've crouched into some solid space
@@ -1819,8 +1916,8 @@ void CBasePlayer::UpdateStatusBar()
 	char sbuf1[SBAR_STRING_SIZE];
 
 	memset(newSBarState, 0, sizeof(newSBarState));
-	strcpy(sbuf0, m_SbarString0);
-	strcpy(sbuf1, m_SbarString1);
+	UTIL_strcpy(sbuf0, m_SbarString0);
+	UTIL_strcpy(sbuf1, m_SbarString1);
 
 	// Find an ID Target
 	TraceResult tr;
@@ -1839,7 +1936,7 @@ void CBasePlayer::UpdateStatusBar()
 			if (pEntity->Classify() == CLASS_PLAYER)
 			{
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
-				strcpy(sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%");
+				UTIL_strcpy(sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%");
 
 				// allies and medics get to see the targets health
 				if (g_pGameRules->PlayerRelationship(this, pEntity) == GR_TEAMMATE)
@@ -1869,7 +1966,7 @@ void CBasePlayer::UpdateStatusBar()
 		WRITE_STRING(sbuf0);
 		MESSAGE_END();
 
-		strcpy(m_SbarString0, sbuf0);
+		UTIL_strcpy(m_SbarString0, sbuf0);
 
 		// make sure everything's resent
 		bForceResend = TRUE;
@@ -1882,7 +1979,7 @@ void CBasePlayer::UpdateStatusBar()
 		WRITE_STRING(sbuf1);
 		MESSAGE_END();
 
-		strcpy(m_SbarString1, sbuf1);
+		UTIL_strcpy(m_SbarString1, sbuf1);
 
 		// make sure everything's resent
 		bForceResend = TRUE;
@@ -2001,10 +2098,15 @@ void CBasePlayer::PreThink(void)
 				//ALERT( at_error, "In train mode with no train!\n" );
 				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 				m_iTrain = TRAIN_NEW | TRAIN_OFF;
+				if (pTrain->Classify() == CLASS_VEHICLE)
+					static_cast<CFuncVehicle *>(pTrain)->m_pDriver = NULL;
 				return;
 			}
 		}
-		else if (!FBitSet(pev->flags, FL_ONGROUND) || FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) || (pev->button & (IN_MOVELEFT | IN_MOVERIGHT)))
+		else if (
+			!FBitSet(pev->flags, FL_ONGROUND) ||
+			FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) ||
+			((pev->button & (IN_MOVELEFT | IN_MOVERIGHT)) && pTrain->Classify() != CLASS_VEHICLE))
 		{
 			// Turn off the train if you jump, strafe, or the train controls go dead
 			m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
@@ -2014,15 +2116,42 @@ void CBasePlayer::PreThink(void)
 
 		pev->velocity = g_vecZero;
 		vel = 0;
-		if (m_afButtonPressed & IN_FORWARD)
+
+		if (pTrain->Classify() == CLASS_VEHICLE)
 		{
-			vel = 1;
-			pTrain->Use(this, this, USE_SET, (float)vel);
+			if (pev->button & IN_FORWARD)
+			{
+				vel = 1;
+				pTrain->Use(this, this, USE_SET, (float)vel);
+			}
+			if (pev->button & IN_BACK)
+			{
+				vel = -1;
+				pTrain->Use(this, this, USE_SET, (float)vel);
+			}
+			if (pev->button & IN_MOVELEFT)
+			{
+				vel = 20;
+				pTrain->Use(this, this, USE_SET, (float)vel);
+			}
+			if (pev->button & IN_MOVERIGHT)
+			{
+				vel = 30;
+				pTrain->Use(this, this, USE_SET, (float)vel);
+			}
 		}
-		else if (m_afButtonPressed & IN_BACK)
+		else
 		{
-			vel = -1;
-			pTrain->Use(this, this, USE_SET, (float)vel);
+			if (m_afButtonPressed & IN_FORWARD)
+			{
+				vel = 1;
+				pTrain->Use(this, this, USE_SET, (float)vel);
+			}
+			else if (m_afButtonPressed & IN_BACK)
+			{
+				vel = -1;
+				pTrain->Use(this, this, USE_SET, (float)vel);
+			}
 		}
 
 		if (vel)
@@ -2381,7 +2510,7 @@ void CBasePlayer::CheckSuitUpdate()
 				// play sentence number
 
 				char sentence[CBSENTENCENAME_MAX + 1];
-				strcpy(sentence, "!");
+				UTIL_strcpy(sentence, "!");
 				strcat(sentence, gszallsentencenames[isentence]);
 				EMIT_SOUND_SUIT(ENT(pev), sentence);
 			}
@@ -2937,6 +3066,7 @@ ReturnSpot:
 
 void CBasePlayer::Spawn(void)
 {
+	m_flStartCharge = gpGlobals->time;
 	m_bConnected = TRUE;
 
 	pev->classname = MAKE_STRING("player");
@@ -3160,12 +3290,21 @@ int CBasePlayer::Restore(CRestore &restore)
 
 	RenewItems();
 
+	// Resync ammo data so you can reload - Solokiller
+	TabulateAmmo();
+
 #if defined(CLIENT_WEAPONS)
 	// HACK:	This variable is saved/restored in CBaseMonster as a time variable, but we're using it
 	//			as just a counter.  Ideally, this needs its own variable that's saved as a plain float.
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
+
+	// Force a flashlight update for the HUD
+	if (m_flFlashLightTime == 0)
+	{
+		m_flFlashLightTime = 1;
+	}
 
 	return status;
 }
@@ -3851,6 +3990,7 @@ int CBasePlayer::RemovePlayerItem(CBasePlayerItem *pItem)
 		pev->viewmodel = 0;
 		pev->weaponmodel = 0;
 	}
+
 	if (m_pLastItem == pItem)
 		m_pLastItem = NULL;
 
@@ -4403,6 +4543,22 @@ void CBasePlayer ::UpdateClientData(void)
 	}
 }
 
+void CBasePlayer ::SetPrefsFromUserinfo(char *infobuffer)
+{
+	const char *pszKeyVal;
+
+	// Set autoswitch preference
+	pszKeyVal = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
+	if (FStrEq(pszKeyVal, ""))
+	{
+		m_iAutoWepSwitch = 1;
+	}
+	else
+	{
+		m_iAutoWepSwitch = atoi(pszKeyVal);
+	}
+}
+
 //=========================================================
 // FBecomeProne - Overridden for the player to set the proper
 // physics flags when a barnacle grabs player.
@@ -4534,7 +4690,7 @@ Vector CBasePlayer ::GetAutoaimVector(float flDelta)
 	// m_vecAutoAim = m_vecAutoAim * 0.99;
 
 	// Don't send across network if sv_aim is 0
-	if (g_psv_aim->value != 0)
+	if (g_psv_aim->value != 0 && g_psv_allow_autoaim->value != 0)
 	{
 		if (m_vecAutoAim.x != m_lastx || m_vecAutoAim.y != m_lasty)
 		{
@@ -4560,7 +4716,7 @@ Vector CBasePlayer ::AutoaimDeflection(Vector &vecSrc, float flDist, float flDel
 	edict_t *bestent;
 	TraceResult tr;
 
-	if (g_psv_aim->value == 0)
+	if (g_psv_aim->value == 0 && g_psv_allow_autoaim->value != 0)
 	{
 		m_fOnTarget = FALSE;
 		return g_vecZero;
@@ -4836,6 +4992,33 @@ BOOL CBasePlayer::HasNamedPlayerItem(const char *pszItemName)
 			{
 				return TRUE;
 			}
+			pItem = pItem->m_pNext;
+		}
+	}
+
+	return FALSE;
+}
+
+//=========================================================
+// HasPlayerItemFromID
+// Just compare IDs, rather than classnames
+//=========================================================
+BOOL CBasePlayer::HasPlayerItemFromID(int nID)
+{
+	CBasePlayerItem *pItem;
+	int i;
+
+	for (i = 0; i < MAX_ITEM_TYPES; i++)
+	{
+		pItem = m_rgpPlayerItems[i];
+
+		while (pItem)
+		{
+			if (pItem->m_iId == nID)
+			{
+				return TRUE;
+			}
+
 			pItem = pItem->m_pNext;
 		}
 	}

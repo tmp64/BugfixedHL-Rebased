@@ -646,7 +646,7 @@ int CHudAmmo::MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf)
 
 	WEAPON Weapon;
 
-	strcpy(Weapon.szName, READ_STRING());
+	V_strcpy_safe(Weapon.szName, READ_STRING());
 	Weapon.iAmmoType = (int)READ_CHAR();
 
 	Weapon.iMax1 = READ_BYTE();
@@ -663,6 +663,27 @@ int CHudAmmo::MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf)
 	Weapon.iId = READ_CHAR();
 	Weapon.iFlags = READ_BYTE();
 	Weapon.iClip = 0;
+
+	if (Weapon.iId < 0 || Weapon.iId >= MAX_WEAPONS)
+		return 0;
+
+	if (Weapon.iSlot < 0 || Weapon.iSlot >= MAX_WEAPON_SLOTS + 1)
+		return 0;
+
+	if (Weapon.iSlotPos < 0 || Weapon.iSlotPos >= MAX_WEAPON_POSITIONS + 1)
+		return 0;
+
+	if (Weapon.iAmmoType < -1 || Weapon.iAmmoType >= MAX_AMMO_TYPES)
+		return 0;
+
+	if (Weapon.iAmmo2Type < -1 || Weapon.iAmmo2Type >= MAX_AMMO_TYPES)
+		return 0;
+
+	if (Weapon.iAmmoType >= 0 && Weapon.iMax1 == 0)
+		return 0;
+
+	if (Weapon.iAmmo2Type >= 0 && Weapon.iMax2 == 0)
+		return 0;
 
 	gWR.AddWeapon(&Weapon);
 
@@ -862,7 +883,9 @@ void CHudAmmo::Draw(float flTime)
 	AmmoWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
 
 	if (!hud_dim.GetBool())
+	{
 		a = MIN_ALPHA + ALPHA_AMMO_MAX;
+	}
 	else if (m_fFade > 0)
 	{
 		// Fade the ammo number back to dim
@@ -872,7 +895,9 @@ void CHudAmmo::Draw(float flTime)
 		a = MIN_ALPHA + (m_fFade / FADE_TIME) * ALPHA_AMMO_FLASH;
 	}
 	else
+	{
 		a = MIN_ALPHA;
+	}
 
 	float alphaDim = a;
 
@@ -897,6 +922,7 @@ void CHudAmmo::Draw(float flTime)
 
 	// Does this weapon have a clip?
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+	y += (int)(gHUD.m_iFontHeight * 0.2f);
 
 	// Does weapon have any ammo at all?
 	if (m_pWeapon->iAmmoType > 0)
@@ -1262,7 +1288,7 @@ iCount is the number of items in the pList
 client_sprite_t *GetSpriteFromList(client_sprite_t *pList, const char *pszNameStart, int iRes, int iCount)
 {
 	if (!pList || iCount <= 0)
-		return NULL;
+		return nullptr;
 
 	int len = strlen(pszNameStart);
 	client_sprite_t *p = pList;

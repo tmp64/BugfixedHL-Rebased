@@ -401,7 +401,7 @@ extern void UTIL_LogPrintf(char *fmt, ...);
 // Sorta like FInViewCone, but for nonmonsters.
 extern float UTIL_DotPoints(const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir);
 
-extern void UTIL_StripToken(const char *pKey, char *pDest); // for redundant keynames
+extern void UTIL_StripToken(const char *pKey, char *pDest, int nLen); // for redundant keynames
 
 // Misc functions
 extern void SetMovedir(entvars_t *pev);
@@ -519,8 +519,9 @@ extern DLL_GLOBAL int g_Language;
 
 // sentence groups
 #define CBSENTENCENAME_MAX  16
-#define CVOXFILESENTENCEMAX 1536 // max number of sentences in game. NOTE: this must match \
-	// CVOXFILESENTENCEMAX in engine\sound.h!!!
+
+//! max number of sentences in game. NOTE: this must match CVOXFILESENTENCEMAX in engine\sound.h!!!
+#define CVOXFILESENTENCEMAX 2048
 
 extern char gszallsentencenames[CVOXFILESENTENCEMAX][CBSENTENCENAME_MAX];
 extern int gcallsentences;
@@ -601,5 +602,15 @@ int UTIL_SharedRandomLong(unsigned int seed, int low, int high);
 float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
 
 float UTIL_WeaponTimeBase(void);
+
+//! Safer version of strncpy that null-terminates.
+char *UTIL_strncpy(char *dst, const char *src, int len_dst);
+
+//! strcpy that automatically deduces the destination array size.
+template <size_t maxLenInChars>
+inline void UTIL_strcpy(OUT_Z_ARRAY char (&pDest)[maxLenInChars], const char *pSrc)
+{
+	UTIL_strncpy(pDest, pSrc, (int)maxLenInChars);
+}
 
 #endif

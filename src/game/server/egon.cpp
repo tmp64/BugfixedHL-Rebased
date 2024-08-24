@@ -35,6 +35,10 @@
 #define EGON_SWITCH_NARROW_TIME 0.75 // Time it takes to switch fire modes
 #define EGON_SWITCH_WIDE_TIME   1.5
 
+#ifndef CLIENT_DLL
+extern bool IsBustingGame();
+#endif
+
 enum egon_e
 {
 	EGON_IDLE1 = 0,
@@ -99,6 +103,7 @@ int CEgon::AddToPlayer(CBasePlayer *pPlayer)
 		CBasePlayerWeapon::SendWeaponPickup(pPlayer);
 		return TRUE;
 	}
+
 	return FALSE;
 }
 
@@ -150,6 +155,11 @@ BOOL CEgon::HasAmmo(void)
 
 void CEgon::UseAmmo(int count)
 {
+#ifndef CLIENT_DLL
+	if (IsBustingGame())
+		return;
+#endif
+
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= count)
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= count;
 	else
@@ -429,7 +439,9 @@ void CEgon::CreateEffect(void)
 	m_pSprite->pev->scale = 1.0;
 	m_pSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation);
 	m_pSprite->pev->spawnflags |= SF_SPRITE_TEMPORARY;
-	m_pSprite->pev->flags |= FL_SKIPLOCALHOST;
+	// Josh: This sprite is not predicted on the client, so was missing
+	// for many years after it got broken in an update.
+	//m_pSprite->pev->flags |= FL_SKIPLOCALHOST;
 	m_pSprite->pev->owner = m_pPlayer->edict();
 
 	if (m_fireMode == FIRE_WIDE)
@@ -501,6 +513,18 @@ void CEgon::WeaponIdle(void)
 
 	SendWeaponAnim(iAnim);
 	m_deployed = TRUE;
+}
+
+BOOL CEgon::CanHolster(void)
+{
+#ifndef CLIENT_DLL
+	if (IsBustingGame())
+	{
+		return FALSE;
+	}
+#endif
+
+	return TRUE;
 }
 
 void CEgon::EndAttack(void)

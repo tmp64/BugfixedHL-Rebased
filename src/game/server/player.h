@@ -181,7 +181,7 @@ public:
 	Vector m_vecAutoAim;
 	BOOL m_fOnTarget;
 	int m_iDeaths;
-	int m_iRespawnFrames; // used in PlayerDeathThink() to make sure players can always respawn
+	float m_flRespawnTimer; // used in PlayerDeathThink() to make sure players can always respawn
 	float m_flDeathAnimationStartTime; // used in PlayerDeathThink() to make sure players can always respawn
 
 	int m_lastx, m_lasty; // These are the previous update's crosshair angles, DON"T SAVE/RESTORE
@@ -226,6 +226,8 @@ public:
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
 	virtual void UpdateClientData(void);
 
+	void SetPrefsFromUserinfo(char *infobuffer);
+
 	static TYPEDESCRIPTION m_playerSaveData[];
 
 	// Player is moved across the transition by other means
@@ -265,6 +267,7 @@ public:
 	void DropPlayerItem(char *pszItemName);
 	BOOL HasPlayerItem(CBasePlayerItem *pCheckItem);
 	BOOL HasNamedPlayerItem(const char *pszItemName);
+	BOOL HasPlayerItemFromID(int nID);
 	BOOL HasWeapons(void); // do I have ANY weapons?
 	void SelectPrevItem(int iItem);
 	void SelectNextItem(int iItem);
@@ -323,6 +326,12 @@ public:
 
 	int m_iChatFlood;
 	float m_flNextChatTime;
+	int m_iAutoWepSwitch;
+
+	//-----------------------------------------------------
+	// BEGIN BUGFIXED HL FIELDS
+	//-----------------------------------------------------
+
 	float m_flNextSpectatorCommand;
 	float m_flNextFullupdate[2];
 
@@ -339,8 +348,6 @@ public:
 	}
 
 	Vector m_vecLastViewAngles;
-
-	int m_iAutoWeaponSwitch;
 
 	BOOL m_bInWelcomeCam;
 	void StartWelcomeCam(void);

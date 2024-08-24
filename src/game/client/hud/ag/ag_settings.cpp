@@ -104,7 +104,7 @@ void AgHudSettings::Draw(float fTime)
 	}
 	if (g_iMatch)
 	{
-		strcpy(szText, "Match is on!");
+		V_strcpy_safe(szText, "Match is on!");
 		AgDrawHudStringCentered(ScreenWidth / 2, gHUD.m_scrinfo.iCharHeight * 2, ScreenWidth, szText, r, g, b);
 	}
 
@@ -116,15 +116,15 @@ int AgHudSettings::MsgFunc_Settings(const char *pszName, int iSize, void *pbuf)
 	BEGIN_READ(pbuf, iSize);
 
 	g_iMatch = READ_BYTE();
-	strcpy(m_szGamemode, READ_STRING());
+	V_strcpy_safe(m_szGamemode, READ_STRING());
 	m_iTimeLimit = READ_BYTE();
 	m_iFragLimit = READ_BYTE();
 	m_iFriendlyFire = READ_BYTE();
 	m_iWeaponstay = READ_BYTE();
-	strcpy(m_szVersion, READ_STRING());
-	strcpy(m_szWallgauss, READ_STRING());
-	strcpy(m_szHeadShot, READ_STRING());
-	strcpy(m_szBlastRadius, READ_STRING());
+	V_strcpy_safe(m_szVersion, READ_STRING());
+	V_strcpy_safe(m_szWallgauss, READ_STRING());
+	V_strcpy_safe(m_szHeadShot, READ_STRING());
+	V_strcpy_safe(m_szBlastRadius, READ_STRING());
 
 	if (strcmp(m_szWallgauss, "1") == 0)
 		m_szWallgauss[0] = '\0';

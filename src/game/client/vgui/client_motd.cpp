@@ -25,8 +25,8 @@ CClientMOTD::CClientMOTD()
     , m_iScoreBoardKey(0)
 {
 	//Sanity check.
-	Assert(ARRAYSIZE(m_szTempFileName) > strlen("motd_temp.html"));
-	strcpy(m_szTempFileName, "motd_temp.html");
+	Assert(std::size(m_szTempFileName) > strlen("motd_temp.html"));
+	V_strcpy_safe(m_szTempFileName, "motd_temp.html");
 
 	SetTitle("", true);
 	SetScheme("ClientScheme");
@@ -174,7 +174,7 @@ void CClientMOTD::ActivateHtml(const char *title, const char *msg)
 				g_pFullFileSystem->Write(msg, strlen(msg), hFile);
 				g_pFullFileSystem->Close(hFile);
 
-				strcpy(localURL, "file:///");
+				V_strcpy_safe(localURL, "file:///");
 
 				const size_t uiURLLength = strlen(localURL);
 				g_pFullFileSystem->GetLocalPath(m_szTempFileName, localURL + uiURLLength, sizeof(localURL) - uiURLLength);

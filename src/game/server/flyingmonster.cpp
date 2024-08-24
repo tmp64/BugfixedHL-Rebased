@@ -82,12 +82,17 @@ void CFlyingMonster ::Stop(void)
 	m_vecTravel = g_vecZero;
 }
 
-float CFlyingMonster ::ChangeYaw(int speed)
+float CFlyingMonster ::ChangeYaw(int yawSpeed)
 {
 	if (pev->movetype == MOVETYPE_FLY)
 	{
 		float diff = FlYawDiff();
 		float target = 0;
+
+		if (m_flLastZYawTime == 0.0f)
+		{
+			m_flLastZYawTime = gpGlobals->time - gpGlobals->frametime;
+		}
 
 		if (m_IdealActivity != GetStoppedActivity())
 		{
@@ -96,9 +101,19 @@ float CFlyingMonster ::ChangeYaw(int speed)
 			else if (diff > 20)
 				target = -90;
 		}
-		pev->angles.z = UTIL_Approach(target, pev->angles.z, 220.0 * gpGlobals->frametime);
+		
+		float delta = gpGlobals->time - m_flLastZYawTime;
+		m_flLastZYawTime = gpGlobals->time;
+
+		// Clamp delta like the engine does with frametime
+		if (delta > 0.25f)
+			delta = 0.25f;
+
+		float speed = 220.f * delta;
+		pev->angles.z = UTIL_Approach(target, pev->angles.z, speed);
 	}
-	return CBaseMonster::ChangeYaw(speed);
+
+	return CBaseMonster::ChangeYaw(yawSpeed);
 }
 
 void CFlyingMonster ::Killed(entvars_t *pevAttacker, int iGib)

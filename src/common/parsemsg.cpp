@@ -264,11 +264,22 @@ void BufferWriter::WriteString(const char *str)
 	if (len > m_remaining)
 	{
 		m_overflow = true;
-		str = "";
-		len = 1;
+
+		if (m_remaining >= 1)
+		{
+			len = 1;
+			m_buffer[0] = '\0';
+		}
+		else
+		{
+			len = 0;
+		}
+	}
+	else
+	{
+		memcpy(m_buffer, str, len);
 	}
 
-	strcpy((char *)m_buffer, str);
 	m_remaining -= len;
 	m_buffer += len;
 }

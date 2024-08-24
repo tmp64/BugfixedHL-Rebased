@@ -254,8 +254,9 @@ int KB_ConvertString(char *in, char **ppout)
 
 	*pOut = '\0';
 
-	pOut = (char *)malloc(strlen(sz) + 1);
-	strcpy(pOut, sz);
+	int len = strlen(sz);
+	pOut = (char *)malloc(len + 1);
+	memcpy(pOut, sz, len + 1);
 	*ppout = pOut;
 
 	return 1;
@@ -304,7 +305,7 @@ void KB_Add(const char *name, kbutton_t *pkb)
 	p = (kblist_t *)malloc(sizeof(kblist_t));
 	memset(p, 0, sizeof(*p));
 
-	strcpy(p->name, name);
+	V_strcpy_safe(p->name, name);
 	p->pkey = pkb;
 
 	p->next = g_kbkeys;

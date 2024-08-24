@@ -59,7 +59,7 @@ CHalfLifeTeamplay ::CHalfLifeTeamplay()
 
 	// Copy all of the teams from the teamlist
 	// make a copy because strtok is destructive
-	strcpy(temp, m_szTeamList);
+	UTIL_strcpy(temp, m_szTeamList);
 	// loop through all teams
 	num_teams = 0;
 	pName = strtok(temp, ";");

@@ -232,7 +232,7 @@ void CopyToBodyQue(entvars_t *pev)
 	if (mp_hidecorpses.GetBool())
 		return; // Don't spawn the corpse
 
-	if (pev->effects & EF_NODRAW)
+	if (pev->effects & EF_NODRAW || pev->modelindex == 0)
 		return;
 
 	entvars_t *pevHead = VARS(g_pBodyQueueHead);
@@ -318,8 +318,8 @@ void CGlobalState ::EntityAdd(string_t globalname, string_t mapName, GLOBALESTAT
 	ASSERT(pNewEntity != NULL);
 	pNewEntity->pNext = m_pList;
 	m_pList = pNewEntity;
-	strcpy(pNewEntity->name, STRING(globalname));
-	strcpy(pNewEntity->levelName, STRING(mapName));
+	UTIL_strcpy(pNewEntity->name, STRING(globalname));
+	UTIL_strcpy(pNewEntity->levelName, STRING(mapName));
 	pNewEntity->state = state;
 	m_listCount++;
 }
@@ -406,7 +406,7 @@ void CGlobalState::EntityUpdate(string_t globalname, string_t mapname)
 	globalentity_t *pEnt = Find(globalname);
 
 	if (pEnt)
-		strcpy(pEnt->levelName, STRING(mapname));
+		UTIL_strcpy(pEnt->levelName, STRING(mapname));
 }
 
 void CGlobalState::ClearStates(void)

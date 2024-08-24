@@ -21,6 +21,11 @@
 // Must be provided by user of this code
 extern enginefuncs_t g_engfuncs;
 
+#ifdef SERVER_EXECUTE
+// Windows - winspool.h
+#undef SERVER_EXECUTE
+#endif
+
 // The actual engine callbacks
 #define GETPLAYERUSERID      (*g_engfuncs.pfnGetPlayerUserId)
 #define PRECACHE_MODEL       (*g_engfuncs.pfnPrecacheModel)

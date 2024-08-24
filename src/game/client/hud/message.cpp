@@ -513,7 +513,7 @@ void CHudMessage::MessageAdd(const char *pName, float time)
 			g_pCustomMessage.holdtime = 5;
 			g_pCustomMessage.pName = g_pCustomName;
 			g_pCustomMessage.pMessage = g_pCustomText;
-			strcpy(g_pCustomText, pName);
+			V_strcpy_safe(g_pCustomText, pName);
 
 			tempMessage = &g_pCustomMessage;
 		}

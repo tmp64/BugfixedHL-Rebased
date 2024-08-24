@@ -49,7 +49,7 @@ void AgHudNextmap::Draw(float fTime)
 int AgHudNextmap::MsgFunc_Nextmap(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
-	strcpy(m_szNextmap, READ_STRING());
+	V_strcpy_safe(m_szNextmap, READ_STRING());
 
 	CHudTimer::Get()->SetNextmap(m_szNextmap);
 

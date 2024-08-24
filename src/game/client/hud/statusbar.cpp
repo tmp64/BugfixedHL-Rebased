@@ -152,7 +152,7 @@ void CHudStatusBar::ParseStatusString(int line_num)
 							}
 							else
 							{
-								strcpy(szRepString, "******");
+								V_strcpy_safe(szRepString, "******");
 							}
 
 							break;

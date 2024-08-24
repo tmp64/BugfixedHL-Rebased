@@ -101,22 +101,18 @@ CVoiceStatus::CVoiceStatus()
 	m_bTalking = m_bServerAcked = false;
 
 	m_bServerModEnable = -1;
-
-	m_pchGameDir = NULL;
 }
 
 CVoiceStatus::~CVoiceStatus()
 {
 	g_pInternalVoiceStatus = NULL;
 
-	if (m_pchGameDir)
+	if (!m_GameDir.empty())
 	{
 		if (m_bBanMgrInitialized)
 		{
-			m_BanMgr.SaveState(m_pchGameDir);
+			m_BanMgr.SaveState(m_GameDir.c_str());
 		}
-
-		delete m_pchGameDir;
 	}
 }
 
@@ -145,9 +141,7 @@ void CVoiceStatus::Init()
 	});
 
 	// Cache the game directory for use when we shut down
-	const char *pchGameDirT = gEngfuncs.pfnGetGameDirectory();
-	m_pchGameDir = new char[strlen(pchGameDirT) + 1];
-	strcpy(m_pchGameDir, pchGameDirT);
+	m_GameDir = gEngfuncs.pfnGetGameDirectory();
 }
 
 void CVoiceStatus::VidInit()

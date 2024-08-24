@@ -167,7 +167,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	int victim = READ_BYTE();
 
 	char killedwith[MAX_WEAPON_NAME];
-	strcpy(killedwith, "d_");
+	V_strcpy_safe(killedwith, "d_");
 	strncat(killedwith, READ_STRING(), sizeof(killedwith) - 3);
 	killedwith[sizeof(killedwith) - 1] = 0;
 
@@ -254,7 +254,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 		rgDeathNoticeList[i].iNonPlayerKill = TRUE;
 
 		// Store the object's name in the Victim slot (skip the d_ bit)
-		strcpy(rgDeathNoticeList[i].szVictim, killedwith + 2);
+		V_strcpy_safe(rgDeathNoticeList[i].szVictim, killedwith + 2);
 	}
 	else
 	{
@@ -326,9 +326,9 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 
 			// replace the code names with the 'real' names
 			if (!strcmp(killedwith + 2, "egon"))
-				strcpy(killedwith, "d_gluon gun");
+				V_strcpy_safe(killedwith, "d_gluon gun");
 			if (!strcmp(killedwith + 2, "gauss"))
-				strcpy(killedwith, "d_tau cannon");
+				V_strcpy_safe(killedwith, "d_tau cannon");
 
 			ConsolePrint(killedwith + 2); // skip over the "d_" part
 		}

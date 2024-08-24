@@ -1,9 +1,7 @@
 FROM bhl-build
 
-# FIXME 2023-11-26: CMake 3.26.4 (bundled with CLion) doesn't support 1.3
-# https://gitlab.kitware.com/cmake/cmake/-/issues/25200
-ENV BUILD_DATE="2023-11-26.1"
-ENV ZLIB_VERSION="1.2.13"
+ENV BUILD_DATE="2024-08-24.1"
+ENV ZLIB_VERSION="1.3.1"
 
 # Download and extract
 WORKDIR /build/zlib

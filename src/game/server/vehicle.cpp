@@ -3,8 +3,6 @@
 #include "cbase.h"
 #include "trains.h"
 #include "saverestore.h"
-#include "weapons.h"
-#include "minmax.h"
 
 static float Fix2(float angle)
 {

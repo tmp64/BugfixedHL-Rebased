@@ -132,7 +132,7 @@ ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
 ConVar hud_scale("hud_scale", "0", FCVAR_BHL_ARCHIVE, "HUD Scale: Auto, 50%, 100%, 200%, 400% (restart required)");
 ConVar hud_capturemouse("hud_capturemouse", "1", FCVAR_ARCHIVE);
 ConVar hud_classautokill("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Whether or not to suicide immediately on TF class switch");
-ConVar cl_autowepswitch("cl_autowepswitch", "1", FCVAR_BHL_ARCHIVE | FCVAR_USERINFO, "Controls autoswitching to best weapon on pickup\n  0 - never, 1 - always, 2 - unless firing");
+ConVar cl_autowepswitch("cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_BHL_ARCHIVE | FCVAR_USERINFO, "Controls autoswitching to best weapon on pickup\n  0 - never, 1 - always, 2 - unless firing");
 ConVar cl_righthand("cl_righthand", "0", FCVAR_BHL_ARCHIVE, "If enabled, activates the left-handed mode");
 ConVar cl_viewmodel_fov("cl_viewmodel_fov", "0", FCVAR_BHL_ARCHIVE, "Sets the field-of-view for the viewmodel");
 ConVar showtriggers("showtriggers", "0", 0, "Shows trigger brushes");

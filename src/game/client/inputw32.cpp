@@ -38,7 +38,7 @@
 enum class MouseMode
 {
 	Auto = -1,
-	Engine = 0,
+	WindowsCursor = 0,
 	DirectInput = 1,
 	RawInput = 2,
 };
@@ -78,10 +78,10 @@ cvar_t *sensitivity;
 static cvar_t *m_rawinput = nullptr;
 ConVar m_input("m_input", "-1", FCVAR_BHL_ARCHIVE,
     "Mouse input mode\n"
-    "- 0: Engine\n"
+    "- 0: Windows cursor position (Windows-only)\n"
     "- 1: DirectInput (Windows-only)\n"
     "- 2: Raw Input (Steam-only)");
-static MouseMode m_mode = MouseMode::Engine;
+static MouseMode m_mode = MouseMode::Auto;
 
 // Custom mouse acceleration (0 disable, 1 to enable, 2 enable with separate yaw/pitch rescale)
 static cvar_t *m_customaccel;
@@ -198,7 +198,7 @@ void IN_UpdateMouseMode()
 {
 	MouseMode newMode = (MouseMode)clamp(m_input.GetInt(), -1, 2);
 
-	if (newMode != m_mode)
+	if (newMode == MouseMode::Auto || newMode != m_mode)
 	{
 		if (newMode == MouseMode::Auto)
 		{
@@ -212,9 +212,13 @@ void IN_UpdateMouseMode()
 				// Prefer raw input on SteamPipe engine
 				newMode = MouseMode::RawInput;
 			}
+			else if (IsWindows())
+			{
+				newMode = MouseMode::WindowsCursor;
+			}
 			else
 			{
-				newMode = MouseMode::Engine;
+				HUD_FatalError("No mouse mode is supported. This can't happen.");
 			}
 		}
 
@@ -228,9 +232,9 @@ void IN_UpdateMouseMode()
 
 		switch (newMode)
 		{
-		case MouseMode::Engine:
+		case MouseMode::WindowsCursor:
 		{
-			ConPrintf("Set mouse input mode to engine input.\n");
+			ConPrintf("Set mouse input mode to Windows Cursor.\n");
 			if (rawinput.IsValid())
 				rawinput.SetValue(0);
 			break;
@@ -264,11 +268,15 @@ void IN_UpdateMouseMode()
 				ConPrintf("Set mouse input mode to Raw Input.\n");
 				rawinput.SetValue(1);
 			}
-			else
+			else if (IsWindows())
 			{
 				ConPrintf(ConColor::Cyan, "Raw Input is not supported on your client.\n");
 				ConPrintf(ConColor::Cyan, "Setting to DirectInput instead.\n");
 				newMode = MouseMode::DirectInput;
+			}
+			else
+			{
+				HUD_FatalError("Raw input is not supported and not Windows. This can't happen.");
 			}
 
 			break;
@@ -288,6 +296,7 @@ void IN_UpdateMouseMode()
 #ifndef PLATFORM_WINDOWS
 	// DirectInput is Windows-only
 	Assert(m_mode != MouseMode::DirectInput);
+	Assert(m_mode != MouseMode::WindowsCursor);
 #endif
 }
 
@@ -308,18 +317,33 @@ void IN_RunFrame()
 
 	if (rawinput.IsValid() && GetSDL()->IsGood())
 	{
-		if (rawinput.GetBool() && m_mode != MouseMode::RawInput)
+		if (rawinput.GetBool())
 		{
-			m_input.SetValue((int)MouseMode::RawInput);
-			IN_UpdateMouseMode();
+			if (m_mode != MouseMode::RawInput)
+			{
+				m_input.SetValue((int)MouseMode::RawInput);
+				IN_UpdateMouseMode();
 
-			if (IsWindows())
-				ConPrintf(ConColor::Cyan, "NOTE: It is recommended to use `m_input 1` on Windows.\n");
+				if (IsWindows())
+					ConPrintf(ConColor::Cyan, "NOTE: It is recommended to use `m_input 1` on Windows.\n");
+			}
 		}
-		else if (!rawinput.GetBool() && m_mode == MouseMode::RawInput)
+		else
 		{
-			m_input.SetValue((int)MouseMode::Engine);
-			IN_UpdateMouseMode();
+			if (IsWindows())
+			{
+				if (m_mode == MouseMode::RawInput)
+				{
+					m_input.SetValue((int)MouseMode::WindowsCursor);
+					IN_UpdateMouseMode();
+				}
+			}
+			else
+			{
+				m_input.SetValue((int)MouseMode::RawInput);
+				IN_UpdateMouseMode();
+				ConPrintf(ConColor::Cyan, "Linux only supports Raw Input mode.\n");
+			}
 		}
 	}
 }
@@ -747,10 +771,11 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 	//      move the camera, or if the mouse cursor is visible or if we're in intermission
 	if (!iMouseInUse && !gHUD.m_iIntermission && !g_pVGuiSurface->IsCursorVisible())
 	{
-		int deltaX, deltaY;
-#ifdef _WIN32
-		if (m_mode == MouseMode::Engine)
+		int deltaX = 0, deltaY = 0;
+
+		if (m_mode == MouseMode::WindowsCursor)
 		{
+#ifdef _WIN32
 			if (m_bMouseThread)
 			{
 				ThreadInterlockedExchange(&current_pos.x, s_mouseDeltaX);
@@ -762,9 +787,13 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 			{
 				GetCursorPos(&current_pos);
 			}
+#else
+			Assert(!("MouseMode::WindowsCursor is not supported by platform"));
+#endif
 		}
 		else if (m_mode == MouseMode::DirectInput)
 		{
+#ifdef _WIN32
 			if (dinput_mouse_acquired)
 			{
 				HRESULT hr = dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&dinput_mousestate);
@@ -773,9 +802,11 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 				else if (hr == DI_BUFFEROVERFLOW)
 					DINPUT_SetBufferSize();
 			}
+#else
+			Assert(!("MouseMode::DirectInput is not supported by platform"));
+#endif
 		}
 		else if (m_mode == MouseMode::RawInput)
-#endif
 		{
 			IN_SetRelativeMouseMode(true);
 			GetSDL()->GetRelativeMouseState(&deltaX, &deltaY);
@@ -783,9 +814,9 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 			current_pos.y = deltaY;
 		}
 
-#ifdef _WIN32
-		if (m_mode == MouseMode::Engine)
+		if (m_mode == MouseMode::WindowsCursor)
 		{
+#ifdef _WIN32
 			if (m_bMouseThread)
 			{
 				mx = current_pos.x;
@@ -796,17 +827,23 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 				mx = current_pos.x - gEngfuncs.GetWindowCenterX() + mx_accum;
 				my = current_pos.y - gEngfuncs.GetWindowCenterY() + my_accum;
 			}
+#else
+			Assert(!("MouseMode::WindowsCursor is not supported by platform"));
+#endif
 		}
 		else if (m_mode == MouseMode::DirectInput)
 		{
+#ifdef _WIN32
 			if (dinput_mouse_acquired)
 			{
 				mx = dinput_mousestate.lX + mx_accum;
 				my = dinput_mousestate.lY + my_accum;
 			}
+#else
+			Assert(!("MouseMode::DirectInput is not supported by platform"));
+#endif
 		}
 		else if (m_mode == MouseMode::RawInput)
-#endif
 		{
 			mx = deltaX + mx_accum;
 			my = deltaY + my_accum;
@@ -866,17 +903,20 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 	}
 	else
 	{
-#ifdef _WIN32
-		if (m_mode == MouseMode::DirectInput && dinput_mouse_acquired)
+		if (m_mode == MouseMode::DirectInput)
 		{
-			// Discard any info when mouse is not active
-			DIMOUSESTATE state;
-			dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&state);
+#ifdef _WIN32
+			if (dinput_mouse_acquired)
+			{
+				// Discard any info when mouse is not active
+				DIMOUSESTATE state;
+				dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&state);
+			}
+#endif
 		}
 		else if (m_mode == MouseMode::RawInput)
-#endif
 		{
-			// Disable realative mouse input
+			// Disable relative mouse input
 			IN_SetRelativeMouseMode(false);
 		}
 	}
@@ -908,9 +948,9 @@ void CL_DLLEXPORT IN_Accumulate(void)
 	{
 		if (mouseactive)
 		{
-#ifdef _WIN32
-			if (m_mode == MouseMode::Engine)
+			if (m_mode == MouseMode::WindowsCursor)
 			{
+#ifdef _WIN32
 				if (!m_bMouseThread)
 				{
 					GetCursorPos(&current_pos);
@@ -918,9 +958,13 @@ void CL_DLLEXPORT IN_Accumulate(void)
 					mx_accum += current_pos.x - gEngfuncs.GetWindowCenterX();
 					my_accum += current_pos.y - gEngfuncs.GetWindowCenterY();
 				}
+#else
+				Assert(!("MouseMode::WindowsCursor is not supported by platform"));
+#endif
 			}
 			else if (m_mode == MouseMode::DirectInput)
 			{
+#ifdef _WIN32
 				if (dinput_mouse_acquired)
 				{
 					HRESULT hr = dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&dinput_mousestate);
@@ -933,9 +977,11 @@ void CL_DLLEXPORT IN_Accumulate(void)
 					mx_accum += dinput_mousestate.lX;
 					my_accum += dinput_mousestate.lY;
 				}
+#else
+				Assert(!("MouseMode::DirectInput is not supported by platform"));
+#endif
 			}
 			else if (m_mode == MouseMode::RawInput)
-#endif
 			{
 				int deltaX, deltaY;
 				GetSDL()->GetRelativeMouseState(&deltaX, &deltaY);

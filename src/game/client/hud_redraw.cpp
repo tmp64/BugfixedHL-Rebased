@@ -34,8 +34,8 @@ int grgLogoFrame[MAX_LOGO_FRAMES] = {
 };
 
 float HUD_GetFOV(void);
+float IN_GetMouseSensitivity();
 
-extern cvar_t *sensitivity;
 extern ConVar zoom_sensitivity_ratio;
 
 ConVar hud_colortext("hud_colortext", "1", FCVAR_BHL_ARCHIVE);
@@ -82,7 +82,7 @@ void CHud::Think(void)
 	else
 	{
 		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)default_fov.GetInt()) * zoom_sensitivity_ratio.GetFloat();
+		m_flMouseSensitivity = IN_GetMouseSensitivity() * ((float)newfov / (float)default_fov.GetInt()) * zoom_sensitivity_ratio.GetFloat();
 	}
 
 	// think about default fov

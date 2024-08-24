@@ -41,12 +41,12 @@ void ClearEventList(void);
 #endif
 
 extern ConVar zoom_sensitivity_ratio;
-extern cvar_t *sensitivity;
 extern float g_lastFOV;
 
 cvar_t *cl_lw = nullptr;
 
 void CAM_ToFirstPerson(void);
+float IN_GetMouseSensitivity();
 
 /// USER-DEFINED SERVER MESSAGE HANDLERS
 
@@ -177,7 +177,7 @@ int CHud::MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
 	else
 	{
 		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)def_fov) * zoom_sensitivity_ratio.GetFloat();
+		m_flMouseSensitivity = IN_GetMouseSensitivity() * ((float)newfov / (float)def_fov) * zoom_sensitivity_ratio.GetFloat();
 	}
 
 	// Update crosshair after zoom change

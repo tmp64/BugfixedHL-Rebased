@@ -10,6 +10,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "engine_patches.h"
+#include "sdl_rt.h"
 
 extern ConVar m_input;
 
@@ -27,7 +28,7 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
 
 	m_pRawInputLabel = new vgui2::Label(this, "RawInputLabel", "#BHL_AdvOptions_General_Input");
 	m_pInputMethodBox = new vgui2::ComboBox(this, "InputMethodBox", 3, false);
-	m_InputMethodItems[0] = m_pInputMethodBox->AddItem("#BHL_AdvOptions_General_InputEng", new KeyValues("Item", "value", 0));
+	m_InputMethodItems[0] = m_pInputMethodBox->AddItem("#BHL_AdvOptions_General_InputWin", new KeyValues("Item", "value", 0));
 	m_InputMethodItems[1] = m_pInputMethodBox->AddItem(GetItemText("BHL_AdvOptions_General_InputDX", IsWindows()), new KeyValues("Item", "value", 1));
 	m_InputMethodItems[2] = m_pInputMethodBox->AddItem(GetItemText("BHL_AdvOptions_General_InputSDL", !IsWindows()), new KeyValues("Item", "value", 2));
 
@@ -51,11 +52,9 @@ CGeneralSubOptions::CGeneralSubOptions(vgui2::Panel *parent)
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/GeneralSubOptions.res");
 
 	// Disable unsupported input methods
-	if (!IsWindows())
-		m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[1], false);
-
-	if (!CEnginePatches::Get().IsSDLEngine())
-		m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[2], false);
+	m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[0], IsWindows()); // WindowsCursor
+	m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[1], IsWindows()); // DirectInput
+	m_pInputMethodBox->SetItemEnabled(m_InputMethodItems[2], GetSDL()->IsGood()); // RawInput
 
 	// Disable HTML MOTD if SteamAPI not available
 	if (!SteamAPI_IsAvailable())

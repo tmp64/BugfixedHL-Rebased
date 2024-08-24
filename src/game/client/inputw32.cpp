@@ -38,7 +38,7 @@
 enum class MouseMode
 {
 	Auto = -1,
-	Engine = 0,
+	WindowsCursor = 0,
 	DirectInput = 1,
 	RawInput = 2,
 };
@@ -66,8 +66,6 @@ extern cvar_t *cl_forwardspeed;
 extern cvar_t *cl_pitchspeed;
 extern cvar_t *cl_movespeedkey;
 
-static double s_flRawInputUpdateTime = 0.0f;
-static bool m_bRawInput = false;
 static bool m_bMouseThread = false;
 extern globalvars_t *gpGlobals;
 
@@ -78,10 +76,10 @@ cvar_t *sensitivity;
 static cvar_t *m_rawinput = nullptr;
 ConVar m_input("m_input", "-1", FCVAR_BHL_ARCHIVE,
     "Mouse input mode\n"
-    "- 0: Engine\n"
+    "- 0: Windows cursor position (Windows-only)\n"
     "- 1: DirectInput (Windows-only)\n"
     "- 2: Raw Input (Steam-only)");
-static MouseMode m_mode = MouseMode::Engine;
+static MouseMode m_mode = MouseMode::Auto;
 
 // Custom mouse acceleration (0 disable, 1 to enable, 2 enable with separate yaw/pitch rescale)
 static cvar_t *m_customaccel;
@@ -156,6 +154,7 @@ cvar_t *joy_advaxisz;
 cvar_t *joy_advaxisr;
 cvar_t *joy_advaxisu;
 cvar_t *joy_advaxisv;
+cvar_t *joy_supported;
 cvar_t *joy_forwardthreshold;
 cvar_t *joy_sidethreshold;
 cvar_t *joy_pitchthreshold;
@@ -198,7 +197,7 @@ void IN_UpdateMouseMode()
 {
 	MouseMode newMode = (MouseMode)clamp(m_input.GetInt(), -1, 2);
 
-	if (newMode != m_mode)
+	if (newMode == MouseMode::Auto || newMode != m_mode)
 	{
 		if (newMode == MouseMode::Auto)
 		{
@@ -212,9 +211,13 @@ void IN_UpdateMouseMode()
 				// Prefer raw input on SteamPipe engine
 				newMode = MouseMode::RawInput;
 			}
+			else if (IsWindows())
+			{
+				newMode = MouseMode::WindowsCursor;
+			}
 			else
 			{
-				newMode = MouseMode::Engine;
+				HUD_FatalError("No mouse mode is supported. This can't happen.");
 			}
 		}
 
@@ -228,9 +231,9 @@ void IN_UpdateMouseMode()
 
 		switch (newMode)
 		{
-		case MouseMode::Engine:
+		case MouseMode::WindowsCursor:
 		{
-			ConPrintf("Set mouse input mode to engine input.\n");
+			ConPrintf("Set mouse input mode to Windows Cursor.\n");
 			if (rawinput.IsValid())
 				rawinput.SetValue(0);
 			break;
@@ -264,11 +267,15 @@ void IN_UpdateMouseMode()
 				ConPrintf("Set mouse input mode to Raw Input.\n");
 				rawinput.SetValue(1);
 			}
-			else
+			else if (IsWindows())
 			{
 				ConPrintf(ConColor::Cyan, "Raw Input is not supported on your client.\n");
 				ConPrintf(ConColor::Cyan, "Setting to DirectInput instead.\n");
 				newMode = MouseMode::DirectInput;
+			}
+			else
+			{
+				HUD_FatalError("Raw input is not supported and not Windows. This can't happen.");
 			}
 
 			break;
@@ -288,6 +295,7 @@ void IN_UpdateMouseMode()
 #ifndef PLATFORM_WINDOWS
 	// DirectInput is Windows-only
 	Assert(m_mode != MouseMode::DirectInput);
+	Assert(m_mode != MouseMode::WindowsCursor);
 #endif
 }
 
@@ -308,18 +316,34 @@ void IN_RunFrame()
 
 	if (rawinput.IsValid() && GetSDL()->IsGood())
 	{
-		if (rawinput.GetBool() && m_mode != MouseMode::RawInput)
+		if (rawinput.GetBool())
 		{
-			m_input.SetValue((int)MouseMode::RawInput);
-			IN_UpdateMouseMode();
+			if (m_mode != MouseMode::RawInput)
+			{
+				m_input.SetValue((int)MouseMode::RawInput);
+				IN_UpdateMouseMode();
 
-			if (IsWindows())
-				ConPrintf(ConColor::Cyan, "NOTE: It is recommended to use `m_input 1` on Windows.\n");
+				if (IsWindows())
+					ConPrintf(ConColor::Cyan, "NOTE: It is recommended to use `m_input 1` on Windows.\n");
+			}
 		}
-		else if (!rawinput.GetBool() && m_mode == MouseMode::RawInput)
+		else
 		{
-			m_input.SetValue((int)MouseMode::Engine);
-			IN_UpdateMouseMode();
+			if (IsWindows())
+			{
+				if (m_mode == MouseMode::RawInput)
+				{
+					m_input.SetValue((int)MouseMode::WindowsCursor);
+					IN_UpdateMouseMode();
+				}
+			}
+			else
+			{
+				m_input.SetValue((int)MouseMode::RawInput);
+				rawinput.SetValue(true);
+				IN_UpdateMouseMode();
+				ConPrintf(ConColor::Cyan, "Linux only supports Raw Input mode.\n");
+			}
 		}
 	}
 }
@@ -613,6 +637,28 @@ void IN_GetMousePos(int *mx, int *my)
 
 /*
 ===========
+IN_GetMouseSensitivity
+
+Get mouse sensitivity with sanitization
+===========
+*/
+float IN_GetMouseSensitivity()
+{
+	// Absurdly high sensitivity values can cause the game to hang, so clamp
+	if (sensitivity->value > 10000.0)
+	{
+		gEngfuncs.Cvar_SetValue(sensitivity->name, 10000.0);
+	}
+	else if (sensitivity->value < 0.01)
+	{
+		gEngfuncs.Cvar_SetValue(sensitivity->name, 0.01);
+	}
+
+	return sensitivity->value;
+}
+
+/*
+===========
 IN_ResetMouse
 
 FIXME: Call through to engine?
@@ -622,18 +668,11 @@ void IN_ResetMouse(void)
 {
 	// no work to do in SDL
 #ifdef _WIN32
-	if (!m_bRawInput && mouseactive && gEngfuncs.GetWindowCenterX && gEngfuncs.GetWindowCenterY)
+	if (m_mode == MouseMode::WindowsCursor && mouseactive && gEngfuncs.GetWindowCenterX && gEngfuncs.GetWindowCenterY)
 	{
 		SetCursorPos(gEngfuncs.GetWindowCenterX(), gEngfuncs.GetWindowCenterY());
 		ThreadInterlockedExchange(&old_mouse_pos.x, gEngfuncs.GetWindowCenterX());
 		ThreadInterlockedExchange(&old_mouse_pos.y, gEngfuncs.GetWindowCenterY());
-	}
-
-	if (gpGlobals && gpGlobals->time - s_flRawInputUpdateTime > 1.0f)
-	{
-		s_flRawInputUpdateTime = gpGlobals->time;
-		if (m_bRawInput)
-			m_bRawInput = m_rawinput->value != 0;
 	}
 #endif
 }
@@ -690,7 +729,7 @@ void IN_ScaleMouse(float *x, float *y)
 	float my = *y;
 
 	// This is the default sensitivity
-	float mouse_senstivity = (gHUD.GetSensitivity() != 0) ? gHUD.GetSensitivity() : sensitivity->value;
+	float mouse_senstivity = (gHUD.GetSensitivity() != 0) ? gHUD.GetSensitivity() : IN_GetMouseSensitivity();
 
 	// Using special accleration values
 	if (m_customaccel->value != 0)
@@ -747,10 +786,11 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 	//      move the camera, or if the mouse cursor is visible or if we're in intermission
 	if (!iMouseInUse && !gHUD.m_iIntermission && !g_pVGuiSurface->IsCursorVisible())
 	{
-		int deltaX, deltaY;
-#ifdef _WIN32
-		if (m_mode == MouseMode::Engine)
+		int deltaX = 0, deltaY = 0;
+
+		if (m_mode == MouseMode::WindowsCursor)
 		{
+#ifdef _WIN32
 			if (m_bMouseThread)
 			{
 				ThreadInterlockedExchange(&current_pos.x, s_mouseDeltaX);
@@ -762,9 +802,13 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 			{
 				GetCursorPos(&current_pos);
 			}
+#else
+			Assert(!("MouseMode::WindowsCursor is not supported by platform"));
+#endif
 		}
 		else if (m_mode == MouseMode::DirectInput)
 		{
+#ifdef _WIN32
 			if (dinput_mouse_acquired)
 			{
 				HRESULT hr = dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&dinput_mousestate);
@@ -773,9 +817,11 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 				else if (hr == DI_BUFFEROVERFLOW)
 					DINPUT_SetBufferSize();
 			}
+#else
+			Assert(!("MouseMode::DirectInput is not supported by platform"));
+#endif
 		}
 		else if (m_mode == MouseMode::RawInput)
-#endif
 		{
 			IN_SetRelativeMouseMode(true);
 			GetSDL()->GetRelativeMouseState(&deltaX, &deltaY);
@@ -783,9 +829,9 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 			current_pos.y = deltaY;
 		}
 
-#ifdef _WIN32
-		if (m_mode == MouseMode::Engine)
+		if (m_mode == MouseMode::WindowsCursor)
 		{
+#ifdef _WIN32
 			if (m_bMouseThread)
 			{
 				mx = current_pos.x;
@@ -796,17 +842,23 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 				mx = current_pos.x - gEngfuncs.GetWindowCenterX() + mx_accum;
 				my = current_pos.y - gEngfuncs.GetWindowCenterY() + my_accum;
 			}
+#else
+			Assert(!("MouseMode::WindowsCursor is not supported by platform"));
+#endif
 		}
 		else if (m_mode == MouseMode::DirectInput)
 		{
+#ifdef _WIN32
 			if (dinput_mouse_acquired)
 			{
 				mx = dinput_mousestate.lX + mx_accum;
 				my = dinput_mousestate.lY + my_accum;
 			}
+#else
+			Assert(!("MouseMode::DirectInput is not supported by platform"));
+#endif
 		}
 		else if (m_mode == MouseMode::RawInput)
-#endif
 		{
 			mx = deltaX + mx_accum;
 			my = deltaY + my_accum;
@@ -866,17 +918,20 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 	}
 	else
 	{
-#ifdef _WIN32
-		if (m_mode == MouseMode::DirectInput && dinput_mouse_acquired)
+		if (m_mode == MouseMode::DirectInput)
 		{
-			// Discard any info when mouse is not active
-			DIMOUSESTATE state;
-			dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&state);
+#ifdef _WIN32
+			if (dinput_mouse_acquired)
+			{
+				// Discard any info when mouse is not active
+				DIMOUSESTATE state;
+				dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&state);
+			}
+#endif
 		}
 		else if (m_mode == MouseMode::RawInput)
-#endif
 		{
-			// Disable realative mouse input
+			// Disable relative mouse input
 			IN_SetRelativeMouseMode(false);
 		}
 	}
@@ -908,9 +963,9 @@ void CL_DLLEXPORT IN_Accumulate(void)
 	{
 		if (mouseactive)
 		{
-#ifdef _WIN32
-			if (m_mode == MouseMode::Engine)
+			if (m_mode == MouseMode::WindowsCursor)
 			{
+#ifdef _WIN32
 				if (!m_bMouseThread)
 				{
 					GetCursorPos(&current_pos);
@@ -918,9 +973,13 @@ void CL_DLLEXPORT IN_Accumulate(void)
 					mx_accum += current_pos.x - gEngfuncs.GetWindowCenterX();
 					my_accum += current_pos.y - gEngfuncs.GetWindowCenterY();
 				}
+#else
+				Assert(!("MouseMode::WindowsCursor is not supported by platform"));
+#endif
 			}
 			else if (m_mode == MouseMode::DirectInput)
 			{
+#ifdef _WIN32
 				if (dinput_mouse_acquired)
 				{
 					HRESULT hr = dinput_lpdiMouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&dinput_mousestate);
@@ -933,9 +992,11 @@ void CL_DLLEXPORT IN_Accumulate(void)
 					mx_accum += dinput_mousestate.lX;
 					my_accum += dinput_mousestate.lY;
 				}
+#else
+				Assert(!("MouseMode::DirectInput is not supported by platform"));
+#endif
 			}
 			else if (m_mode == MouseMode::RawInput)
-#endif
 			{
 				int deltaX, deltaY;
 				GetSDL()->GetRelativeMouseState(&deltaX, &deltaY);
@@ -971,11 +1032,9 @@ IN_StartupJoystick
 void IN_StartupJoystick(void)
 {
 	// abort startup if user requests no joystick
-	if (gEngfuncs.CheckParm("-nojoy", NULL))
+	static bool noJoy = gEngfuncs.CheckParm("-nojoy", NULL);
+	if (noJoy)
 		return;
-
-	// assume no joystick
-	joy_avail = 0;
 
 	// Joystick only with SDL
 	if (!GetSDL()->IsGood())
@@ -984,36 +1043,53 @@ void IN_StartupJoystick(void)
 		return;
 	}
 
+	static float flLastCheck = 0.0f;
+	if (flLastCheck > 0.0f && (gEngfuncs.GetAbsoluteTime() - flLastCheck) < 1.0f)
+		return;
+	flLastCheck = gEngfuncs.GetAbsoluteTime();
+
 	int nJoysticks = GetSDL()->NumJoysticks();
 	if (nJoysticks > 0)
 	{
-		for (int i = 0; i < nJoysticks; i++)
+		if (!s_pJoystick)
 		{
-			if (GetSDL()->IsGameController(i))
+			for (int i = 0; i < nJoysticks; i++)
 			{
-				s_pJoystick = GetSDL()->GameControllerOpen(i);
-				if (s_pJoystick)
+				if (GetSDL()->IsGameController(i))
 				{
-					//save the joystick's number of buttons and POV status
-					joy_numbuttons = SDL_CONTROLLER_BUTTON_MAX;
-					joy_haspov = 0;
+					s_pJoystick = GetSDL()->GameControllerOpen(i);
+					if (s_pJoystick)
+					{
+						//save the joystick's number of buttons and POV status
+						joy_numbuttons = SDL_CONTROLLER_BUTTON_MAX;
+						joy_haspov = 0;
 
-					// old button and POV states default to no buttons pressed
-					joy_oldbuttonstate = joy_oldpovstate = 0;
+						// old button and POV states default to no buttons pressed
+						joy_oldbuttonstate = joy_oldpovstate = 0;
 
-					// mark the joystick as available and advanced initialization not completed
-					// this is needed as cvars are not available during initialization
-					gEngfuncs.Con_Printf("joystick found\n\n", GetSDL()->GameControllerName(s_pJoystick));
-					joy_avail = 1;
-					joy_advancedinit = 0;
-					break;
+						// mark the joystick as available and advanced initialization not completed
+						// this is needed as cvars are not available during initialization
+						gEngfuncs.Con_Printf("joystick found %s\n", GetSDL()->GameControllerName(s_pJoystick));
+						joy_avail = 1;
+						joy_advancedinit = 0;
+						break;
+					}
 				}
 			}
 		}
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("joystick not found -- driver not present\n\n");
+		if (s_pJoystick)
+			GetSDL()->GameControllerClose(s_pJoystick);
+
+		s_pJoystick = nullptr;
+
+		if (joy_avail)
+		{
+			joy_avail = 0;
+			gEngfuncs.Con_DPrintf("joystick not found -- driver not present\n\n");
+		}
 	}
 }
 
@@ -1201,6 +1277,9 @@ void IN_JoyMove(float frametime, usercmd_t *cmd)
 		joy_advancedinit = 1;
 	}
 
+	// re-scan for joystick presence
+	IN_StartupJoystick();
+
 	// verify joystick is available and that the user wants to use it
 	if (!joy_avail || !in_joystick->value)
 	{
@@ -1387,7 +1466,7 @@ IN_Init
 void IN_Init(void)
 {
 	m_filter = gEngfuncs.pfnRegisterVariable("m_filter", "0", FCVAR_ARCHIVE);
-	sensitivity = gEngfuncs.pfnRegisterVariable("sensitivity", "3", FCVAR_ARCHIVE); // user mouse sensitivity setting.
+	sensitivity = gEngfuncs.pfnRegisterVariable("sensitivity", "3", FCVAR_ARCHIVE | FCVAR_FILTERSTUFFTEXT); // user mouse sensitivity setting.
 
 	in_joystick = gEngfuncs.pfnRegisterVariable("joystick", "0", FCVAR_ARCHIVE);
 	joy_name = gEngfuncs.pfnRegisterVariable("joyname", "joystick", 0);
@@ -1398,6 +1477,7 @@ void IN_Init(void)
 	joy_advaxisr = gEngfuncs.pfnRegisterVariable("joyadvaxisr", "0", 0);
 	joy_advaxisu = gEngfuncs.pfnRegisterVariable("joyadvaxisu", "0", 0);
 	joy_advaxisv = gEngfuncs.pfnRegisterVariable("joyadvaxisv", "0", 0);
+	joy_supported = gEngfuncs.pfnRegisterVariable("joysupported", "1", 0);
 	joy_forwardthreshold = gEngfuncs.pfnRegisterVariable("joyforwardthreshold", "0.15", 0);
 	joy_sidethreshold = gEngfuncs.pfnRegisterVariable("joysidethreshold", "0.15", 0);
 	joy_pitchthreshold = gEngfuncs.pfnRegisterVariable("joypitchthreshold", "0.15", 0);
@@ -1418,19 +1498,15 @@ void IN_Init(void)
 
 	if (!IsWindows())
 	{
-		// All non-Windows version of the game should have m_rawinput.
+		// All non-Windows versions of the game should have m_rawinput.
 		Assert(m_rawinput);
 	}
 
 #ifdef _WIN32
-	if (m_rawinput)
-		m_bRawInput = m_rawinput->value != 0;
-	else
-		m_bRawInput = false;
 	m_bMouseThread = gEngfuncs.CheckParm("-mousethread", NULL) != NULL;
 	m_mousethread_sleep = gEngfuncs.pfnRegisterVariable("m_mousethread_sleep", "10", FCVAR_ARCHIVE);
 
-	if (!m_bRawInput && m_bMouseThread && m_mousethread_sleep)
+	if (m_bMouseThread && m_mousethread_sleep)
 	{
 		s_mouseDeltaX = s_mouseDeltaY = 0;
 

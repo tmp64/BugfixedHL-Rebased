@@ -14,6 +14,7 @@ public:
 	decltype(SDL_NumJoysticks) *NumJoysticks = nullptr;
 	decltype(SDL_IsGameController) *IsGameController = nullptr;
 	decltype(SDL_GameControllerOpen) *GameControllerOpen = nullptr;
+	decltype(SDL_GameControllerClose) *GameControllerClose = nullptr;
 	decltype(SDL_GameControllerName) *GameControllerName = nullptr;
 	decltype(SDL_GameControllerGetAxis) *GameControllerGetAxis = nullptr;
 	decltype(SDL_GameControllerGetButton) *GameControllerGetButton = nullptr;

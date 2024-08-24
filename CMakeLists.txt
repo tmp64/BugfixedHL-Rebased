@@ -434,15 +434,25 @@ if( USE_UPDATER )
 	find_package( libzip REQUIRED NO_DEFAULT_PATH )
 
 	if( PLATFORM_LINUX )
-		# The bundled curl statically links with the bundled MbedTLS
-		set( MbedTLS_DIR "${PLAT_EXTERNAL_PATH}/mbedtls/lib/cmake/MbedTLS" )
-		find_package( MbedTLS REQUIRED NO_DEFAULT_PATH )
+		# The bundled curl statically links with the bundled GnuTLS
+		set( CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${PLAT_EXTERNAL_PATH}/gnutls" )
+		find_package( GnuTLS REQUIRED )
+		
+		set( UPDATER_LIBS
+			${UPDATER_LIBS}
+			$<LINK_GROUP:RESCAN,
+				GnuTLS::GnuTLS,
+				${PLAT_EXTERNAL_PATH}/gnutls/lib/libgmp.a,
+				${PLAT_EXTERNAL_PATH}/gnutls/lib32/libnettle.a,
+				${PLAT_EXTERNAL_PATH}/gnutls/lib32/libhogweed.a>
+		)
 	endif()
 
 	set( CURL_DIR "${PLAT_EXTERNAL_PATH}/curl/lib/cmake/CURL" )
 	find_package( CURL REQUIRED NO_DEFAULT_PATH )
 
 	set( UPDATER_LIBS
+		${UPDATER_LIBS}
 		libzip::zip
 		CURL::libcurl
 	)

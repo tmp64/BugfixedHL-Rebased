@@ -1,9 +1,10 @@
-if(NOT PACKAGE_FIND_VERSION_RANGE AND PACKAGE_FIND_VERSION_MAJOR STREQUAL "7")
+
+  if(NOT PACKAGE_FIND_VERSION_RANGE AND PACKAGE_FIND_VERSION_MAJOR STREQUAL "7")
     # Version 8 satisfies version 7... requirements
     set(PACKAGE_FIND_VERSION_MAJOR 8)
     set(PACKAGE_FIND_VERSION_COUNT 1)
-endif()
-# This is a basic version file for the Config-mode of find_package().
+  endif()
+  # This is a basic version file for the Config-mode of find_package().
 # It is used by write_basic_package_version_file() as input file for configure_file()
 # to create a version-file which can be installed along a config.cmake file.
 #
@@ -14,19 +15,19 @@ endif()
 # The variable CVF_VERSION must be set before calling configure_file().
 
 
-set(PACKAGE_VERSION "8.4.0")
+set(PACKAGE_VERSION "8.9.1")
 
 if(PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION)
   set(PACKAGE_VERSION_COMPATIBLE FALSE)
 else()
 
-  if("8.4.0" MATCHES "^([0-9]+)\\.")
+  if("8.9.1" MATCHES "^([0-9]+)\\.")
     set(CVF_VERSION_MAJOR "${CMAKE_MATCH_1}")
     if(NOT CVF_VERSION_MAJOR VERSION_EQUAL 0)
       string(REGEX REPLACE "^0+" "" CVF_VERSION_MAJOR "${CVF_VERSION_MAJOR}")
     endif()
   else()
-    set(CVF_VERSION_MAJOR "8.4.0")
+    set(CVF_VERSION_MAJOR "8.9.1")
   endif()
 
   if(PACKAGE_FIND_VERSION_RANGE)

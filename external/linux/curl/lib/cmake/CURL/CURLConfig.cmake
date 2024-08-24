@@ -59,4 +59,10 @@ include("${CMAKE_CURRENT_LIST_DIR}/CURLTargets.cmake")
 check_required_components("CURL")
 
 # Alias for either shared or static library
-add_library(CURL::libcurl ALIAS CURL::libcurl_static)
+if(NOT TARGET CURL::libcurl)
+  add_library(CURL::libcurl ALIAS CURL::libcurl_static)
+endif()
+
+# For compatibility with CMake's FindCURL.cmake
+set(CURL_LIBRARIES CURL::libcurl)
+set_and_check(CURL_INCLUDE_DIRS "${PACKAGE_PREFIX_DIR}/include")

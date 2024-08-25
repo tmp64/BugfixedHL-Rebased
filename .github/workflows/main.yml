@@ -32,8 +32,8 @@ jobs:
           submodules: recursive
           fetch-depth: 0 # Required for automatic versioning
       
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4.5.0
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
       
@@ -55,7 +55,7 @@ jobs:
           ctest -R ${{ matrix.target }} --build-config RelWithDebInfo --output-on-failure
 
       - name: Upload build result
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.build.outputs.artifact_name }}
           path: ./_build_out/BugfixedHL-*.zip

@@ -4,6 +4,7 @@ add_sources(
 	bhl_urls.h
 	cl_entity.h
 	com_model.h
+	common_pch.h
 	con_nprint.h
 	const.h
 	convar.h

@@ -174,7 +174,7 @@ void PM_DrawPhysEntBBox(int num, int pcolor, float life)
 		{
 			Vector forward, right, up;
 
-			AngleVectorsTranspose(pe->angles, &forward, &right, &up);
+			PM_AngleVectorsTranspose(pe->angles, &forward, &right, &up);
 			for (j = 0; j < 8; j++)
 			{
 				VectorCopy(p[j], tmp);
@@ -285,7 +285,7 @@ void PM_ViewEntity(void)
 		return;
 #endif
 
-	AngleVectors(pmove->angles, &forward, &right, &up); // Determine movement angles
+	PM_AngleVectors(pmove->angles, &forward, &right, &up); // Determine movement angles
 
 	VectorCopy(pmove->origin, origin);
 

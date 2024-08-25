@@ -95,6 +95,7 @@ add_sources(
 	path.cpp
 	path.h
 	pathcorner.cpp
+	pch.h
 	plane.cpp
 	plane.h
 	plats.cpp

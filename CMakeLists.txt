@@ -388,6 +388,13 @@ set( GAME_COMMON_INCLUDE_PATHS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pm_shared
 )
 
+# Disable PCH for common sources because includes are a mess there
+set_source_files_properties(
+	${GAME_COMMON_SRCS}
+	PROPERTIES
+	SKIP_PRECOMPILE_HEADERS ON
+)
+
 #-----------------------------------------------------------------
 # Source SDK
 #-----------------------------------------------------------------
@@ -497,6 +504,8 @@ target_compile_definitions( client PRIVATE
 	CLIENT_DLL
 )
 
+target_precompile_headers( client PRIVATE src/game/client/pch.h )
+
 # Dependencies
 find_package( SDL2 MODULE REQUIRED )
 
@@ -581,6 +590,8 @@ target_compile_definitions( hl PRIVATE
 	MATHLIB_USE_C_ASSERT
 	MATHLIB_VECTOR_NONTRIVIAL
 )
+
+target_precompile_headers( hl PRIVATE src/game/server/pch.h )
 
 # Dependencies
 if( WIN32 )

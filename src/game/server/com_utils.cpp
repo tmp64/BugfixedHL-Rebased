@@ -10,6 +10,7 @@
 //
 
 #ifdef _WIN32
+#undef ARRAYSIZE
 #include <windows.h>
 #endif
 

@@ -1,5 +1,7 @@
 #define NOMINMAX
+#include <winsani_in.h>
 #include <Windows.h>
+#include <winsani_out.h>
 
 #include <tier1/strtools.h>
 #include "update_installer.h"

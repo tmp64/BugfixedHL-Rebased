@@ -53,6 +53,7 @@ add_sources(
 	net.h
 	opengl.cpp
 	opengl.h
+	pch.h
 	player_info.cpp
 	player_info.h
 	rainbow.cpp

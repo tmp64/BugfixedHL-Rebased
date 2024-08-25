@@ -19,10 +19,6 @@
 
 #include "../common/nowin.h"
 
-typedef int BOOL;
-#define TRUE  1
-#define FALSE 0
-
 // hack into header files that we can ship
 typedef int qboolean;
 typedef unsigned char byte;

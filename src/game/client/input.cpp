@@ -23,6 +23,7 @@
 #include "Exports.h"
 #include "cl_voice_status.h"
 #include "hud/health.h"
+#include "hud/menu.h"
 #include "hud/spectator.h"
 
 #include "vgui/client_viewport.h"
@@ -432,8 +433,11 @@ int CL_DLLEXPORT HUD_Key_Event(int down, int keynum, const char *pszCurrentBindi
 {
 	//	RecClKeyEvent(down, keynum, pszCurrentBinding);
 
-	if (g_pViewport)
-		return g_pViewport->KeyInput(down, keynum, pszCurrentBinding);
+	if (g_pViewport && !g_pViewport->KeyInput(down, keynum, pszCurrentBinding))
+		return 0;
+
+	if (down && CHudMenu::Get()->OnKeyPressed(keynum))
+		return 0;
 
 	return 1;
 }

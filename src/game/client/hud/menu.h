@@ -12,6 +12,8 @@ public:
 	void Draw(float flTime);
 	int MsgFunc_ShowMenu(const char *pszName, int iSize, void *pbuf);
 
+	bool OnWeaponSlotSelected(int slotIdx);
+	bool OnKeyPressed(int keynum);
 	void SelectMenuItem(int menu_item);
 
 	int m_fMenuDisplayed;

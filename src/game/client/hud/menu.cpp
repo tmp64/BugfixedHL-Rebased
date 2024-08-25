@@ -19,6 +19,7 @@
 //
 #include <string.h>
 #include <stdio.h>
+#include <keydefs.h>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -27,6 +28,8 @@
 #include "vgui/client_viewport.h"
 #include "text_message.h"
 #include "chat.h"
+
+ConVar hud_menu_fkeys("hud_menu_fkeys", "1", FCVAR_BHL_ARCHIVE, "Use keys F1-F10 in the menus");
 
 #define MAX_MENU_STRING 512
 char g_szMenuString[MAX_MENU_STRING];
@@ -158,7 +161,7 @@ void CHudMenu::Draw(float flTime)
 	menu_r = 255;
 	menu_g = 255;
 	menu_b = 255;
-	menu_x = 20;
+	menu_x = SPR_RES_SCALED(20);
 	menu_ralign = FALSE;
 
 	const char *sptr = g_szMenuString;
@@ -188,6 +191,38 @@ void CHudMenu::Draw(float flTime)
 			strncpy(menubuf, ptr, min((sptr - ptr), (int)sizeof(menubuf)));
 			menubuf[min((sptr - ptr), (int)(sizeof(menubuf) - 1))] = '\0';
 
+			if (hud_menu_fkeys.GetBool() && !menu_ralign)
+			{
+				// Prepend menu items with 'F'
+				// Only check first 16 chars to reduce false number detection
+				std::string_view menubufView(menubuf, std::min(strlen(menubuf), size_t(16)));
+				size_t firstNonSpace = menubufView.find_first_not_of(" \t");
+				if (firstNonSpace != std::string_view::npos && firstNonSpace <= sizeof(menubuf) - 2)
+				{
+					// First char is a digit and next one isn't
+					if (menubuf[firstNonSpace] >= '0' && menubuf[firstNonSpace] <= '9' &&
+						!(menubuf[firstNonSpace + 1] >= '0' && menubuf[firstNonSpace + 1] <= '9'))
+					{
+						int digit = menubuf[firstNonSpace] - '0';
+						int shift = digit == 0 ? 2 : 1;
+
+						// Shift the string by 1/2 chars
+						memmove(menubuf + firstNonSpace + shift, menubuf + firstNonSpace, sizeof(menubuf) - firstNonSpace - shift);
+
+						// Set the char
+						if (digit == 0)
+						{
+							menubuf[firstNonSpace] = 'F';
+							menubuf[firstNonSpace + 1] = '1';
+						}
+						else
+						{
+							menubuf[firstNonSpace] = 'F';
+						}
+					}
+				}
+			}
+
 			if (menu_ralign)
 			{
 				// IMPORTANT: Right-to-left rendered text does not parse escape tokens!
@@ -201,6 +236,33 @@ void CHudMenu::Draw(float flTime)
 	}
 
 	return;
+}
+
+bool CHudMenu::OnWeaponSlotSelected(int slotIdx)
+{
+	if (!m_fMenuDisplayed)
+		return false;
+
+	if (hud_menu_fkeys.GetBool())
+		return false;
+
+	SelectMenuItem(slotIdx + 1); // slots are one off the key numbers
+	return true;
+}
+
+bool CHudMenu::OnKeyPressed(int keynum)
+{
+	if (!m_fMenuDisplayed)
+		return false;
+
+	if (!hud_menu_fkeys.GetBool())
+		return false;
+
+	if (!(keynum >= K_F1 && keynum <= K_F10))
+		return false;
+
+	SelectMenuItem(keynum - K_F1 + 1);
+	return true;
 }
 
 // selects an item from the menu

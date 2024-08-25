@@ -398,9 +398,9 @@ HSPRITE *WeaponsResource::GetAmmoPicFromWeapon(int iAmmoId, wrect_t &rect)
 
 void WeaponsResource::SelectSlot(int iSlot, int fAdvance, int iDirection)
 {
-	if (CHudMenu::Get()->m_fMenuDisplayed && (fAdvance == FALSE) && (iDirection == 1))
-	{ // menu is overriding slot use commands
-		CHudMenu::Get()->SelectMenuItem(iSlot + 1); // slots are one off the key numbers
+	if ((fAdvance == FALSE) && (iDirection == 1) && CHudMenu::Get()->OnWeaponSlotSelected(iSlot))
+	{
+		// menu is overriding slot use commands
 		return;
 	}
 

@@ -51,7 +51,7 @@ unset( BHL_REPO_VERSION_PATCH )
 unset( BHL_REPO_VERSION_TAG )
 # Use GIT_XXX from now on
 
-project( BugfixedHL VERSION "${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}" )
+project( BugfixedHL VERSION "${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}.${GIT_SKIP}" )
 include( PlatformInfo )
 include( CTest )
 
@@ -269,8 +269,47 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_LEVEL_CXX} ${WARNING_LEVEL_C_
 #-----------------------------------------------------------------
 # appversion.h generator
 #-----------------------------------------------------------------
-file( MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated" )
-configure_file( "src/common/appversion.h.in" "${CMAKE_BINARY_DIR}/generated/appversion.h" )
+set( BHL_GENERATED_DIR "${CMAKE_BINARY_DIR}/generated" )
+set( BHL_GENERATED_INCLUDE_DIR "${BHL_GENERATED_DIR}/include" )
+configure_file( "src/common/appversion.h.in" "${BHL_GENERATED_INCLUDE_DIR}/appversion.h" )
+include_directories( ${BHL_GENERATED_INCLUDE_DIR} )
+
+# Generates version_info.rc resource file for the target.
+# @param target_name		Target name. Must be an EXE or a DLL.
+# @param file_name			Output file name.
+# @param file_description	Short file description.
+function(bhl_version_info target_name file_name file_description)
+	get_target_property(target_type ${target_name} TYPE)
+
+	if(target_type STREQUAL "EXECUTABLE")
+		set(is_dll 0)
+	elseif(target_type STREQUAL "SHARED_LIBRARY")
+		set(is_dll 1)
+	else()
+		message(FATAL_ERROR "Target ${target_name} is neither EXE nor DLL, it's ${target_type}")
+	endif()
+
+	if(GIT_SKIP GREATER 0)
+		set(is_prerelease 1)
+	else()
+		set(is_prerelease 0)
+	endif()
+
+	string(TIMESTAMP current_year "%Y" UTC)
+
+	set(generated_dir "${BHL_GENERATED_DIR}/${target_name}")
+	set(in_file_path "${CMAKE_SOURCE_DIR}/src/common/version_info.rc.in")
+	set(out_file_path "${generated_dir}/version_info.rc")
+
+	configure_file(
+		${in_file_path}
+		${out_file_path}
+		@ONLY
+	)
+
+	target_sources(${target_name} PRIVATE ${out_file_path})
+	source_group(TREE ${generated_dir} PREFIX "Generated" FILES ${out_file_path})
+endfunction()
 
 #-----------------------------------------------------------------
 # Autodeploy macro
@@ -333,7 +372,6 @@ set( GAME_COMMON_DEFINES
 )
 
 set( GAME_COMMON_INCLUDE_PATHS
-	${CMAKE_BINARY_DIR}/generated
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/server
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/shared
 	${CMAKE_CURRENT_SOURCE_DIR}/src/public
@@ -435,6 +473,7 @@ preprocess_sources()
 add_library( client SHARED ${PREP_SRCS} )
 check_winxp_support( client )
 add_auto_deploy( client PublishPathClient.txt )
+bhl_version_info( client "client.dll" "BugfixedHL-Rebased Client" )
 
 target_include_directories( client PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
@@ -520,6 +559,7 @@ preprocess_sources()
 add_library( hl SHARED ${PREP_SRCS} )
 check_winxp_support( hl )
 add_auto_deploy( hl PublishPathServer.txt )
+bhl_version_info( hl "hl.dll" "BugfixedHL-Rebased Server" )
 
 target_include_directories( hl PRIVATE
 	#${CMAKE_CURRENT_SOURCE_DIR}/src/game/server	# Already in GAME_COMMON_INCLUDE_PATHS
@@ -581,6 +621,7 @@ preprocess_sources()
 add_library( bugfixedapi_amxx SHARED ${PREP_SRCS} )
 check_winxp_support( bugfixedapi_amxx )
 add_auto_deploy( bugfixedapi_amxx PublishPathAMXX.txt )
+bhl_version_info( bugfixedapi_amxx "bugfixedapi_amxx.dll" "BugfixedHL-Rebased AMXX Module" )
 
 target_include_directories( bugfixedapi_amxx PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/bugfixedapi_amxx

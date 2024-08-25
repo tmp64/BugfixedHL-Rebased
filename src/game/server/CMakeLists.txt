@@ -152,7 +152,6 @@ add_sources(
 if( PLATFORM_WINDOWS )
 	add_sources(
 		hl.def
-		hl.rc
 		resource.h
 	)
 endif()

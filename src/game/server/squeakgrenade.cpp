@@ -490,7 +490,7 @@ void CSqueak::Holster(int skiplocal /* = 0 */)
 // fall over
 #define ROLL 2
 
-void AngleVectors(const Vector &angles, Vector &forward, Vector &right, Vector &up)
+void CSqueak_AngleVectors(const Vector &angles, Vector &forward, Vector &right, Vector &up)
 {
 	float angle;
 	float sr, sp, sy, cr, cp, cy;
@@ -523,10 +523,10 @@ void CSqueak::PrimaryAttack()
 		Vector forward, right, up;
 		Vector vEntityForward = m_pPlayer->pev->v_angle;
 		vEntityForward[0] = 0;
-		AngleVectors(vEntityForward, forward, right, up);
+		CSqueak_AngleVectors(vEntityForward, forward, right, up);
 		vEntityForward = forward;
 
-		AngleVectors(m_pPlayer->pev->v_angle, forward, right, up);
+		CSqueak_AngleVectors(m_pPlayer->pev->v_angle, forward, right, up);
 		TraceResult tr;
 		Vector trace_origin;
 

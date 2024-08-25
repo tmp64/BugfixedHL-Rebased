@@ -27,7 +27,7 @@
 
 #pragma warning(disable : 4244)
 
-void AngleVectors(const Vector &angles, Vector *forward, Vector *right, Vector *up)
+void PM_AngleVectors(const Vector &angles, Vector *forward, Vector *right, Vector *up)
 {
 	float angle;
 	float sr, sp, sy, cr, cp, cy;
@@ -62,7 +62,7 @@ void AngleVectors(const Vector &angles, Vector *forward, Vector *right, Vector *
 	}
 }
 
-void AngleVectorsTranspose(const Vector &angles, Vector *forward, Vector *right, Vector *up)
+void PM_AngleVectorsTranspose(const Vector &angles, Vector *forward, Vector *right, Vector *up)
 {
 	float angle;
 	float sr, sp, sy, cr, cp, cy;

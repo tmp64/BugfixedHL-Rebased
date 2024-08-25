@@ -6,7 +6,9 @@
 *
 ****/
 
+#include <winsani_in.h>
 #include <windows.h>
+#include <winsani_out.h>
 #include <time.h>
 #include "net.h"
 

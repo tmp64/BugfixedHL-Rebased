@@ -497,6 +497,8 @@ target_compile_definitions( client PRIVATE
 	CLIENT_DLL
 )
 
+target_precompile_headers( client PRIVATE src/game/client/pch.h )
+
 # Dependencies
 find_package( SDL2 MODULE REQUIRED )
 

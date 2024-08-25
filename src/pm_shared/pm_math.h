@@ -2,8 +2,8 @@
 #define PM_MATH_H
 #include <mathlib/mathlib.h>
 
-void AngleVectors(const Vector &angles, Vector *forward, Vector *right, Vector *up);
-void AngleVectorsTranspose(const Vector &angles, Vector *forward, Vector *right, Vector *up);
+void PM_AngleVectors(const Vector &angles, Vector *forward, Vector *right, Vector *up);
+void PM_AngleVectorsTranspose(const Vector &angles, Vector *forward, Vector *right, Vector *up);
 
 //! More precise than VectorNormalize from mathlib
 //! mathlib's VectorNormalize returns very small positive number for null vectors

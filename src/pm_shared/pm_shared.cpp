@@ -2261,7 +2261,7 @@ void PM_LadderMove(physent_t *pLadder)
 		if (!s_iIsAg && (pmove->flags & FL_DUCKING))
 			climbSpeed *= PLAYER_DUCKING_MULTIPLIER;
 
-		AngleVectors(pmove->angles, &vpn, &v_right, nullptr);
+		PM_AngleVectors(pmove->angles, &vpn, &v_right, nullptr);
 
 		if (pmove->cmd.buttons & IN_BACK)
 			forward -= climbSpeed;
@@ -2931,7 +2931,7 @@ float PM_CalcRoll(const Vector &angles, const Vector &velocity, float rollangle,
 	float value;
 	Vector forward, right, up;
 
-	AngleVectors(angles, &forward, &right, &up);
+	PM_AngleVectors(angles, &forward, &right, &up);
 
 	side = DotProduct(velocity, right);
 
@@ -3102,7 +3102,7 @@ void PM_PlayerMove(qboolean server)
 	PM_ReduceTimers();
 
 	// Convert view angles to vectors
-	AngleVectors(pmove->angles, &pmove->forward, &pmove->right, &pmove->up);
+	PM_AngleVectors(pmove->angles, &pmove->forward, &pmove->right, &pmove->up);
 
 	// PM_ShowClipBox();
 

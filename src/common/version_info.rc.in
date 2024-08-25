@@ -1,0 +1,60 @@
+#include <windows.h>
+
+// Hard-coded names
+#define _PRODUCTNAME "BugfixedHL-Rebased"
+#define _COMPANYNAME "aghl.ru"
+#define _LEGALCOPYRIGHT "Copyright (c) @current_year@ aghl.ru"
+
+// Names set in CMake
+#define _FILEDESCRIPTION "@file_description@"
+#define _INTERNALNAME "@target_name@"
+#define _ORIGINALFILENAME "@file_name@"
+#define _VERSION @GIT_MAJOR@,@GIT_MINOR@,@GIT_PATCH@,@GIT_SKIP@
+#define _VERSION_STR "@GIT_SEM_VERSION@"
+
+// Debug flag
+#define _FLAG_DEBUG 0
+
+// Pre-release flag
+#if @is_prerelease@
+    #define _FLAG_PRERELEASE VS_FF_PRERELEASE
+#else
+    #define _FLAG_PRERELEASE 0
+#endif // if @is_prerelease@
+
+// File type
+#if @is_dll@
+    #define _FILE_TYPE VFT_DLL
+#else
+    #define _FILE_TYPE VFT_APP
+#endif // if @is_dll@
+
+1 VERSIONINFO
+    FILEVERSION _VERSION
+    PRODUCTVERSION _VERSION
+    FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+    FILEFLAGS _FLAG_DEBUG | _FLAG_PRERELEASE
+    FILEOS VOS_NT
+    FILETYPE _FILE_TYPE
+    FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "Comments", _PRODUCTNAME
+            VALUE "CompanyName", _COMPANYNAME
+            VALUE "FileDescription", _FILEDESCRIPTION
+            VALUE "FileVersion",  _VERSION_STR
+            VALUE "InternalName", _INTERNALNAME
+            VALUE "LegalCopyright", _LEGALCOPYRIGHT
+            VALUE "OriginalFilename", _ORIGINALFILENAME
+            VALUE "ProductName", _PRODUCTNAME
+            VALUE "ProductVersion", _VERSION_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

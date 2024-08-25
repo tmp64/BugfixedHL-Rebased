@@ -228,11 +228,11 @@ void CClientTest::TestVersionCompare()
 	ASSERT(CGameVersion("1.2.3-rc.2") < CGameVersion("1.2.3"));
 
 	// Check comparison with "dev" tag.
-	// dev is always newer when x.y.z equals
-	ASSERT(CGameVersion("1.2.3-dev") > CGameVersion("1.2.3"));
+	// dev must compare like any other tag
+	ASSERT(CGameVersion("1.2.3-dev") < CGameVersion("1.2.3"));
 	ASSERT(CGameVersion("1.2.3-dev") > CGameVersion("1.2.3-alpha.1"));
 	ASSERT(CGameVersion("1.2.3-dev") > CGameVersion("1.2.3-beta.1"));
-	ASSERT(CGameVersion("1.2.3-dev") > CGameVersion("1.2.3-rc.1"));
+	ASSERT(CGameVersion("1.2.3-dev") < CGameVersion("1.2.3-rc.1"));
 	ASSERT(CGameVersion("1.2.4") > CGameVersion("1.2.3-dev"));
 
 	// Check equals operator

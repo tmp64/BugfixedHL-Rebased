@@ -60,6 +60,11 @@ if( BUILD_TESTING )
 		target_link_libraries( test_client PRIVATE dl )
 	endif()
 
+	set_target_properties( test_client PROPERTIES
+		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/workdir"
+		VS_DEBUGGER_COMMAND_ARGUMENTS "$<TARGET_FILE:client>"
+	)
+
 	#-----------------------------------------------------------------
 
 	add_executable( test_server
@@ -88,6 +93,11 @@ if( BUILD_TESTING )
 	if( PLATFORM_LINUX )
 		target_link_libraries( test_server PRIVATE dl )
 	endif()
+
+	set_target_properties( test_server PROPERTIES
+		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/workdir"
+		VS_DEBUGGER_COMMAND_ARGUMENTS "$<TARGET_FILE:hl>"
+	)
 
 	#-----------------------------------------------------------------
 

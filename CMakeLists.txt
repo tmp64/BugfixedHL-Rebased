@@ -22,39 +22,43 @@ list( APPEND CMAKE_MODULE_PATH
 
 include( InputFilesList )
 include( WinXPSupport )
-include( GetGitRevisionDescription )
+include( GitVersionSemverfier )
 
 #-----------------------------------------------------------------
 # Version
 #-----------------------------------------------------------------
 # Also needs to be changed in scripts/BuildRelease.py
 set( BHL_REPO_VERSION_MAJOR 1 )
-set( BHL_REPO_VERSION_MINOR 10 )
-set( BHL_REPO_VERSION_PATCH 4 )
+set( BHL_REPO_VERSION_MINOR 11 )
+set( BHL_REPO_VERSION_PATCH 0 )
 set( BHL_REPO_VERSION_TAG "dev" )
 
-if( NOT BHL_VERSION_MAJOR )
-	set( BHL_VERSION_MAJOR ${BHL_REPO_VERSION_MAJOR} )
-endif()
-if( NOT BHL_VERSION_MINOR )
-	set( BHL_VERSION_MINOR ${BHL_REPO_VERSION_MINOR} )
-endif()
-if( NOT BHL_VERSION_PATCH )
-	set( BHL_VERSION_PATCH ${BHL_REPO_VERSION_PATCH} )
-endif()
-if( NOT BHL_VERSION_TAG )
-	set( BHL_VERSION_TAG ${BHL_REPO_VERSION_TAG} )
-elseif( "${BHL_VERSION_TAG}" STREQUAL "no_tag" )
-	set( BHL_VERSION_TAG "" )
+if( GIT_SUCCESS )
+	message( "Version: ${GIT_SEM_VERSION} (from Git)" )
+else()
+	set(GIT_MAJOR ${BHL_REPO_VERSION_MAJOR})
+	set(GIT_MINOR ${BHL_REPO_VERSION_MINOR})
+	set(GIT_PATCH ${BHL_REPO_VERSION_PATCH})
+	set(GIT_SKIP 0)
+
+	if( BHL_REPO_VERSION_TAG STREQUAL "" )
+		set(GIT_TAG "v${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}")
+		set(GIT_SEM_VERSION "${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}+no-git")
+	else()
+		set(GIT_TAG "v${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}-${BHL_REPO_VERSION_TAG}")
+		set(GIT_SEM_VERSION "${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}-${BHL_REPO_VERSION_TAG}+no-git")
+	endif()
+
+	message( "Version: ${GIT_SEM_VERSION} (from repo)" )
 endif()
 
 unset( BHL_REPO_VERSION_MAJOR )
 unset( BHL_REPO_VERSION_MINOR )
 unset( BHL_REPO_VERSION_PATCH )
 unset( BHL_REPO_VERSION_TAG )
-# Use BHL_VERSION_XXX from now on
+# Use GIT_XXX from now on
 
-project( BugfixedHL VERSION "${BHL_VERSION_MAJOR}.${BHL_VERSION_MINOR}.${BHL_VERSION_PATCH}" )
+project( BugfixedHL VERSION "${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}.${GIT_SKIP}" )
 include( PlatformInfo )
 include( CTest )
 
@@ -272,53 +276,47 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_LEVEL_CXX} ${WARNING_LEVEL_C_
 #-----------------------------------------------------------------
 # appversion.h generator
 #-----------------------------------------------------------------
-find_package( Git )
-if( GIT_FOUND )
-	# Get branch name
-	execute_process(
-		COMMAND "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		OUTPUT_VARIABLE GIT_BRANCH
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	
-	# Replace slash with hyphen
-	string( REPLACE "/" "-" GIT_BRANCH ${GIT_BRANCH} )
-	
-	# Get last commit hash (short)
-	execute_process(
-		COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		OUTPUT_VARIABLE GIT_COMMIT_HASH
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	
-	# Get whether worktree is dirty
-	git_local_changes( GIT_DIRTY )
-	if( GIT_DIRTY STREQUAL "CLEAN" )
-		set( GIT_DIRTY FALSE )
+set( BHL_GENERATED_DIR "${CMAKE_BINARY_DIR}/generated" )
+set( BHL_GENERATED_INCLUDE_DIR "${BHL_GENERATED_DIR}/include" )
+configure_file( "src/common/appversion.h.in" "${BHL_GENERATED_INCLUDE_DIR}/appversion.h" )
+include_directories( ${BHL_GENERATED_INCLUDE_DIR} )
+
+# Generates version_info.rc resource file for the target.
+# @param target_name		Target name. Must be an EXE or a DLL.
+# @param file_name			Output file name.
+# @param file_description	Short file description.
+function(bhl_version_info target_name file_name file_description)
+	get_target_property(target_type ${target_name} TYPE)
+
+	if(target_type STREQUAL "EXECUTABLE")
+		set(is_dll 0)
+	elseif(target_type STREQUAL "SHARED_LIBRARY")
+		set(is_dll 1)
 	else()
-		set( GIT_DIRTY TRUE )
+		message(FATAL_ERROR "Target ${target_name} is neither EXE nor DLL, it's ${target_type}")
 	endif()
-else()
-	set( GIT_BRANCH "unknown" )
-	set( GIT_COMMIT_HASH "0000000" )
-	set( GIT_DIRTY FALSE )
-endif()
 
-# Assemble version string
-set( BHL_VERSION_STRING "${BHL_VERSION_MAJOR}.${BHL_VERSION_MINOR}.${BHL_VERSION_PATCH}" )
-if( BHL_VERSION_TAG )
-	set( BHL_VERSION_STRING "${BHL_VERSION_STRING}-${BHL_VERSION_TAG}" )
-endif()
-set( BHL_VERSION_STRING "${BHL_VERSION_STRING}+${GIT_BRANCH}.${GIT_COMMIT_HASH}" )
-if( GIT_DIRTY )
-	set( BHL_VERSION_STRING "${BHL_VERSION_STRING}.m" )
-endif()
+	if(GIT_SKIP GREATER 0)
+		set(is_prerelease 1)
+	else()
+		set(is_prerelease 0)
+	endif()
 
-# Generate version file
-file( MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated" )
-configure_file( "src/common/appversion.h.in" "${CMAKE_BINARY_DIR}/generated/appversion.h" )
+	string(TIMESTAMP current_year "%Y" UTC)
+
+	set(generated_dir "${BHL_GENERATED_DIR}/${target_name}")
+	set(in_file_path "${CMAKE_SOURCE_DIR}/src/common/version_info.rc.in")
+	set(out_file_path "${generated_dir}/version_info.rc")
+
+	configure_file(
+		${in_file_path}
+		${out_file_path}
+		@ONLY
+	)
+
+	target_sources(${target_name} PRIVATE ${out_file_path})
+	source_group(TREE ${generated_dir} PREFIX "Generated" FILES ${out_file_path})
+endfunction()
 
 #-----------------------------------------------------------------
 # Autodeploy macro
@@ -381,7 +379,6 @@ set( GAME_COMMON_DEFINES
 )
 
 set( GAME_COMMON_INCLUDE_PATHS
-	${CMAKE_BINARY_DIR}/generated
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/server
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/shared
 	${CMAKE_CURRENT_SOURCE_DIR}/src/public
@@ -483,6 +480,7 @@ preprocess_sources()
 add_library( client SHARED ${PREP_SRCS} )
 check_winxp_support( client )
 add_auto_deploy( client PublishPathClient.txt )
+bhl_version_info( client "client.dll" "BugfixedHL-Rebased Client" )
 
 target_include_directories( client PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
@@ -568,6 +566,7 @@ preprocess_sources()
 add_library( hl SHARED ${PREP_SRCS} )
 check_winxp_support( hl )
 add_auto_deploy( hl PublishPathServer.txt )
+bhl_version_info( hl "hl.dll" "BugfixedHL-Rebased Server" )
 
 target_include_directories( hl PRIVATE
 	#${CMAKE_CURRENT_SOURCE_DIR}/src/game/server	# Already in GAME_COMMON_INCLUDE_PATHS
@@ -629,6 +628,7 @@ preprocess_sources()
 add_library( bugfixedapi_amxx SHARED ${PREP_SRCS} )
 check_winxp_support( bugfixedapi_amxx )
 add_auto_deploy( bugfixedapi_amxx PublishPathAMXX.txt )
+bhl_version_info( bugfixedapi_amxx "bugfixedapi_amxx.dll" "BugfixedHL-Rebased AMXX Module" )
 
 target_include_directories( bugfixedapi_amxx PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/bugfixedapi_amxx

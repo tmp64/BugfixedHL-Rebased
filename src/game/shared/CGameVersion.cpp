@@ -256,23 +256,6 @@ int CGameVersion::Compare(const CGameVersion &rhs) const
 	if (c == 0)
 		return 0;
 
-	// If x.y.z equals, check "dev" tag
-	if (xyzIdentical)
-	{
-		bool lhsIsDev = m_SemVer.prerelease && !strcmp("dev", m_SemVer.prerelease);
-		bool rhsIsDev = rhs.m_SemVer.prerelease && !strcmp("dev", rhs.m_SemVer.prerelease);
-
-		// If both/neither are "dev", return semver compare result
-		if (lhsIsDev == rhsIsDev)
-			return c;
-
-		// Otherwise, "dev" version is newer.
-		if (lhsIsDev)
-			return 1;
-		else
-			return -1;
-	}
-
 	return c;
 }
 

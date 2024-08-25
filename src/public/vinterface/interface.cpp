@@ -99,6 +99,7 @@ static IBaseInterface *CreateInterfaceLocal(const char *pName, int *pReturnCode)
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
+#undef ARRAYSIZE
 #include "windows.h"
 #endif
 

@@ -29,8 +29,8 @@ include( GitVersionSemverfier )
 #-----------------------------------------------------------------
 # Also needs to be changed in scripts/BuildRelease.py
 set( BHL_REPO_VERSION_MAJOR 1 )
-set( BHL_REPO_VERSION_MINOR 10 )
-set( BHL_REPO_VERSION_PATCH 4 )
+set( BHL_REPO_VERSION_MINOR 11 )
+set( BHL_REPO_VERSION_PATCH 0 )
 set( BHL_REPO_VERSION_TAG "dev" )
 
 if( GIT_SUCCESS )

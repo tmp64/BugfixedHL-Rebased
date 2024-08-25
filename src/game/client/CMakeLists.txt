@@ -9,6 +9,7 @@ add_sources(
 	cl_util.h
 	cl_voice_status.cpp
 	cl_voice_status.h
+	client.rc
 	client_steam_context.cpp
 	client_steam_context.h
 	client_vgui.cpp

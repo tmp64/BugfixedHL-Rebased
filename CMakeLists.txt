@@ -22,7 +22,7 @@ list( APPEND CMAKE_MODULE_PATH
 
 include( InputFilesList )
 include( WinXPSupport )
-include( GetGitRevisionDescription )
+include( GitVersionSemverfier )
 
 #-----------------------------------------------------------------
 # Version
@@ -33,28 +33,25 @@ set( BHL_REPO_VERSION_MINOR 10 )
 set( BHL_REPO_VERSION_PATCH 4 )
 set( BHL_REPO_VERSION_TAG "dev" )
 
-if( NOT BHL_VERSION_MAJOR )
-	set( BHL_VERSION_MAJOR ${BHL_REPO_VERSION_MAJOR} )
-endif()
-if( NOT BHL_VERSION_MINOR )
-	set( BHL_VERSION_MINOR ${BHL_REPO_VERSION_MINOR} )
-endif()
-if( NOT BHL_VERSION_PATCH )
-	set( BHL_VERSION_PATCH ${BHL_REPO_VERSION_PATCH} )
-endif()
-if( NOT BHL_VERSION_TAG )
-	set( BHL_VERSION_TAG ${BHL_REPO_VERSION_TAG} )
-elseif( "${BHL_VERSION_TAG}" STREQUAL "no_tag" )
-	set( BHL_VERSION_TAG "" )
+if( GIT_SUCCESS )
+	message( "Version: ${GIT_SEM_VERSION} (from Git)" )
+else()
+	set(GIT_MAJOR ${BHL_REPO_VERSION_MAJOR})
+	set(GIT_MINOR ${BHL_REPO_VERSION_MINOR})
+	set(GIT_PATCH ${BHL_REPO_VERSION_PATCH})
+	set(GIT_SKIP 0)
+	set(GIT_TAG "v${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}-${BHL_REPO_VERSION_TAG}")
+	set(GIT_SEM_VERSION "${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}-${BHL_REPO_VERSION_TAG}+no-git")
+	message( "Version: ${GIT_SEM_VERSION} (from repo)" )
 endif()
 
 unset( BHL_REPO_VERSION_MAJOR )
 unset( BHL_REPO_VERSION_MINOR )
 unset( BHL_REPO_VERSION_PATCH )
 unset( BHL_REPO_VERSION_TAG )
-# Use BHL_VERSION_XXX from now on
+# Use GIT_XXX from now on
 
-project( BugfixedHL VERSION "${BHL_VERSION_MAJOR}.${BHL_VERSION_MINOR}.${BHL_VERSION_PATCH}" )
+project( BugfixedHL VERSION "${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}" )
 include( PlatformInfo )
 include( CTest )
 
@@ -272,51 +269,6 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_LEVEL_CXX} ${WARNING_LEVEL_C_
 #-----------------------------------------------------------------
 # appversion.h generator
 #-----------------------------------------------------------------
-find_package( Git )
-if( GIT_FOUND )
-	# Get branch name
-	execute_process(
-		COMMAND "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		OUTPUT_VARIABLE GIT_BRANCH
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	
-	# Replace slash with hyphen
-	string( REPLACE "/" "-" GIT_BRANCH ${GIT_BRANCH} )
-	
-	# Get last commit hash (short)
-	execute_process(
-		COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		OUTPUT_VARIABLE GIT_COMMIT_HASH
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	
-	# Get whether worktree is dirty
-	git_local_changes( GIT_DIRTY )
-	if( GIT_DIRTY STREQUAL "CLEAN" )
-		set( GIT_DIRTY FALSE )
-	else()
-		set( GIT_DIRTY TRUE )
-	endif()
-else()
-	set( GIT_BRANCH "unknown" )
-	set( GIT_COMMIT_HASH "0000000" )
-	set( GIT_DIRTY FALSE )
-endif()
-
-# Assemble version string
-set( BHL_VERSION_STRING "${BHL_VERSION_MAJOR}.${BHL_VERSION_MINOR}.${BHL_VERSION_PATCH}" )
-if( BHL_VERSION_TAG )
-	set( BHL_VERSION_STRING "${BHL_VERSION_STRING}-${BHL_VERSION_TAG}" )
-endif()
-set( BHL_VERSION_STRING "${BHL_VERSION_STRING}+${GIT_BRANCH}.${GIT_COMMIT_HASH}" )
-if( GIT_DIRTY )
-	set( BHL_VERSION_STRING "${BHL_VERSION_STRING}.m" )
-endif()
-
-# Generate version file
 file( MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated" )
 configure_file( "src/common/appversion.h.in" "${CMAKE_BINARY_DIR}/generated/appversion.h" )
 

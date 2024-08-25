@@ -372,14 +372,6 @@ class BuildScript:
             args.extend(['-B', self.paths.build])
             args.extend(self.platform.get_cmake_args())
             args.extend(['-DUSE_UPDATER=TRUE'])
-            args.extend(['-DBHL_VERSION_MAJOR=' + str(self.release_version_array[0])])
-            args.extend(['-DBHL_VERSION_MINOR=' + str(self.release_version_array[1])])
-            args.extend(['-DBHL_VERSION_PATCH=' + str(self.release_version_array[2])])
-
-            if self.release_version_array[3] == '':
-                args.extend(['-DBHL_VERSION_TAG=no_tag'])
-            else:
-                args.extend(['-DBHL_VERSION_TAG=' + self.release_version_array[3]])
 
             args.extend(self.cmake_args)
 

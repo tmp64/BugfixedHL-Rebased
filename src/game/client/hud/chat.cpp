@@ -838,8 +838,8 @@ Color CHudChat::GetDefaultTextColor(void)
 //-----------------------------------------------------------------------------
 Color CHudChat::GetClientColor(int clientIndex)
 {
-	if (clientIndex >= 1 && clientIndex <= MAX_PLAYERS)
-		return g_pViewport->GetTeamColor(GetPlayerInfo(clientIndex)->Update()->GetTeamNumber());
+	if (CPlayerInfo *pi = GetPlayerInfoSafe(clientIndex))
+		return g_pViewport->GetTeamColor(pi->Update()->GetTeamNumber());
 
 	return g_pViewport->GetTeamColor(0);
 }
@@ -1206,46 +1206,44 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	AgHudLocation::Get()->ParseAndEditSayString(iPlayerIndex, msg, sizeof(msg));
 
 	// Replace server name with real name
-	CPlayerInfo *pi = nullptr;
-	if (iPlayerIndex != 0)
+	CPlayerInfo *pi = GetPlayerInfoSafe(iPlayerIndex);
+	if (pi)
+		pi->Update();
+
+	if (pi && pi->HasRealName())
 	{
-		pi = GetPlayerInfo(iPlayerIndex)->Update();
+		const char *realname = pi->GetDisplayName();
+		int realnamelen = strlen(realname);
 
-		if (pi->HasRealName())
+		// Find player name
+		const char *nameinmsg = strstr(msg, pi->GetName());
+		int namelen = 0;
+
+		if (!nameinmsg)
 		{
-			const char *realname = pi->GetDisplayName();
-			int realnamelen = strlen(realname);
+			// Try name without color codes (miniAG bug)
+			const char *strippedname = RemoveColorCodes(pi->GetName());
+			nameinmsg = strstr(msg, strippedname);
 
-			// Find player name
-			const char *nameinmsg = strstr(msg, pi->GetName());
-			int namelen = 0;
+			if (nameinmsg)
+				namelen = strlen(strippedname);
+		}
+		else
+		{
+			namelen = strlen(pi->GetName());
+		}
 
-			if (!nameinmsg)
-			{
-				// Try name without color codes (miniAG bug)
-				const char *strippedname = RemoveColorCodes(pi->GetName());
-				nameinmsg = strstr(msg, strippedname);
+		if (namelen > 0)
+		{
+			int namestart = nameinmsg - msg;
+			int nameend = namestart + namelen;
+			int realnameend = namestart + realnamelen;
 
-				if (nameinmsg)
-					namelen = strlen(strippedname);
-			}
-			else
-			{
-				namelen = strlen(pi->GetName());
-			}
+			// Move part after the name to where it will be after replace
+			memmove(msg + realnameend, msg + nameend, std::min(sizeof(msg) - nameend + 1, sizeof(msg) - realnameend - 1));
 
-			if (namelen > 0)
-			{
-				int namestart = nameinmsg - msg;
-				int nameend = namestart + namelen;
-				int realnameend = namestart + realnamelen;
-
-				// Move part after the name to where it will be after replace
-				memmove(msg + realnameend, msg + nameend, std::min(sizeof(msg) - nameend + 1, sizeof(msg) - realnameend - 1));
-
-				// Replace name with realname
-				memcpy(msg + namestart, realname, realnamelen);
-			}
+			// Replace name with realname
+			memcpy(msg + namestart, realname, realnamelen);
 		}
 	}
 
@@ -1293,9 +1291,9 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	int iNameLength = 0;
 
 	const char *playerName = "Console";
-	if (iPlayerIndex != 0)
+	if (CPlayerInfo *pi = GetPlayerInfoSafe(iPlayerIndex))
 	{
-		playerName = GetPlayerInfo(iPlayerIndex)->Update()->GetDisplayName();
+		playerName = pi->Update()->GetDisplayName();
 	}
 
 	int msglen = strlen(pmsg);

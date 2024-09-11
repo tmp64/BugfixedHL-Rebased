@@ -82,9 +82,8 @@ int AgHudGlobal::MsgFunc_AuthID(const char *pszName, int iSize, void *pbuf)
 	const int slot = READ_BYTE();
 	char *steamid = READ_STRING();
 
-	if (slot > 0 && slot <= MAX_PLAYERS)
+	if (CPlayerInfo *pi = GetPlayerInfoSafe(slot))
 	{
-		CPlayerInfo *pi = GetPlayerInfo(slot);
 		if (!strncmp(steamid, "STEAM_", 6) || !strncmp(steamid, "VALVE_", 6))
 			Q_strncpy(pi->m_szSteamID, steamid + 6, sizeof(pi->m_szSteamID)); // cutout "STEAM_" or "VALVE_" start of the string
 		else

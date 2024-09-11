@@ -525,7 +525,7 @@ void CGameStudioModelRenderer::ForceModelCommand(void)
 
 			CPlayerInfo *pi = GetPlayerInfo(i + 1)->Update();
 
-			if (!CHudSpectator::Get()->IsActivePlayer(gEngfuncs.GetEntityByIndex(i + 1)))
+			if (!pi->IsConnected() || !CHudSpectator::Get()->IsActivePlayer(gEngfuncs.GetEntityByIndex(i + 1)))
 				continue;
 
 			strncpy(plrName, pi->GetName(), MAX_PLAYER_NAME - 1);
@@ -601,7 +601,7 @@ void CGameStudioModelRenderer::ForceColorsCommand(void)
 
 			CPlayerInfo *pi = GetPlayerInfo(i + 1)->Update();
 
-			if (!CHudSpectator::Get()->IsActivePlayer(gEngfuncs.GetEntityByIndex(i + 1)))
+			if (!pi->IsConnected() || !CHudSpectator::Get()->IsActivePlayer(gEngfuncs.GetEntityByIndex(i + 1)))
 				continue;
 
 			strncpy(plrName, pi->GetName(), MAX_PLAYER_NAME - 1);

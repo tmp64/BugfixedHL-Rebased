@@ -334,6 +334,7 @@ bool CPlayerInfo::IsSpectator()
 
 const char *CPlayerInfo::GetDisplayName(bool bNoColorCodes)
 {
+	Assert(m_bIsConnected);
 	const char *name = nullptr;
 
 	if (m_szRealName[0])

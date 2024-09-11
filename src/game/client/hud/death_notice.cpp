@@ -197,7 +197,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	// Get the Killer's name
 	CPlayerInfo *killerInfo = nullptr;
 	const char *killer_name;
-	if (killer != 0 && (killerInfo = GetPlayerInfo(killer))->IsConnected())
+	if (killer != 0 && (killerInfo = GetPlayerInfoSafe(killer)))
 	{
 		killer_name = killerInfo->GetDisplayName();
 
@@ -223,7 +223,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	// Get the Victim's name
 	const char *victim_name = NULL;
 	// If victim is -1, the killer killed a specific, non-player object (like a sentrygun)
-	if (((char)victim) != -1)
+	if (((char)victim) != -1 && GetPlayerInfoSafe(victim))
 		victim_name = GetPlayerInfo(victim)->GetDisplayName();
 	if (!victim_name)
 	{
@@ -232,9 +232,9 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char *pszName, int iSize, void *pbuf
 	}
 	else
 	{
-		CPlayerInfo *victimInfo = GetPlayerInfo(victim);
+		CPlayerInfo *victimInfo = GetPlayerInfoSafe(victim);
 
-		if (victimInfo->GetTeamNumber() == 0)
+		if (!victimInfo || victimInfo->GetTeamNumber() == 0)
 		{
 			rgDeathNoticeList[i].bVictimHasColor = false;
 		}

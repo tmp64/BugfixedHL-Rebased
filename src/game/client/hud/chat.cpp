@@ -1279,7 +1279,7 @@ void CHudChat::ChatPrintf(int iPlayerIndex, const char *fmt, ...)
 	}
 
 	// If a player is muted for voice, also mute them for text because jerks gonna jerk.
-	if (cl_mute_all_comms.GetBool() && iPlayerIndex != 0 && iPlayerIndex != GetThisPlayerInfo()->GetIndex())
+	if (GetThisPlayerInfo() && cl_mute_all_comms.GetBool() && iPlayerIndex != 0 && iPlayerIndex != GetThisPlayerInfo()->GetIndex())
 	{
 		if (GetClientVoiceMgr() && GetClientVoiceMgr()->IsPlayerBlocked(iPlayerIndex))
 			return;

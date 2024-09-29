@@ -16,6 +16,7 @@ import os
 USER_MODIFIABLE_FILES = [
     'ui/resource/ChatScheme.res',
     'ui/resource/ClientScheme.res',
+    'ui/resource/ClientSourceScheme.res',
     'ui/scripts/HudLayout.res',
 ]
 

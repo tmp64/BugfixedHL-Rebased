@@ -102,8 +102,8 @@ void CHudBattery::Draw(float flTime)
 
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 
-	// this used to just be ScreenWidth/5 but that caused real issues at higher resolutions. Instead, base it on the width of this sprite.
-	x = 3 * m_rc1.GetWidth();
+	// this used to just be ScreenWidth/5 but that caused real issues at higher resolutions. Instead, base it on the width of digit 0
+	x = 10 * gHUD.GetSpriteRect(gHUD.m_HUD_number_0).GetWidth();
 
 	// make sure we have the right sprite handles
 	if (!m_hSprite1)

@@ -29,7 +29,7 @@ private:
 	CCvarCheckButton *m_pShowEff = nullptr;
 	vgui2::Label *m_pEffTypeLabel = nullptr;
 	vgui2::ComboBox *m_pEffTypeBox = nullptr;
-	int m_EffTypeItems[2];
+	int m_EffTypeItems[3];
 
 	vgui2::Label *m_pMouseLabel = nullptr;
 	vgui2::ComboBox *m_pMouseBox = nullptr;

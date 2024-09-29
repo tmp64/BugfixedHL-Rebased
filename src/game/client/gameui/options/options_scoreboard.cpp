@@ -21,7 +21,7 @@ CScoreboardSubOptions::CScoreboardSubOptions(vgui2::Panel *parent)
 	m_pEffTypeBox = new vgui2::ComboBox(this, "EffTypeBox", 3, false);
 	m_EffTypeItems[0] = m_pEffTypeBox->AddItem("#BHL_AdvOptions_Scores_EffType0", new KeyValues("Type0", "value", 0));
 	m_EffTypeItems[1] = m_pEffTypeBox->AddItem("#BHL_AdvOptions_Scores_EffType1", new KeyValues("Type1", "value", 1));
-	m_EffTypeItems[1] = m_pEffTypeBox->AddItem("#BHL_AdvOptions_Scores_EffType2", new KeyValues("Type2", "value", 2));
+	m_EffTypeItems[2] = m_pEffTypeBox->AddItem("#BHL_AdvOptions_Scores_EffType2", new KeyValues("Type2", "value", 2));
 
 	m_pMouseLabel = new vgui2::Label(this, "MouseLabel", "#BHL_AdvOptions_Scores_Mouse");
 	m_pMouseBox = new vgui2::ComboBox(this, "MouseBox", 3, false);

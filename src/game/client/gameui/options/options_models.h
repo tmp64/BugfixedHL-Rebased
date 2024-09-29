@@ -37,6 +37,7 @@ private:
 	CCvarCheckButton *m_pLeftHand = nullptr;
 	CCvarCheckButton *m_pAngledBob = nullptr;
 	CCvarCheckButton *m_pNoShells = nullptr;
+	CCvarCheckButton *m_pNoViewModel = nullptr;
 
 	int m_iNewItemIdx = 0;
 

@@ -35,6 +35,7 @@ CModelSubOptions::CModelSubOptions(vgui2::Panel *parent)
 	m_pLeftHand = new CCvarCheckButton(this, "LeftHand", "#BHL_AdvOptions_Models_LeftHand", "cl_righthand");
 	m_pAngledBob = new CCvarCheckButton(this, "AngledBob", "#BHL_AdvOptions_Models_AngledBob", "cl_bob_angled");
 	m_pNoShells = new CCvarCheckButton(this, "NoShells", "#BHL_AdvOptions_Models_NoShells", "cl_noshells");
+	m_pNoViewModel = new CCvarCheckButton(this, "NoViewModel", "#BHL_AdvOptions_Models_NoViewmodel", "r_drawviewmodel", true);
 
 	LoadControlSettings(VGUI2_ROOT_DIR "resource/options/ModelSubOptions.res");
 }
@@ -98,6 +99,7 @@ void CModelSubOptions::OnResetData()
 	m_pLeftHand->ResetData();
 	m_pAngledBob->ResetData();
 	m_pNoShells->ResetData();
+	m_pNoViewModel->ResetData();
 }
 
 void CModelSubOptions::OnApplyChanges()
@@ -110,6 +112,7 @@ void CModelSubOptions::OnApplyChanges()
 	m_pLeftHand->ApplyChanges();
 	m_pAngledBob->ApplyChanges();
 	m_pNoShells->ApplyChanges();
+	m_pNoViewModel->ApplyChanges();
 }
 
 void CModelSubOptions::ParseEnemyModels()

@@ -30,7 +30,7 @@ private:
 	CCvarCheckButton *m_pRenderCheckbox = nullptr;
 	CCvarCheckButton *m_pDimCheckbox = nullptr;
 	CCvarCheckButton *m_pWeaponSpriteCheckbox = nullptr;
-	CCvarCheckButton *m_pViewmodelCheckbox = nullptr;
+	CCvarCheckButton *m_pMenuFKeys = nullptr;
 	CCvarCheckButton *m_pCenterIdCvar = nullptr;
 	CCvarCheckButton *m_pRainbowCvar = nullptr;
 

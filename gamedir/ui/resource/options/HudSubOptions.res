@@ -139,10 +139,10 @@
 		"useproportionalinsets"		"0"
 		"Default"		"0"
 	}
-	"ViewmodelCheckbox"
+	"MenuFKeys"
 	{
 		"ControlName"		"CCvarCheckButton"
-		"fieldName"		"ViewmodelCheckbox"
+		"fieldName"		"MenuFKeys"
 		"xpos"		"31"
 		"ypos"		"112"
 		"wide"		"244"
@@ -155,7 +155,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"		"0"
-		"labelText"		"#BHL_AdvOptions_HUD_Viewmodel"
+		"labelText"		"#BHL_AdvOptions_HUD_MenuFKeys"
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"

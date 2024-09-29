@@ -22,8 +22,13 @@ public:
 	int m_fWaitingForMore;
 
 private:
+	float m_flMenuCloseTime = -1;
+
 	//! Calculates the top Y coordinate for menu rendering.
 	int GetStartY(int lineCount, int lineHeight);
+
+	//! Hides the menu and records close time.
+	void CloseMenu();
 };
 
 #endif

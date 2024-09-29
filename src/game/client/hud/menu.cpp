@@ -30,6 +30,7 @@
 #include "chat.h"
 
 ConVar hud_menu_fkeys("hud_menu_fkeys", "1", FCVAR_BHL_ARCHIVE, "Use keys F1-F10 in the menus");
+ConVar hud_menu_fkeys_cooldown("hud_menu_fkeys_cooldown", "1.5", FCVAR_BHL_ARCHIVE, "Cooldown F1-F10 after the menu closes");
 
 #define MAX_MENU_STRING 512
 char g_szMenuString[MAX_MENU_STRING];
@@ -53,6 +54,7 @@ void CHudMenu::InitHudData(void)
 	m_fMenuDisplayed = 0;
 	m_bitsValidSlots = 0;
 	m_iFlags &= ~HUD_ACTIVE;
+	m_flMenuCloseTime = -1;
 	Reset();
 }
 
@@ -134,8 +136,7 @@ void CHudMenu::Draw(float flTime)
 	{
 		if (m_flShutoffTime <= gHUD.m_flTime)
 		{ // times up, shutoff
-			m_fMenuDisplayed = 0;
-			m_iFlags &= ~HUD_ACTIVE;
+			CloseMenu();
 			return;
 		}
 	}
@@ -252,17 +253,24 @@ bool CHudMenu::OnWeaponSlotSelected(int slotIdx)
 
 bool CHudMenu::OnKeyPressed(int keynum)
 {
-	if (!m_fMenuDisplayed)
-		return false;
-
 	if (!hud_menu_fkeys.GetBool())
 		return false;
 
 	if (!(keynum >= K_F1 && keynum <= K_F10))
 		return false;
 
-	SelectMenuItem(keynum - K_F1 + 1);
-	return true;
+	if (m_fMenuDisplayed)
+	{
+		SelectMenuItem(keynum - K_F1 + 1);
+		return true;
+	}
+	else if (m_flMenuCloseTime != -1 && gEngfuncs.GetAbsoluteTime() - m_flMenuCloseTime < hud_menu_fkeys_cooldown.GetFloat())
+	{
+		// In cooldown to prevent miss-presses
+		return true;
+	}
+
+	return false;
 }
 
 // selects an item from the menu
@@ -276,35 +284,8 @@ void CHudMenu::SelectMenuItem(int menu_item)
 		EngineClientCmd(szbuf);
 
 		// remove the menu
-		m_fMenuDisplayed = 0;
-		m_iFlags &= ~HUD_ACTIVE;
+		CloseMenu();
 	}
-}
-
-int CHudMenu::GetStartY(int lineCount, int lineHeight)
-{
-	int height = (lineCount + 1) * lineHeight; // +1 to account for the last line missing a \n
-	int top = (ScreenHeight / 2) - (height / 2); // Centered vertically
-	int bottom = top + height;
-
-	// Make sure menu doesn't occlude the chat
-	int chatY = CHudChat::Get()->GetYPos();
-	if (bottom > chatY)
-	{
-		int delta = bottom - chatY;
-		top -= delta;
-		bottom -= delta;
-	}
-
-	// Make sure the menu doesn't go out of bounds
-	constexpr int MARGIN_TOP = 10;
-	if (top < MARGIN_TOP)
-	{
-		top += MARGIN_TOP;
-		bottom += MARGIN_TOP;
-	}
-
-	return top;
 }
 
 // Message handler for ShowMenu message
@@ -358,11 +339,44 @@ int CHudMenu::MsgFunc_ShowMenu(const char *pszName, int iSize, void *pbuf)
 	}
 	else
 	{
-		m_fMenuDisplayed = 0; // no valid slots means that the menu should be turned off
-		m_iFlags &= ~HUD_ACTIVE;
+		// no valid slots means that the menu should be turned off
+		CloseMenu();
 	}
 
 	m_fWaitingForMore = NeedMore;
 
 	return 1;
+}
+
+int CHudMenu::GetStartY(int lineCount, int lineHeight)
+{
+	int height = (lineCount + 1) * lineHeight; // +1 to account for the last line missing a \n
+	int top = (ScreenHeight / 2) - (height / 2); // Centered vertically
+	int bottom = top + height;
+
+	// Make sure menu doesn't occlude the chat
+	int chatY = CHudChat::Get()->GetYPos();
+	if (bottom > chatY)
+	{
+		int delta = bottom - chatY;
+		top -= delta;
+		bottom -= delta;
+	}
+
+	// Make sure the menu doesn't go out of bounds
+	constexpr int MARGIN_TOP = 10;
+	if (top < MARGIN_TOP)
+	{
+		top += MARGIN_TOP;
+		bottom += MARGIN_TOP;
+	}
+
+	return top;
+}
+
+void CHudMenu::CloseMenu()
+{
+	m_fMenuDisplayed = 0;
+	m_iFlags &= ~HUD_ACTIVE;
+	m_flMenuCloseTime = gEngfuncs.GetAbsoluteTime();
 }

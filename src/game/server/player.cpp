@@ -58,6 +58,7 @@ extern CGraph WorldGraph;
 ConVar mp_teamspawn("mp_teamspawn", "0", FCVAR_SERVER, "When teamplay is enabled, players will be spawned on team spawns if the map has them");
 ConVar mp_weaponbox_time("mp_weaponbox_time", "120", FCVAR_SERVER, "Dead player's weapons will stay for this many seconds, 0 disables them, -1 forever");
 ConVar mp_weapondrop_time("mp_weapondrop_time", "0", FCVAR_SERVER, "Manually dropped weapons will stay for this many seconds, 0 forever");
+ConVar mp_spawntype("mp_spawntype", "0", FCVAR_SERVER, "Spawn point selection method:\n0 - HL25\n1 - Pre-HL25\n2 - Random with item accounting");
 
 #define TRAIN_ACTIVE  0x80
 #define TRAIN_NEW     0xc0
@@ -70,6 +71,24 @@ ConVar mp_weapondrop_time("mp_weapondrop_time", "0", FCVAR_SERVER, "Manually dro
 
 #define FLASH_DRAIN_TIME  1.2 //100 units/3 minutes
 #define FLASH_CHARGE_TIME 0.2 // 100 units/20 seconds  (seconds per unit)
+
+constexpr int HalfPlayerHeight = 36;
+constexpr int HeightTolerance = 20;
+constexpr float ItemSearchRadius = 512;
+
+enum class SpawnPointValidity
+{
+	NonValid,
+	Valid,
+	HasPlayers,
+};
+
+struct SpotInfo
+{
+	CBaseEntity *pSpot = nullptr;
+	float flItemsWeight = 0.0f;
+	SpawnPointValidity nValidity = SpawnPointValidity::NonValid;
+};
 
 // Global Savedata for player
 TYPEDESCRIPTION CBasePlayer::m_playerSaveData[] = {
@@ -2927,27 +2946,364 @@ pt_end:
 }
 
 // checks if the spot is clear of players
-BOOL IsSpawnPointValid(CBaseEntity *pPlayer, CBaseEntity *pSpot)
+static SpawnPointValidity IsSpawnPointValid(CBaseEntity *pPlayer, CBaseEntity *pSpot)
 {
 	CBaseEntity *ent = NULL;
 
-	if (!pSpot->IsTriggered(pPlayer))
+	if (pSpot->pev->origin == Vector(0, 0, 0))
 	{
-		return FALSE;
+		return SpawnPointValidity::NonValid;
 	}
 
-	while ((ent = UTIL_FindEntityInSphere(ent, pSpot->pev->origin, 128)) != NULL)
+	if (!pSpot->IsTriggered(pPlayer))
+	{
+		return SpawnPointValidity::NonValid;
+	}
+
+	while ((ent = UTIL_FindEntityInSphere(ent, pSpot->pev->origin, HalfPlayerHeight * 4)) != NULL)
 	{
 		// if ent is a client, don't spawn on 'em
 		if (ent->IsPlayer() && ent != pPlayer)
-			return FALSE;
+			return SpawnPointValidity::HasPlayers;
 	}
 
-	return TRUE;
+	return SpawnPointValidity::Valid;
 }
 
 DLL_GLOBAL CBaseEntity *g_pLastSpawn;
 inline int FNullEnt(CBaseEntity *ent) { return (ent == NULL) || FNullEnt(ent->edict()); }
+
+static float GetItemWeight(CBasePlayerItem *item)
+{
+	ItemInfo p;
+	if (item->GetItemInfo(&p) && p.iWeight > 0)
+	{
+		return (float)p.iWeight / 10;
+	}
+	return 1.0f;
+}
+
+static bool IsSameFloor(Vector spot, Vector item)
+{
+	return (spot.z - HalfPlayerHeight - HeightTolerance <= item.z) && (spot.z + HalfPlayerHeight + HeightTolerance >= item.z);
+}
+
+static float CountEntitesInSphere(Vector point)
+{
+	float weight = 0;
+	CBaseEntity *ent = nullptr;
+
+	while ((ent = UTIL_FindEntityInSphere(ent, point, ItemSearchRadius)))
+	{
+		CBasePlayerItem *item = dynamic_cast<CBasePlayerItem *>(ent);
+
+		if (!item || (item->pev->effects & EF_NODRAW) == EF_NODRAW)
+			continue;
+
+		weight += GetItemWeight(item);
+
+		if (IsSameFloor(point, item->pev->origin))
+			weight += 2.0f;
+	}
+
+	return weight;
+}
+
+static int SortSpots(SpotInfo spotInfos[], int spotsCount)
+{
+	int validSpotsCount = 0;
+	SpotInfo replacement;
+	for (int i = 0; i < spotsCount; i++)
+	{
+		// Search for max weight separately for valid and non valid spots
+		float maxWeightForValid = 0;
+		int maxWeightIndexForValid = -1;
+		float maxWeightForNonValid = 0;
+		int maxWeightIndexForNonValid = -1;
+
+		for (int j = i + 1; j < spotsCount; j++)
+		{
+			if (spotInfos[j].nValidity == SpawnPointValidity::Valid)
+			{
+				if (spotInfos[j].flItemsWeight >= maxWeightForValid)
+				{
+					maxWeightForValid = spotInfos[j].flItemsWeight;
+					maxWeightIndexForValid = j;
+				}
+			}
+			else
+			{
+				if (spotInfos[j].flItemsWeight >= maxWeightForNonValid)
+				{
+					maxWeightForNonValid = spotInfos[j].flItemsWeight;
+					maxWeightIndexForNonValid = j;
+				}
+			}
+		}
+
+		if (maxWeightIndexForValid < 0 && maxWeightIndexForNonValid < 0)
+		{
+			if (spotInfos[i].nValidity == SpawnPointValidity::Valid)
+				validSpotsCount++;
+			break;
+		}
+
+		// Select spot to exchange, valid ones first
+		int replaceIndex = -1;
+
+		if (maxWeightIndexForValid > 0)
+		{
+			validSpotsCount = i + 1;
+			if (spotInfos[i].nValidity != SpawnPointValidity::Valid || spotInfos[i].flItemsWeight < maxWeightForValid)
+				replaceIndex = maxWeightIndexForValid;
+		}
+		else if (maxWeightIndexForNonValid > 0)
+		{
+			if (spotInfos[i].flItemsWeight < maxWeightForNonValid)
+				replaceIndex = maxWeightIndexForNonValid;
+		}
+
+		// Exchange spots
+		if (replaceIndex > 0)
+		{
+			replacement = spotInfos[i];
+			spotInfos[i] = spotInfos[replaceIndex];
+			spotInfos[replaceIndex] = replacement;
+		}
+	}
+
+	return validSpotsCount;
+}
+
+static void ClearSpawn(CBaseEntity *pSpot, edict_t *player)
+{
+	CBaseEntity *ent = nullptr;
+
+	while ((ent = UTIL_FindEntityInSphere(ent, pSpot->pev->origin, 128)))
+	{
+		// if ent is a client, kill em (unless they are ourselves)
+		if (ent->IsPlayer() && !(ent->edict() == player))
+			ent->TakeDamage(VARS(INDEXENT(0)), VARS(INDEXENT(0)), 300, DMG_GENERIC);
+	}
+}
+
+static CBaseEntity *EntSelectSpawnPointOriginal(CBasePlayer *pPlayer)
+{
+	CBaseEntity *pSpot;
+	edict_t *player;
+
+	player = pPlayer->edict();
+
+	// choose a info_player_deathmatch point
+	
+	pSpot = g_pLastSpawn;
+	// Randomize the start spot
+	for (int i = RANDOM_LONG(1, 5); i > 0; i--)
+		pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+
+	if (FNullEnt(pSpot)) // skip over the null point
+		pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+
+	if (g_pGameRules->IsTeamplay() && mp_teamspawn.GetBool())
+	{
+		// try to find team spawn
+		CBaseEntity *pFirstSpot = pSpot;
+
+		do
+		{
+			if (pSpot)
+			{
+				if (g_pGameRules->GetTeamIndex(pPlayer->TeamID()) != pSpot->pev->team)
+				{
+					pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+					continue;
+				}
+
+				if (IsSpawnPointValid(pPlayer, pSpot) == SpawnPointValidity::Valid && pSpot->pev->origin != Vector(0, 0, 0))
+				{
+					return pSpot;
+				}
+			}
+
+			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+		} while (pSpot != pFirstSpot);
+	}
+
+	CBaseEntity *pFirstSpot = pSpot;
+
+	do
+	{
+		if (pSpot)
+		{
+			if (IsSpawnPointValid(pPlayer, pSpot) == SpawnPointValidity::Valid && pSpot->pev->origin != Vector(0, 0, 0))
+			{
+				return pSpot;
+			}
+		}
+
+		pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+	} while (pSpot != pFirstSpot);
+
+	// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
+	if (!FNullEnt(pSpot))
+	{
+		ClearSpawn(pSpot, player);
+		return pSpot;
+	}
+
+	return nullptr;
+}
+
+static CBaseEntity *EntSelectSpawnPointHL25(CBaseEntity *pPlayer)
+{
+	CBaseEntity *pSpot;
+	edict_t *player;
+
+	int nNumRandomSpawnsToTry = 10;
+
+	player = pPlayer->edict();
+
+	// choose a info_player_deathmatch point
+	if (NULL == g_pLastSpawn)
+	{
+		int nNumSpawnPoints = 0;
+		CBaseEntity *pEnt = UTIL_FindEntityByClassname(NULL, "info_player_deathmatch");
+		while (NULL != pEnt)
+		{
+			nNumSpawnPoints++;
+			pEnt = UTIL_FindEntityByClassname(pEnt, "info_player_deathmatch");
+		}
+		nNumRandomSpawnsToTry = nNumSpawnPoints;
+	}
+
+	pSpot = g_pLastSpawn;
+	// Randomize the start spot
+	for (int i = RANDOM_LONG(1, nNumRandomSpawnsToTry - 1); i > 0; i--)
+		pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+	if (FNullEnt(pSpot)) // skip over the null point
+		pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+
+	CBaseEntity *pFirstSpot = pSpot;
+
+	if (g_pGameRules->IsTeamplay() && mp_teamspawn.GetBool())
+	{
+		// try to find team spawn
+		CBaseEntity *pFirstSpot = pSpot;
+
+		do
+		{
+			if (pSpot)
+			{
+				// check if pSpot is valid
+				if (IsSpawnPointValid(pPlayer, pSpot) == SpawnPointValidity::Valid &&
+					g_pGameRules->GetTeamIndex(pPlayer->TeamID()) != pSpot->pev->team)
+				{
+					if (pSpot->pev->origin == Vector(0, 0, 0))
+					{
+						pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+						continue;
+					}
+
+					// if so, go to pSpot
+					return pSpot;
+				}
+			}
+			// increment pSpot
+			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+		} while (pSpot != pFirstSpot); // loop if we're not back to the start
+	}
+
+	do
+	{
+		if (pSpot)
+		{
+			// check if pSpot is valid
+			if (IsSpawnPointValid(pPlayer, pSpot) == SpawnPointValidity::Valid)
+			{
+				if (pSpot->pev->origin == Vector(0, 0, 0))
+				{
+					pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+					continue;
+				}
+
+				// if so, go to pSpot
+				return pSpot;
+			}
+		}
+		// increment pSpot
+		pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
+	} while (pSpot != pFirstSpot); // loop if we're not back to the start
+
+	// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
+	if (!FNullEnt(pSpot))
+	{
+		ClearSpawn(pSpot, player);
+		return pSpot;
+	}
+
+	return nullptr;
+}
+
+static CBaseEntity *EntSelectSpawnPointFair(CBaseEntity *pPlayer)
+{
+	constexpr int MAX_SPOTS = 100;
+	SpotInfo spotInfos[MAX_SPOTS];
+
+	// New way to find spawn spot: count items around
+	int spotsCount = 0;
+
+	// Find all spawn spots
+	CBaseEntity *pSpot = nullptr;
+
+	if (g_pGameRules->IsTeamplay() && mp_teamspawn.GetBool())
+	{
+		// try to find team spawn
+		while ((pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch")))
+		{
+			if (g_pGameRules->GetTeamIndex(pPlayer->TeamID()) != pSpot->pev->team)
+				continue;
+
+			spotInfos[spotsCount].pSpot = pSpot;
+			spotInfos[spotsCount].flItemsWeight = CountEntitesInSphere(pSpot->pev->origin);
+			spotInfos[spotsCount].nValidity = IsSpawnPointValid(pPlayer, pSpot);
+			spotsCount++;
+
+			if (spotsCount == MAX_SPOTS)
+				break;
+		}
+	}
+
+	if (spotsCount == 0)
+	{
+		// Not using team spawns or not found any
+		while ((pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch")))
+		{
+			spotInfos[spotsCount].pSpot = pSpot;
+			spotInfos[spotsCount].flItemsWeight = CountEntitesInSphere(pSpot->pev->origin);
+			spotInfos[spotsCount].nValidity = IsSpawnPointValid(pPlayer, pSpot);
+			spotsCount++;
+
+			if (spotsCount == MAX_SPOTS)
+				break;
+		}
+	}
+
+	// Sort them
+	int validSpots = SortSpots(spotInfos, spotsCount);
+	int limit = validSpots;
+
+	if (limit == 0)
+		limit = spotsCount;
+	else if (limit > 10 && (rand() % 3) != 0)
+		limit = 10;
+
+	int take = rand() % limit;
+
+	if (spotInfos[take].nValidity == SpawnPointValidity::HasPlayers)
+		ClearSpawn(spotInfos[take].pSpot, pPlayer->edict());
+
+	return spotInfos[take].pSpot;
+}
 
 /*
 ============
@@ -2958,102 +3314,47 @@ Returns the entity to spawn at
 USES AND SETS GLOBAL g_pLastSpawn
 ============
 */
-edict_t *EntSelectSpawnPoint(CBasePlayer *pPlayer)
+edict_t* EntSelectSpawnPoint(CBasePlayer* pPlayer)
 {
-	CBaseEntity *pSpot;
-	edict_t *player;
+	CBaseEntity *pSpot = nullptr;
 
-	player = pPlayer->edict();
-
-	// choose a info_player_deathmatch point
 	if (g_pGameRules->IsCoOp())
 	{
 		pSpot = UTIL_FindEntityByClassname(g_pLastSpawn, "info_player_coop");
-		if (!FNullEnt(pSpot))
-			goto ReturnSpot;
-		pSpot = UTIL_FindEntityByClassname(g_pLastSpawn, "info_player_start");
-		if (!FNullEnt(pSpot))
-			goto ReturnSpot;
+
+		if (!pSpot)
+			pSpot = UTIL_FindEntityByClassname(g_pLastSpawn, "info_player_start");
 	}
 	else if (g_pGameRules->IsDeathmatch())
 	{
-		pSpot = g_pLastSpawn;
-		// Randomize the start spot
-		for (int i = RANDOM_LONG(1, 5); i > 0; i--)
-			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
-
-		if (FNullEnt(pSpot)) // skip over the null point
-			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
-
-		if (g_pGameRules->IsTeamplay() && mp_teamspawn.GetBool())
+		switch (mp_spawntype.GetInt())
 		{
-			// try to find team spawn
-			CBaseEntity *pFirstSpot = pSpot;
-
-			do
-			{
-				if (pSpot)
-				{
-					if (g_pGameRules->GetTeamIndex(pPlayer->TeamID()) != pSpot->pev->team)
-					{
-						pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
-						continue;
-					}
-
-					if (IsSpawnPointValid(pPlayer, pSpot) && pSpot->pev->origin != Vector(0, 0, 0))
-					{
-						goto ReturnSpot;
-					}
-				}
-
-				pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
-			} while (pSpot != pFirstSpot);
-		}
-
-		CBaseEntity *pFirstSpot = pSpot;
-
-		do
-		{
-			if (pSpot)
-			{
-				if (IsSpawnPointValid(pPlayer, pSpot) && pSpot->pev->origin != Vector(0, 0, 0))
-				{
-					goto ReturnSpot;
-				}
-			}
-
-			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
-		} while (pSpot != pFirstSpot);
-
-		// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
-		if (!FNullEnt(pSpot))
-		{
-			CBaseEntity *ent = NULL;
-			while ((ent = UTIL_FindEntityInSphere(ent, pSpot->pev->origin, 128)) != NULL)
-			{
-				// if ent is a client, kill em (unless they are ourselves)
-				if (ent->IsPlayer() && !(ent->edict() == player))
-					ent->TakeDamage(VARS(INDEXENT(0)), VARS(INDEXENT(0)), 300, DMG_GENERIC);
-			}
-			goto ReturnSpot;
+		case 0:
+		default:
+			pSpot = EntSelectSpawnPointHL25(pPlayer);
+			break;
+		case 1:
+			pSpot = EntSelectSpawnPointOriginal(pPlayer);
+			break;
+		case 2:
+			pSpot = EntSelectSpawnPointFair(pPlayer);
+			break;
 		}
 	}
 
-	// If startspot is set, (re)spawn there.
-	if (FStringNull(gpGlobals->startspot) || !strlen(STRING(gpGlobals->startspot)))
+	if (!pSpot)
 	{
-		pSpot = UTIL_FindEntityByClassname(NULL, "info_player_start");
-		if (!FNullEnt(pSpot))
-			goto ReturnSpot;
-	}
-	else
-	{
-		pSpot = UTIL_FindEntityByTargetname(NULL, STRING(gpGlobals->startspot));
-		if (!FNullEnt(pSpot))
-			goto ReturnSpot;
+		// If startspot is set, (re)spawn there.
+		if (FStringNull(gpGlobals->startspot) || !strlen(STRING(gpGlobals->startspot)))
+		{
+			pSpot = UTIL_FindEntityByClassname(NULL, "info_player_start");
+		}
+		else
+		{
+			pSpot = UTIL_FindEntityByTargetname(NULL, STRING(gpGlobals->startspot));
+		}
 	}
 
-ReturnSpot:
 	if (FNullEnt(pSpot))
 	{
 		ALERT(at_error, "PutClientInServer: no info_player_start on level");

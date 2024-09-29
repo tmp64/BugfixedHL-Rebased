@@ -18,9 +18,10 @@ CScoreboardSubOptions::CScoreboardSubOptions(vgui2::Panel *parent)
 
 	m_pShowEff = new CCvarCheckButton(this, "ShowEff", "#BHL_AdvOptions_Scores_ShowEff", "hud_scoreboard_showeff");
 	m_pEffTypeLabel = new vgui2::Label(this, "EffTypeLabel", "#BHL_AdvOptions_Scores_EffType");
-	m_pEffTypeBox = new vgui2::ComboBox(this, "EffTypeBox", 2, false);
+	m_pEffTypeBox = new vgui2::ComboBox(this, "EffTypeBox", 3, false);
 	m_EffTypeItems[0] = m_pEffTypeBox->AddItem("#BHL_AdvOptions_Scores_EffType0", new KeyValues("Type0", "value", 0));
 	m_EffTypeItems[1] = m_pEffTypeBox->AddItem("#BHL_AdvOptions_Scores_EffType1", new KeyValues("Type1", "value", 1));
+	m_EffTypeItems[1] = m_pEffTypeBox->AddItem("#BHL_AdvOptions_Scores_EffType2", new KeyValues("Type2", "value", 2));
 
 	m_pMouseLabel = new vgui2::Label(this, "MouseLabel", "#BHL_AdvOptions_Scores_Mouse");
 	m_pMouseBox = new vgui2::ComboBox(this, "MouseBox", 3, false);
@@ -48,7 +49,7 @@ void CScoreboardSubOptions::OnResetData()
 	m_pShowInHud->ResetData();
 
 	int type = gEngfuncs.pfnGetCvarFloat("hud_scoreboard_efftype");
-	type = clamp(type, 0, 1);
+	type = clamp(type, 0, 2);
 	m_pEffTypeBox->ActivateItem(m_EffTypeItems[type]);
 
 	type = gEngfuncs.pfnGetCvarFloat("hud_scoreboard_mousebtn");
@@ -77,7 +78,6 @@ void CScoreboardSubOptions::ApplyEffType()
 	KeyValues *userdata = m_pEffTypeBox->GetActiveItemUserData();
 	Assert(userdata);
 	int val = userdata->GetInt("value", 0);
-	Assert(val >= 0 && val <= 1);
 
 	char buf[128];
 	snprintf(buf, sizeof(buf), "hud_scoreboard_efftype %d", val);

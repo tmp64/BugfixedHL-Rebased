@@ -848,7 +848,7 @@ Color CScorePanel::GetPlayerBgColor(CPlayerInfo *pi)
 
 float CScorePanel::CalculateEfficiency(int kills, int deaths)
 {
-	int type = clamp(hud_scoreboard_efftype.GetInt(), 0, 1);
+	int type = clamp(hud_scoreboard_efftype.GetInt(), 0, 2);
 
 	switch (type)
 	{
@@ -865,6 +865,13 @@ float CScorePanel::CalculateEfficiency(int kills, int deaths)
 		if (deaths == -1)
 			deaths = 0;
 		return (float)kills / (deaths + 1);
+	}
+	case 2:
+	{
+		// K / (K + D)
+		if (kills + deaths == 0)
+			return 1.0f;
+		return (float)kills / (kills + deaths);
 	}
 	}
 

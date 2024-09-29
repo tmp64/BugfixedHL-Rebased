@@ -82,6 +82,12 @@ void CHudDeathNoticePanel::Think()
 
 void CHudDeathNoticePanel::AddItem(int killerId, int victimId, const char *killedwith)
 {
+	if (!GetThisPlayerInfo())
+	{
+		// Not yet connected
+		return;
+	}
+
 	Entry e;
 	CPlayerInfo *killer = GetPlayerInfoSafe(killerId);
 	CPlayerInfo *victim = GetPlayerInfoSafe(victimId);

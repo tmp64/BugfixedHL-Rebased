@@ -209,6 +209,12 @@ void CScorePanel::UpdateOnPlayerInfo(int client)
 
 void CScorePanel::DeathMsg(int killer, int victim)
 {
+	if (!GetThisPlayerInfo())
+	{
+		// Not yet connected
+		return;
+	}
+
 	if (victim == GetThisPlayerInfo()->GetIndex())
 	{
 		// if we were the one killed, set the scoreboard to indicate killer

@@ -747,6 +747,10 @@ public:
 	int m_iTrail;
 	float m_flIgniteTime;
 	EHANDLE m_hLauncher; // pointer back to the launcher that fired me.
+
+private:
+	//! Notifies the launcher that this rocket is dead.
+	void ReleaseLauncher();
 };
 
 class CGauss : public CBasePlayerWeapon

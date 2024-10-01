@@ -152,12 +152,7 @@ void CRpgRocket ::RocketTouch(CBaseEntity *pOther)
 {
 	//ALERT( at_console, "RpgRocket RocketTouch, m_pLauncher: %u\n", GetLauncher() );
 
-	if (GetLauncher())
-	{
-		// my launcher is still around, tell it I'm dead.
-		GetLauncher()->m_cActiveRockets--;
-	}
-
+	ReleaseLauncher();
 	STOP_SOUND(edict(), CHAN_VOICE, "weapons/rocket1.wav");
 	ExplodeTouch(pOther);
 }
@@ -168,14 +163,7 @@ void CRpgRocket::Explode(TraceResult *pTrace, int bitsDamageType)
 	//ALERT( at_console, "RpgRocket Explode, m_pLauncher: %u\n", GetLauncher() );
 
 	STOP_SOUND(edict(), CHAN_VOICE, "weapons/rocket1.wav");
-
-	if (GetLauncher())
-	{
-		// my launcher is still around, tell it I'm dead.
-		GetLauncher()->m_cActiveRockets--;
-		m_hLauncher = nullptr;
-	}
-
+	ReleaseLauncher();
 	CGrenade::Explode(pTrace, bitsDamageType);
 }
 
@@ -226,6 +214,17 @@ CRpg *CRpgRocket::GetLauncher()
 		return NULL;
 
 	return (CRpg *)((CBaseEntity *)m_hLauncher);
+}
+
+void CRpgRocket::ReleaseLauncher()
+{
+	if (GetLauncher())
+	{
+		// my launcher is still around, tell it I'm dead.
+		ASSERT(GetLauncher()->m_cActiveRockets > 0);
+		GetLauncher()->m_cActiveRockets--;
+		m_hLauncher = nullptr;
+	}
 }
 
 void CRpgRocket ::FollowThink(void)
@@ -303,12 +302,7 @@ void CRpgRocket ::FollowThink(void)
 		pev->velocity = pev->velocity * 0.2 + vecTarget * flSpeed * 0.798;
 		if (pev->waterlevel == 0 && pev->velocity.Length() < 1500)
 		{
-			if (GetLauncher())
-			{
-				// my launcher is still around, tell it I'm dead.
-				GetLauncher()->m_cActiveRockets--;
-				m_hLauncher = nullptr;
-			}
+			ReleaseLauncher();
 			Detonate();
 		}
 	}
@@ -321,8 +315,7 @@ void CRpgRocket ::FollowThink(void)
 		if (flDistance > 8192.0f || gpGlobals->time - m_flIgniteTime > 6.0f)
 		{
 			//ALERT( at_console, "RPG too far (%f)!\n", flDistance );
-			GetLauncher()->m_cActiveRockets--;
-			m_hLauncher = NULL;
+			ReleaseLauncher();
 		}
 
 		//ALERT( at_console, "%.0f, m_pLauncher: %u, flDistance: %f\n", flSpeed, GetLauncher(), flDistance );

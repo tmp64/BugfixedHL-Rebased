@@ -158,11 +158,22 @@ static char grgchTextureType[CTEXTURESMAX];
 
 int g_onladder = 0;
 static int s_bBHopCap = true;
+static EUseSlowDownType s_nUseSlowDownType = EUseSlowDownType::New;
 static int s_iIsAg = false;
 
 void PM_SetIsAG(int state)
 {
 	s_iIsAg = state;
+}
+
+EUseSlowDownType PM_GetUseSlowDownType()
+{
+	return s_nUseSlowDownType;
+}
+
+void PM_SetUseSlowDownType(EUseSlowDownType value)
+{
+	s_nUseSlowDownType = value;
 }
 
 #ifdef CLIENT_DLL
@@ -2994,7 +3005,7 @@ void PM_CheckParamters(void)
 	//
 	// JoshA: Moved this to CheckParamters rather than working on the velocity,
 	// as otherwise it affects every integration step incorrectly.
-	if ((pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
+	if (s_nUseSlowDownType == EUseSlowDownType::New && (pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
 	{
 		pmove->maxspeed *= 1.0f / 3.0f;
 	}
@@ -3172,6 +3183,12 @@ void PM_PlayerMove(qboolean server)
 			//  it will be set immediately again next frame if necessary
 			pmove->movetype = MOVETYPE_WALK;
 		}
+	}
+
+	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
+	if (s_nUseSlowDownType == EUseSlowDownType::Old && (pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
+	{
+		VectorScale(pmove->velocity, 0.3, pmove->velocity);
 	}
 
 	// Handle movement

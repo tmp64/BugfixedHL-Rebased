@@ -19,11 +19,28 @@
 #ifndef PM_SHARED_H
 #define PM_SHARED_H
 
+enum class EUseSlowDownType
+{
+	//! Old method (before HL25). Used by old servers and AG.
+	//! Player immediately slows down if +use is held down.
+	Old,
+
+	//! New method from HL25.
+	//! Player slowly slows down if +use is held down.
+	New,
+
+	_Min = Old,
+	_Max = New,
+};
+
 void PM_Init(struct playermove_s *ppmove);
 void PM_Move(struct playermove_s *ppmove, int server);
 char PM_FindTextureType(char *name);
 
 void PM_SetIsAG(int state);
+
+EUseSlowDownType PM_GetUseSlowDownType();
+void PM_SetUseSlowDownType(EUseSlowDownType value);
 
 #ifdef CLIENT_DLL
 enum class EBHopCap

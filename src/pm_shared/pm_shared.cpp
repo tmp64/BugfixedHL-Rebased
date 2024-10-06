@@ -173,18 +173,45 @@ EUseSlowDownType PM_GetUseSlowDownType()
 
 void PM_SetUseSlowDownType(EUseSlowDownType value)
 {
+#ifdef CLIENT_DLL
+	if (s_nUseSlowDownType != EUseSlowDownType::AutoDetect && value == EUseSlowDownType::AutoDetect)
+		PM_ResetUseSlowDownDetection();
+#endif
+
 	s_nUseSlowDownType = value;
 }
 
 #ifdef CLIENT_DLL
 
 static constexpr float BHOP_DETECT_DELAY = 0.3f;
+static constexpr float USE_SLOWDOWN_DETECT_MIN = 0.25f;
+static constexpr float USE_SLOWDOWN_DETECT_MAX = 0.4f;
+
+enum class EUseSlowDownDetectionState
+{
+	None,
+
+	//! speed < USE_SLOWDOWN_DETECT_MIN * maxSpeed
+	LowSpeed,
+
+	//! USE_SLOWDOWN_DETECT_MIN * maxSpeed <= speed < USE_SLOWDOWN_DETECT_MAX * maxSpeed
+	MidSpeed,
+
+	//! speed >= USE_SLOWDOWN_DETECT_MAX * maxSpeed
+	HighSpeed,
+
+	//! Successfully detected the server mode.
+	Done,
+};
 
 static int s_iOnGround;
 static int s_iWaterlevel;
 static int s_iMoveType;
 static EBHopCap s_iBHopState = EBHopCap::Enabled;
 static float s_flBHopCheckTime = 0.0f;
+
+static EUseSlowDownDetectionState s_nUseSlowDownDetectionState = EUseSlowDownDetectionState::None;
+static int s_iUseSlowDownCount = 0;
 
 int PM_GetOnGround()
 {
@@ -222,6 +249,12 @@ void PM_ResetBHopDetection()
 	}
 }
 
+void PM_ResetUseSlowDownDetection()
+{
+	s_nUseSlowDownDetectionState = EUseSlowDownDetectionState::None;
+	s_iUseSlowDownCount = 0;
+}
+
 #else
 
 int PM_GetBHopCapEnabled()
@@ -235,6 +268,27 @@ void PM_SetBHopCapEnabled(int state)
 }
 
 #endif
+
+static EUseSlowDownType PM_GetActualUseSlowDownType()
+{
+#ifdef CLIENT_DLL
+	if (s_nUseSlowDownType == EUseSlowDownType::AutoDetect)
+	{
+		if (s_nUseSlowDownDetectionState == EUseSlowDownDetectionState::Done)
+		{
+			// Detected that the server uses Old method
+			return EUseSlowDownType::Old;
+		}
+		else
+		{
+			// Not yet detected or the server uses New
+			return EUseSlowDownType::New;
+		}
+	}
+#endif
+
+	return s_nUseSlowDownType;
+}
 
 void PM_SwapTextures(int i, int j)
 {
@@ -3005,7 +3059,7 @@ void PM_CheckParamters(void)
 	//
 	// JoshA: Moved this to CheckParamters rather than working on the velocity,
 	// as otherwise it affects every integration step incorrectly.
-	if (s_nUseSlowDownType == EUseSlowDownType::New && (pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
+	if (PM_GetActualUseSlowDownType() == EUseSlowDownType::New && (pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
 	{
 		pmove->maxspeed *= 1.0f / 3.0f;
 	}
@@ -3185,11 +3239,70 @@ void PM_PlayerMove(qboolean server)
 		}
 	}
 
-	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
-	if (s_nUseSlowDownType == EUseSlowDownType::Old && (pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
+	if ((pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
 	{
-		VectorScale(pmove->velocity, 0.3, pmove->velocity);
+		if (PM_GetActualUseSlowDownType() == EUseSlowDownType::Old)
+		{
+			// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
+			VectorScale(pmove->velocity, 0.3, pmove->velocity);
+		}
+#ifdef CLIENT_DLL
+		else if (s_nUseSlowDownType == EUseSlowDownType::AutoDetect &&
+			s_nUseSlowDownDetectionState != EUseSlowDownDetectionState::Done)
+		{
+			if (pmove->cmd.buttons & (IN_FORWARD | IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT) &&
+				pmove->velocity.Length2DSqr() >= 25.0f)
+			{
+				// We're moving in some direction. Try to auto-detect server's +use slowdown type
+				EUseSlowDownDetectionState oldState = s_nUseSlowDownDetectionState;
+				EUseSlowDownDetectionState newState = EUseSlowDownDetectionState::None;
+				float speed = pmove->velocity.Length2D();
+
+				if (speed >= USE_SLOWDOWN_DETECT_MAX * pmove->maxspeed)
+					newState = EUseSlowDownDetectionState::HighSpeed;
+				else if (speed >= USE_SLOWDOWN_DETECT_MIN * pmove->maxspeed)
+					newState = EUseSlowDownDetectionState::MidSpeed;
+				else
+					newState = EUseSlowDownDetectionState::LowSpeed;
+
+				if (oldState == EUseSlowDownDetectionState::HighSpeed && newState == EUseSlowDownDetectionState::LowSpeed)
+				{
+					// Sudden slow down. This occurs when the client re-synchronizes with the server.
+					s_iUseSlowDownCount++;
+				}
+				else if (oldState == EUseSlowDownDetectionState::LowSpeed && newState == EUseSlowDownDetectionState::HighSpeed)
+				{
+					// Sudden speed up. Something went wrong.
+					PM_ResetUseSlowDownDetection();
+				}
+
+				if (s_iUseSlowDownCount >= 5)
+				{
+					// Slow down has happened a few times. Assume the server uses the old method.
+					PM_ResetUseSlowDownDetection();
+					pmove->Con_Printf("Setting +use slowdown to Old to match the server\n");
+					s_nUseSlowDownDetectionState = EUseSlowDownDetectionState::Done;
+				}
+				else
+				{
+					s_nUseSlowDownDetectionState = newState;
+				}
+			}
+			else
+			{
+				// Reset auto-detection
+				PM_ResetUseSlowDownDetection();
+			}
+		}
+#endif
 	}
+#ifdef CLIENT_DLL
+	else if (s_nUseSlowDownDetectionState != EUseSlowDownDetectionState::Done)
+	{
+		// Reset auto-detection
+		PM_ResetUseSlowDownDetection();
+	}
+#endif
 
 	// Handle movement
 	switch (pmove->movetype)

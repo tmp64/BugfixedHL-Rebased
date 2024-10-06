@@ -29,8 +29,18 @@ enum class EUseSlowDownType
 	//! Player slowly slows down if +use is held down.
 	New,
 
+#ifdef CLIENT_DLL
+	//! Detect automatically.
+	AutoDetect,
+#endif
+
+#ifdef CLIENT_DLL
+	_Min = Old,
+	_Max = AutoDetect,
+#else
 	_Min = Old,
 	_Max = New,
+#endif
 };
 
 void PM_Init(struct playermove_s *ppmove);
@@ -59,6 +69,7 @@ int PM_GetMoveType();
 EBHopCap PM_GetBHopCapState();
 void PM_SetBHopCapState(EBHopCap state);
 void PM_ResetBHopDetection();
+void PM_ResetUseSlowDownDetection();
 #else
 int PM_GetBHopCapEnabled();
 void PM_SetBHopCapEnabled(int state);

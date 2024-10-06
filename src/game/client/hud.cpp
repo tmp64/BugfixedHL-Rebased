@@ -160,17 +160,11 @@ static Color s_DefaultColorCodeColors[10] = {
 const Color NoTeamColor::Orange = Color(255, 178, 0, 255);
 const Color NoTeamColor::White = Color(216, 216, 216, 255);
 
-CON_COMMAND(bhop_reset, "Resets BHop auto-detection if it was detected incorrectly")
+CON_COMMAND(pm_reset, "Resets player movement settings if they were detected incorrectly")
 {
-	if (gHUD.GetBHopCapState() != EBHopCap::AutoDetect)
-	{
-		ConPrintf("BHop auto-detection is disabled, nothing was done.\n");
-	}
-	else
-	{
-		PM_ResetBHopDetection();
-		ConPrintf("BHop auto-detection reset.\n");
-	}
+	PM_ResetBHopDetection();
+	PM_ResetUseSlowDownDetection();
+	ConPrintf("Player movement settings reset.\n");
 }
 
 // inputw32.cpp

@@ -281,6 +281,7 @@ int CL_DLLEXPORT HUD_VidInit(void)
 	gHUD.VidInit();
 	g_StudioRenderer.InitOnConnect();
 	PM_ResetBHopDetection();
+	PM_ResetUseSlowDownDetection();
 	CResults::Get().Stop();
 	GetClientVoiceMgr()->VidInit();
 

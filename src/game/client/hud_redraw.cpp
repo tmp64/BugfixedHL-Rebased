@@ -41,7 +41,7 @@ extern ConVar zoom_sensitivity_ratio;
 ConVar hud_colortext("hud_colortext", "1", FCVAR_BHL_ARCHIVE);
 ConVar hud_takesshots("hud_takesshots", "0", FCVAR_ARCHIVE, "Whether or not to automatically take screenshots at the end of a round");
 ConVar default_fov("default_fov", "90", FCVAR_ARCHIVE | FCVAR_BHL_ARCHIVE, "Default horizontal field of view");
-ConVar cl_useslowdown("cl_useslowdown", "1", FCVAR_BHL_ARCHIVE, "Slowdown behavior on +USE. 0 - Old. 1 - New");
+ConVar cl_useslowdown("cl_useslowdown", "2", FCVAR_BHL_ARCHIVE, "Slowdown behavior on +USE. 0 - Old. 1 - New. 2 - Auto-detect.");
 
 // Think
 void CHud::Think(void)

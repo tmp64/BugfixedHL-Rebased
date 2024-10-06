@@ -204,9 +204,8 @@ void CHalfLifeMultiplay::RefreshSkillData(void)
 //=========================================================
 void CHalfLifeMultiplay ::Think(void)
 {
+	CGameRules::Think();
 	g_VoiceGameMgr.Update(gpGlobals->frametime);
-
-	PM_SetBHopCapEnabled(!bunnyhop.value);
 
 	///// Check game rules /////
 	static int last_frags;

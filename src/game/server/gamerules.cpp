@@ -38,6 +38,13 @@ extern cvar_t sv_busters;
 
 //=========================================================
 //=========================================================
+void CGameRules::Think(void)
+{
+	PM_SetBHopCapEnabled(!bunnyhop.value);
+}
+
+//=========================================================
+//=========================================================
 BOOL CGameRules::CanHaveAmmo(CBasePlayer *pPlayer, const char *pszAmmoName, int iMaxCarry)
 {
 	int iAmmoIndex;

@@ -60,7 +60,7 @@ class CGameRules
 {
 public:
 	virtual void RefreshSkillData(void); // fill skill data struct with proper values
-	virtual void Think(void) = 0; // GR_Think - runs every server frame, should handle any timer tasks, periodic events, etc.
+	virtual void Think(void); // GR_Think - runs every server frame, should handle any timer tasks, periodic events, etc.
 	virtual BOOL IsAllowedToSpawn(CBaseEntity *pEntity) = 0; // Can this item spawn (eg monsters don't spawn in deathmatch).
 
 	virtual BOOL FAllowFlashlight(void) = 0; // Are players allowed to switch on their flashlight?

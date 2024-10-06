@@ -44,7 +44,9 @@ CHalfLifeRules::CHalfLifeRules(void)
 //=========================================================
 void CHalfLifeRules::Think(void)
 {
-	PM_SetBHopCapEnabled(!bunnyhop.value);
+	// Leaving this method just in case plugins hook it
+	// Originally CGameRules::Think was pure-virtual
+	CGameRules::Think();
 }
 
 //=========================================================

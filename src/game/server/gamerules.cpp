@@ -36,11 +36,14 @@ extern int gmsgMOTD;
 int g_teamplay = 0;
 extern cvar_t sv_busters;
 
+ConVar mp_useslowdown("mp_useslowdown", "1", 0, "Slowdown behavior on +USE. 0 - Old. 1 - New");
+
 //=========================================================
 //=========================================================
 void CGameRules::Think(void)
 {
 	PM_SetBHopCapEnabled(!bunnyhop.value);
+	PM_SetUseSlowDownType(mp_useslowdown.GetEnumClamped<EUseSlowDownType>());
 }
 
 //=========================================================

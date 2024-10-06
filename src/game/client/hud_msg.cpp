@@ -23,6 +23,7 @@
 #include "hud/ammo.h"
 #include "hud/status_icons.h"
 #include "hud/ammo.h"
+#include "engine_builds.h"
 
 #include "particleman.h"
 extern IParticleMan *g_pParticleMan;
@@ -128,12 +129,15 @@ int CHud::MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf)
 	BEGIN_READ(pbuf, iSize);
 	m_Teamplay = READ_BYTE();
 
-	if (m_Teamplay)
-		gEngfuncs.pfnClientCmd("richpresence_gamemode Teamplay\n");
-	else
-		gEngfuncs.pfnClientCmd("richpresence_gamemode\n"); // reset
+	if (GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY_FIRST)
+	{
+		if (m_Teamplay)
+			gEngfuncs.pfnClientCmd("richpresence_gamemode Teamplay\n");
+		else
+			gEngfuncs.pfnClientCmd("richpresence_gamemode\n"); // reset
 
-	gEngfuncs.pfnClientCmd("richpresence_update\n");
+		gEngfuncs.pfnClientCmd("richpresence_update\n");
+	}
 
 	return 1;
 }

@@ -46,6 +46,7 @@
 #include "svc_messages.h"
 #include "sdl_rt.h"
 #include "fog.h"
+#include "engine_builds.h"
 
 #if USE_UPDATER
 #include "updater/update_checker.h"
@@ -419,8 +420,11 @@ void CHud::Init(void)
 
 	UpdateSupportsCvar();
 
-	gEngfuncs.pfnClientCmd("richpresence_gamemode\n"); // reset
-	gEngfuncs.pfnClientCmd("richpresence_update\n");
+	if (GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY_FIRST)
+	{
+		gEngfuncs.pfnClientCmd("richpresence_gamemode\n"); // reset
+		gEngfuncs.pfnClientCmd("richpresence_update\n");
+	}
 }
 
 void CHud::VidInit(void)

@@ -21,6 +21,7 @@ add_sources(
 	demo.h
 	engfuncs.cpp
 	engfuncs.h
+	engine_builds.h
 	engine_patches.cpp
 	engine_patches.h
 	entity.cpp

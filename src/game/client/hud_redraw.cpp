@@ -41,6 +41,7 @@ extern ConVar zoom_sensitivity_ratio;
 ConVar hud_colortext("hud_colortext", "1", FCVAR_BHL_ARCHIVE);
 ConVar hud_takesshots("hud_takesshots", "0", FCVAR_ARCHIVE, "Whether or not to automatically take screenshots at the end of a round");
 ConVar default_fov("default_fov", "90", FCVAR_ARCHIVE | FCVAR_BHL_ARCHIVE, "Default horizontal field of view");
+ConVar cl_useslowdown("cl_useslowdown", "1", FCVAR_BHL_ARCHIVE, "Slowdown behavior on +USE. 0 - Old. 1 - New");
 
 // Think
 void CHud::Think(void)
@@ -100,6 +101,11 @@ void CHud::Think(void)
 	EBHopCap bhopCapState = GetBHopCapState();
 	if (PM_GetBHopCapState() != bhopCapState)
 		PM_SetBHopCapState(bhopCapState);
+
+	// Update slowdown state
+	EUseSlowDownType useSlowDown = cl_useslowdown.GetEnumClamped<EUseSlowDownType>();
+	if (PM_GetUseSlowDownType() != useSlowDown)
+		PM_SetUseSlowDownType(useSlowDown);
 
 	// Update color code action
 	int colorText = clamp(hud_colortext.GetInt(), 0, 2);

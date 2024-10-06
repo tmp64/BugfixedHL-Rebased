@@ -162,7 +162,7 @@ const Color NoTeamColor::White = Color(216, 216, 216, 255);
 
 CON_COMMAND(bhop_reset, "Resets BHop auto-detection if it was detected incorrectly")
 {
-	if (gHUD.GetBHopCapState() != BHopCap::Auto)
+	if (gHUD.GetBHopCapState() != EBHopCap::AutoDetect)
 	{
 		ConPrintf("BHop auto-detection is disabled, nothing was done.\n");
 	}
@@ -721,9 +721,9 @@ float CHud::GetSensitivity(void)
 	return m_flMouseSensitivity;
 }
 
-BHopCap CHud::GetBHopCapState()
+EBHopCap CHud::GetBHopCapState()
 {
-	return (BHopCap)clamp(cl_bhopcap.GetInt(), (int)BHopCap::Disabled, (int)BHopCap::Auto);
+	return cl_bhopcap.GetEnumClamped<EBHopCap>();
 }
 
 bool CHud::IsHTMLEnabled()

@@ -97,7 +97,7 @@ void CHud::Think(void)
 	}
 
 	// Update BHop state
-	int bhopCapState = (int)GetBHopCapState();
+	EBHopCap bhopCapState = GetBHopCapState();
 	if (PM_GetBHopCapState() != bhopCapState)
 		PM_SetBHopCapState(bhopCapState);
 

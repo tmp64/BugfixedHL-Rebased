@@ -167,12 +167,12 @@ void PM_SetIsAG(int state)
 
 #ifdef CLIENT_DLL
 
-#define BHOP_DETECT_DELAY 0.3f
+static constexpr float BHOP_DETECT_DELAY = 0.3f;
 
 static int s_iOnGround;
 static int s_iWaterlevel;
 static int s_iMoveType;
-static int s_iBHopState = 1;
+static EBHopCap s_iBHopState = EBHopCap::Enabled;
 static float s_flBHopCheckTime = 0.0f;
 
 int PM_GetOnGround()
@@ -190,12 +190,12 @@ int PM_GetMoveType()
 	return s_iMoveType;
 }
 
-int PM_GetBHopCapState()
+EBHopCap PM_GetBHopCapState()
 {
 	return s_iBHopState;
 }
 
-void PM_SetBHopCapState(int state)
+void PM_SetBHopCapState(EBHopCap state)
 {
 	s_iBHopState = state;
 	PM_ResetBHopDetection();
@@ -203,7 +203,7 @@ void PM_SetBHopCapState(int state)
 
 void PM_ResetBHopDetection()
 {
-	if (s_iBHopState == 2)
+	if (s_iBHopState == EBHopCap::AutoDetect)
 	{
 		// Autodetect
 		s_bBHopCap = false;
@@ -2739,9 +2739,9 @@ void PM_Jump(void)
 	// BHop autodetection
 #ifdef CLIENT_DLL
 	float speed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
-	int isLongJumping = cansuperjump && (pmove->oldbuttons & IN_DUCK);
+	bool isLongJumping = cansuperjump && (pmove->oldbuttons & IN_DUCK);
 
-	if (s_iBHopState == 2 && s_flBHopCheckTime == 0 && speed >= pmove->maxspeed * BUNNYJUMP_MAX_SPEED_FACTOR && !isLongJumping)
+	if (s_iBHopState == EBHopCap::AutoDetect && s_flBHopCheckTime == 0 && speed >= pmove->maxspeed * BUNNYJUMP_MAX_SPEED_FACTOR && !isLongJumping)
 	{
 		s_flBHopCheckTime = pmove->time + (BHOP_DETECT_DELAY * 1000);
 	}
@@ -3496,7 +3496,7 @@ void PM_Move(struct playermove_s *ppmove, int server)
 #ifdef CLIENT_DLL
 	s_iMoveType = pmove->movetype;
 
-	if (s_iBHopState == 2 && s_flBHopCheckTime > 0)
+	if (s_iBHopState == EBHopCap::AutoDetect && s_flBHopCheckTime > 0)
 	{
 		float speed = sqrtf(pmove->velocity[0] * pmove->velocity[0] + pmove->velocity[1] * pmove->velocity[1]);
 

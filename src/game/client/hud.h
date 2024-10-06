@@ -63,12 +63,7 @@ class IScheme;
 
 class ConVar;
 
-enum class BHopCap
-{
-	Disabled = 0,
-	Enabled = 1,
-	Auto = 2
-};
+enum class EBHopCap;
 
 enum class HudPart
 {
@@ -201,7 +196,7 @@ public:
 	int MsgFunc_Fog(const char *pszName, int iSize, void *pbuf);
 
 	float GetSensitivity();
-	BHopCap GetBHopCapState();
+	EBHopCap GetBHopCapState();
 	bool IsHTMLEnabled();
 
 	/**

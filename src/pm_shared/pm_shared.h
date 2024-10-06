@@ -26,11 +26,21 @@ char PM_FindTextureType(char *name);
 void PM_SetIsAG(int state);
 
 #ifdef CLIENT_DLL
+enum class EBHopCap
+{
+	Disabled = 0,
+	Enabled = 1,
+	AutoDetect = 2,
+
+	_Min = Disabled,
+	_Max = AutoDetect,
+};
+
 int PM_GetOnGround();
 int PM_GetWaterLevel();
 int PM_GetMoveType();
-int PM_GetBHopCapState();
-void PM_SetBHopCapState(int state);
+EBHopCap PM_GetBHopCapState();
+void PM_SetBHopCapState(EBHopCap state);
 void PM_ResetBHopDetection();
 #else
 int PM_GetBHopCapEnabled();

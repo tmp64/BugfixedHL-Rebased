@@ -1040,6 +1040,7 @@ void IN_StartupJoystick(void)
 	if (!GetSDL()->IsGood())
 	{
 		gEngfuncs.Con_DPrintf("joystick not found -- SDL2 is required\n\n");
+		noJoy = true; // Don't spam
 		return;
 	}
 

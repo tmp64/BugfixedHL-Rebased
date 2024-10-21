@@ -22,6 +22,9 @@
 #include "gamerules.h"
 #include "game.h"
 
+// How many units away from the center of the map will entities stop working
+#define WORLD_BOUNDARY_DIST 262144
+
 void EntvarsKeyvalue(entvars_t *pev, KeyValueData *pkvd);
 
 extern Vector VecBModelOrigin(entvars_t *pevBModel);
@@ -696,17 +699,17 @@ int CBaseEntity ::IsDormant(void)
 BOOL CBaseEntity ::IsInWorld(void)
 {
 	// position
-	if (pev->origin.x >= 4096)
+	if (pev->origin.x >= WORLD_BOUNDARY_DIST)
 		return FALSE;
-	if (pev->origin.y >= 4096)
+	if (pev->origin.y >= WORLD_BOUNDARY_DIST)
 		return FALSE;
-	if (pev->origin.z >= 4096)
+	if (pev->origin.z >= WORLD_BOUNDARY_DIST)
 		return FALSE;
-	if (pev->origin.x <= -4096)
+	if (pev->origin.x <= -WORLD_BOUNDARY_DIST)
 		return FALSE;
-	if (pev->origin.y <= -4096)
+	if (pev->origin.y <= -WORLD_BOUNDARY_DIST)
 		return FALSE;
-	if (pev->origin.z <= -4096)
+	if (pev->origin.z <= -WORLD_BOUNDARY_DIST)
 		return FALSE;
 	// speed
 	if (pev->velocity.x >= 2000)

@@ -284,7 +284,7 @@ void CHudAmmo::Reset(void)
 {
 	m_fFade = 0;
 	m_pWeapon = NULL;
-	m_fOnTarget = FALSE;
+	m_fOnTarget = false;
 	m_iFlags |= HUD_ACTIVE; //!!!
 
 	gpActiveSel = NULL;
@@ -552,10 +552,7 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf)
 	int iClip = READ_CHAR();
 
 	// detect if we're also on target
-	if (iState > 1)
-	{
-		m_fOnTarget = TRUE;
-	}
+	m_fOnTarget = iState > 1;
 
 	if (iId < 1)
 	{

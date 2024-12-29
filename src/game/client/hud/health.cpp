@@ -221,7 +221,10 @@ void CHudHealth::Draw(float flTime)
 
 		x = CrossWidth + HealthWidth / 2;
 
-		x = gHUD.DrawHudNumber(x, y, m_iHealth, r, g, b);
+		if (m_iHealth < 1000)
+			x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b);
+		else
+			x = gHUD.DrawHudNumber(x, y, m_iHealth, r, g, b);
 
 		x += HealthWidth / 2;
 

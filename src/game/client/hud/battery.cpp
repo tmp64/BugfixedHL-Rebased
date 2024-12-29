@@ -120,5 +120,9 @@ void CHudBattery::Draw(float flTime)
 	}
 
 	x += m_rc1.GetWidth();
-	x = gHUD.DrawHudNumber(x, y, m_iBat, r, g, b);
+
+	if (m_iBat < 1000)
+		x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b);
+	else
+		x = gHUD.DrawHudNumber(x, y, m_iBat, r, g, b);
 }

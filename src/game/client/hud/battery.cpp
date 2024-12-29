@@ -55,7 +55,6 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 
 	BEGIN_READ(pbuf, iSize);
 	int battery = READ_SHORT();
-	battery = clamp(battery, 0, 999);
 
 	if (battery != m_iBat)
 	{
@@ -121,5 +120,5 @@ void CHudBattery::Draw(float flTime)
 	}
 
 	x += m_rc1.GetWidth();
-	x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b);
+	x = gHUD.DrawHudNumber(x, y, m_iBat, r, g, b);
 }

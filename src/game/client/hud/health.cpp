@@ -191,7 +191,7 @@ void CHudHealth::Draw(float flTime)
 	// Apply wider range health from client_state_t structure, if available
 	cl_entity_t *player = gEngfuncs.GetLocalPlayer();
 	int health = player->curstate.health;
-	health = clamp(health, 0, 999);
+	health = clamp(health, 0, 99999);
 	if (m_iHealth != health && health > 255)
 	{
 		m_fFade = FADE_TIME;
@@ -221,7 +221,7 @@ void CHudHealth::Draw(float flTime)
 
 		x = CrossWidth + HealthWidth / 2;
 
-		x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b);
+		x = gHUD.DrawHudNumber(x, y, m_iHealth, r, g, b);
 
 		x += HealthWidth / 2;
 

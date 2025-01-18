@@ -738,8 +738,9 @@ void CSvcMessages::SvcUpdateUserInfo()
 		Q_memcpy(bufPtr, &userid, sizeof(userid)); // LONG
 		bufPtr += sizeof(userid);
 
-		Q_memcpy(bufPtr, userinfo, strlen(userinfo) + 1); // STRING
-		bufPtr += Q_strlen(userinfo) + 1;
+		int userInfoLength = Q_strlen(userinfo) + 1;
+		Q_memcpy(bufPtr, userinfo, userInfoLength); // STRING
+		bufPtr += userInfoLength;
 
 		Q_memcpy(bufPtr, cdkey, sizeof(cdkey)); // 16 BYTES
 		bufPtr += sizeof(cdkey);

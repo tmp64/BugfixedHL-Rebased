@@ -156,6 +156,35 @@ char *READ_STRING(void)
 	return string;
 }
 
+char *SAFE_READ_STRING(void)
+{
+	static char string[2048];
+	int l, c;
+
+	string[0] = '\0';
+	
+	l = 0;
+	while (l < (int)(sizeof(string) - 1))
+	{
+		if (giRead >= giSize)
+		{
+			giBadRead = true;
+			break;
+		}
+
+		c = READ_BYTE();
+
+		if (c == 0)
+			break;
+
+		string[l++] = (char)c;
+	}
+
+	string[l] = '\0';
+
+	return string;
+}
+
 char *READ_LINE(void)
 {
 	static char string[2048];

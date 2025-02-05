@@ -1,0 +1,69 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CMP5"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flNextAnimTime
+					// LIN: float m_flNextAnimTime
+					"m_flNextAnimTime"
+					{
+						"type" "float"
+						"windows" "180"
+						"linux" "196"
+					}
+
+					// WIN: int m_iShell
+					// LIN: int m_iShell
+					"m_iShell"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "184"
+						"linux" "200"
+					}
+
+					// WIN: unsigned short m_usMP5
+					// LIN: short unsigned int m_usMP5
+					"m_usMP5"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "188"
+						"linux" "204"
+					}
+
+					// WIN: unsigned short m_usMP52
+					// LIN: short unsigned int m_usMP52
+					"m_usMP52"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "190"
+						"linux" "206"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CMP5
+//

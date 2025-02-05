@@ -1,0 +1,67 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CMultiSource"
+			{
+				"Offsets"
+				{
+					// WIN: EHANDLE m_rgEntities[32]
+					// LIN: EHANDLE m_rgEntities[31]
+					"m_rgEntities"
+					{
+						"type" "ehandle"
+						"size" "32"
+						"windows" "84"
+						"linux" "100"
+					}
+
+					// WIN: int m_rgTriggered[32]
+					// LIN: int m_rgTriggered[31]
+					"m_rgTriggered"
+					{
+						"type" "integer"
+						"size" "32"
+						"unsigned" "0"
+						"windows" "340"
+						"linux" "356"
+					}
+
+					// WIN: int m_iTotal
+					// LIN: int m_iTotal
+					"m_iTotal"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "468"
+						"linux" "484"
+					}
+
+					// WIN: string_t m_globalstate
+					// LIN: string_t m_globalstate
+					"m_globalstate"
+					{
+						"type" "stringint"
+						"windows" "472"
+						"linux" "488"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CPointEntity
+//			CMultiSource
+//

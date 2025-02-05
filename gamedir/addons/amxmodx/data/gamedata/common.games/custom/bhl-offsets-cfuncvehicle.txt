@@ -1,0 +1,328 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CFuncVehicle"
+			{
+				"Offsets"
+				{
+					// WIN: CPathTrack *m_ppath
+					// LIN: CPathTrack *m_ppath
+					"m_ppath"
+					{
+						"type" "classptr"
+						"windows" "84"
+						"linux" "100"
+					}
+
+					// WIN: float m_length
+					// LIN: float m_length
+					"m_length"
+					{
+						"type" "float"
+						"windows" "88"
+						"linux" "104"
+					}
+
+					// WIN: float m_width
+					// LIN: float m_width
+					"m_width"
+					{
+						"type" "float"
+						"windows" "92"
+						"linux" "108"
+					}
+
+					// WIN: float m_height
+					// LIN: float m_height
+					"m_height"
+					{
+						"type" "float"
+						"windows" "96"
+						"linux" "112"
+					}
+
+					// WIN: float m_speed
+					// LIN: float m_speed
+					"m_speed"
+					{
+						"type" "float"
+						"windows" "100"
+						"linux" "116"
+					}
+
+					// WIN: float m_dir
+					// LIN: float m_dir
+					"m_dir"
+					{
+						"type" "float"
+						"windows" "104"
+						"linux" "120"
+					}
+
+					// WIN: float m_startSpeed
+					// LIN: float m_startSpeed
+					"m_startSpeed"
+					{
+						"type" "float"
+						"windows" "108"
+						"linux" "124"
+					}
+
+					// WIN: Vector m_controlMins
+					// LIN: Vector m_controlMins
+					"m_controlMins"
+					{
+						"type" "vector"
+						"windows" "112"
+						"linux" "128"
+					}
+
+					// WIN: Vector m_controlMaxs
+					// LIN: Vector m_controlMaxs
+					"m_controlMaxs"
+					{
+						"type" "vector"
+						"windows" "124"
+						"linux" "140"
+					}
+
+					// WIN: int m_soundPlaying
+					// LIN: int m_soundPlaying
+					"m_soundPlaying"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "136"
+						"linux" "152"
+					}
+
+					// WIN: int m_sounds
+					// LIN: int m_sounds
+					"m_sounds"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "140"
+						"linux" "156"
+					}
+
+					// WIN: int m_acceleration
+					// LIN: int m_acceleration
+					"m_acceleration"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "144"
+						"linux" "160"
+					}
+
+					// WIN: float m_flVolume
+					// LIN: float m_flVolume
+					"m_flVolume"
+					{
+						"type" "float"
+						"windows" "148"
+						"linux" "164"
+					}
+
+					// WIN: float m_flBank
+					// LIN: float m_flBank
+					"m_flBank"
+					{
+						"type" "float"
+						"windows" "152"
+						"linux" "168"
+					}
+
+					// WIN: float m_oldSpeed
+					// LIN: float m_oldSpeed
+					"m_oldSpeed"
+					{
+						"type" "float"
+						"windows" "156"
+						"linux" "172"
+					}
+
+					// WIN: int m_iTurnAngle
+					// LIN: int m_iTurnAngle
+					"m_iTurnAngle"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "160"
+						"linux" "176"
+					}
+
+					// WIN: float m_flSteeringWheelDecay
+					// LIN: float m_flSteeringWheelDecay
+					"m_flSteeringWheelDecay"
+					{
+						"type" "float"
+						"windows" "164"
+						"linux" "180"
+					}
+
+					// WIN: float m_flAcceleratorDecay
+					// LIN: float m_flAcceleratorDecay
+					"m_flAcceleratorDecay"
+					{
+						"type" "float"
+						"windows" "168"
+						"linux" "184"
+					}
+
+					// WIN: float m_flTurnStartTime
+					// LIN: float m_flTurnStartTime
+					"m_flTurnStartTime"
+					{
+						"type" "float"
+						"windows" "172"
+						"linux" "188"
+					}
+
+					// WIN: float m_flLaunchTime
+					// LIN: float m_flLaunchTime
+					"m_flLaunchTime"
+					{
+						"type" "float"
+						"windows" "176"
+						"linux" "192"
+					}
+
+					// WIN: float m_flLastNormalZ
+					// LIN: float m_flLastNormalZ
+					"m_flLastNormalZ"
+					{
+						"type" "float"
+						"windows" "180"
+						"linux" "196"
+					}
+
+					// WIN: float m_flCanTurnNow
+					// LIN: float m_flCanTurnNow
+					"m_flCanTurnNow"
+					{
+						"type" "float"
+						"windows" "184"
+						"linux" "200"
+					}
+
+					// WIN: float m_flUpdateSound
+					// LIN: float m_flUpdateSound
+					"m_flUpdateSound"
+					{
+						"type" "float"
+						"windows" "188"
+						"linux" "204"
+					}
+
+					// WIN: Vector m_vFrontLeft
+					// LIN: Vector m_vFrontLeft
+					"m_vFrontLeft"
+					{
+						"type" "vector"
+						"windows" "192"
+						"linux" "208"
+					}
+
+					// WIN: Vector m_vFront
+					// LIN: Vector m_vFront
+					"m_vFront"
+					{
+						"type" "vector"
+						"windows" "204"
+						"linux" "220"
+					}
+
+					// WIN: Vector m_vFrontRight
+					// LIN: Vector m_vFrontRight
+					"m_vFrontRight"
+					{
+						"type" "vector"
+						"windows" "216"
+						"linux" "232"
+					}
+
+					// WIN: Vector m_vBackLeft
+					// LIN: Vector m_vBackLeft
+					"m_vBackLeft"
+					{
+						"type" "vector"
+						"windows" "228"
+						"linux" "244"
+					}
+
+					// WIN: Vector m_vBack
+					// LIN: Vector m_vBack
+					"m_vBack"
+					{
+						"type" "vector"
+						"windows" "240"
+						"linux" "256"
+					}
+
+					// WIN: Vector m_vBackRight
+					// LIN: Vector m_vBackRight
+					"m_vBackRight"
+					{
+						"type" "vector"
+						"windows" "252"
+						"linux" "268"
+					}
+
+					// WIN: Vector m_vSurfaceNormal
+					// LIN: Vector m_vSurfaceNormal
+					"m_vSurfaceNormal"
+					{
+						"type" "vector"
+						"windows" "264"
+						"linux" "280"
+					}
+
+					// WIN: Vector m_vVehicleDirection
+					// LIN: Vector m_vVehicleDirection
+					"m_vVehicleDirection"
+					{
+						"type" "vector"
+						"windows" "276"
+						"linux" "292"
+					}
+
+					// WIN: CBasePlayer *m_pDriver
+					// LIN: CBasePlayer *m_pDriver
+					"m_pDriver"
+					{
+						"type" "classptr"
+						"windows" "288"
+						"linux" "304"
+					}
+
+					// WIN: unsigned short m_usAdjustPitch
+					// LIN: short unsigned int m_usAdjustPitch
+					"m_usAdjustPitch"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "292"
+						"linux" "308"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CFuncVehicle
+//

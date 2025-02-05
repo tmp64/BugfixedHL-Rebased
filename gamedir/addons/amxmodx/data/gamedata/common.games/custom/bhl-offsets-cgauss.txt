@@ -1,0 +1,100 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CGauss"
+			{
+				"Offsets"
+				{
+					// WIN: int m_iBalls
+					// LIN: int m_iBalls
+					"m_iBalls"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "180"
+						"linux" "196"
+					}
+
+					// WIN: int m_iGlow
+					// LIN: int m_iGlow
+					"m_iGlow"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "184"
+						"linux" "200"
+					}
+
+					// WIN: int m_iBeam
+					// LIN: int m_iBeam
+					"m_iBeam"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "188"
+						"linux" "204"
+					}
+
+					// WIN: int m_iSoundState
+					// LIN: int m_iSoundState
+					"m_iSoundState"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "192"
+						"linux" "208"
+					}
+
+					// WIN: int m_fPrimaryFire
+					// LIN: BOOL m_fPrimaryFire
+					"m_fPrimaryFire"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "196"
+						"linux" "212"
+					}
+
+					// WIN: unsigned short m_usGaussFire
+					// LIN: short unsigned int m_usGaussFire
+					"m_usGaussFire"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "200"
+						"linux" "216"
+					}
+
+					// WIN: unsigned short m_usGaussSpin
+					// LIN: short unsigned int m_usGaussSpin
+					"m_usGaussSpin"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "202"
+						"linux" "218"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CGauss
+//

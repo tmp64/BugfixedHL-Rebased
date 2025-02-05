@@ -1,0 +1,309 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBaseToggle"
+			{
+				"Offsets"
+				{
+					// WIN: TOGGLE_STATE m_toggle_state
+					// LIN: TOGGLE_STATE m_toggle_state
+					"m_toggle_state"
+					{
+						"type" "integer"
+						"windows" "112"
+						"linux" "128"
+					}
+
+					// WIN: float m_flActivateFinished
+					// LIN: float m_flActivateFinished
+					"m_flActivateFinished"
+					{
+						"type" "float"
+						"windows" "116"
+						"linux" "132"
+					}
+
+					// WIN: float m_flMoveDistance
+					// LIN: float m_flMoveDistance
+					"m_flMoveDistance"
+					{
+						"type" "float"
+						"windows" "120"
+						"linux" "136"
+					}
+
+					// WIN: float m_flWait
+					// LIN: float m_flWait
+					"m_flWait"
+					{
+						"type" "float"
+						"windows" "124"
+						"linux" "140"
+					}
+
+					// WIN: float m_flLip
+					// LIN: float m_flLip
+					"m_flLip"
+					{
+						"type" "float"
+						"windows" "128"
+						"linux" "144"
+					}
+
+					// WIN: float m_flTWidth
+					// LIN: float m_flTWidth
+					"m_flTWidth"
+					{
+						"type" "float"
+						"windows" "132"
+						"linux" "148"
+					}
+
+					// WIN: float m_flTLength
+					// LIN: float m_flTLength
+					"m_flTLength"
+					{
+						"type" "float"
+						"windows" "136"
+						"linux" "152"
+					}
+
+					// WIN: Vector m_vecPosition1
+					// LIN: Vector m_vecPosition1
+					"m_vecPosition1"
+					{
+						"type" "vector"
+						"windows" "140"
+						"linux" "156"
+					}
+
+					// WIN: Vector m_vecPosition2
+					// LIN: Vector m_vecPosition2
+					"m_vecPosition2"
+					{
+						"type" "vector"
+						"windows" "152"
+						"linux" "168"
+					}
+
+					// WIN: Vector m_vecAngle1
+					// LIN: Vector m_vecAngle1
+					"m_vecAngle1"
+					{
+						"type" "vector"
+						"windows" "164"
+						"linux" "180"
+					}
+
+					// WIN: Vector m_vecAngle2
+					// LIN: Vector m_vecAngle2
+					"m_vecAngle2"
+					{
+						"type" "vector"
+						"windows" "176"
+						"linux" "192"
+					}
+
+					// WIN: int m_cTriggersLeft
+					// LIN: int m_cTriggersLeft
+					"m_cTriggersLeft"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "188"
+						"linux" "204"
+					}
+
+					// WIN: float m_flHeight
+					// LIN: float m_flHeight
+					"m_flHeight"
+					{
+						"type" "float"
+						"windows" "192"
+						"linux" "208"
+					}
+
+					// WIN: EHANDLE m_hActivator
+					// LIN: EHANDLE m_hActivator
+					"m_hActivator"
+					{
+						"type" "ehandle"
+						"windows" "196"
+						"linux" "212"
+					}
+
+					// WIN: void (*m_pfnCallWhenMoveDone)()
+					// LIN: __member_func *m_pfnCallWhenMoveDone
+					"m_pfnCallWhenMoveDone"
+					{
+						"type" "function"
+						"windows" "204"
+						"linux" "220"
+					}
+
+					// WIN: Vector m_vecFinalDest
+					// LIN: Vector m_vecFinalDest
+					"m_vecFinalDest"
+					{
+						"type" "vector"
+						"windows" "208"
+						"linux" "228"
+					}
+
+					// WIN: Vector m_vecFinalAngle
+					// LIN: Vector m_vecFinalAngle
+					"m_vecFinalAngle"
+					{
+						"type" "vector"
+						"windows" "220"
+						"linux" "240"
+					}
+
+					// WIN: int m_bitsDamageInflict
+					// LIN: int m_bitsDamageInflict
+					"m_bitsDamageInflict"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "232"
+						"linux" "252"
+					}
+
+					// WIN: string_t m_sMaster
+					// LIN: string_t m_sMaster
+					"m_sMaster"
+					{
+						"type" "stringint"
+						"windows" "236"
+						"linux" "256"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseToggle
+//					CBaseButton
+//						CRotButton
+//					CBaseDoor
+//						CRotDoor
+//					CBaseMonster
+//						CApache
+//						CBarnacle
+//						CBasePlayer
+//						CBaseTurret
+//							CMiniTurret
+//							CSentry
+//							CTurret
+//						CBigMomma
+//						CBloater
+//						CBullsquid
+//						CCineMonster
+//							CCineAI
+//						CControllerHeadBall
+//						CControllerZapBall
+//						CCycler
+//							CCyclerProbe
+//							CGenericCycler
+//						CDeadBarney
+//						CDeadHEV
+//						CDeadHGrunt
+//						CDeadScientist
+//						CEnvExplosion
+//						CFlockingFlyer
+//						CFlockingFlyerFlock
+//						CFlyingMonster
+//							CIchthyosaur
+//						CFurniture
+//						CGMan
+//						CGargantua
+//						CGenericMonster
+//						CGrenade
+//							CAirtank
+//							CApacheHVR
+//							CMortar
+//							CRpgRocket
+//							CSatchelCharge
+//							CSqueakGrenade
+//							CTripmineGrenade
+//						CGunTarget
+//						CHAssassin
+//						CHGruntRepel
+//						CHeadCrab
+//							CBabyCrab
+//						CHornet
+//						CLeech
+//						CLegacyCineMonster
+//							CCine2HeavyWeapons
+//							CCine2Scientist
+//							CCine2Slave
+//							CCine3Barney
+//							CCine3Scientist
+//							CCineBarney
+//							CCinePanther
+//							CCineScientist
+//						CMonsterMaker
+//						CNihilanth
+//						CNihilanthHVR
+//						COsprey
+//						CRat
+//						CRoach
+//						CSquadMonster
+//							CAGrunt
+//							CController
+//							CHGrunt
+//							CHoundeye
+//							CISlave
+//						CTalkMonster
+//							CBarney
+//							CScientist
+//								CSittingScientist
+//						CTentacle
+//						CTentacleMaw
+//						CTestHull
+//						CWreckage
+//						CZombie
+//					CBasePlatTrain
+//						CFuncPlat
+//							CFuncPlatRot
+//								CFuncTrackChange
+//									CFuncTrackAuto
+//						CFuncTrain
+//					CBaseTrigger
+//						CChangeLevel
+//						CLadder
+//						CTriggerCDAudio
+//						CTriggerCounter
+//						CTriggerEndSection
+//						CTriggerGravity
+//						CTriggerHurt
+//						CTriggerMonsterJump
+//						CTriggerMultiple
+//							CTriggerOnce
+//						CTriggerPush
+//						CTriggerSave
+//						CTriggerTeleport
+//					CFuncIllusionary
+//					CFuncMortarField
+//					CMomentaryDoor
+//					CMomentaryRotButton
+//					CMultiManager
+//					CRecharge
+//					CScriptedSentence
+//					CWallHealth
+//

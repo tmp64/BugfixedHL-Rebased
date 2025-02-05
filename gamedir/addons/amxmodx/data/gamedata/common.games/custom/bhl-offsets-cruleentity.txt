@@ -1,0 +1,48 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CRuleEntity"
+			{
+				"Offsets"
+				{
+					// WIN: string_t m_iszMaster
+					// LIN: string_t m_iszMaster
+					"m_iszMaster"
+					{
+						"type" "stringint"
+						"windows" "84"
+						"linux" "100"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CRuleEntity
+//			CRuleBrushEntity
+//				CGamePlayerZone
+//			CRulePointEntity
+//				CGameCounter
+//				CGameCounterSet
+//				CGameEnd
+//				CGamePlayerEquip
+//				CGamePlayerHurt
+//				CGamePlayerTeam
+//				CGameScore
+//				CGameTeamMaster
+//				CGameTeamSet
+//				CGameText
+//

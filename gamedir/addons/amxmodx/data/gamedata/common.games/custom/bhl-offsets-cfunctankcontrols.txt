@@ -1,0 +1,35 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CFuncTankControls"
+			{
+				"Offsets"
+				{
+					// WIN: CFuncTank *m_pTank
+					// LIN: CFuncTank *m_pTank
+					"m_pTank"
+					{
+						"type" "classptr"
+						"windows" "84"
+						"linux" "100"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CFuncTankControls
+//

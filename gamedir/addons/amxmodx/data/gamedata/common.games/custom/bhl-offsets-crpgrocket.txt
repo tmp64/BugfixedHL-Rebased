@@ -1,0 +1,59 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CRpgRocket"
+			{
+				"Offsets"
+				{
+					// WIN: int m_iTrail
+					// LIN: int m_iTrail
+					"m_iTrail"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: float m_flIgniteTime
+					// LIN: float m_flIgniteTime
+					"m_flIgniteTime"
+					{
+						"type" "float"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: EHANDLE m_hLauncher
+					// LIN: EHANDLE m_hLauncher
+					"m_hLauncher"
+					{
+						"type" "ehandle"
+						"windows" "676"
+						"linux" "696"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CGrenade
+//							CRpgRocket
+//

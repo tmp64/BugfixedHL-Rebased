@@ -1,0 +1,140 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CIchthyosaur"
+			{
+				"Offsets"
+				{
+					// WIN: Vector m_SaveVelocity
+					// LIN: Vector m_SaveVelocity
+					"m_SaveVelocity"
+					{
+						"type" "vector"
+						"windows" "696"
+						"linux" "716"
+					}
+
+					// WIN: float m_idealDist
+					// LIN: float m_idealDist
+					"m_idealDist"
+					{
+						"type" "float"
+						"windows" "708"
+						"linux" "728"
+					}
+
+					// WIN: float m_flBlink
+					// LIN: float m_flBlink
+					"m_flBlink"
+					{
+						"type" "float"
+						"windows" "712"
+						"linux" "732"
+					}
+
+					// WIN: float m_flEnemyTouched
+					// LIN: float m_flEnemyTouched
+					"m_flEnemyTouched"
+					{
+						"type" "float"
+						"windows" "716"
+						"linux" "736"
+					}
+
+					// WIN: int m_bOnAttack
+					// LIN: BOOL m_bOnAttack
+					"m_bOnAttack"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "720"
+						"linux" "740"
+					}
+
+					// WIN: float m_flMaxSpeed
+					// LIN: float m_flMaxSpeed
+					"m_flMaxSpeed"
+					{
+						"type" "float"
+						"windows" "724"
+						"linux" "744"
+					}
+
+					// WIN: float m_flMinSpeed
+					// LIN: float m_flMinSpeed
+					"m_flMinSpeed"
+					{
+						"type" "float"
+						"windows" "728"
+						"linux" "748"
+					}
+
+					// WIN: float m_flMaxDist
+					// LIN: float m_flMaxDist
+					"m_flMaxDist"
+					{
+						"type" "float"
+						"windows" "732"
+						"linux" "752"
+					}
+
+					// WIN: CBeam *m_pBeam
+					// LIN: CBeam *m_pBeam
+					"m_pBeam"
+					{
+						"type" "classptr"
+						"windows" "736"
+						"linux" "756"
+					}
+
+					// WIN: float m_flNextAlert
+					// LIN: float m_flNextAlert
+					"m_flNextAlert"
+					{
+						"type" "float"
+						"windows" "740"
+						"linux" "760"
+					}
+
+					// WIN: float m_flLastPitchTime
+					// LIN: float m_flLastPitchTime
+					"m_flLastPitchTime"
+					{
+						"type" "float"
+						"windows" "744"
+						"linux" "764"
+					}
+
+					// WIN: float m_flLastZYawTime
+					// LIN: float m_flLastZYawTime
+					"m_flLastZYawTime"
+					{
+						"type" "float"
+						"windows" "748"
+						"linux" "768"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CFlyingMonster
+//							CIchthyosaur
+//

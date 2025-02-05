@@ -1,0 +1,37 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CFuncTank"
+			{
+				"Offsets"
+				{
+					"Fire"
+					{
+						"windows" "58" // 
+						"linux" "58" // _ZN9CFuncTank4FireERK6VectorS2_P9entvars_s
+					}
+
+					"UpdateTargetPosition"
+					{
+						"windows" "59" // 
+						"linux" "59" // _ZN9CFuncTank20UpdateTargetPositionEP11CBaseEntity
+					}
+
+					"StopFire"
+					{
+						"windows" "60" // 
+						"linux" "60" // _ZN9CFuncTank8StopFireEv
+					}
+
+				}
+			}
+		}
+	}
+}

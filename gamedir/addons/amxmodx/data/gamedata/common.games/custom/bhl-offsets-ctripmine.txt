@@ -1,0 +1,40 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CTripmine"
+			{
+				"Offsets"
+				{
+					// WIN: unsigned short m_usTripFire
+					// LIN: short unsigned int m_usTripFire
+					"m_usTripFire"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "180"
+						"linux" "196"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CTripmine
+//

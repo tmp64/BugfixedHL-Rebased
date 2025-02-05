@@ -1,0 +1,147 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CHGrunt"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flNextGrenadeCheck
+					// LIN: float m_flNextGrenadeCheck
+					"m_flNextGrenadeCheck"
+					{
+						"type" "float"
+						"windows" "720"
+						"linux" "740"
+					}
+
+					// WIN: float m_flNextPainTime
+					// LIN: float m_flNextPainTime
+					"m_flNextPainTime"
+					{
+						"type" "float"
+						"windows" "724"
+						"linux" "744"
+					}
+
+					// WIN: float m_flLastEnemySightTime
+					// LIN: float m_flLastEnemySightTime
+					"m_flLastEnemySightTime"
+					{
+						"type" "float"
+						"windows" "728"
+						"linux" "748"
+					}
+
+					// WIN: Vector m_vecTossVelocity
+					// LIN: Vector m_vecTossVelocity
+					"m_vecTossVelocity"
+					{
+						"type" "vector"
+						"windows" "732"
+						"linux" "752"
+					}
+
+					// WIN: int m_fThrowGrenade
+					// LIN: BOOL m_fThrowGrenade
+					"m_fThrowGrenade"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "744"
+						"linux" "764"
+					}
+
+					// WIN: int m_fStanding
+					// LIN: BOOL m_fStanding
+					"m_fStanding"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "748"
+						"linux" "768"
+					}
+
+					// WIN: int m_fFirstEncounter
+					// LIN: BOOL m_fFirstEncounter
+					"m_fFirstEncounter"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "752"
+						"linux" "772"
+					}
+
+					// WIN: int m_cClipSize
+					// LIN: int m_cClipSize
+					"m_cClipSize"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "756"
+						"linux" "776"
+					}
+
+					// WIN: int m_voicePitch
+					// LIN: int m_voicePitch
+					"m_voicePitch"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "760"
+						"linux" "780"
+					}
+
+					// WIN: int m_iBrassShell
+					// LIN: int m_iBrassShell
+					"m_iBrassShell"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "764"
+						"linux" "784"
+					}
+
+					// WIN: int m_iShotgunShell
+					// LIN: int m_iShotgunShell
+					"m_iShotgunShell"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "768"
+						"linux" "788"
+					}
+
+					// WIN: int m_iSentence
+					// LIN: int m_iSentence
+					"m_iSentence"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "772"
+						"linux" "792"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CSquadMonster
+//							CHGrunt
+//

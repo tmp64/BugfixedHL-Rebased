@@ -1,0 +1,54 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CLaser"
+			{
+				"Offsets"
+				{
+					// WIN: CSprite *m_pSprite
+					// LIN: CSprite *m_pSprite
+					"m_pSprite"
+					{
+						"type" "classptr"
+						"windows" "84"
+						"linux" "100"
+					}
+
+					// WIN: string_t m_iszSpriteName
+					// LIN: int m_iszSpriteName
+					"m_iszSpriteName"
+					{
+						"type" "stringint"
+						"windows" "88"
+						"linux" "104"
+					}
+
+					// WIN: Vector m_firePosition
+					// LIN: Vector m_firePosition
+					"m_firePosition"
+					{
+						"type" "vector"
+						"windows" "92"
+						"linux" "108"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CBeam
+//			CLaser
+//

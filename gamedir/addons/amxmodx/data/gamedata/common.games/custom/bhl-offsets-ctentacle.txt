@@ -1,0 +1,189 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CTentacle"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flInitialYaw
+					// LIN: float m_flInitialYaw
+					"m_flInitialYaw"
+					{
+						"type" "float"
+						"windows" "664"
+						"linux" "684"
+					}
+
+					// WIN: int m_iGoalAnim
+					// LIN: int m_iGoalAnim
+					"m_iGoalAnim"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: int m_iLevel
+					// LIN: int m_iLevel
+					"m_iLevel"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: int m_iDir
+					// LIN: int m_iDir
+					"m_iDir"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "676"
+						"linux" "696"
+					}
+
+					// WIN: float m_flFramerateAdj
+					// LIN: float m_flFramerateAdj
+					"m_flFramerateAdj"
+					{
+						"type" "float"
+						"windows" "680"
+						"linux" "700"
+					}
+
+					// WIN: float m_flSoundYaw
+					// LIN: float m_flSoundYaw
+					"m_flSoundYaw"
+					{
+						"type" "float"
+						"windows" "684"
+						"linux" "704"
+					}
+
+					// WIN: int m_iSoundLevel
+					// LIN: int m_iSoundLevel
+					"m_iSoundLevel"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "688"
+						"linux" "708"
+					}
+
+					// WIN: float m_flSoundTime
+					// LIN: float m_flSoundTime
+					"m_flSoundTime"
+					{
+						"type" "float"
+						"windows" "692"
+						"linux" "712"
+					}
+
+					// WIN: float m_flSoundRadius
+					// LIN: float m_flSoundRadius
+					"m_flSoundRadius"
+					{
+						"type" "float"
+						"windows" "696"
+						"linux" "716"
+					}
+
+					// WIN: int m_iHitDmg
+					// LIN: int m_iHitDmg
+					"m_iHitDmg"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "700"
+						"linux" "720"
+					}
+
+					// WIN: float m_flHitTime
+					// LIN: float m_flHitTime
+					"m_flHitTime"
+					{
+						"type" "float"
+						"windows" "704"
+						"linux" "724"
+					}
+
+					// WIN: float m_flTapRadius
+					// LIN: float m_flTapRadius
+					"m_flTapRadius"
+					{
+						"type" "float"
+						"windows" "708"
+						"linux" "728"
+					}
+
+					// WIN: float m_flNextSong
+					// LIN: float m_flNextSong
+					"m_flNextSong"
+					{
+						"type" "float"
+						"windows" "712"
+						"linux" "732"
+					}
+
+					// WIN: float m_flMaxYaw
+					// LIN: float m_flMaxYaw
+					"m_flMaxYaw"
+					{
+						"type" "float"
+						"windows" "716"
+						"linux" "736"
+					}
+
+					// WIN: int m_iTapSound
+					// LIN: int m_iTapSound
+					"m_iTapSound"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "720"
+						"linux" "740"
+					}
+
+					// WIN: Vector m_vecPrevSound
+					// LIN: Vector m_vecPrevSound
+					"m_vecPrevSound"
+					{
+						"type" "vector"
+						"windows" "724"
+						"linux" "744"
+					}
+
+					// WIN: float m_flPrevSoundTime
+					// LIN: float m_flPrevSoundTime
+					"m_flPrevSoundTime"
+					{
+						"type" "float"
+						"windows" "736"
+						"linux" "756"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CTentacle
+//

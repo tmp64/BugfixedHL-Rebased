@@ -1,0 +1,36 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBMortar"
+			{
+				"Offsets"
+				{
+					// WIN: int m_maxFrame
+					// LIN: int m_maxFrame
+					"m_maxFrame"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "84"
+						"linux" "100"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CBMortar
+//

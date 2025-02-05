@@ -1,0 +1,43 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CCineMonster"
+			{
+				"Offsets"
+				{
+					"PossessEntity"
+					{
+						"windows" "127" // 
+						"linux" "127" // _ZN12CCineMonster13PossessEntityEv
+					}
+
+					"StartSequence"
+					{
+						"windows" "128" // 
+						"linux" "128" // _ZN12CCineMonster13StartSequenceEP12CBaseMonsterii
+					}
+
+					"FCanOverrideState"
+					{
+						"windows" "129" // 
+						"linux" "129" // _ZN12CCineMonster17FCanOverrideStateEv
+					}
+
+					"FixScriptMonsterSchedule"
+					{
+						"windows" "130" // 
+						"linux" "130" // _ZN12CCineMonster24FixScriptMonsterScheduleEP12CBaseMonster
+					}
+
+				}
+			}
+		}
+	}
+}

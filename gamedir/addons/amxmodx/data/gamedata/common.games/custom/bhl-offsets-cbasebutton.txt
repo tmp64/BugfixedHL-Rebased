@@ -1,0 +1,118 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBaseButton"
+			{
+				"Offsets"
+				{
+					// WIN: int m_fStayPushed
+					// LIN: BOOL m_fStayPushed
+					"m_fStayPushed"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "240"
+						"linux" "260"
+					}
+
+					// WIN: int m_fRotating
+					// LIN: BOOL m_fRotating
+					"m_fRotating"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "244"
+						"linux" "264"
+					}
+
+					// WIN: string_t m_strChangeTarget
+					// LIN: string_t m_strChangeTarget
+					"m_strChangeTarget"
+					{
+						"type" "stringint"
+						"windows" "248"
+						"linux" "268"
+					}
+
+					// WIN: locksounds m_ls
+					// LIN: locksound_t m_ls
+					"m_ls"
+					{
+						"type" "structure"
+						"windows" "252"
+						"linux" "272"
+					}
+
+					// WIN: byte m_bLockedSound
+					// LIN: BYTE m_bLockedSound
+					"m_bLockedSound"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "288"
+						"linux" "308"
+					}
+
+					// WIN: byte m_bLockedSentence
+					// LIN: BYTE m_bLockedSentence
+					"m_bLockedSentence"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "289"
+						"linux" "309"
+					}
+
+					// WIN: byte m_bUnlockedSound
+					// LIN: BYTE m_bUnlockedSound
+					"m_bUnlockedSound"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "290"
+						"linux" "310"
+					}
+
+					// WIN: byte m_bUnlockedSentence
+					// LIN: BYTE m_bUnlockedSentence
+					"m_bUnlockedSentence"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "291"
+						"linux" "311"
+					}
+
+					// WIN: int m_sounds
+					// LIN: int m_sounds
+					"m_sounds"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "292"
+						"linux" "312"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseToggle
+//					CBaseButton
+//						CRotButton
+//

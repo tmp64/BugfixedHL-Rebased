@@ -1,0 +1,55 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBasePlayer"
+			{
+				"Offsets"
+				{
+					"Jump"
+					{
+						"windows" "127" // 
+						"linux" "127" // _ZN11CBasePlayer4JumpEv
+					}
+
+					"Duck"
+					{
+						"windows" "128" // 
+						"linux" "128" // _ZN11CBasePlayer4DuckEv
+					}
+
+					"PreThink"
+					{
+						"windows" "129" // 
+						"linux" "129" // _ZN11CBasePlayer8PreThinkEv
+					}
+
+					"PostThink"
+					{
+						"windows" "130" // 
+						"linux" "130" // _ZN11CBasePlayer9PostThinkEv
+					}
+
+					"UpdateClientData"
+					{
+						"windows" "131" // 
+						"linux" "131" // _ZN11CBasePlayer16UpdateClientDataEv
+					}
+
+					"ImpulseCommands"
+					{
+						"windows" "132" // 
+						"linux" "132" // _ZN11CBasePlayer15ImpulseCommandsEv
+					}
+
+				}
+			}
+		}
+	}
+}

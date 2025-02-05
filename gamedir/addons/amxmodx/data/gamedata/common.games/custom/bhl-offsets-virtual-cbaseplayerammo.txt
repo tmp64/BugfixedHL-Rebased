@@ -1,0 +1,25 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBasePlayerAmmo"
+			{
+				"Offsets"
+				{
+					"AddAmmo"
+					{
+						"windows" "58" // 
+						"linux" "58" // _ZN15CBasePlayerAmmo7AddAmmoEP11CBaseEntity
+					}
+
+				}
+			}
+		}
+	}
+}

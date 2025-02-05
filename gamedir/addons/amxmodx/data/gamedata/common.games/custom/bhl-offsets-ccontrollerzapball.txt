@@ -1,0 +1,39 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CControllerZapBall"
+			{
+				"Offsets"
+				{
+					// WIN: EHANDLE m_hOwner
+					// LIN: EHANDLE m_hOwner
+					"m_hOwner"
+					{
+						"type" "ehandle"
+						"windows" "664"
+						"linux" "684"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CControllerZapBall
+//

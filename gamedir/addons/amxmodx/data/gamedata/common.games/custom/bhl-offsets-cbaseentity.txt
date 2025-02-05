@@ -1,0 +1,472 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBaseEntity"
+			{
+				"Offsets"
+				{
+					// WIN: entvars_s *pev
+					// LIN: entvars_t *pev
+					"pev"
+					{
+						"type" "entvars"
+						"windows" "4"
+						"linux" "4"
+					}
+
+					// WIN: CBaseEntity *m_pGoalEnt
+					// LIN: CBaseEntity *m_pGoalEnt
+					"m_pGoalEnt"
+					{
+						"type" "classptr"
+						"windows" "8"
+						"linux" "8"
+					}
+
+					// WIN: CBaseEntity *m_pLink
+					// LIN: CBaseEntity *m_pLink
+					"m_pLink"
+					{
+						"type" "classptr"
+						"windows" "12"
+						"linux" "12"
+					}
+
+					// WIN: void (*m_pfnThink)()
+					// LIN: __member_func *m_pfnThink
+					"m_pfnThink"
+					{
+						"type" "function"
+						"windows" "16"
+						"linux" "16"
+					}
+
+					// WIN: void (*m_pfnTouch)(CBaseEntity *)
+					// LIN: __member_func *m_pfnTouch
+					"m_pfnTouch"
+					{
+						"type" "function"
+						"windows" "20"
+						"linux" "24"
+					}
+
+					// WIN: void (*m_pfnUse)(CBaseEntity *, CBaseEntity *, USE_TYPE , float)
+					// LIN: __member_func *m_pfnUse
+					"m_pfnUse"
+					{
+						"type" "function"
+						"windows" "24"
+						"linux" "32"
+					}
+
+					// WIN: void (*m_pfnBlocked)(CBaseEntity *)
+					// LIN: __member_func *m_pfnBlocked
+					"m_pfnBlocked"
+					{
+						"type" "function"
+						"windows" "28"
+						"linux" "40"
+					}
+
+					// WIN: int ammo_9mm
+					// LIN: int ammo_9mm
+					"ammo_9mm"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "32"
+						"linux" "48"
+					}
+
+					// WIN: int ammo_357
+					// LIN: int ammo_357
+					"ammo_357"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "36"
+						"linux" "52"
+					}
+
+					// WIN: int ammo_bolts
+					// LIN: int ammo_bolts
+					"ammo_bolts"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "40"
+						"linux" "56"
+					}
+
+					// WIN: int ammo_buckshot
+					// LIN: int ammo_buckshot
+					"ammo_buckshot"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "44"
+						"linux" "60"
+					}
+
+					// WIN: int ammo_rockets
+					// LIN: int ammo_rockets
+					"ammo_rockets"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "48"
+						"linux" "64"
+					}
+
+					// WIN: int ammo_uranium
+					// LIN: int ammo_uranium
+					"ammo_uranium"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "52"
+						"linux" "68"
+					}
+
+					// WIN: int ammo_hornets
+					// LIN: int ammo_hornets
+					"ammo_hornets"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "56"
+						"linux" "72"
+					}
+
+					// WIN: int ammo_argrens
+					// LIN: int ammo_argrens
+					"ammo_argrens"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "60"
+						"linux" "76"
+					}
+
+					// WIN: float m_flStartThrow
+					// LIN: float m_flStartThrow
+					"m_flStartThrow"
+					{
+						"type" "float"
+						"windows" "64"
+						"linux" "80"
+					}
+
+					// WIN: float m_flReleaseThrow
+					// LIN: float m_flReleaseThrow
+					"m_flReleaseThrow"
+					{
+						"type" "float"
+						"windows" "68"
+						"linux" "84"
+					}
+
+					// WIN: int m_chargeReady
+					// LIN: int m_chargeReady
+					"m_chargeReady"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "72"
+						"linux" "88"
+					}
+
+					// WIN: int m_fInAttack
+					// LIN: int m_fInAttack
+					"m_fInAttack"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "76"
+						"linux" "92"
+					}
+
+					// WIN: int m_fireState
+					// LIN: int m_fireState
+					"m_fireState"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "80"
+						"linux" "96"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CAmbientGeneric
+//		CBMortar
+//		CBaseDelay
+//			CAutoTrigger
+//			CBaseAnimating
+//				CActAnimating
+//					CXenHair
+//					CXenPLight
+//					CXenSpore
+//						CXenSporeLarge
+//						CXenSporeMed
+//						CXenSporeSmall
+//					CXenTree
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CCrossbow
+//						CCrowbar
+//						CEgon
+//						CGauss
+//						CGlock
+//						CHandGrenade
+//						CHgun
+//						CMP5
+//						CPython
+//						CRpg
+//						CSatchel
+//						CShotgun
+//						CSqueak
+//						CTripmine
+//						CWeaponCycler
+//				CBaseToggle
+//					CBaseButton
+//						CRotButton
+//					CBaseDoor
+//						CRotDoor
+//					CBaseMonster
+//						CApache
+//						CBarnacle
+//						CBasePlayer
+//						CBaseTurret
+//							CMiniTurret
+//							CSentry
+//							CTurret
+//						CBigMomma
+//						CBloater
+//						CBullsquid
+//						CCineMonster
+//							CCineAI
+//						CControllerHeadBall
+//						CControllerZapBall
+//						CCycler
+//							CCyclerProbe
+//							CGenericCycler
+//						CDeadBarney
+//						CDeadHEV
+//						CDeadHGrunt
+//						CDeadScientist
+//						CEnvExplosion
+//						CFlockingFlyer
+//						CFlockingFlyerFlock
+//						CFlyingMonster
+//							CIchthyosaur
+//						CFurniture
+//						CGMan
+//						CGargantua
+//						CGenericMonster
+//						CGrenade
+//							CAirtank
+//							CApacheHVR
+//							CMortar
+//							CRpgRocket
+//							CSatchelCharge
+//							CSqueakGrenade
+//							CTripmineGrenade
+//						CGunTarget
+//						CHAssassin
+//						CHGruntRepel
+//						CHeadCrab
+//							CBabyCrab
+//						CHornet
+//						CLeech
+//						CLegacyCineMonster
+//							CCine2HeavyWeapons
+//							CCine2Scientist
+//							CCine2Slave
+//							CCine3Barney
+//							CCine3Scientist
+//							CCineBarney
+//							CCinePanther
+//							CCineScientist
+//						CMonsterMaker
+//						CNihilanth
+//						CNihilanthHVR
+//						COsprey
+//						CRat
+//						CRoach
+//						CSquadMonster
+//							CAGrunt
+//							CController
+//							CHGrunt
+//							CHoundeye
+//							CISlave
+//						CTalkMonster
+//							CBarney
+//							CScientist
+//								CSittingScientist
+//						CTentacle
+//						CTentacleMaw
+//						CTestHull
+//						CWreckage
+//						CZombie
+//					CBasePlatTrain
+//						CFuncPlat
+//							CFuncPlatRot
+//								CFuncTrackChange
+//									CFuncTrackAuto
+//						CFuncTrain
+//					CBaseTrigger
+//						CChangeLevel
+//						CLadder
+//						CTriggerCDAudio
+//						CTriggerCounter
+//						CTriggerEndSection
+//						CTriggerGravity
+//						CTriggerHurt
+//						CTriggerMonsterJump
+//						CTriggerMultiple
+//							CTriggerOnce
+//						CTriggerPush
+//						CTriggerSave
+//						CTriggerTeleport
+//					CFuncIllusionary
+//					CFuncMortarField
+//					CMomentaryDoor
+//					CMomentaryRotButton
+//					CMultiManager
+//					CRecharge
+//					CScriptedSentence
+//					CWallHealth
+//			CBreakable
+//				CPushable
+//			CEnvBeverage
+//			CEnvFunnel
+//			CFireAndDie
+//			CGibShooter
+//				CEnvShooter
+//			CTestEffect
+//			CTriggerCamera
+//			CTriggerChangeTarget
+//			CTriggerRelay
+//		CBasePlayerAmmo
+//			CCrossbowAmmo
+//			CEgonAmmo
+//			CGaussAmmo
+//			CGlockAmmo
+//			CMP5AmmoClip
+//			CMP5AmmoGrenade
+//			CMP5Chainammo
+//			CPythonAmmo
+//			CRpgAmmo
+//			CShotgunAmmo
+//		CBaseSpectator
+//		CBeam
+//			CLaser
+//			CLightning
+//				CTripBeam
+//		CBloodSplat
+//		CBubbling
+//		CButtonTarget
+//		CCineBlood
+//		CClientFog
+//		CCorpse
+//		CCrossbowBolt
+//		CCyclerSprite
+//		CDecal
+//		CEnvSpark
+//		CFrictionModifier
+//		CFuncRotating
+//		CFuncTank
+//			CFuncTankGun
+//			CFuncTankLaser
+//			CFuncTankMortar
+//			CFuncTankRocket
+//		CFuncTankControls
+//		CFuncTrackTrain
+//		CFuncTrainControls
+//		CFuncVehicle
+//		CFuncVehicleControls
+//		CFuncWall
+//			CFuncConveyor
+//			CFuncMonsterClip
+//			CFuncWallToggle
+//		CGib
+//		CItem
+//			CHealthKit
+//			CItemAntidote
+//			CItemBattery
+//			CItemLongJump
+//			CItemSecurity
+//			CItemSuit
+//		CItemSoda
+//		CLaserSpot
+//		CNodeEnt
+//		CNodeViewer
+//		CNullEntity
+//		CPendulum
+//		CPlatTrigger
+//		CPointEntity
+//			CBaseDMStart
+//			CBlood
+//			CEnvGlobal
+//			CEnvSound
+//			CFade
+//			CGlow
+//			CInfoBM
+//			CInfoIntermission
+//			CLight
+//				CEnvLight
+//			CMessage
+//			CMultiSource
+//			CPathCorner
+//			CPathTrack
+//			CRevertSaved
+//			CShake
+//			CSprite
+//			CStripWeapons
+//			CTargetCDAudio
+//			CTriggerVolume
+//			CXenHull
+//		CRenderFxManager
+//		CRuleEntity
+//			CRuleBrushEntity
+//				CGamePlayerZone
+//			CRulePointEntity
+//				CGameCounter
+//				CGameCounterSet
+//				CGameEnd
+//				CGamePlayerEquip
+//				CGamePlayerHurt
+//				CGamePlayerTeam
+//				CGameScore
+//				CGameTeamMaster
+//				CGameTeamSet
+//				CGameText
+//		CShower
+//		CSmoker
+//		CSoundEnt
+//		CSpeaker
+//		CSpiral
+//		CSprayCan
+//		CSquidSpit
+//		CStomp
+//		CWeaponBox
+//		CWorld
+//		CWorldItem
+//		CXenTreeTrigger
+//

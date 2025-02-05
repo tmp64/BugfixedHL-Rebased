@@ -1,0 +1,58 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CHornet"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flStopAttack
+					// LIN: float m_flStopAttack
+					"m_flStopAttack"
+					{
+						"type" "float"
+						"windows" "664"
+						"linux" "684"
+					}
+
+					// WIN: int m_iHornetType
+					// LIN: int m_iHornetType
+					"m_iHornetType"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: float m_flFlySpeed
+					// LIN: float m_flFlySpeed
+					"m_flFlySpeed"
+					{
+						"type" "float"
+						"windows" "672"
+						"linux" "692"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CHornet
+//

@@ -1,0 +1,127 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CTalkMonster"
+			{
+				"Offsets"
+				{
+					// WIN: int m_bitsSaid
+					// LIN: int m_bitsSaid
+					"m_bitsSaid"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "664"
+						"linux" "684"
+					}
+
+					// WIN: int m_nSpeak
+					// LIN: int m_nSpeak
+					"m_nSpeak"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: int m_voicePitch
+					// LIN: int m_voicePitch
+					"m_voicePitch"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: char const *m_szGrp[18]
+					// LIN: char const *m_szGrp[17]
+					"m_szGrp"
+					{
+						"type" "stringptr"
+						"size" "18"
+						"windows" "676"
+						"linux" "696"
+					}
+
+					// WIN: float m_useTime
+					// LIN: float m_useTime
+					"m_useTime"
+					{
+						"type" "float"
+						"windows" "748"
+						"linux" "768"
+					}
+
+					// WIN: string_t m_iszUse
+					// LIN: int m_iszUse
+					"m_iszUse"
+					{
+						"type" "stringint"
+						"windows" "752"
+						"linux" "772"
+					}
+
+					// WIN: string_t m_iszUnUse
+					// LIN: int m_iszUnUse
+					"m_iszUnUse"
+					{
+						"type" "stringint"
+						"windows" "756"
+						"linux" "776"
+					}
+
+					// WIN: float m_flLastSaidSmelled
+					// LIN: float m_flLastSaidSmelled
+					"m_flLastSaidSmelled"
+					{
+						"type" "float"
+						"windows" "760"
+						"linux" "780"
+					}
+
+					// WIN: float m_flStopTalkTime
+					// LIN: float m_flStopTalkTime
+					"m_flStopTalkTime"
+					{
+						"type" "float"
+						"windows" "764"
+						"linux" "784"
+					}
+
+					// WIN: EHANDLE m_hTalkTarget
+					// LIN: EHANDLE m_hTalkTarget
+					"m_hTalkTarget"
+					{
+						"type" "ehandle"
+						"windows" "768"
+						"linux" "788"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CTalkMonster
+//							CBarney
+//							CScientist
+//								CSittingScientist
+//

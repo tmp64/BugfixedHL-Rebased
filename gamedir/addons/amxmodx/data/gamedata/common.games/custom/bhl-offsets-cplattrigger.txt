@@ -1,0 +1,35 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CPlatTrigger"
+			{
+				"Offsets"
+				{
+					// WIN: CFuncPlat *m_pPlatform
+					// LIN: CFuncPlat *m_pPlatform
+					"m_pPlatform"
+					{
+						"type" "classptr"
+						"windows" "84"
+						"linux" "100"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CPlatTrigger
+//

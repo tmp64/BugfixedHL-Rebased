@@ -1,0 +1,72 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CFuncRotating"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flFanFriction
+					// LIN: float m_flFanFriction
+					"m_flFanFriction"
+					{
+						"type" "float"
+						"windows" "84"
+						"linux" "100"
+					}
+
+					// WIN: float m_flAttenuation
+					// LIN: float m_flAttenuation
+					"m_flAttenuation"
+					{
+						"type" "float"
+						"windows" "88"
+						"linux" "104"
+					}
+
+					// WIN: float m_flVolume
+					// LIN: float m_flVolume
+					"m_flVolume"
+					{
+						"type" "float"
+						"windows" "92"
+						"linux" "108"
+					}
+
+					// WIN: float m_pitch
+					// LIN: float m_pitch
+					"m_pitch"
+					{
+						"type" "float"
+						"windows" "96"
+						"linux" "112"
+					}
+
+					// WIN: int m_sounds
+					// LIN: int m_sounds
+					"m_sounds"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "100"
+						"linux" "116"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CFuncRotating
+//

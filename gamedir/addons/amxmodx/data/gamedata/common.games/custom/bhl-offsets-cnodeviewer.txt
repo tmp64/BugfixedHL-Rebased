@@ -1,0 +1,107 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CNodeViewer"
+			{
+				"Offsets"
+				{
+					// WIN: int m_iBaseNode
+					// LIN: int m_iBaseNode
+					"m_iBaseNode"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "84"
+						"linux" "100"
+					}
+
+					// WIN: int m_iDraw
+					// LIN: int m_iDraw
+					"m_iDraw"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "88"
+						"linux" "104"
+					}
+
+					// WIN: int m_nVisited
+					// LIN: int m_nVisited
+					"m_nVisited"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "92"
+						"linux" "108"
+					}
+
+					// WIN: int m_aFrom[128]
+					// LIN: int m_aFrom[127]
+					"m_aFrom"
+					{
+						"type" "integer"
+						"size" "128"
+						"unsigned" "0"
+						"windows" "96"
+						"linux" "112"
+					}
+
+					// WIN: int m_aTo[128]
+					// LIN: int m_aTo[127]
+					"m_aTo"
+					{
+						"type" "integer"
+						"size" "128"
+						"unsigned" "0"
+						"windows" "608"
+						"linux" "624"
+					}
+
+					// WIN: int m_iHull
+					// LIN: int m_iHull
+					"m_iHull"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "1120"
+						"linux" "1136"
+					}
+
+					// WIN: int m_afNodeType
+					// LIN: int m_afNodeType
+					"m_afNodeType"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "1124"
+						"linux" "1140"
+					}
+
+					// WIN: Vector m_vecColor
+					// LIN: Vector m_vecColor
+					"m_vecColor"
+					{
+						"type" "vector"
+						"windows" "1128"
+						"linux" "1144"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CNodeViewer
+//

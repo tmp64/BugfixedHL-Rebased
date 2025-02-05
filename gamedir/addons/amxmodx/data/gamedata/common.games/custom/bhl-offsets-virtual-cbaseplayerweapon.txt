@@ -1,0 +1,103 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBasePlayerWeapon"
+			{
+				"Offsets"
+				{
+					"ExtractAmmo"
+					{
+						"windows" "77" // 
+						"linux" "77" // _ZN17CBasePlayerWeapon11ExtractAmmoEPS_
+					}
+
+					"ExtractClipAmmo"
+					{
+						"windows" "78" // 
+						"linux" "78" // _ZN17CBasePlayerWeapon15ExtractClipAmmoEPS_
+					}
+
+					"AddWeapon"
+					{
+						"windows" "79" // 
+						"linux" "79" // _ZN17CBasePlayerWeapon9AddWeaponEv
+					}
+
+					"PlayEmptySound"
+					{
+						"windows" "80" // 
+						"linux" "80" // _ZN17CBasePlayerWeapon14PlayEmptySoundEv
+					}
+
+					"ResetEmptySound"
+					{
+						"windows" "81" // 
+						"linux" "81" // _ZN17CBasePlayerWeapon15ResetEmptySoundEv
+					}
+
+					"SendWeaponAnim"
+					{
+						"windows" "82" // 
+						"linux" "82" // _ZN17CBasePlayerWeapon14SendWeaponAnimEiii
+					}
+
+					"IsUseable"
+					{
+						"windows" "83" // 
+						"linux" "83" // _ZN17CBasePlayerWeapon9IsUseableEv
+					}
+
+					"PrimaryAttack"
+					{
+						"windows" "84" // 
+						"linux" "84" // _ZN17CBasePlayerWeapon13PrimaryAttackEv
+					}
+
+					"SecondaryAttack"
+					{
+						"windows" "85" // 
+						"linux" "85" // _ZN17CBasePlayerWeapon15SecondaryAttackEv
+					}
+
+					"Reload"
+					{
+						"windows" "86" // 
+						"linux" "86" // _ZN17CBasePlayerWeapon6ReloadEv
+					}
+
+					"WeaponIdle"
+					{
+						"windows" "87" // 
+						"linux" "87" // _ZN17CBasePlayerWeapon10WeaponIdleEv
+					}
+
+					"RetireWeapon"
+					{
+						"windows" "88" // 
+						"linux" "88" // _ZN17CBasePlayerWeapon12RetireWeaponEv
+					}
+
+					"ShouldWeaponIdle"
+					{
+						"windows" "89" // 
+						"linux" "89" // _ZN17CBasePlayerWeapon16ShouldWeaponIdleEv
+					}
+
+					"UseDecrement"
+					{
+						"windows" "90" // 
+						"linux" "90" // _ZN17CBasePlayerWeapon12UseDecrementEv
+					}
+
+				}
+			}
+		}
+	}
+}

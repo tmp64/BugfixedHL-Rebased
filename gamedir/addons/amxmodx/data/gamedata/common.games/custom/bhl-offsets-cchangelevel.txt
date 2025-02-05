@@ -1,0 +1,69 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CChangeLevel"
+			{
+				"Offsets"
+				{
+					// WIN: char m_szMapName[32]
+					// LIN: char m_szMapName[31]
+					"m_szMapName"
+					{
+						"type" "string"
+						"size" "32"
+						"windows" "240"
+						"linux" "260"
+					}
+
+					// WIN: char m_szLandmarkName[32]
+					// LIN: char m_szLandmarkName[31]
+					"m_szLandmarkName"
+					{
+						"type" "string"
+						"size" "32"
+						"windows" "272"
+						"linux" "292"
+					}
+
+					// WIN: int m_changeTarget
+					// LIN: int m_changeTarget
+					"m_changeTarget"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "304"
+						"linux" "324"
+					}
+
+					// WIN: float m_changeTargetDelay
+					// LIN: float m_changeTargetDelay
+					"m_changeTargetDelay"
+					{
+						"type" "float"
+						"windows" "308"
+						"linux" "328"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseToggle
+//					CBaseTrigger
+//						CChangeLevel
+//

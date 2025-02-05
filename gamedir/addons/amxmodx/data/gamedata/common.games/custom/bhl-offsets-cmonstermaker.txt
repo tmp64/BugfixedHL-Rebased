@@ -1,0 +1,98 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CMonsterMaker"
+			{
+				"Offsets"
+				{
+					// WIN: string_t m_iszMonsterClassname
+					// LIN: string_t m_iszMonsterClassname
+					"m_iszMonsterClassname"
+					{
+						"type" "stringint"
+						"windows" "664"
+						"linux" "684"
+					}
+
+					// WIN: int m_cNumMonsters
+					// LIN: int m_cNumMonsters
+					"m_cNumMonsters"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: int m_cLiveChildren
+					// LIN: int m_cLiveChildren
+					"m_cLiveChildren"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: int m_iMaxLiveChildren
+					// LIN: int m_iMaxLiveChildren
+					"m_iMaxLiveChildren"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "676"
+						"linux" "696"
+					}
+
+					// WIN: float m_flGround
+					// LIN: float m_flGround
+					"m_flGround"
+					{
+						"type" "float"
+						"windows" "680"
+						"linux" "700"
+					}
+
+					// WIN: int m_fActive
+					// LIN: BOOL m_fActive
+					"m_fActive"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "684"
+						"linux" "704"
+					}
+
+					// WIN: int m_fFadeChildren
+					// LIN: BOOL m_fFadeChildren
+					"m_fFadeChildren"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "688"
+						"linux" "708"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CMonsterMaker
+//

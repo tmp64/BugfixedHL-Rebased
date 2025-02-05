@@ -1,0 +1,37 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CGameText"
+			{
+				"Offsets"
+				{
+					// WIN: hudtextparms_s m_textParms
+					// LIN: hudtextparms_t m_textParms
+					"m_textParms"
+					{
+						"type" "structure"
+						"windows" "88"
+						"linux" "104"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CRuleEntity
+//			CRulePointEntity
+//				CGameText
+//

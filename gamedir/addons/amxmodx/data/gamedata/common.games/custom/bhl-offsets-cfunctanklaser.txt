@@ -1,0 +1,45 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CFuncTankLaser"
+			{
+				"Offsets"
+				{
+					// WIN: CLaser *m_pLaser
+					// LIN: CLaser *m_pLaser
+					"m_pLaser"
+					{
+						"type" "classptr"
+						"windows" "212"
+						"linux" "228"
+					}
+
+					// WIN: float m_laserTime
+					// LIN: float m_laserTime
+					"m_laserTime"
+					{
+						"type" "float"
+						"windows" "216"
+						"linux" "232"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CFuncTank
+//			CFuncTankLaser
+//

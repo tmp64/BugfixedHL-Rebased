@@ -1,0 +1,85 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CFuncMortarField"
+			{
+				"Offsets"
+				{
+					// WIN: string_t m_iszXController
+					// LIN: int m_iszXController
+					"m_iszXController"
+					{
+						"type" "stringint"
+						"windows" "240"
+						"linux" "260"
+					}
+
+					// WIN: string_t m_iszYController
+					// LIN: int m_iszYController
+					"m_iszYController"
+					{
+						"type" "stringint"
+						"windows" "244"
+						"linux" "264"
+					}
+
+					// WIN: float m_flSpread
+					// LIN: float m_flSpread
+					"m_flSpread"
+					{
+						"type" "float"
+						"windows" "248"
+						"linux" "268"
+					}
+
+					// WIN: float m_flDelay
+					// LIN: float m_flDelay
+					"m_flDelay"
+					{
+						"type" "float"
+						"windows" "252"
+						"linux" "272"
+					}
+
+					// WIN: int m_iCount
+					// LIN: int m_iCount
+					"m_iCount"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "256"
+						"linux" "276"
+					}
+
+					// WIN: int m_fControl
+					// LIN: int m_fControl
+					"m_fControl"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "260"
+						"linux" "280"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseToggle
+//					CFuncMortarField
+//

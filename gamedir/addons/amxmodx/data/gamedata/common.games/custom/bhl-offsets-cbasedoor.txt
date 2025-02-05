@@ -1,0 +1,109 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBaseDoor"
+			{
+				"Offsets"
+				{
+					// WIN: byte m_bHealthValue
+					// LIN: BYTE m_bHealthValue
+					"m_bHealthValue"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "240"
+						"linux" "260"
+					}
+
+					// WIN: byte m_bMoveSnd
+					// LIN: BYTE m_bMoveSnd
+					"m_bMoveSnd"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "241"
+						"linux" "261"
+					}
+
+					// WIN: byte m_bStopSnd
+					// LIN: BYTE m_bStopSnd
+					"m_bStopSnd"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "242"
+						"linux" "262"
+					}
+
+					// WIN: locksounds m_ls
+					// LIN: locksound_t m_ls
+					"m_ls"
+					{
+						"type" "structure"
+						"windows" "244"
+						"linux" "264"
+					}
+
+					// WIN: byte m_bLockedSound
+					// LIN: BYTE m_bLockedSound
+					"m_bLockedSound"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "280"
+						"linux" "300"
+					}
+
+					// WIN: byte m_bLockedSentence
+					// LIN: BYTE m_bLockedSentence
+					"m_bLockedSentence"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "281"
+						"linux" "301"
+					}
+
+					// WIN: byte m_bUnlockedSound
+					// LIN: BYTE m_bUnlockedSound
+					"m_bUnlockedSound"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "282"
+						"linux" "302"
+					}
+
+					// WIN: byte m_bUnlockedSentence
+					// LIN: BYTE m_bUnlockedSentence
+					"m_bUnlockedSentence"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "283"
+						"linux" "303"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseToggle
+//					CBaseDoor
+//						CRotDoor
+//

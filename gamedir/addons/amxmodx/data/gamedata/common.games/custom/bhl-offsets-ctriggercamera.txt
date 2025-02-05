@@ -1,0 +1,146 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CTriggerCamera"
+			{
+				"Offsets"
+				{
+					// WIN: EHANDLE m_hPlayer
+					// LIN: EHANDLE m_hPlayer
+					"m_hPlayer"
+					{
+						"type" "ehandle"
+						"windows" "92"
+						"linux" "108"
+					}
+
+					// WIN: EHANDLE m_hTarget
+					// LIN: EHANDLE m_hTarget
+					"m_hTarget"
+					{
+						"type" "ehandle"
+						"windows" "100"
+						"linux" "116"
+					}
+
+					// WIN: CBaseEntity *m_pentPath
+					// LIN: CBaseEntity *m_pentPath
+					"m_pentPath"
+					{
+						"type" "classptr"
+						"windows" "108"
+						"linux" "124"
+					}
+
+					// WIN: int m_sPath
+					// LIN: int m_sPath
+					"m_sPath"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "112"
+						"linux" "128"
+					}
+
+					// WIN: float m_flWait
+					// LIN: float m_flWait
+					"m_flWait"
+					{
+						"type" "float"
+						"windows" "116"
+						"linux" "132"
+					}
+
+					// WIN: float m_flReturnTime
+					// LIN: float m_flReturnTime
+					"m_flReturnTime"
+					{
+						"type" "float"
+						"windows" "120"
+						"linux" "136"
+					}
+
+					// WIN: float m_flStopTime
+					// LIN: float m_flStopTime
+					"m_flStopTime"
+					{
+						"type" "float"
+						"windows" "124"
+						"linux" "140"
+					}
+
+					// WIN: float m_moveDistance
+					// LIN: float m_moveDistance
+					"m_moveDistance"
+					{
+						"type" "float"
+						"windows" "128"
+						"linux" "144"
+					}
+
+					// WIN: float m_targetSpeed
+					// LIN: float m_targetSpeed
+					"m_targetSpeed"
+					{
+						"type" "float"
+						"windows" "132"
+						"linux" "148"
+					}
+
+					// WIN: float m_initialSpeed
+					// LIN: float m_initialSpeed
+					"m_initialSpeed"
+					{
+						"type" "float"
+						"windows" "136"
+						"linux" "152"
+					}
+
+					// WIN: float m_acceleration
+					// LIN: float m_acceleration
+					"m_acceleration"
+					{
+						"type" "float"
+						"windows" "140"
+						"linux" "156"
+					}
+
+					// WIN: float m_deceleration
+					// LIN: float m_deceleration
+					"m_deceleration"
+					{
+						"type" "float"
+						"windows" "144"
+						"linux" "160"
+					}
+
+					// WIN: int m_state
+					// LIN: int m_state
+					"m_state"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "148"
+						"linux" "164"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseDelay
+//		CBaseEntity
+//			CTriggerCamera
+//

@@ -1,0 +1,379 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CGameRules"
+			{
+				"Offsets"
+				{
+					"RefreshSkillData"
+					{
+						"windows" "0" // 
+						"linux" "0" // _ZN10CGameRules16RefreshSkillDataEv
+					}
+
+					"Think"
+					{
+						"windows" "1" // 
+						"linux" "1" // _ZN10CGameRules5ThinkEv
+					}
+
+					"IsAllowedToSpawn"
+					{
+						"windows" "2" // 
+						"linux" "2" // _ZN10CGameRules16IsAllowedToSpawnEP11CBaseEntity
+					}
+
+					"FAllowFlashlight"
+					{
+						"windows" "3" // 
+						"linux" "3" // _ZN10CGameRules16FAllowFlashlightEv
+					}
+
+					"FShouldSwitchWeapon"
+					{
+						"windows" "4" // 
+						"linux" "4" // _ZN10CGameRules19FShouldSwitchWeaponEP11CBasePlayerP15CBasePlayerItem
+					}
+
+					"GetNextBestWeapon"
+					{
+						"windows" "5" // 
+						"linux" "5" // _ZN10CGameRules17GetNextBestWeaponEP11CBasePlayerP15CBasePlayerItem
+					}
+
+					"IsMultiplayer"
+					{
+						"windows" "6" // 
+						"linux" "6" // _ZN10CGameRules13IsMultiplayerEv
+					}
+
+					"IsDeathmatch"
+					{
+						"windows" "7" // 
+						"linux" "7" // _ZN10CGameRules12IsDeathmatchEv
+					}
+
+					"IsTeamplay"
+					{
+						"windows" "8" // 
+						"linux" "8" // _ZN10CGameRules10IsTeamplayEv
+					}
+
+					"IsCoOp"
+					{
+						"windows" "9" // 
+						"linux" "9" // _ZN10CGameRules6IsCoOpEv
+					}
+
+					"GetGameDescription"
+					{
+						"windows" "10" // 
+						"linux" "10" // _ZN10CGameRules18GetGameDescriptionEv
+					}
+
+					"ClientConnected"
+					{
+						"windows" "11" // 
+						"linux" "11" // _ZN10CGameRules15ClientConnectedEP7edict_sPKcS3_Pc
+					}
+
+					"InitHUD"
+					{
+						"windows" "12" // 
+						"linux" "12" // _ZN10CGameRules7InitHUDEP11CBasePlayer
+					}
+
+					"ClientDisconnected"
+					{
+						"windows" "13" // 
+						"linux" "13" // _ZN10CGameRules18ClientDisconnectedEP7edict_s
+					}
+
+					"UpdateGameMode"
+					{
+						"windows" "14" // 
+						"linux" "14" // _ZN10CGameRules14UpdateGameModeEP11CBasePlayer
+					}
+
+					"FlPlayerFallDamage"
+					{
+						"windows" "15" // 
+						"linux" "15" // _ZN10CGameRules18FlPlayerFallDamageEP11CBasePlayer
+					}
+
+					"FPlayerCanTakeDamage"
+					{
+						"windows" "16" // 
+						"linux" "16" // _ZN10CGameRules20FPlayerCanTakeDamageEP11CBasePlayerP11CBaseEntity
+					}
+
+					"ShouldAutoAim"
+					{
+						"windows" "17" // 
+						"linux" "17" // _ZN10CGameRules13ShouldAutoAimEP11CBasePlayerP7edict_s
+					}
+
+					"PlayerSpawn"
+					{
+						"windows" "18" // 
+						"linux" "18" // _ZN10CGameRules11PlayerSpawnEP11CBasePlayer
+					}
+
+					"PlayerThink"
+					{
+						"windows" "19" // 
+						"linux" "19" // _ZN10CGameRules11PlayerThinkEP11CBasePlayer
+					}
+
+					"FPlayerCanRespawn"
+					{
+						"windows" "20" // 
+						"linux" "20" // _ZN10CGameRules17FPlayerCanRespawnEP11CBasePlayer
+					}
+
+					"FlPlayerSpawnTime"
+					{
+						"windows" "21" // 
+						"linux" "21" // _ZN10CGameRules17FlPlayerSpawnTimeEP11CBasePlayer
+					}
+
+					"GetPlayerSpawnSpot"
+					{
+						"windows" "22" // 
+						"linux" "22" // _ZN10CGameRules18GetPlayerSpawnSpotEP11CBasePlayer
+					}
+
+					"AllowAutoTargetCrosshair"
+					{
+						"windows" "23" // 
+						"linux" "23" // _ZN10CGameRules24AllowAutoTargetCrosshairEv
+					}
+
+					"ClientCommand"
+					{
+						"windows" "24" // 
+						"linux" "24" // _ZN10CGameRules13ClientCommandEP11CBasePlayerPKc
+					}
+
+					"ClientUserInfoChanged"
+					{
+						"windows" "25" // 
+						"linux" "25" // _ZN10CGameRules21ClientUserInfoChangedEP11CBasePlayerPc
+					}
+
+					"IPointsForKill"
+					{
+						"windows" "26" // 
+						"linux" "26" // _ZN10CGameRules14IPointsForKillEP11CBasePlayerS1_
+					}
+
+					"PlayerKilled"
+					{
+						"windows" "27" // 
+						"linux" "27" // _ZN10CGameRules12PlayerKilledEP11CBasePlayerP9entvars_sS3_
+					}
+
+					"DeathNotice"
+					{
+						"windows" "28" // 
+						"linux" "28" // _ZN10CGameRules11DeathNoticeEP11CBasePlayerP9entvars_sS3_
+					}
+
+					"CanHavePlayerItem"
+					{
+						"windows" "29" // 
+						"linux" "29" // _ZN10CGameRules17CanHavePlayerItemEP11CBasePlayerP15CBasePlayerItem
+					}
+
+					"PlayerGotWeapon"
+					{
+						"windows" "30" // 
+						"linux" "30" // _ZN10CGameRules15PlayerGotWeaponEP11CBasePlayerP15CBasePlayerItem
+					}
+
+					"WeaponShouldRespawn"
+					{
+						"windows" "31" // 
+						"linux" "31" // _ZN10CGameRules19WeaponShouldRespawnEP15CBasePlayerItem
+					}
+
+					"FlWeaponRespawnTime"
+					{
+						"windows" "32" // 
+						"linux" "32" // _ZN10CGameRules19FlWeaponRespawnTimeEP15CBasePlayerItem
+					}
+
+					"FlWeaponTryRespawn"
+					{
+						"windows" "33" // 
+						"linux" "33" // _ZN10CGameRules18FlWeaponTryRespawnEP15CBasePlayerItem
+					}
+
+					"VecWeaponRespawnSpot"
+					{
+						"windows" "34" // 
+						"linux" "34" // _ZN10CGameRules20VecWeaponRespawnSpotEP15CBasePlayerItem
+					}
+
+					"CanHaveItem"
+					{
+						"windows" "35" // 
+						"linux" "35" // _ZN10CGameRules11CanHaveItemEP11CBasePlayerP5CItem
+					}
+
+					"PlayerGotItem"
+					{
+						"windows" "36" // 
+						"linux" "36" // _ZN10CGameRules13PlayerGotItemEP11CBasePlayerP5CItem
+					}
+
+					"ItemShouldRespawn"
+					{
+						"windows" "37" // 
+						"linux" "37" // _ZN10CGameRules17ItemShouldRespawnEP5CItem
+					}
+
+					"FlItemRespawnTime"
+					{
+						"windows" "38" // 
+						"linux" "38" // _ZN10CGameRules17FlItemRespawnTimeEP5CItem
+					}
+
+					"VecItemRespawnSpot"
+					{
+						"windows" "39" // 
+						"linux" "39" // _ZN10CGameRules18VecItemRespawnSpotEP5CItem
+					}
+
+					"CanHaveAmmo"
+					{
+						"windows" "40" // 
+						"linux" "40" // _ZN10CGameRules11CanHaveAmmoEP11CBasePlayerPKci
+					}
+
+					"PlayerGotAmmo"
+					{
+						"windows" "41" // 
+						"linux" "41" // _ZN10CGameRules13PlayerGotAmmoEP11CBasePlayerPci
+					}
+
+					"AmmoShouldRespawn"
+					{
+						"windows" "42" // 
+						"linux" "42" // _ZN10CGameRules17AmmoShouldRespawnEP15CBasePlayerAmmo
+					}
+
+					"FlAmmoRespawnTime"
+					{
+						"windows" "43" // 
+						"linux" "43" // _ZN10CGameRules17FlAmmoRespawnTimeEP15CBasePlayerAmmo
+					}
+
+					"VecAmmoRespawnSpot"
+					{
+						"windows" "44" // 
+						"linux" "44" // _ZN10CGameRules18VecAmmoRespawnSpotEP15CBasePlayerAmmo
+					}
+
+					"FlHealthChargerRechargeTime"
+					{
+						"windows" "45" // 
+						"linux" "45" // _ZN10CGameRules27FlHealthChargerRechargeTimeEv
+					}
+
+					"FlHEVChargerRechargeTime"
+					{
+						"windows" "46" // 
+						"linux" "46" // _ZN10CGameRules24FlHEVChargerRechargeTimeEv
+					}
+
+					"DeadPlayerWeapons"
+					{
+						"windows" "47" // 
+						"linux" "47" // _ZN10CGameRules17DeadPlayerWeaponsEP11CBasePlayer
+					}
+
+					"DeadPlayerAmmo"
+					{
+						"windows" "48" // 
+						"linux" "48" // _ZN10CGameRules14DeadPlayerAmmoEP11CBasePlayer
+					}
+
+					"GetTeamID"
+					{
+						"windows" "49" // 
+						"linux" "49" // _ZN10CGameRules9GetTeamIDEP11CBaseEntity
+					}
+
+					"PlayerRelationship"
+					{
+						"windows" "50" // 
+						"linux" "50" // _ZN10CGameRules18PlayerRelationshipEP11CBaseEntityS1_
+					}
+
+					"GetTeamIndex"
+					{
+						"windows" "51" // 
+						"linux" "51" // _ZN10CGameRules12GetTeamIndexEPKc
+					}
+
+					"GetIndexedTeamName"
+					{
+						"windows" "52" // 
+						"linux" "52" // _ZN10CGameRules18GetIndexedTeamNameEi
+					}
+
+					"IsValidTeam"
+					{
+						"windows" "53" // 
+						"linux" "53" // _ZN10CGameRules11IsValidTeamEPKc
+					}
+
+					"ChangePlayerTeam"
+					{
+						"windows" "54" // 
+						"linux" "54" // _ZN10CGameRules16ChangePlayerTeamEP11CBasePlayerPKcii
+					}
+
+					"SetDefaultPlayerTeam"
+					{
+						"windows" "55" // 
+						"linux" "55" // _ZN10CGameRules20SetDefaultPlayerTeamEP11CBasePlayer
+					}
+
+					"PlayTextureSounds"
+					{
+						"windows" "56" // 
+						"linux" "56" // _ZN10CGameRules17PlayTextureSoundsEv
+					}
+
+					"PlayFootstepSounds"
+					{
+						"windows" "57" // 
+						"linux" "57" // _ZN10CGameRules18PlayFootstepSoundsEP11CBasePlayerf
+					}
+
+					"FAllowMonsters"
+					{
+						"windows" "58" // 
+						"linux" "58" // _ZN10CGameRules14FAllowMonstersEv
+					}
+
+					"EndMultiplayerGame"
+					{
+						"windows" "59" // 
+						"linux" "59" // _ZN10CGameRules18EndMultiplayerGameEv
+					}
+
+				}
+			}
+		}
+	}
+}

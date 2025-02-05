@@ -1,0 +1,45 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CAutoTrigger"
+			{
+				"Offsets"
+				{
+					// WIN: string_t m_globalstate
+					// LIN: int m_globalstate
+					"m_globalstate"
+					{
+						"type" "stringint"
+						"windows" "92"
+						"linux" "108"
+					}
+
+					// WIN: USE_TYPE triggerType
+					// LIN: USE_TYPE triggerType
+					"triggerType"
+					{
+						"type" "integer"
+						"windows" "96"
+						"linux" "112"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseDelay
+//		CBaseEntity
+//			CAutoTrigger
+//

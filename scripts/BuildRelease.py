@@ -133,7 +133,6 @@ class TargetClient:
         files.append(FileToCopy('gamedir/sprites', 'valve_addon/sprites'))
         files.append(FileToCopy('gamedir/ui', 'valve_addon/ui'))
         files.append(FileToCopy('gamedir/commandmenu_default.txt', 'valve_addon/commandmenu_default.txt'))
-        files.append(FileToCopy('gamedir/delta.lst', 'valve_addon/delta.lst'))
 
         if get_platform_type() == 'windows':
             files.append(FileToCopy(self.script.paths.out_bin + 'client.pdb',
@@ -153,6 +152,7 @@ class TargetServer:
 
     def get_file_list(self):
         files = COMMON_FILES_TO_COPY
+        files.append(FileToCopy('gamedir/delta.lst', 'valve_addon/delta.lst'))
         files.append(FileToCopy(self.script.paths.out_bin + 'hl' + self.script.platform.get_dll_ext(),
                                 'valve_addon/dlls/hl' + self.script.platform.get_dll_ext()))
 

@@ -31,6 +31,7 @@ extern cvar_t fraglimit;
 extern cvar_t timelimit;
 extern cvar_t friendlyfire;
 extern cvar_t bunnyhop;
+extern cvar_t ducktap;
 extern cvar_t falldamage;
 extern cvar_t weaponstay;
 extern cvar_t selfgauss;

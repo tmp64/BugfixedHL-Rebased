@@ -158,6 +158,7 @@ static char grgchTextureType[CTEXTURESMAX];
 
 int g_onladder = 0;
 static int s_bBHopCap = true;
+static int s_bDucktapCap = false;
 static EUseSlowDownType s_nUseSlowDownType = EUseSlowDownType::New;
 static int s_iIsAg = false;
 
@@ -262,9 +263,19 @@ int PM_GetBHopCapEnabled()
 	return s_bBHopCap;
 }
 
+int PM_GetDucktapCapEnabled()
+{
+	return s_bDucktapCap;
+}
+
 void PM_SetBHopCapEnabled(int state)
 {
 	s_bBHopCap = state;
+}
+
+void PM_SetDucktapCapEnabled(int state)
+{
+	s_bDucktapCap = state;
 }
 
 #endif
@@ -2147,6 +2158,9 @@ void PM_FixPlayerCrouchStuck(int direction)
 	VectorCopy(test, pmove->origin); // Failed
 }
 
+// Prevent gaining/keeping speed with ducktapping technique by multiplying it to 0.9x
+#define DUCKTAP_SPEED_FACTOR 0.9f
+
 void PM_UnDuck(void)
 {
 	int i;
@@ -2185,6 +2199,13 @@ void PM_UnDuck(void)
 		pmove->flDuckTime = 0;
 
 		VectorCopy(newOrigin, pmove->origin);
+
+// Server only. I don't see any sense/way to add prediction correctly 
+#ifndef CLIENT_DLL
+		// If ducktapping is disabled, decrease some velocity
+		if (s_bDucktapCap && pmove->onground != -1)
+			pmove->velocity *= DUCKTAP_SPEED_FACTOR;
+#endif
 
 		// Recatagorize position since ducking can change origin
 		PM_CatagorizePosition();

@@ -72,7 +72,9 @@ void PM_ResetBHopDetection();
 void PM_ResetUseSlowDownDetection();
 #else
 int PM_GetBHopCapEnabled();
+int PM_GetDucktapCapEnabled();
 void PM_SetBHopCapEnabled(int state);
+void PM_SetDucktapCapEnabled(int state);
 #endif
 
 // Spectator Movement modes (stored in pev->iuser1, so the physics code can get at them)

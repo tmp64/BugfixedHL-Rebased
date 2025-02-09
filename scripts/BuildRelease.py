@@ -152,6 +152,7 @@ class TargetServer:
 
     def get_file_list(self):
         files = COMMON_FILES_TO_COPY
+        files.append(FileToCopy('gamedir/delta.lst', 'valve_addon/delta.lst'))
         files.append(FileToCopy(self.script.paths.out_bin + 'hl' + self.script.platform.get_dll_ext(),
                                 'valve_addon/dlls/hl' + self.script.platform.get_dll_ext()))
 

@@ -603,11 +603,11 @@ void CHalfLifeMultiplay ::PlayerSpawn(CBasePlayer *pPlayer)
 	CBaseEntity *pWeaponEntity = NULL;
 
 	// Start welcome cam for new players
-	if (!pPlayer->m_bPutInServer && mp_welcomecam.value != 0)
+	if (!pPlayer->m_bPutInServer && mp_welcomecam.GetBool() != 0)
 	{
 		// don't let him spawn as soon as he enters the server
 		// give enough time to plugins to send the player to spectator mode
-		pPlayer->m_flNextAttack = 0.2;
+		pPlayer->m_flNextAttack = mp_welcomecam_delay.GetFloat();
 
 		pPlayer->StartWelcomeCam();
 		return;

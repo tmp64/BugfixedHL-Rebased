@@ -66,6 +66,8 @@ cvar_t mp_respawn_fix = { "mp_respawn_fix", "1", FCVAR_SERVER };
 cvar_t motdfile_unicode = { "motdfile_unicode", "motd_unicode.txt", FCVAR_SERVER };
 cvar_t motdfile_html = { "motdfile_html", "motd.html", FCVAR_SERVER };
 
+ConVar mp_wallgauss("mp_wallgauss", "1.0", 0, "Wallgauss damage scale. 0 disables wallgauss.");
+
 cvar_t mp_dmg_crowbar = { "mp_dmg_crowbar", "25", FCVAR_SERVER };
 cvar_t mp_dmg_glock = { "mp_dmg_glock", "12", FCVAR_SERVER };
 cvar_t mp_dmg_357 = { "mp_dmg_357", "50", FCVAR_SERVER };

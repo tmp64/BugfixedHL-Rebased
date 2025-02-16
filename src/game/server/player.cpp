@@ -3471,7 +3471,7 @@ void CBasePlayer::Spawn(void)
 	m_lastx = m_lasty = 0;
 
 	m_iChatFlood = 0;
-	m_flNextChatTime = gpGlobals->time;
+	m_flNextChatTime = 0; // Not using gpGlobals->time - see Host_Say
 	m_flNextFullupdate[0] = gpGlobals->time;
 	m_flNextFullupdate[1] = gpGlobals->time;
 

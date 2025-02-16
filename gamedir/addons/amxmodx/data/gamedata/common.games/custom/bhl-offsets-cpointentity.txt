@@ -1,0 +1,47 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CPointEntity"
+			{
+				"Offsets"
+				{
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CPointEntity
+//			CBaseDMStart
+//			CBlood
+//			CEnvGlobal
+//			CEnvSound
+//			CFade
+//			CGlow
+//			CInfoBM
+//			CInfoIntermission
+//			CLight
+//				CEnvLight
+//			CMessage
+//			CMultiSource
+//			CPathCorner
+//			CPathTrack
+//			CRevertSaved
+//			CShake
+//			CSprite
+//			CStripWeapons
+//			CTargetCDAudio
+//			CTriggerVolume
+//			CXenHull
+//

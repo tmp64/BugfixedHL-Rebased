@@ -1,0 +1,112 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CTripmineGrenade"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flPowerUp
+					// LIN: float m_flPowerUp
+					"m_flPowerUp"
+					{
+						"type" "float"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: Vector m_vecDir
+					// LIN: Vector m_vecDir
+					"m_vecDir"
+					{
+						"type" "vector"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: Vector m_vecEnd
+					// LIN: Vector m_vecEnd
+					"m_vecEnd"
+					{
+						"type" "vector"
+						"windows" "684"
+						"linux" "704"
+					}
+
+					// WIN: float m_flBeamLength
+					// LIN: float m_flBeamLength
+					"m_flBeamLength"
+					{
+						"type" "float"
+						"windows" "696"
+						"linux" "716"
+					}
+
+					// WIN: EHANDLE m_hOwner
+					// LIN: EHANDLE m_hOwner
+					"m_hOwner"
+					{
+						"type" "ehandle"
+						"windows" "700"
+						"linux" "720"
+					}
+
+					// WIN: CBeam *m_pBeam
+					// LIN: CBeam *m_pBeam
+					"m_pBeam"
+					{
+						"type" "classptr"
+						"windows" "708"
+						"linux" "728"
+					}
+
+					// WIN: Vector m_posOwner
+					// LIN: Vector m_posOwner
+					"m_posOwner"
+					{
+						"type" "vector"
+						"windows" "712"
+						"linux" "732"
+					}
+
+					// WIN: Vector m_angleOwner
+					// LIN: Vector m_angleOwner
+					"m_angleOwner"
+					{
+						"type" "vector"
+						"windows" "724"
+						"linux" "744"
+					}
+
+					// WIN: edict_s *m_pRealOwner
+					// LIN: edict_t *m_pRealOwner
+					"m_pRealOwner"
+					{
+						"type" "edict"
+						"windows" "736"
+						"linux" "756"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CGrenade
+//							CTripmineGrenade
+//

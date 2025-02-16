@@ -1,0 +1,63 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBasePlatTrain"
+			{
+				"Offsets"
+				{
+					// WIN: byte m_bMoveSnd
+					// LIN: BYTE m_bMoveSnd
+					"m_bMoveSnd"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "240"
+						"linux" "260"
+					}
+
+					// WIN: byte m_bStopSnd
+					// LIN: BYTE m_bStopSnd
+					"m_bStopSnd"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "241"
+						"linux" "261"
+					}
+
+					// WIN: float m_volume
+					// LIN: float m_volume
+					"m_volume"
+					{
+						"type" "float"
+						"windows" "244"
+						"linux" "264"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseToggle
+//					CBasePlatTrain
+//						CFuncPlat
+//							CFuncPlatRot
+//								CFuncTrackChange
+//									CFuncTrackAuto
+//						CFuncTrain
+//

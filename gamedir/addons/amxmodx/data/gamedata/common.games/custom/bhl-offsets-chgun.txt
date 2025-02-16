@@ -1,0 +1,68 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CHgun"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flNextAnimTime
+					// LIN: float m_flNextAnimTime
+					"m_flNextAnimTime"
+					{
+						"type" "float"
+						"windows" "180"
+						"linux" "196"
+					}
+
+					// WIN: float m_flRechargeTime
+					// LIN: float m_flRechargeTime
+					"m_flRechargeTime"
+					{
+						"type" "float"
+						"windows" "184"
+						"linux" "200"
+					}
+
+					// WIN: int m_iFirePhase
+					// LIN: int m_iFirePhase
+					"m_iFirePhase"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "188"
+						"linux" "204"
+					}
+
+					// WIN: unsigned short m_usHornetFire
+					// LIN: short unsigned int m_usHornetFire
+					"m_usHornetFire"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "192"
+						"linux" "208"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CHgun
+//

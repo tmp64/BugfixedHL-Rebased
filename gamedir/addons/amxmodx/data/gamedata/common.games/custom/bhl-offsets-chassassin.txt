@@ -1,0 +1,124 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CHAssassin"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flLastShot
+					// LIN: float m_flLastShot
+					"m_flLastShot"
+					{
+						"type" "float"
+						"windows" "664"
+						"linux" "684"
+					}
+
+					// WIN: float m_flDiviation
+					// LIN: float m_flDiviation
+					"m_flDiviation"
+					{
+						"type" "float"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: float m_flNextJump
+					// LIN: float m_flNextJump
+					"m_flNextJump"
+					{
+						"type" "float"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: Vector m_vecJumpVelocity
+					// LIN: Vector m_vecJumpVelocity
+					"m_vecJumpVelocity"
+					{
+						"type" "vector"
+						"windows" "676"
+						"linux" "696"
+					}
+
+					// WIN: float m_flNextGrenadeCheck
+					// LIN: float m_flNextGrenadeCheck
+					"m_flNextGrenadeCheck"
+					{
+						"type" "float"
+						"windows" "688"
+						"linux" "708"
+					}
+
+					// WIN: Vector m_vecTossVelocity
+					// LIN: Vector m_vecTossVelocity
+					"m_vecTossVelocity"
+					{
+						"type" "vector"
+						"windows" "692"
+						"linux" "712"
+					}
+
+					// WIN: int m_fThrowGrenade
+					// LIN: BOOL m_fThrowGrenade
+					"m_fThrowGrenade"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "704"
+						"linux" "724"
+					}
+
+					// WIN: int m_iTargetRanderamt
+					// LIN: int m_iTargetRanderamt
+					"m_iTargetRanderamt"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "708"
+						"linux" "728"
+					}
+
+					// WIN: int m_iFrustration
+					// LIN: int m_iFrustration
+					"m_iFrustration"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "712"
+						"linux" "732"
+					}
+
+					// WIN: int m_iShell
+					// LIN: int m_iShell
+					"m_iShell"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "716"
+						"linux" "736"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CHAssassin
+//

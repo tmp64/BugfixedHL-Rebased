@@ -1,0 +1,30 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CRotButton"
+			{
+				"Offsets"
+				{
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseButton
+//			CBaseDelay
+//				CBaseEntity
+//					CBaseToggle
+//						CRotButton
+//

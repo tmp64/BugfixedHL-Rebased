@@ -1,0 +1,37 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CEnvFunnel"
+			{
+				"Offsets"
+				{
+					// WIN: int m_iSprite
+					// LIN: int m_iSprite
+					"m_iSprite"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "92"
+						"linux" "108"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseDelay
+//		CBaseEntity
+//			CEnvFunnel
+//

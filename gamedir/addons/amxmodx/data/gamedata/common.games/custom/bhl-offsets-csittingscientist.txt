@@ -1,0 +1,61 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CSittingScientist"
+			{
+				"Offsets"
+				{
+					// WIN: int m_baseSequence
+					// LIN: int m_baseSequence
+					"m_baseSequence"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "788"
+						"linux" "808"
+					}
+
+					// WIN: int m_headTurn
+					// LIN: int m_headTurn
+					"m_headTurn"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "792"
+						"linux" "812"
+					}
+
+					// WIN: float m_flResponseDelay
+					// LIN: float m_flResponseDelay
+					"m_flResponseDelay"
+					{
+						"type" "float"
+						"windows" "796"
+						"linux" "816"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CScientist
+//							CTalkMonster
+//								CSittingScientist
+//

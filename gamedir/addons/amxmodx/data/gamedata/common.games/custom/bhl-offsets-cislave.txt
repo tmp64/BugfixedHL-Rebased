@@ -1,0 +1,89 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CISlave"
+			{
+				"Offsets"
+				{
+					// WIN: int m_iBravery
+					// LIN: int m_iBravery
+					"m_iBravery"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "720"
+						"linux" "740"
+					}
+
+					// WIN: CBeam *m_pBeam[8]
+					// LIN: CBeam *m_pBeam[7]
+					"m_pBeam"
+					{
+						"type" "classptr"
+						"size" "8"
+						"windows" "724"
+						"linux" "744"
+					}
+
+					// WIN: int m_iBeams
+					// LIN: int m_iBeams
+					"m_iBeams"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "756"
+						"linux" "776"
+					}
+
+					// WIN: float m_flNextAttack
+					// LIN: float m_flNextAttack
+					"m_flNextAttack"
+					{
+						"type" "float"
+						"windows" "760"
+						"linux" "780"
+					}
+
+					// WIN: int m_voicePitch
+					// LIN: int m_voicePitch
+					"m_voicePitch"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "764"
+						"linux" "784"
+					}
+
+					// WIN: EHANDLE m_hDead
+					// LIN: EHANDLE m_hDead
+					"m_hDead"
+					{
+						"type" "ehandle"
+						"windows" "768"
+						"linux" "788"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CSquadMonster
+//							CISlave
+//

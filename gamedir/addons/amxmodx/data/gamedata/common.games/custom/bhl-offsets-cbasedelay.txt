@@ -1,0 +1,191 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBaseDelay"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flDelay
+					// LIN: float m_flDelay
+					"m_flDelay"
+					{
+						"type" "float"
+						"windows" "84"
+						"linux" "100"
+					}
+
+					// WIN: string_t m_iszKillTarget
+					// LIN: int m_iszKillTarget
+					"m_iszKillTarget"
+					{
+						"type" "stringint"
+						"windows" "88"
+						"linux" "104"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CBaseDelay
+//			CAutoTrigger
+//			CBaseAnimating
+//				CActAnimating
+//					CXenHair
+//					CXenPLight
+//					CXenSpore
+//						CXenSporeLarge
+//						CXenSporeMed
+//						CXenSporeSmall
+//					CXenTree
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CCrossbow
+//						CCrowbar
+//						CEgon
+//						CGauss
+//						CGlock
+//						CHandGrenade
+//						CHgun
+//						CMP5
+//						CPython
+//						CRpg
+//						CSatchel
+//						CShotgun
+//						CSqueak
+//						CTripmine
+//						CWeaponCycler
+//				CBaseToggle
+//					CBaseButton
+//						CRotButton
+//					CBaseDoor
+//						CRotDoor
+//					CBaseMonster
+//						CApache
+//						CBarnacle
+//						CBasePlayer
+//						CBaseTurret
+//							CMiniTurret
+//							CSentry
+//							CTurret
+//						CBigMomma
+//						CBloater
+//						CBullsquid
+//						CCineMonster
+//							CCineAI
+//						CControllerHeadBall
+//						CControllerZapBall
+//						CCycler
+//							CCyclerProbe
+//							CGenericCycler
+//						CDeadBarney
+//						CDeadHEV
+//						CDeadHGrunt
+//						CDeadScientist
+//						CEnvExplosion
+//						CFlockingFlyer
+//						CFlockingFlyerFlock
+//						CFlyingMonster
+//							CIchthyosaur
+//						CFurniture
+//						CGMan
+//						CGargantua
+//						CGenericMonster
+//						CGrenade
+//							CAirtank
+//							CApacheHVR
+//							CMortar
+//							CRpgRocket
+//							CSatchelCharge
+//							CSqueakGrenade
+//							CTripmineGrenade
+//						CGunTarget
+//						CHAssassin
+//						CHGruntRepel
+//						CHeadCrab
+//							CBabyCrab
+//						CHornet
+//						CLeech
+//						CLegacyCineMonster
+//							CCine2HeavyWeapons
+//							CCine2Scientist
+//							CCine2Slave
+//							CCine3Barney
+//							CCine3Scientist
+//							CCineBarney
+//							CCinePanther
+//							CCineScientist
+//						CMonsterMaker
+//						CNihilanth
+//						CNihilanthHVR
+//						COsprey
+//						CRat
+//						CRoach
+//						CSquadMonster
+//							CAGrunt
+//							CController
+//							CHGrunt
+//							CHoundeye
+//							CISlave
+//						CTalkMonster
+//							CBarney
+//							CScientist
+//								CSittingScientist
+//						CTentacle
+//						CTentacleMaw
+//						CTestHull
+//						CWreckage
+//						CZombie
+//					CBasePlatTrain
+//						CFuncPlat
+//							CFuncPlatRot
+//								CFuncTrackChange
+//									CFuncTrackAuto
+//						CFuncTrain
+//					CBaseTrigger
+//						CChangeLevel
+//						CLadder
+//						CTriggerCDAudio
+//						CTriggerCounter
+//						CTriggerEndSection
+//						CTriggerGravity
+//						CTriggerHurt
+//						CTriggerMonsterJump
+//						CTriggerMultiple
+//							CTriggerOnce
+//						CTriggerPush
+//						CTriggerSave
+//						CTriggerTeleport
+//					CFuncIllusionary
+//					CFuncMortarField
+//					CMomentaryDoor
+//					CMomentaryRotButton
+//					CMultiManager
+//					CRecharge
+//					CScriptedSentence
+//					CWallHealth
+//			CBreakable
+//				CPushable
+//			CEnvBeverage
+//			CEnvFunnel
+//			CFireAndDie
+//			CGibShooter
+//				CEnvShooter
+//			CTestEffect
+//			CTriggerCamera
+//			CTriggerChangeTarget
+//			CTriggerRelay
+//

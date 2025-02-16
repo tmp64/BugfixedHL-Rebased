@@ -1,0 +1,68 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CWeaponBox"
+			{
+				"Offsets"
+				{
+					// WIN: CBasePlayerItem *m_rgpPlayerItems[6]
+					// LIN: CBasePlayerItem *m_rgpPlayerItems[5]
+					"m_rgpPlayerItems"
+					{
+						"type" "classptr"
+						"size" "6"
+						"windows" "84"
+						"linux" "100"
+					}
+
+					// WIN: int m_rgiszAmmo[32]
+					// LIN: int m_rgiszAmmo[31]
+					"m_rgiszAmmo"
+					{
+						"type" "integer"
+						"size" "32"
+						"unsigned" "0"
+						"windows" "108"
+						"linux" "124"
+					}
+
+					// WIN: int m_rgAmmo[32]
+					// LIN: int m_rgAmmo[31]
+					"m_rgAmmo"
+					{
+						"type" "integer"
+						"size" "32"
+						"unsigned" "0"
+						"windows" "236"
+						"linux" "252"
+					}
+
+					// WIN: int m_cAmmoTypes
+					// LIN: int m_cAmmoTypes
+					"m_cAmmoTypes"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "364"
+						"linux" "380"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CWeaponBox
+//

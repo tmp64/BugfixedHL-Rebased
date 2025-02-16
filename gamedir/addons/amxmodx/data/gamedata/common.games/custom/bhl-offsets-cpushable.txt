@@ -1,0 +1,56 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CPushable"
+			{
+				"Offsets"
+				{
+					// WIN: int m_lastSound
+					// LIN: int m_lastSound
+					"m_lastSound"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "116"
+						"linux" "132"
+					}
+
+					// WIN: float m_maxSpeed
+					// LIN: float m_maxSpeed
+					"m_maxSpeed"
+					{
+						"type" "float"
+						"windows" "120"
+						"linux" "136"
+					}
+
+					// WIN: float m_soundTime
+					// LIN: float m_soundTime
+					"m_soundTime"
+					{
+						"type" "float"
+						"windows" "124"
+						"linux" "140"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseDelay
+//		CBaseEntity
+//			CBreakable
+//				CPushable
+//

@@ -1,0 +1,28 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CGameCounterSet"
+			{
+				"Offsets"
+				{
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CRuleEntity
+//			CRulePointEntity
+//				CGameCounterSet
+//

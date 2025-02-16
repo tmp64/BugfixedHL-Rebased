@@ -1,0 +1,79 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CRpg"
+			{
+				"Offsets"
+				{
+					// WIN: CLaserSpot *m_pSpot
+					// LIN: CLaserSpot *m_pSpot
+					"m_pSpot"
+					{
+						"type" "classptr"
+						"windows" "180"
+						"linux" "196"
+					}
+
+					// WIN: int m_fSpotActive
+					// LIN: int m_fSpotActive
+					"m_fSpotActive"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "184"
+						"linux" "200"
+					}
+
+					// WIN: int m_cActiveRockets
+					// LIN: int m_cActiveRockets
+					"m_cActiveRockets"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "188"
+						"linux" "204"
+					}
+
+					// WIN: unsigned short m_usRpg
+					// LIN: short unsigned int m_usRpg
+					"m_usRpg"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "192"
+						"linux" "208"
+					}
+
+					// WIN: int m_bHolstered
+					// LIN: BOOL m_bHolstered
+					"m_bHolstered"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "196"
+						"linux" "212"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CRpg
+//

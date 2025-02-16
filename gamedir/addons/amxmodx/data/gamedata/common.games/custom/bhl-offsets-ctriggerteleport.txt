@@ -1,0 +1,30 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CTriggerTeleport"
+			{
+				"Offsets"
+				{
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseToggle
+//					CBaseTrigger
+//						CTriggerTeleport
+//

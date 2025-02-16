@@ -1,0 +1,47 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CGrenade"
+			{
+				"Offsets"
+				{
+					// WIN: int m_fRegisteredSound
+					// LIN: BOOL m_fRegisteredSound
+					"m_fRegisteredSound"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "664"
+						"linux" "684"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CGrenade
+//							CAirtank
+//							CApacheHVR
+//							CMortar
+//							CRpgRocket
+//							CSatchelCharge
+//							CSqueakGrenade
+//							CTripmineGrenade
+//

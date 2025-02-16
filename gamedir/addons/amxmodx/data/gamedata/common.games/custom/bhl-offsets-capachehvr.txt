@@ -1,0 +1,50 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CApacheHVR"
+			{
+				"Offsets"
+				{
+					// WIN: int m_iTrail
+					// LIN: int m_iTrail
+					"m_iTrail"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: Vector m_vecForward
+					// LIN: Vector m_vecForward
+					"m_vecForward"
+					{
+						"type" "vector"
+						"windows" "672"
+						"linux" "692"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CGrenade
+//							CApacheHVR
+//

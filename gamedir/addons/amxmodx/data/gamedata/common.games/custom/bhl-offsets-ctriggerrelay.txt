@@ -1,0 +1,36 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CTriggerRelay"
+			{
+				"Offsets"
+				{
+					// WIN: USE_TYPE triggerType
+					// LIN: USE_TYPE triggerType
+					"triggerType"
+					{
+						"type" "integer"
+						"windows" "92"
+						"linux" "108"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseDelay
+//		CBaseEntity
+//			CTriggerRelay
+//

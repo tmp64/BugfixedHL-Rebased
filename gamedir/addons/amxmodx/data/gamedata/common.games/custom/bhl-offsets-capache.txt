@@ -1,0 +1,198 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CApache"
+			{
+				"Offsets"
+				{
+					// WIN: int m_iRockets
+					// LIN: int m_iRockets
+					"m_iRockets"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "664"
+						"linux" "684"
+					}
+
+					// WIN: float m_flForce
+					// LIN: float m_flForce
+					"m_flForce"
+					{
+						"type" "float"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: float m_flNextRocket
+					// LIN: float m_flNextRocket
+					"m_flNextRocket"
+					{
+						"type" "float"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: Vector m_vecTarget
+					// LIN: Vector m_vecTarget
+					"m_vecTarget"
+					{
+						"type" "vector"
+						"windows" "676"
+						"linux" "696"
+					}
+
+					// WIN: Vector m_posTarget
+					// LIN: Vector m_posTarget
+					"m_posTarget"
+					{
+						"type" "vector"
+						"windows" "688"
+						"linux" "708"
+					}
+
+					// WIN: Vector m_vecDesired
+					// LIN: Vector m_vecDesired
+					"m_vecDesired"
+					{
+						"type" "vector"
+						"windows" "700"
+						"linux" "720"
+					}
+
+					// WIN: Vector m_posDesired
+					// LIN: Vector m_posDesired
+					"m_posDesired"
+					{
+						"type" "vector"
+						"windows" "712"
+						"linux" "732"
+					}
+
+					// WIN: Vector m_vecGoal
+					// LIN: Vector m_vecGoal
+					"m_vecGoal"
+					{
+						"type" "vector"
+						"windows" "724"
+						"linux" "744"
+					}
+
+					// WIN: Vector m_angGun
+					// LIN: Vector m_angGun
+					"m_angGun"
+					{
+						"type" "vector"
+						"windows" "736"
+						"linux" "756"
+					}
+
+					// WIN: float m_flLastSeen
+					// LIN: float m_flLastSeen
+					"m_flLastSeen"
+					{
+						"type" "float"
+						"windows" "748"
+						"linux" "768"
+					}
+
+					// WIN: float m_flPrevSeen
+					// LIN: float m_flPrevSeen
+					"m_flPrevSeen"
+					{
+						"type" "float"
+						"windows" "752"
+						"linux" "772"
+					}
+
+					// WIN: int m_iSoundState
+					// LIN: int m_iSoundState
+					"m_iSoundState"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "756"
+						"linux" "776"
+					}
+
+					// WIN: int m_iSpriteTexture
+					// LIN: int m_iSpriteTexture
+					"m_iSpriteTexture"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "760"
+						"linux" "780"
+					}
+
+					// WIN: int m_iExplode
+					// LIN: int m_iExplode
+					"m_iExplode"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "764"
+						"linux" "784"
+					}
+
+					// WIN: int m_iBodyGibs
+					// LIN: int m_iBodyGibs
+					"m_iBodyGibs"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "768"
+						"linux" "788"
+					}
+
+					// WIN: float m_flGoalSpeed
+					// LIN: float m_flGoalSpeed
+					"m_flGoalSpeed"
+					{
+						"type" "float"
+						"windows" "772"
+						"linux" "792"
+					}
+
+					// WIN: int m_iDoSmokePuff
+					// LIN: int m_iDoSmokePuff
+					"m_iDoSmokePuff"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "776"
+						"linux" "796"
+					}
+
+					// WIN: CBeam *m_pBeam
+					// LIN: CBeam *m_pBeam
+					"m_pBeam"
+					{
+						"type" "classptr"
+						"windows" "780"
+						"linux" "800"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CApache
+//

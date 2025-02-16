@@ -1,0 +1,59 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CPython"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flSoundDelay
+					// LIN: float m_flSoundDelay
+					"m_flSoundDelay"
+					{
+						"type" "float"
+						"windows" "180"
+						"linux" "196"
+					}
+
+					// WIN: int m_fInZoom
+					// LIN: BOOL m_fInZoom
+					"m_fInZoom"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "184"
+						"linux" "200"
+					}
+
+					// WIN: unsigned short m_usFirePython
+					// LIN: short unsigned int m_usFirePython
+					"m_usFirePython"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "188"
+						"linux" "204"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CPython
+//

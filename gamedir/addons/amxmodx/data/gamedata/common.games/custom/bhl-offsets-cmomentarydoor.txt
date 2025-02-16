@@ -1,0 +1,39 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CMomentaryDoor"
+			{
+				"Offsets"
+				{
+					// WIN: byte m_bMoveSnd
+					// LIN: BYTE m_bMoveSnd
+					"m_bMoveSnd"
+					{
+						"type" "character"
+						"unsigned" "1"
+						"windows" "240"
+						"linux" "260"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseToggle
+//					CMomentaryDoor
+//

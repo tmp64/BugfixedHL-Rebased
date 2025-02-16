@@ -1,0 +1,36 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CPathCorner"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flWait
+					// LIN: float m_flWait
+					"m_flWait"
+					{
+						"type" "float"
+						"windows" "84"
+						"linux" "100"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CPointEntity
+//			CPathCorner
+//

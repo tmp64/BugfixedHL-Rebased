@@ -1,0 +1,208 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBaseAnimating"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flFrameRate
+					// LIN: float m_flFrameRate
+					"m_flFrameRate"
+					{
+						"type" "float"
+						"windows" "92"
+						"linux" "108"
+					}
+
+					// WIN: float m_flGroundSpeed
+					// LIN: float m_flGroundSpeed
+					"m_flGroundSpeed"
+					{
+						"type" "float"
+						"windows" "96"
+						"linux" "112"
+					}
+
+					// WIN: float m_flLastEventCheck
+					// LIN: float m_flLastEventCheck
+					"m_flLastEventCheck"
+					{
+						"type" "float"
+						"windows" "100"
+						"linux" "116"
+					}
+
+					// WIN: int m_fSequenceFinished
+					// LIN: BOOL m_fSequenceFinished
+					"m_fSequenceFinished"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "104"
+						"linux" "120"
+					}
+
+					// WIN: int m_fSequenceLoops
+					// LIN: BOOL m_fSequenceLoops
+					"m_fSequenceLoops"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "108"
+						"linux" "124"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseDelay
+//		CBaseEntity
+//			CBaseAnimating
+//				CActAnimating
+//					CXenHair
+//					CXenPLight
+//					CXenSpore
+//						CXenSporeLarge
+//						CXenSporeMed
+//						CXenSporeSmall
+//					CXenTree
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CCrossbow
+//						CCrowbar
+//						CEgon
+//						CGauss
+//						CGlock
+//						CHandGrenade
+//						CHgun
+//						CMP5
+//						CPython
+//						CRpg
+//						CSatchel
+//						CShotgun
+//						CSqueak
+//						CTripmine
+//						CWeaponCycler
+//				CBaseToggle
+//					CBaseButton
+//						CRotButton
+//					CBaseDoor
+//						CRotDoor
+//					CBaseMonster
+//						CApache
+//						CBarnacle
+//						CBasePlayer
+//						CBaseTurret
+//							CMiniTurret
+//							CSentry
+//							CTurret
+//						CBigMomma
+//						CBloater
+//						CBullsquid
+//						CCineMonster
+//							CCineAI
+//						CControllerHeadBall
+//						CControllerZapBall
+//						CCycler
+//							CCyclerProbe
+//							CGenericCycler
+//						CDeadBarney
+//						CDeadHEV
+//						CDeadHGrunt
+//						CDeadScientist
+//						CEnvExplosion
+//						CFlockingFlyer
+//						CFlockingFlyerFlock
+//						CFlyingMonster
+//							CIchthyosaur
+//						CFurniture
+//						CGMan
+//						CGargantua
+//						CGenericMonster
+//						CGrenade
+//							CAirtank
+//							CApacheHVR
+//							CMortar
+//							CRpgRocket
+//							CSatchelCharge
+//							CSqueakGrenade
+//							CTripmineGrenade
+//						CGunTarget
+//						CHAssassin
+//						CHGruntRepel
+//						CHeadCrab
+//							CBabyCrab
+//						CHornet
+//						CLeech
+//						CLegacyCineMonster
+//							CCine2HeavyWeapons
+//							CCine2Scientist
+//							CCine2Slave
+//							CCine3Barney
+//							CCine3Scientist
+//							CCineBarney
+//							CCinePanther
+//							CCineScientist
+//						CMonsterMaker
+//						CNihilanth
+//						CNihilanthHVR
+//						COsprey
+//						CRat
+//						CRoach
+//						CSquadMonster
+//							CAGrunt
+//							CController
+//							CHGrunt
+//							CHoundeye
+//							CISlave
+//						CTalkMonster
+//							CBarney
+//							CScientist
+//								CSittingScientist
+//						CTentacle
+//						CTentacleMaw
+//						CTestHull
+//						CWreckage
+//						CZombie
+//					CBasePlatTrain
+//						CFuncPlat
+//							CFuncPlatRot
+//								CFuncTrackChange
+//									CFuncTrackAuto
+//						CFuncTrain
+//					CBaseTrigger
+//						CChangeLevel
+//						CLadder
+//						CTriggerCDAudio
+//						CTriggerCounter
+//						CTriggerEndSection
+//						CTriggerGravity
+//						CTriggerHurt
+//						CTriggerMonsterJump
+//						CTriggerMultiple
+//							CTriggerOnce
+//						CTriggerPush
+//						CTriggerSave
+//						CTriggerTeleport
+//					CFuncIllusionary
+//					CFuncMortarField
+//					CMomentaryDoor
+//					CMomentaryRotButton
+//					CMultiManager
+//					CRecharge
+//					CScriptedSentence
+//					CWallHealth
+//

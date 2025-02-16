@@ -1,0 +1,95 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CSqueakGrenade"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flDie
+					// LIN: float m_flDie
+					"m_flDie"
+					{
+						"type" "float"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: Vector m_vecTarget
+					// LIN: Vector m_vecTarget
+					"m_vecTarget"
+					{
+						"type" "vector"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: float m_flNextHunt
+					// LIN: float m_flNextHunt
+					"m_flNextHunt"
+					{
+						"type" "float"
+						"windows" "684"
+						"linux" "704"
+					}
+
+					// WIN: float m_flNextHit
+					// LIN: float m_flNextHit
+					"m_flNextHit"
+					{
+						"type" "float"
+						"windows" "688"
+						"linux" "708"
+					}
+
+					// WIN: Vector m_posPrev
+					// LIN: Vector m_posPrev
+					"m_posPrev"
+					{
+						"type" "vector"
+						"windows" "692"
+						"linux" "712"
+					}
+
+					// WIN: EHANDLE m_hOwner
+					// LIN: EHANDLE m_hOwner
+					"m_hOwner"
+					{
+						"type" "ehandle"
+						"windows" "704"
+						"linux" "724"
+					}
+
+					// WIN: int m_iMyClass
+					// LIN: int m_iMyClass
+					"m_iMyClass"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "712"
+						"linux" "732"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CGrenade
+//							CSqueakGrenade
+//

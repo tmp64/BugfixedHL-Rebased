@@ -1,0 +1,67 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CHalfLifeTeamplay"
+			{
+				"Offsets"
+				{
+					// WIN: int m_DisableDeathMessages
+					// LIN: BOOL m_DisableDeathMessages
+					"m_DisableDeathMessages"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "12"
+						"linux" "12"
+					}
+
+					// WIN: int m_DisableDeathPenalty
+					// LIN: BOOL m_DisableDeathPenalty
+					"m_DisableDeathPenalty"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "16"
+						"linux" "16"
+					}
+
+					// WIN: int m_teamLimit
+					// LIN: BOOL m_teamLimit
+					"m_teamLimit"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "20"
+						"linux" "20"
+					}
+
+					// WIN: char m_szTeamList[1024]
+					// LIN: char m_szTeamList[1023]
+					"m_szTeamList"
+					{
+						"type" "string"
+						"size" "1024"
+						"windows" "24"
+						"linux" "24"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CGameRules
+//		CHalfLifeMultiplay
+//			CHalfLifeTeamplay
+//

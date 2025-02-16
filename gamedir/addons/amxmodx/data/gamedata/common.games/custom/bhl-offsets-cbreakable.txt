@@ -1,0 +1,83 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBreakable"
+			{
+				"Offsets"
+				{
+					// WIN: Materials m_Material
+					// LIN: Materials m_Material
+					"m_Material"
+					{
+						"type" "integer"
+						"windows" "92"
+						"linux" "108"
+					}
+
+					// WIN: Explosions m_Explosion
+					// LIN: Explosions m_Explosion
+					"m_Explosion"
+					{
+						"type" "integer"
+						"windows" "96"
+						"linux" "112"
+					}
+
+					// WIN: int m_idShard
+					// LIN: int m_idShard
+					"m_idShard"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "100"
+						"linux" "116"
+					}
+
+					// WIN: float m_angle
+					// LIN: float m_angle
+					"m_angle"
+					{
+						"type" "float"
+						"windows" "104"
+						"linux" "120"
+					}
+
+					// WIN: string_t m_iszGibModel
+					// LIN: int m_iszGibModel
+					"m_iszGibModel"
+					{
+						"type" "stringint"
+						"windows" "108"
+						"linux" "124"
+					}
+
+					// WIN: string_t m_iszSpawnObject
+					// LIN: int m_iszSpawnObject
+					"m_iszSpawnObject"
+					{
+						"type" "stringint"
+						"windows" "112"
+						"linux" "128"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseDelay
+//		CBaseEntity
+//			CBreakable
+//				CPushable
+//

@@ -1,0 +1,397 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CBaseMonster"
+			{
+				"Offsets"
+				{
+					"Look"
+					{
+						"windows" "63" // 
+						"linux" "63" // _ZN12CBaseMonster4LookEi
+					}
+
+					"RunAI"
+					{
+						"windows" "64" // 
+						"linux" "64" // _ZN12CBaseMonster5RunAIEv
+					}
+
+					"ShouldFadeOnDeath"
+					{
+						"windows" "65" // 
+						"linux" "65" // _ZN12CBaseMonster17ShouldFadeOnDeathEv
+					}
+
+					"ChangeYaw"
+					{
+						"windows" "66" // 
+						"linux" "66" // _ZN12CBaseMonster9ChangeYawEi
+					}
+
+					"MonsterThink"
+					{
+						"windows" "67" // 
+						"linux" "67" // _ZN12CBaseMonster12MonsterThinkEv
+					}
+
+					"IRelationship"
+					{
+						"windows" "68" // 
+						"linux" "68" // _ZN12CBaseMonster13IRelationshipEP11CBaseEntity
+					}
+
+					"MonsterInit"
+					{
+						"windows" "69" // 
+						"linux" "69" // _ZN12CBaseMonster11MonsterInitEv
+					}
+
+					"MonsterInitDead"
+					{
+						"windows" "70" // 
+						"linux" "70" // _ZN12CBaseMonster15MonsterInitDeadEv
+					}
+
+					"BecomeDead"
+					{
+						"windows" "71" // 
+						"linux" "71" // _ZN12CBaseMonster10BecomeDeadEv
+					}
+
+					"StartMonster"
+					{
+						"windows" "72" // 
+						"linux" "72" // _ZN12CBaseMonster12StartMonsterEv
+					}
+
+					"BestVisibleEnemy"
+					{
+						"windows" "73" // 
+						"linux" "73" // _ZN12CBaseMonster16BestVisibleEnemyEv
+					}
+
+					"FInViewCone"
+					{
+						"windows" "74" // 
+						"linux" "74" // _ZN12CBaseMonster11FInViewConeEP11CBaseEntity
+					}
+
+					"CheckLocalMove"
+					{
+						"windows" "76" // 
+						"linux" "76" // _ZN12CBaseMonster14CheckLocalMoveERK6VectorS2_P11CBaseEntityPf
+					}
+
+					"Move"
+					{
+						"windows" "77" // 
+						"linux" "77" // _ZN12CBaseMonster4MoveEf
+					}
+
+					"MoveExecute"
+					{
+						"windows" "78" // 
+						"linux" "78" // _ZN12CBaseMonster11MoveExecuteEP11CBaseEntityRK6Vectorf
+					}
+
+					"ShouldAdvanceRoute"
+					{
+						"windows" "79" // 
+						"linux" "79" // _ZN12CBaseMonster18ShouldAdvanceRouteEf
+					}
+
+					"GetStoppedActivity"
+					{
+						"windows" "80" // 
+						"linux" "80" // _ZN12CBaseMonster18GetStoppedActivityEv
+					}
+
+					"Stop"
+					{
+						"windows" "81" // 
+						"linux" "81" // _ZN12CBaseMonster4StopEv
+					}
+
+					"CheckRangeAttack1"
+					{
+						"windows" "82" // 
+						"linux" "82" // _ZN12CBaseMonster17CheckRangeAttack1Eff
+					}
+
+					"CheckRangeAttack2"
+					{
+						"windows" "83" // 
+						"linux" "83" // _ZN12CBaseMonster17CheckRangeAttack2Eff
+					}
+
+					"CheckMeleeAttack1"
+					{
+						"windows" "84" // 
+						"linux" "84" // _ZN12CBaseMonster17CheckMeleeAttack1Eff
+					}
+
+					"CheckMeleeAttack2"
+					{
+						"windows" "85" // 
+						"linux" "85" // _ZN12CBaseMonster17CheckMeleeAttack2Eff
+					}
+
+					"ScheduleFromName"
+					{
+						"windows" "86" // 
+						"linux" "86" // _ZN12CBaseMonster16ScheduleFromNameEPKc
+					}
+
+					"StartTask"
+					{
+						"windows" "87" // 
+						"linux" "87" // _ZN12CBaseMonster9StartTaskEP6Task_t
+					}
+
+					"RunTask"
+					{
+						"windows" "88" // 
+						"linux" "88" // _ZN12CBaseMonster7RunTaskEP6Task_t
+					}
+
+					"GetScheduleOfType"
+					{
+						"windows" "89" // 
+						"linux" "89" // _ZN12CBaseMonster17GetScheduleOfTypeEi
+					}
+
+					"GetSchedule"
+					{
+						"windows" "90" // 
+						"linux" "90" // _ZN12CBaseMonster11GetScheduleEv
+					}
+
+					"ScheduleChange"
+					{
+						"windows" "91" // 
+						"linux" "91" // _ZN12CBaseMonster14ScheduleChangeEv
+					}
+
+					"CanPlaySequence"
+					{
+						"windows" "92" // 
+						"linux" "92" // _ZN12CBaseMonster15CanPlaySequenceEii
+					}
+
+					"CanPlaySentence"
+					{
+						"windows" "93" // 
+						"linux" "93" // _ZN12CBaseMonster15CanPlaySentenceEi
+					}
+
+					"GetIdealState"
+					{
+						"windows" "94" // 
+						"linux" "94" // _ZN12CBaseMonster13GetIdealStateEv
+					}
+
+					"SetActivity"
+					{
+						"windows" "95" // 
+						"linux" "95" // _ZN12CBaseMonster11SetActivityE8Activity
+					}
+
+					"ReportAIState"
+					{
+						"windows" "96" // 
+						"linux" "96" // _ZN12CBaseMonster13ReportAIStateEv
+					}
+
+					"CheckEnemy"
+					{
+						"windows" "97" // 
+						"linux" "97" // _ZN12CBaseMonster10CheckEnemyEP11CBaseEntity
+					}
+
+					"FTriangulate"
+					{
+						"windows" "98" // 
+						"linux" "98" // _ZN12CBaseMonster12FTriangulateERK6VectorS2_fP11CBaseEntityPS0_
+					}
+
+					"SetYawSpeed"
+					{
+						"windows" "99" // 
+						"linux" "99" // _ZN12CBaseMonster11SetYawSpeedEv
+					}
+
+					"BuildNearestRoute"
+					{
+						"windows" "100" // 
+						"linux" "100" // _ZN12CBaseMonster17BuildNearestRouteE6VectorS0_ff
+					}
+
+					"FindCover"
+					{
+						"windows" "101" // 
+						"linux" "101" // _ZN12CBaseMonster9FindCoverE6VectorS0_ff
+					}
+
+					"FValidateCover"
+					{
+						"windows" "102" // 
+						"linux" "102" // _ZN12CBaseMonster14FValidateCoverERK6Vector
+					}
+
+					"CoverRadius"
+					{
+						"windows" "103" // 
+						"linux" "103" // _ZN12CBaseMonster11CoverRadiusEv
+					}
+
+					"FCanCheckAttacks"
+					{
+						"windows" "104" // 
+						"linux" "104" // _ZN12CBaseMonster16FCanCheckAttacksEv
+					}
+
+					"CheckAmmo"
+					{
+						"windows" "105" // 
+						"linux" "105" // _ZN12CBaseMonster9CheckAmmoEv
+					}
+
+					"IgnoreConditions"
+					{
+						"windows" "106" // 
+						"linux" "106" // _ZN12CBaseMonster16IgnoreConditionsEv
+					}
+
+					"FValidateHintType"
+					{
+						"windows" "107" // 
+						"linux" "107" // _ZN12CBaseMonster17FValidateHintTypeEs
+					}
+
+					"FCanActiveIdle"
+					{
+						"windows" "108" // 
+						"linux" "108" // _ZN12CBaseMonster14FCanActiveIdleEv
+					}
+
+					"ISoundMask"
+					{
+						"windows" "109" // 
+						"linux" "109" // _ZN12CBaseMonster10ISoundMaskEv
+					}
+
+					"PBestSound"
+					{
+						"windows" "110" // 
+						"linux" "110" // _ZN12CBaseMonster10PBestSoundEv
+					}
+
+					"PBestScent"
+					{
+						"windows" "111" // 
+						"linux" "111" // _ZN12CBaseMonster10PBestScentEv
+					}
+
+					"HearingSensitivity"
+					{
+						"windows" "112" // 
+						"linux" "112" // _ZN12CBaseMonster18HearingSensitivityEv
+					}
+
+					"BarnacleVictimBitten"
+					{
+						"windows" "113" // 
+						"linux" "113" // _ZN12CBaseMonster20BarnacleVictimBittenEP9entvars_s
+					}
+
+					"BarnacleVictimReleased"
+					{
+						"windows" "114" // 
+						"linux" "114" // _ZN12CBaseMonster22BarnacleVictimReleasedEv
+					}
+
+					"PrescheduleThink"
+					{
+						"windows" "115" // 
+						"linux" "115" // _ZN12CBaseMonster16PrescheduleThinkEv
+					}
+
+					"GetDeathActivity"
+					{
+						"windows" "116" // 
+						"linux" "116" // _ZN12CBaseMonster16GetDeathActivityEv
+					}
+
+					"GibMonster"
+					{
+						"windows" "117" // 
+						"linux" "117" // _ZN12CBaseMonster10GibMonsterEv
+					}
+
+					"HasHumanGibs"
+					{
+						"windows" "118" // 
+						"linux" "118" // _ZN12CBaseMonster12HasHumanGibsEv
+					}
+
+					"HasAlienGibs"
+					{
+						"windows" "119" // 
+						"linux" "119" // _ZN12CBaseMonster12HasAlienGibsEv
+					}
+
+					"FadeMonster"
+					{
+						"windows" "120" // 
+						"linux" "120" // _ZN12CBaseMonster11FadeMonsterEv
+					}
+
+					"GetGunPosition"
+					{
+						"windows" "121" // 
+						"linux" "121" // _ZN12CBaseMonster14GetGunPositionEv
+					}
+
+					"DeathSound"
+					{
+						"windows" "122" // 
+						"linux" "122" // _ZN12CBaseMonster10DeathSoundEv
+					}
+
+					"AlertSound"
+					{
+						"windows" "123" // 
+						"linux" "123" // _ZN12CBaseMonster10AlertSoundEv
+					}
+
+					"IdleSound"
+					{
+						"windows" "124" // 
+						"linux" "124" // _ZN12CBaseMonster9IdleSoundEv
+					}
+
+					"PainSound"
+					{
+						"windows" "125" // 
+						"linux" "125" // _ZN12CBaseMonster9PainSoundEv
+					}
+
+					"StopFollowing"
+					{
+						"windows" "126" // 
+						"linux" "126" // _ZN12CBaseMonster13StopFollowingEi
+					}
+
+				}
+			}
+		}
+	}
+}

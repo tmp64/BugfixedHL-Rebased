@@ -1,0 +1,961 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			"spawn"
+			{
+				"windows" "0" // 
+				"linux" "0" // _ZN11CBaseEntity5SpawnEv
+			}
+
+			"precache"
+			{
+				"windows" "1" // 
+				"linux" "1" // _ZN11CBaseEntity8PrecacheEv
+			}
+
+			"keyvalue"
+			{
+				"windows" "2" // 
+				"linux" "2" // _ZN11CBaseEntity8KeyValueEP14KeyValueData_s
+			}
+
+			"save"
+			{
+				"windows" "3" // 
+				"linux" "3" // _ZN11CBaseEntity4SaveER5CSave
+			}
+
+			"restore"
+			{
+				"windows" "4" // 
+				"linux" "4" // _ZN11CBaseEntity7RestoreER8CRestore
+			}
+
+			"objectcaps"
+			{
+				"windows" "5" // 
+				"linux" "5" // _ZN11CBaseEntity10ObjectCapsEv
+			}
+
+			"activate"
+			{
+				"windows" "6" // 
+				"linux" "6" // _ZN11CBaseEntity8ActivateEv
+			}
+
+			"setobjectcollisionbox"
+			{
+				"windows" "7" // 
+				"linux" "7" // _ZN11CBaseEntity21SetObjectCollisionBoxEv
+			}
+
+			"classify"
+			{
+				"windows" "8" // 
+				"linux" "8" // _ZN11CBaseEntity8ClassifyEv
+			}
+
+			"deathnotice"
+			{
+				"windows" "9" // 
+				"linux" "9" // _ZN11CBaseEntity11DeathNoticeEP9entvars_s
+			}
+
+			"traceattack"
+			{
+				"windows" "10" // 
+				"linux" "10" // _ZN11CBaseEntity11TraceAttackEP9entvars_sf6VectorP11TraceResulti
+			}
+
+			"takedamage"
+			{
+				"windows" "11" // 
+				"linux" "11" // _ZN11CBaseEntity10TakeDamageEP9entvars_sS1_fi
+			}
+
+			"takehealth"
+			{
+				"windows" "12" // 
+				"linux" "12" // _ZN11CBaseEntity10TakeHealthEfi
+			}
+
+			"killed"
+			{
+				"windows" "13" // 
+				"linux" "13" // _ZN11CBaseEntity6KilledEP9entvars_si
+			}
+
+			"bloodcolor"
+			{
+				"windows" "14" // 
+				"linux" "14" // _ZN11CBaseEntity10BloodColorEv
+			}
+
+			"tracebleed"
+			{
+				"windows" "15" // 
+				"linux" "15" // _ZN11CBaseEntity10TraceBleedEf6VectorP11TraceResulti
+			}
+
+			"istriggered"
+			{
+				"windows" "16" // 
+				"linux" "16" // _ZN11CBaseEntity11IsTriggeredEPS_
+			}
+
+			"mytogglepointer"
+			{
+				"windows" "17" // 
+				"linux" "17" // _ZN11CBaseEntity15MyTogglePointerEv
+			}
+
+			"mymonsterpointer"
+			{
+				"windows" "18" // 
+				"linux" "18" // _ZN11CBaseEntity16MyMonsterPointerEv
+			}
+
+			"mysquadmonsterpointer"
+			{
+				"windows" "19" // 
+				"linux" "19" // _ZN11CBaseEntity21MySquadMonsterPointerEv
+			}
+
+			"gettogglestate"
+			{
+				"windows" "20" // 
+				"linux" "20" // _ZN11CBaseEntity14GetToggleStateEv
+			}
+
+			"addpoints"
+			{
+				"windows" "21" // 
+				"linux" "21" // _ZN11CBaseEntity9AddPointsEii
+			}
+
+			"addpointstoteam"
+			{
+				"windows" "22" // 
+				"linux" "22" // _ZN11CBaseEntity15AddPointsToTeamEii
+			}
+
+			"addplayeritem"
+			{
+				"windows" "23" // 
+				"linux" "23" // _ZN11CBaseEntity13AddPlayerItemEP15CBasePlayerItem
+			}
+
+			"removeplayeritem"
+			{
+				"windows" "24" // 
+				"linux" "24" // _ZN11CBaseEntity16RemovePlayerItemEP15CBasePlayerItem
+			}
+
+			"giveammo"
+			{
+				"windows" "25" // 
+				"linux" "25" // _ZN11CBaseEntity8GiveAmmoEiPci
+			}
+
+			"getdelay"
+			{
+				"windows" "26" // 
+				"linux" "26" // _ZN11CBaseEntity8GetDelayEv
+			}
+
+			"ismoving"
+			{
+				"windows" "27" // 
+				"linux" "27" // _ZN11CBaseEntity8IsMovingEv
+			}
+
+			"overridereset"
+			{
+				"windows" "28" // 
+				"linux" "28" // _ZN11CBaseEntity13OverrideResetEv
+			}
+
+			"damagedecal"
+			{
+				"windows" "29" // 
+				"linux" "29" // _ZN11CBaseEntity11DamageDecalEi
+			}
+
+			"settogglestate"
+			{
+				"windows" "30" // 
+				"linux" "30" // _ZN11CBaseEntity14SetToggleStateEi
+			}
+
+			"startsneaking"
+			{
+				"windows" "31" // 
+				"linux" "31" // _ZN11CBaseEntity13StartSneakingEv
+			}
+
+			"stopsneaking"
+			{
+				"windows" "32" // 
+				"linux" "32" // _ZN11CBaseEntity12StopSneakingEv
+			}
+
+			"oncontrols"
+			{
+				"windows" "33" // 
+				"linux" "33" // _ZN11CBaseEntity10OnControlsEP9entvars_s
+			}
+
+			"issneaking"
+			{
+				"windows" "34" // 
+				"linux" "34" // _ZN11CBaseEntity10IsSneakingEv
+			}
+
+			"isalive"
+			{
+				"windows" "35" // 
+				"linux" "35" // _ZN11CBaseEntity7IsAliveEv
+			}
+
+			"isbspmodel"
+			{
+				"windows" "36" // 
+				"linux" "36" // _ZN11CBaseEntity10IsBSPModelEv
+			}
+
+			"reflectgauss"
+			{
+				"windows" "37" // 
+				"linux" "37" // _ZN11CBaseEntity12ReflectGaussEv
+			}
+
+			"hastarget"
+			{
+				"windows" "38" // 
+				"linux" "38" // _ZN11CBaseEntity9HasTargetEj
+			}
+
+			"isinworld"
+			{
+				"windows" "39" // 
+				"linux" "39" // _ZN11CBaseEntity9IsInWorldEv
+			}
+
+			"isplayer"
+			{
+				"windows" "40" // 
+				"linux" "40" // _ZN11CBaseEntity8IsPlayerEv
+			}
+
+			"isnetclient"
+			{
+				"windows" "41" // 
+				"linux" "41" // _ZN11CBaseEntity11IsNetClientEv
+			}
+
+			"teamid"
+			{
+				"windows" "42" // 
+				"linux" "42" // _ZN11CBaseEntity6TeamIDEv
+			}
+
+			"getnexttarget"
+			{
+				"windows" "43" // 
+				"linux" "43" // _ZN11CBaseEntity13GetNextTargetEv
+			}
+
+			"think"
+			{
+				"windows" "44" // 
+				"linux" "44" // _ZN11CBaseEntity5ThinkEv
+			}
+
+			"touch"
+			{
+				"windows" "45" // 
+				"linux" "45" // _ZN11CBaseEntity5TouchEPS_
+			}
+
+			"use"
+			{
+				"windows" "46" // 
+				"linux" "46" // _ZN11CBaseEntity3UseEPS_S0_8USE_TYPEf
+			}
+
+			"blocked"
+			{
+				"windows" "47" // 
+				"linux" "47" // _ZN11CBaseEntity7BlockedEPS_
+			}
+
+			"respawn"
+			{
+				"windows" "48" // 
+				"linux" "48" // _ZN11CBaseEntity7RespawnEv
+			}
+
+			"updateowner"
+			{
+				"windows" "49" // 
+				"linux" "49" // _ZN11CBaseEntity11UpdateOwnerEv
+			}
+
+			"fbecomeprone"
+			{
+				"windows" "50" // 
+				"linux" "50" // _ZN11CBaseEntity12FBecomeProneEv
+			}
+
+			"center"
+			{
+				"windows" "51" // 
+				"linux" "51" // _ZN11CBaseEntity6CenterEv
+			}
+
+			"eyeposition"
+			{
+				"windows" "52" // 
+				"linux" "52" // _ZN11CBaseEntity11EyePositionEv
+			}
+
+			"earposition"
+			{
+				"windows" "53" // 
+				"linux" "53" // _ZN11CBaseEntity11EarPositionEv
+			}
+
+			"bodytarget"
+			{
+				"windows" "54" // 
+				"linux" "54" // _ZN11CBaseEntity10BodyTargetERK6Vector
+			}
+
+			"illumination"
+			{
+				"windows" "55" // 
+				"linux" "55" // _ZN11CBaseEntity12IlluminationEv
+			}
+
+			"fvisible"
+			{
+				"windows" "56" // 
+				"linux" "56" // _ZN11CBaseEntity8FVisibleEPS_
+			}
+
+			"player_look"
+			{
+				"windows" "63" // 
+				"linux" "63" // _ZN12CBaseMonster4LookEi
+			}
+
+			"player_runai"
+			{
+				"windows" "64" // 
+				"linux" "64" // _ZN12CBaseMonster5RunAIEv
+			}
+
+			"player_shouldfadeondeath"
+			{
+				"windows" "65" // 
+				"linux" "65" // _ZN12CBaseMonster17ShouldFadeOnDeathEv
+			}
+
+			"player_changeyaw"
+			{
+				"windows" "66" // 
+				"linux" "66" // _ZN12CBaseMonster9ChangeYawEi
+			}
+
+			"player_monsterthink"
+			{
+				"windows" "67" // 
+				"linux" "67" // _ZN12CBaseMonster12MonsterThinkEv
+			}
+
+			"player_irelationship"
+			{
+				"windows" "68" // 
+				"linux" "68" // _ZN12CBaseMonster13IRelationshipEP11CBaseEntity
+			}
+
+			"player_monsterinit"
+			{
+				"windows" "69" // 
+				"linux" "69" // _ZN12CBaseMonster11MonsterInitEv
+			}
+
+			"player_monsterinitdead"
+			{
+				"windows" "70" // 
+				"linux" "70" // _ZN12CBaseMonster15MonsterInitDeadEv
+			}
+
+			"player_becomedead"
+			{
+				"windows" "71" // 
+				"linux" "71" // _ZN12CBaseMonster10BecomeDeadEv
+			}
+
+			"player_startmonster"
+			{
+				"windows" "72" // 
+				"linux" "72" // _ZN12CBaseMonster12StartMonsterEv
+			}
+
+			"player_bestvisibleenemy"
+			{
+				"windows" "73" // 
+				"linux" "73" // _ZN12CBaseMonster16BestVisibleEnemyEv
+			}
+
+			"player_finviewcone"
+			{
+				"windows" "74" // 
+				"linux" "74" // _ZN12CBaseMonster11FInViewConeEP11CBaseEntity
+			}
+
+			"player_checklocalmove"
+			{
+				"windows" "76" // 
+				"linux" "76" // _ZN12CBaseMonster14CheckLocalMoveERK6VectorS2_P11CBaseEntityPf
+			}
+
+			"player_move"
+			{
+				"windows" "77" // 
+				"linux" "77" // _ZN12CBaseMonster4MoveEf
+			}
+
+			"player_moveexecute"
+			{
+				"windows" "78" // 
+				"linux" "78" // _ZN12CBaseMonster11MoveExecuteEP11CBaseEntityRK6Vectorf
+			}
+
+			"player_shouldadvanceroute"
+			{
+				"windows" "79" // 
+				"linux" "79" // _ZN12CBaseMonster18ShouldAdvanceRouteEf
+			}
+
+			"player_getstoppedactivity"
+			{
+				"windows" "80" // 
+				"linux" "80" // _ZN12CBaseMonster18GetStoppedActivityEv
+			}
+
+			"player_stop"
+			{
+				"windows" "81" // 
+				"linux" "81" // _ZN12CBaseMonster4StopEv
+			}
+
+			"player_checkrangeattack1"
+			{
+				"windows" "82" // 
+				"linux" "82" // _ZN12CBaseMonster17CheckRangeAttack1Eff
+			}
+
+			"player_checkrangeattack2"
+			{
+				"windows" "83" // 
+				"linux" "83" // _ZN12CBaseMonster17CheckRangeAttack2Eff
+			}
+
+			"player_checkmeleeattack1"
+			{
+				"windows" "84" // 
+				"linux" "84" // _ZN12CBaseMonster17CheckMeleeAttack1Eff
+			}
+
+			"player_checkmeleeattack2"
+			{
+				"windows" "85" // 
+				"linux" "85" // _ZN12CBaseMonster17CheckMeleeAttack2Eff
+			}
+
+			"player_schedulefromname"
+			{
+				"windows" "86" // 
+				"linux" "86" // _ZN12CBaseMonster16ScheduleFromNameEPKc
+			}
+
+			"player_starttask"
+			{
+				"windows" "87" // 
+				"linux" "87" // _ZN12CBaseMonster9StartTaskEP6Task_t
+			}
+
+			"player_runtask"
+			{
+				"windows" "88" // 
+				"linux" "88" // _ZN12CBaseMonster7RunTaskEP6Task_t
+			}
+
+			"player_getscheduleoftype"
+			{
+				"windows" "89" // 
+				"linux" "89" // _ZN12CBaseMonster17GetScheduleOfTypeEi
+			}
+
+			"player_getschedule"
+			{
+				"windows" "90" // 
+				"linux" "90" // _ZN12CBaseMonster11GetScheduleEv
+			}
+
+			"player_schedulechange"
+			{
+				"windows" "91" // 
+				"linux" "91" // _ZN12CBaseMonster14ScheduleChangeEv
+			}
+
+			"player_canplaysequence"
+			{
+				"windows" "92" // 
+				"linux" "92" // _ZN12CBaseMonster15CanPlaySequenceEii
+			}
+
+			"player_canplaysentence"
+			{
+				"windows" "93" // 
+				"linux" "93" // _ZN12CBaseMonster15CanPlaySentenceEi
+			}
+
+			"player_getidealstate"
+			{
+				"windows" "94" // 
+				"linux" "94" // _ZN12CBaseMonster13GetIdealStateEv
+			}
+
+			"player_setactivity"
+			{
+				"windows" "95" // 
+				"linux" "95" // _ZN12CBaseMonster11SetActivityE8Activity
+			}
+
+			"player_reportaistate"
+			{
+				"windows" "96" // 
+				"linux" "96" // _ZN12CBaseMonster13ReportAIStateEv
+			}
+
+			"player_checkenemy"
+			{
+				"windows" "97" // 
+				"linux" "97" // _ZN12CBaseMonster10CheckEnemyEP11CBaseEntity
+			}
+
+			"player_ftriangulate"
+			{
+				"windows" "98" // 
+				"linux" "98" // _ZN12CBaseMonster12FTriangulateERK6VectorS2_fP11CBaseEntityPS0_
+			}
+
+			"player_setyawspeed"
+			{
+				"windows" "99" // 
+				"linux" "99" // _ZN12CBaseMonster11SetYawSpeedEv
+			}
+
+			"player_buildnearestroute"
+			{
+				"windows" "100" // 
+				"linux" "100" // _ZN12CBaseMonster17BuildNearestRouteE6VectorS0_ff
+			}
+
+			"player_findcover"
+			{
+				"windows" "101" // 
+				"linux" "101" // _ZN12CBaseMonster9FindCoverE6VectorS0_ff
+			}
+
+			"player_fvalidatecover"
+			{
+				"windows" "102" // 
+				"linux" "102" // _ZN12CBaseMonster14FValidateCoverERK6Vector
+			}
+
+			"player_coverradius"
+			{
+				"windows" "103" // 
+				"linux" "103" // _ZN12CBaseMonster11CoverRadiusEv
+			}
+
+			"player_fcancheckattacks"
+			{
+				"windows" "104" // 
+				"linux" "104" // _ZN12CBaseMonster16FCanCheckAttacksEv
+			}
+
+			"player_checkammo"
+			{
+				"windows" "105" // 
+				"linux" "105" // _ZN12CBaseMonster9CheckAmmoEv
+			}
+
+			"player_ignoreconditions"
+			{
+				"windows" "106" // 
+				"linux" "106" // _ZN12CBaseMonster16IgnoreConditionsEv
+			}
+
+			"player_fvalidatehinttype"
+			{
+				"windows" "107" // 
+				"linux" "107" // _ZN12CBaseMonster17FValidateHintTypeEs
+			}
+
+			"player_fcanactiveidle"
+			{
+				"windows" "108" // 
+				"linux" "108" // _ZN12CBaseMonster14FCanActiveIdleEv
+			}
+
+			"player_isoundmask"
+			{
+				"windows" "109" // 
+				"linux" "109" // _ZN12CBaseMonster10ISoundMaskEv
+			}
+
+			"player_pbestsound"
+			{
+				"windows" "110" // 
+				"linux" "110" // _ZN12CBaseMonster10PBestSoundEv
+			}
+
+			"player_pbestscent"
+			{
+				"windows" "111" // 
+				"linux" "111" // _ZN12CBaseMonster10PBestScentEv
+			}
+
+			"player_hearingsensitivity"
+			{
+				"windows" "112" // 
+				"linux" "112" // _ZN12CBaseMonster18HearingSensitivityEv
+			}
+
+			"player_barnaclevictimbitten"
+			{
+				"windows" "113" // 
+				"linux" "113" // _ZN12CBaseMonster20BarnacleVictimBittenEP9entvars_s
+			}
+
+			"player_barnaclevictimreleased"
+			{
+				"windows" "114" // 
+				"linux" "114" // _ZN12CBaseMonster22BarnacleVictimReleasedEv
+			}
+
+			"player_preschedulethink"
+			{
+				"windows" "115" // 
+				"linux" "115" // _ZN12CBaseMonster16PrescheduleThinkEv
+			}
+
+			"player_getdeathactivity"
+			{
+				"windows" "116" // 
+				"linux" "116" // _ZN12CBaseMonster16GetDeathActivityEv
+			}
+
+			"player_gibmonster"
+			{
+				"windows" "117" // 
+				"linux" "117" // _ZN12CBaseMonster10GibMonsterEv
+			}
+
+			"player_hashumangibs"
+			{
+				"windows" "118" // 
+				"linux" "118" // _ZN12CBaseMonster12HasHumanGibsEv
+			}
+
+			"player_hasaliengibs"
+			{
+				"windows" "119" // 
+				"linux" "119" // _ZN12CBaseMonster12HasAlienGibsEv
+			}
+
+			"player_fademonster"
+			{
+				"windows" "120" // 
+				"linux" "120" // _ZN12CBaseMonster11FadeMonsterEv
+			}
+
+			"player_getgunposition"
+			{
+				"windows" "121" // 
+				"linux" "121" // _ZN12CBaseMonster14GetGunPositionEv
+			}
+
+			"player_deathsound"
+			{
+				"windows" "122" // 
+				"linux" "122" // _ZN12CBaseMonster10DeathSoundEv
+			}
+
+			"player_alertsound"
+			{
+				"windows" "123" // 
+				"linux" "123" // _ZN12CBaseMonster10AlertSoundEv
+			}
+
+			"player_idlesound"
+			{
+				"windows" "124" // 
+				"linux" "124" // _ZN12CBaseMonster9IdleSoundEv
+			}
+
+			"player_painsound"
+			{
+				"windows" "125" // 
+				"linux" "125" // _ZN12CBaseMonster9PainSoundEv
+			}
+
+			"player_stopfollowing"
+			{
+				"windows" "126" // 
+				"linux" "126" // _ZN12CBaseMonster13StopFollowingEi
+			}
+
+			"player_jump"
+			{
+				"windows" "127" // 
+				"linux" "127" // _ZN11CBasePlayer4JumpEv
+			}
+
+			"player_duck"
+			{
+				"windows" "128" // 
+				"linux" "128" // _ZN11CBasePlayer4DuckEv
+			}
+
+			"player_prethink"
+			{
+				"windows" "129" // 
+				"linux" "129" // _ZN11CBasePlayer8PreThinkEv
+			}
+
+			"player_postthink"
+			{
+				"windows" "130" // 
+				"linux" "130" // _ZN11CBasePlayer9PostThinkEv
+			}
+
+			"player_updateclientdata"
+			{
+				"windows" "131" // 
+				"linux" "131" // _ZN11CBasePlayer16UpdateClientDataEv
+			}
+
+			"player_impulsecommands"
+			{
+				"windows" "132" // 
+				"linux" "132" // _ZN11CBasePlayer15ImpulseCommandsEv
+			}
+
+			"item_addtoplayer"
+			{
+				"windows" "59" // 
+				"linux" "59" // _ZN15CBasePlayerItem11AddToPlayerEP11CBasePlayer
+			}
+
+			"item_addduplicate"
+			{
+				"windows" "60" // 
+				"linux" "60" // _ZN15CBasePlayerItem12AddDuplicateEPS_
+			}
+
+			"item_getiteminfo"
+			{
+				"windows" "61" // 
+				"linux" "61" // _ZN15CBasePlayerItem11GetItemInfoEP8ItemInfo
+			}
+
+			"item_candeploy"
+			{
+				"windows" "62" // 
+				"linux" "62" // _ZN15CBasePlayerItem9CanDeployEv
+			}
+
+			"item_deploy"
+			{
+				"windows" "63" // 
+				"linux" "63" // _ZN15CBasePlayerItem6DeployEv
+			}
+
+			"item_canholster"
+			{
+				"windows" "64" // 
+				"linux" "64" // _ZN15CBasePlayerItem10CanHolsterEv
+			}
+
+			"item_holster"
+			{
+				"windows" "65" // 
+				"linux" "65" // _ZN15CBasePlayerItem7HolsterEi
+			}
+
+			"item_updateiteminfo"
+			{
+				"windows" "66" // 
+				"linux" "66" // _ZN15CBasePlayerItem14UpdateItemInfoEv
+			}
+
+			"item_itempreframe"
+			{
+				"windows" "67" // 
+				"linux" "67" // _ZN15CBasePlayerItem12ItemPreFrameEv
+			}
+
+			"item_itempostframe"
+			{
+				"windows" "68" // 
+				"linux" "68" // _ZN15CBasePlayerItem13ItemPostFrameEv
+			}
+
+			"item_drop"
+			{
+				"windows" "69" // 
+				"linux" "69" // _ZN15CBasePlayerItem4DropEv
+			}
+
+			"item_kill"
+			{
+				"windows" "70" // 
+				"linux" "70" // _ZN15CBasePlayerItem4KillEv
+			}
+
+			"item_attachtoplayer"
+			{
+				"windows" "71" // 
+				"linux" "71" // _ZN15CBasePlayerItem14AttachToPlayerEP11CBasePlayer
+			}
+
+			"item_primaryammoindex"
+			{
+				"windows" "72" // 
+				"linux" "72" // _ZN15CBasePlayerItem16PrimaryAmmoIndexEv
+			}
+
+			"item_secondaryammoindex"
+			{
+				"windows" "73" // 
+				"linux" "73" // _ZN15CBasePlayerItem18SecondaryAmmoIndexEv
+			}
+
+			"item_updateclientdata"
+			{
+				"windows" "74" // 
+				"linux" "74" // _ZN15CBasePlayerItem16UpdateClientDataEP11CBasePlayer
+			}
+
+			"item_getweaponptr"
+			{
+				"windows" "75" // 
+				"linux" "75" // _ZN15CBasePlayerItem12GetWeaponPtrEv
+			}
+
+			"item_iitemslot"
+			{
+				"windows" "76" // 
+				"linux" "76" // _ZN15CBasePlayerItem9iItemSlotEv
+			}
+
+			"weapon_extractammo"
+			{
+				"windows" "77" // 
+				"linux" "77" // _ZN17CBasePlayerWeapon11ExtractAmmoEPS_
+			}
+
+			"weapon_extractclipammo"
+			{
+				"windows" "78" // 
+				"linux" "78" // _ZN17CBasePlayerWeapon15ExtractClipAmmoEPS_
+			}
+
+			"weapon_addweapon"
+			{
+				"windows" "79" // 
+				"linux" "79" // _ZN17CBasePlayerWeapon9AddWeaponEv
+			}
+
+			"weapon_playemptysound"
+			{
+				"windows" "80" // 
+				"linux" "80" // _ZN17CBasePlayerWeapon14PlayEmptySoundEv
+			}
+
+			"weapon_resetemptysound"
+			{
+				"windows" "81" // 
+				"linux" "81" // _ZN17CBasePlayerWeapon15ResetEmptySoundEv
+			}
+
+			"weapon_sendweaponanim"
+			{
+				"windows" "82" // 
+				"linux" "82" // _ZN17CBasePlayerWeapon14SendWeaponAnimEiii
+			}
+
+			"weapon_isuseable"
+			{
+				"windows" "83" // 
+				"linux" "83" // _ZN17CBasePlayerWeapon9IsUseableEv
+			}
+
+			"weapon_primaryattack"
+			{
+				"windows" "84" // 
+				"linux" "84" // _ZN17CBasePlayerWeapon13PrimaryAttackEv
+			}
+
+			"weapon_secondaryattack"
+			{
+				"windows" "85" // 
+				"linux" "85" // _ZN17CBasePlayerWeapon15SecondaryAttackEv
+			}
+
+			"weapon_reload"
+			{
+				"windows" "86" // 
+				"linux" "86" // _ZN17CBasePlayerWeapon6ReloadEv
+			}
+
+			"weapon_weaponidle"
+			{
+				"windows" "87" // 
+				"linux" "87" // _ZN17CBasePlayerWeapon10WeaponIdleEv
+			}
+
+			"weapon_retireweapon"
+			{
+				"windows" "88" // 
+				"linux" "88" // _ZN17CBasePlayerWeapon12RetireWeaponEv
+			}
+
+			"weapon_shouldweaponidle"
+			{
+				"windows" "89" // 
+				"linux" "89" // _ZN17CBasePlayerWeapon16ShouldWeaponIdleEv
+			}
+
+			"weapon_usedecrement"
+			{
+				"windows" "90" // 
+				"linux" "90" // _ZN17CBasePlayerWeapon12UseDecrementEv
+			}
+
+		}
+	}
+}

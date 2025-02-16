@@ -1,0 +1,45 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CRevertSaved"
+			{
+				"Offsets"
+				{
+					// WIN: float m_messageTime
+					// LIN: float m_messageTime
+					"m_messageTime"
+					{
+						"type" "float"
+						"windows" "84"
+						"linux" "100"
+					}
+
+					// WIN: float m_loadTime
+					// LIN: float m_loadTime
+					"m_loadTime"
+					{
+						"type" "float"
+						"windows" "88"
+						"linux" "104"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseEntity
+//		CPointEntity
+//			CRevertSaved
+//

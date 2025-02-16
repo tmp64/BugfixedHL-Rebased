@@ -1,0 +1,95 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CGibShooter"
+			{
+				"Offsets"
+				{
+					// WIN: int m_iGibs
+					// LIN: int m_iGibs
+					"m_iGibs"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "92"
+						"linux" "108"
+					}
+
+					// WIN: int m_iGibCapacity
+					// LIN: int m_iGibCapacity
+					"m_iGibCapacity"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "96"
+						"linux" "112"
+					}
+
+					// WIN: int m_iGibMaterial
+					// LIN: int m_iGibMaterial
+					"m_iGibMaterial"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "100"
+						"linux" "116"
+					}
+
+					// WIN: int m_iGibModelIndex
+					// LIN: int m_iGibModelIndex
+					"m_iGibModelIndex"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "104"
+						"linux" "120"
+					}
+
+					// WIN: float m_flGibVelocity
+					// LIN: float m_flGibVelocity
+					"m_flGibVelocity"
+					{
+						"type" "float"
+						"windows" "108"
+						"linux" "124"
+					}
+
+					// WIN: float m_flVariance
+					// LIN: float m_flVariance
+					"m_flVariance"
+					{
+						"type" "float"
+						"windows" "112"
+						"linux" "128"
+					}
+
+					// WIN: float m_flGibLife
+					// LIN: float m_flGibLife
+					"m_flGibLife"
+					{
+						"type" "float"
+						"windows" "116"
+						"linux" "132"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseDelay
+//		CBaseEntity
+//			CGibShooter
+//				CEnvShooter
+//

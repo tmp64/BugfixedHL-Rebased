@@ -1,0 +1,77 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CWallHealth"
+			{
+				"Offsets"
+				{
+					// WIN: float m_flNextCharge
+					// LIN: float m_flNextCharge
+					"m_flNextCharge"
+					{
+						"type" "float"
+						"windows" "240"
+						"linux" "260"
+					}
+
+					// WIN: int m_iReactivate
+					// LIN: int m_iReactivate
+					"m_iReactivate"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "244"
+						"linux" "264"
+					}
+
+					// WIN: int m_iJuice
+					// LIN: int m_iJuice
+					"m_iJuice"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "248"
+						"linux" "268"
+					}
+
+					// WIN: int m_iOn
+					// LIN: int m_iOn
+					"m_iOn"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "252"
+						"linux" "272"
+					}
+
+					// WIN: float m_flSoundTime
+					// LIN: float m_flSoundTime
+					"m_flSoundTime"
+					{
+						"type" "float"
+						"windows" "256"
+						"linux" "276"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseToggle
+//					CWallHealth
+//

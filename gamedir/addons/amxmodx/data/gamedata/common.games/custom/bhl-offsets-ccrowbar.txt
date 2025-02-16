@@ -1,0 +1,59 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CCrowbar"
+			{
+				"Offsets"
+				{
+					// WIN: int m_iSwing
+					// LIN: int m_iSwing
+					"m_iSwing"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "180"
+						"linux" "196"
+					}
+
+					// WIN: TraceResult m_trHit
+					// LIN: TraceResult m_trHit
+					"m_trHit"
+					{
+						"type" "structure"
+						"windows" "184"
+						"linux" "200"
+					}
+
+					// WIN: unsigned short m_usCrowbar
+					// LIN: short unsigned int m_usCrowbar
+					"m_usCrowbar"
+					{
+						"type" "short"
+						"unsigned" "1"
+						"windows" "240"
+						"linux" "256"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBasePlayerItem
+//					CBasePlayerWeapon
+//						CCrowbar
+//

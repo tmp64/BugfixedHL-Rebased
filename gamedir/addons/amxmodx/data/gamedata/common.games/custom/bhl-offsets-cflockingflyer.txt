@@ -1,0 +1,141 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CFlockingFlyer"
+			{
+				"Offsets"
+				{
+					// WIN: CFlockingFlyer *m_pSquadLeader
+					// LIN: CFlockingFlyer *m_pSquadLeader
+					"m_pSquadLeader"
+					{
+						"type" "classptr"
+						"windows" "664"
+						"linux" "684"
+					}
+
+					// WIN: CFlockingFlyer *m_pSquadNext
+					// LIN: CFlockingFlyer *m_pSquadNext
+					"m_pSquadNext"
+					{
+						"type" "classptr"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: int m_fTurning
+					// LIN: BOOL m_fTurning
+					"m_fTurning"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: int m_fCourseAdjust
+					// LIN: BOOL m_fCourseAdjust
+					"m_fCourseAdjust"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "676"
+						"linux" "696"
+					}
+
+					// WIN: int m_fPathBlocked
+					// LIN: BOOL m_fPathBlocked
+					"m_fPathBlocked"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "680"
+						"linux" "700"
+					}
+
+					// WIN: Vector m_vecReferencePoint
+					// LIN: Vector m_vecReferencePoint
+					"m_vecReferencePoint"
+					{
+						"type" "vector"
+						"windows" "684"
+						"linux" "704"
+					}
+
+					// WIN: Vector m_vecAdjustedVelocity
+					// LIN: Vector m_vecAdjustedVelocity
+					"m_vecAdjustedVelocity"
+					{
+						"type" "vector"
+						"windows" "696"
+						"linux" "716"
+					}
+
+					// WIN: float m_flGoalSpeed
+					// LIN: float m_flGoalSpeed
+					"m_flGoalSpeed"
+					{
+						"type" "float"
+						"windows" "708"
+						"linux" "728"
+					}
+
+					// WIN: float m_flLastBlockedTime
+					// LIN: float m_flLastBlockedTime
+					"m_flLastBlockedTime"
+					{
+						"type" "float"
+						"windows" "712"
+						"linux" "732"
+					}
+
+					// WIN: float m_flFakeBlockedTime
+					// LIN: float m_flFakeBlockedTime
+					"m_flFakeBlockedTime"
+					{
+						"type" "float"
+						"windows" "716"
+						"linux" "736"
+					}
+
+					// WIN: float m_flAlertTime
+					// LIN: float m_flAlertTime
+					"m_flAlertTime"
+					{
+						"type" "float"
+						"windows" "720"
+						"linux" "740"
+					}
+
+					// WIN: float m_flFlockNextSoundTime
+					// LIN: float m_flFlockNextSoundTime
+					"m_flFlockNextSoundTime"
+					{
+						"type" "float"
+						"windows" "724"
+						"linux" "744"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CFlockingFlyer
+//

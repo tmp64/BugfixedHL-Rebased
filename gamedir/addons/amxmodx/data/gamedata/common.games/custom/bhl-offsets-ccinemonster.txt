@@ -1,0 +1,155 @@
+//
+// BugfixedHl-Rebased offset file. Generated using amxx-offset-generator.
+//
+
+"Games"
+{
+	"#default"
+	{
+		"Classes"
+		{
+			"CCineMonster"
+			{
+				"Offsets"
+				{
+					// WIN: string_t m_iszIdle
+					// LIN: int m_iszIdle
+					"m_iszIdle"
+					{
+						"type" "stringint"
+						"windows" "664"
+						"linux" "684"
+					}
+
+					// WIN: string_t m_iszPlay
+					// LIN: int m_iszPlay
+					"m_iszPlay"
+					{
+						"type" "stringint"
+						"windows" "668"
+						"linux" "688"
+					}
+
+					// WIN: string_t m_iszEntity
+					// LIN: int m_iszEntity
+					"m_iszEntity"
+					{
+						"type" "stringint"
+						"windows" "672"
+						"linux" "692"
+					}
+
+					// WIN: int m_fMoveTo
+					// LIN: int m_fMoveTo
+					"m_fMoveTo"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "676"
+						"linux" "696"
+					}
+
+					// WIN: int m_iFinishSchedule
+					// LIN: int m_iFinishSchedule
+					"m_iFinishSchedule"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "680"
+						"linux" "700"
+					}
+
+					// WIN: float m_flRadius
+					// LIN: float m_flRadius
+					"m_flRadius"
+					{
+						"type" "float"
+						"windows" "684"
+						"linux" "704"
+					}
+
+					// WIN: float m_flRepeat
+					// LIN: float m_flRepeat
+					"m_flRepeat"
+					{
+						"type" "float"
+						"windows" "688"
+						"linux" "708"
+					}
+
+					// WIN: int m_iDelay
+					// LIN: int m_iDelay
+					"m_iDelay"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "692"
+						"linux" "712"
+					}
+
+					// WIN: float m_startTime
+					// LIN: float m_startTime
+					"m_startTime"
+					{
+						"type" "float"
+						"windows" "696"
+						"linux" "716"
+					}
+
+					// WIN: int m_saved_movetype
+					// LIN: int m_saved_movetype
+					"m_saved_movetype"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "700"
+						"linux" "720"
+					}
+
+					// WIN: int m_saved_solid
+					// LIN: int m_saved_solid
+					"m_saved_solid"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "704"
+						"linux" "724"
+					}
+
+					// WIN: int m_saved_effects
+					// LIN: int m_saved_effects
+					"m_saved_effects"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "708"
+						"linux" "728"
+					}
+
+					// WIN: int m_interruptable
+					// LIN: BOOL m_interruptable
+					"m_interruptable"
+					{
+						"type" "integer"
+						"unsigned" "0"
+						"windows" "712"
+						"linux" "732"
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//
+// Class Hierarchy:
+// -
+//	CBaseAnimating
+//		CBaseDelay
+//			CBaseEntity
+//				CBaseMonster
+//					CBaseToggle
+//						CCineMonster
+//							CCineAI
+//

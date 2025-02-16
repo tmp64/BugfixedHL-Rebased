@@ -67,6 +67,7 @@ cvar_t motdfile_unicode = { "motdfile_unicode", "motd_unicode.txt", FCVAR_SERVER
 cvar_t motdfile_html = { "motdfile_html", "motd.html", FCVAR_SERVER };
 
 ConVar mp_wallgauss("mp_wallgauss", "1.0", 0, "Wallgauss damage scale. 0 disables wallgauss.");
+ConVar mp_rpg_fix("mp_rpg_fix", "0", 0, "Fix RPG rocket exploding when firing it while moving backwards at high speed.");
 
 cvar_t mp_dmg_crowbar = { "mp_dmg_crowbar", "25", FCVAR_SERVER };
 cvar_t mp_dmg_glock = { "mp_dmg_glock", "12", FCVAR_SERVER };

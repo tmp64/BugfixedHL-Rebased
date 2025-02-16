@@ -22,6 +22,7 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
+#include "game.h"
 
 enum rpg_e
 {
@@ -504,7 +505,21 @@ void CRpg::PrimaryAttack()
 	CRpgRocket *pRocket = CRpgRocket::CreateRpgRocket(vecSrc, m_pPlayer->pev->v_angle, m_pPlayer, this);
 
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle); // RpgRocket::Create stomps on globals, so remake.
-	pRocket->pev->velocity = pRocket->pev->velocity + gpGlobals->v_forward * DotProduct(m_pPlayer->pev->velocity, gpGlobals->v_forward);
+
+	float playerVelocityScale = 1.0f;
+
+	if (mp_rpg_fix.GetBool())
+	{
+		bool isMovingBackwards = DotProduct(pRocket->pev->velocity, m_pPlayer->pev->velocity) < 0.0f;
+
+		if (isMovingBackwards)
+		{
+			// Only use 50% of the velocity when the player are moving backwards.
+			playerVelocityScale = 0.5f;
+		}
+	}
+
+	pRocket->pev->velocity = pRocket->pev->velocity + gpGlobals->v_forward * (DotProduct(m_pPlayer->pev->velocity, gpGlobals->v_forward) * playerVelocityScale);
 #endif
 
 	// firing RPG no longer turns on the designator. ALT fire is a toggle switch for the LTD.

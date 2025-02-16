@@ -843,6 +843,28 @@ void StartFrame(void)
 	g_ulFrameCount++;
 }
 
+#ifdef PLATFORM_WINDOWS
+
+// Signature for g_pGameRules in AMXX
+// Exported so the function is not removed by the linker
+DLL_EXPORT __declspec(naked) void BHL_Signature_g_pGameRules()
+{
+	// AMXX signature
+	// "windows" "\x8B\x2A\x2A\x2A\x2A\x2A\x85\x2A\x74\x2A\x8B\x2A\xFF\x2A\x2A\xA1" // StartFrame()
+	__asm
+	{
+		mov     ecx, g_pGameRules		// 8B xx xx xx xx xx
+		test    ecx,ecx					// 85 xx
+		jz      short jump_label		// 74 xx
+		mov     eax, [ecx]				// 8B xx
+		call    dword ptr [eax+4]		// FF xx xx
+	jump_label:
+		_emit 0xA1						// A1
+	}
+}
+
+#endif
+
 void ClientPrecache(void)
 {
 	// setup precaches always needed

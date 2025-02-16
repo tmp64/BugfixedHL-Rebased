@@ -59,7 +59,8 @@ cvar_t allowmonsters = { "mp_allowmonsters", "0", FCVAR_SERVER };
 cvar_t mp_chattime = { "mp_chattime", "10", FCVAR_SERVER };
 cvar_t mp_notify_player_status = { "mp_notify_player_status", "7" }; // Notifications about join/leave/spectate
 
-cvar_t mp_welcomecam = { "mp_welcomecam", "1", FCVAR_SERVER };
+ConVar mp_welcomecam("mp_welcomecam", "1", 0, "Don't spawn players immediately on join");
+ConVar mp_welcomecam_delay("mp_welcomecam_delay", "0.2", 0, "Delay before the player can leave welcome cam");
 cvar_t mp_respawn_fix = { "mp_respawn_fix", "1", FCVAR_SERVER };
 
 cvar_t motdfile_unicode = { "motdfile_unicode", "motd_unicode.txt", FCVAR_SERVER };
@@ -518,7 +519,6 @@ void GameDLLInit(void)
 	CVAR_REGISTER(&sv_busters);
 	CVAR_REGISTER(&mp_notify_player_status);
 
-	CVAR_REGISTER(&mp_welcomecam);
 	CVAR_REGISTER(&mp_respawn_fix);
 
 	CVAR_REGISTER(&motdfile_unicode);

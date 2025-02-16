@@ -44,7 +44,8 @@ extern cvar_t teamoverride;
 extern cvar_t defaultteam;
 extern cvar_t allowmonsters;
 extern cvar_t mp_notify_player_status;
-extern cvar_t mp_welcomecam;
+extern ConVar mp_welcomecam;
+extern ConVar mp_welcomecam_delay;
 extern cvar_t mp_respawn_fix;
 
 extern cvar_t mp_dmg_crowbar;

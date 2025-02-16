@@ -17,12 +17,15 @@ class ConItemBase
 public:
 	ConItemBase(const char *name);
 	ConItemBase(const char *name, const char *desc);
+	ConItemBase(const ConItemBase &) = delete;
 	virtual ~ConItemBase();
 
 	virtual ConItemType GetType() = 0;
 
 	const char *GetName();
 	const char *GetDescription();
+
+	ConItemBase &operator=(const ConItemBase &) = delete;
 
 private:
 	const char *m_pName;
@@ -48,10 +51,10 @@ public:
 	const char *GetDefaultValue();
 	int GetFlags();
 
-	float GetFloat();
-	int GetInt();
-	bool GetBool();
-	const char *GetString();
+	float GetFloat() { return GetCvar()->value; }
+	int GetInt() { return (int)GetCvar()->value; }
+	bool GetBool() { return !!GetInt(); }
+	const char *GetString() { return GetCvar()->string; }
 
 	template <typename T>
 	T GetEnumClamped()

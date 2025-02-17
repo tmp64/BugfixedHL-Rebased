@@ -47,6 +47,7 @@ extern cvar_t mp_notify_player_status;
 extern ConVar mp_welcomecam;
 extern ConVar mp_welcomecam_delay;
 extern ConVar mp_respawn_fix;
+extern ConVar mp_respawn_delay;
 extern ConVar mp_wallgauss;
 extern ConVar mp_rpg_fix;
 extern ConVar mp_blastradius;

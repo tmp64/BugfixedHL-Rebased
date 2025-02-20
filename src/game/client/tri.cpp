@@ -23,8 +23,58 @@
 #include "tri.h"
 #include "fog.h"
 
+#include "com_model.h"
+
 CSysModule *g_hParticleManModule = NULL;
 IParticleMan *g_pParticleMan = NULL;
+
+extern ConVar cl_show_server_triggers;
+extern ConVar cl_show_server_triggers_alpha;
+
+void DivideRGBABy255(float &r, float &g, float &b, float &a)
+{
+	r /= 255.0f;
+	g /= 255.0f;
+	b /= 255.0f;
+	a /= 255.0f;
+}
+
+void DrawAACuboid(triangleapi_s *pTriAPI, Vector corner1, Vector corner2)
+{
+	pTriAPI->Begin(TRI_QUADS);
+
+	pTriAPI->Vertex3f(corner1.x, corner1.y, corner1.z);
+	pTriAPI->Vertex3f(corner1.x, corner2.y, corner1.z);
+	pTriAPI->Vertex3f(corner2.x, corner2.y, corner1.z);
+	pTriAPI->Vertex3f(corner2.x, corner1.y, corner1.z);
+
+	pTriAPI->Vertex3f(corner1.x, corner1.y, corner1.z);
+	pTriAPI->Vertex3f(corner1.x, corner1.y, corner2.z);
+	pTriAPI->Vertex3f(corner1.x, corner2.y, corner2.z);
+	pTriAPI->Vertex3f(corner1.x, corner2.y, corner1.z);
+
+	pTriAPI->Vertex3f(corner1.x, corner1.y, corner1.z);
+	pTriAPI->Vertex3f(corner2.x, corner1.y, corner1.z);
+	pTriAPI->Vertex3f(corner2.x, corner1.y, corner2.z);
+	pTriAPI->Vertex3f(corner1.x, corner1.y, corner2.z);
+
+	pTriAPI->Vertex3f(corner2.x, corner2.y, corner2.z);
+	pTriAPI->Vertex3f(corner1.x, corner2.y, corner2.z);
+	pTriAPI->Vertex3f(corner1.x, corner1.y, corner2.z);
+	pTriAPI->Vertex3f(corner2.x, corner1.y, corner2.z);
+
+	pTriAPI->Vertex3f(corner2.x, corner2.y, corner2.z);
+	pTriAPI->Vertex3f(corner2.x, corner1.y, corner2.z);
+	pTriAPI->Vertex3f(corner2.x, corner1.y, corner1.z);
+	pTriAPI->Vertex3f(corner2.x, corner2.y, corner1.z);
+
+	pTriAPI->Vertex3f(corner2.x, corner2.y, corner2.z);
+	pTriAPI->Vertex3f(corner2.x, corner2.y, corner1.z);
+	pTriAPI->Vertex3f(corner1.x, corner2.y, corner1.z);
+	pTriAPI->Vertex3f(corner1.x, corner2.y, corner2.z);
+
+	pTriAPI->End();
+}
 
 //---------------------------------------------------
 // Particle Manager
@@ -87,6 +137,44 @@ void CL_DLLEXPORT HUD_DrawNormalTriangles(void)
 void RunEventList(void);
 #endif
 
+void DrawServerTriggers()
+{
+	if ((cl_show_server_triggers.GetBool()) && (cl_show_server_triggers.GetInt() != 2))
+	{
+		for (int e = 0; e < MAX_EDICTS; ++e)
+		{
+			cl_entity_t* ent = gEngfuncs.GetEntityByIndex(e);
+			if (ent)
+			{
+				if (ent->model)
+				{
+					if ((ent->curstate.rendermode == kRenderTransColor) && (ent->curstate.renderfx == kRenderFxTrigger))
+					{
+						color24 colors = ent->curstate.rendercolor;
+						if (!gHUD.IsTriggerForSinglePlayer(colors))
+						{
+							gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
+							gEngfuncs.pTriAPI->CullFace(TRI_NONE);
+
+							float r = colors.r, g = colors.g, b = colors.b, a = std::clamp(cl_show_server_triggers_alpha.GetFloat(), 0.0f, 255.0f);
+							DivideRGBABy255(r, g, b, a);
+							gEngfuncs.pTriAPI->Color4f(r, g, b, a);
+
+							Vector mins = ent->curstate.mins;
+							Vector maxs = ent->curstate.maxs;
+							Vector origin = ent->curstate.origin;
+							Vector absmin = origin + mins;
+							Vector absmax = origin + maxs;
+
+							DrawAACuboid(gEngfuncs.pTriAPI, absmin, absmax);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 /*
 =================
 HUD_DrawTransparentTriangles
@@ -106,4 +194,14 @@ void CL_DLLEXPORT HUD_DrawTransparentTriangles(void)
 
 	if (g_pParticleMan)
 		g_pParticleMan->Update();
+
+	if (gHUD.white_sprite == 0)
+		return;
+
+	if (gEngfuncs.pTriAPI->SpriteTexture(const_cast<model_s*>(gEngfuncs.GetSpritePointer(gHUD.white_sprite)), 0))
+	{
+		DrawServerTriggers();
+
+		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
+	}
 }

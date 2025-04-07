@@ -1,5 +1,6 @@
 #ifndef OPTIONS_MODELS_H
 #define OPTIONS_MODELS_H
+#include "gameui/options/cvar_slider.h"
 #include <vgui_controls/PropertyPage.h>
 
 namespace vgui2
@@ -11,6 +12,7 @@ class TextEntry;
 
 class CCvarCheckButton;
 class CCvarTextEntry;
+class CCvarSlider;
 
 class CModelSubOptions : public vgui2::PropertyPage
 {
@@ -38,7 +40,8 @@ private:
 	CCvarCheckButton *m_pAngledBob = nullptr;
 	CCvarCheckButton *m_pNoShells = nullptr;
 	CCvarCheckButton *m_pNoViewModel = nullptr;
-
+	CCvarCheckButton *m_pQuakeGuns = nullptr;
+	CCvarCheckButton *m_pWeaponSway = nullptr;
 	int m_iNewItemIdx = 0;
 
 	void ParseEnemyModels();

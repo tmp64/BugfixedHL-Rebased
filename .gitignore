@@ -3,6 +3,7 @@
 /build_*
 /_build
 /_build_*
-
+compile_commands.json
+.cache
 # macOS garbage
 .DS_Store

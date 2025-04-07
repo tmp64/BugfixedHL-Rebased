@@ -3,11 +3,13 @@
 #include <vgui_controls/Button.h>
 #include <vgui_controls/ListPanel.h>
 #include <vgui_controls/TextEntry.h>
+#include <vgui_controls/Slider.h>
 #include <KeyValues.h>
 #include "client_vgui.h"
 #include "cvar_check_button.h"
 #include "cvar_text_entry.h"
 #include "options_models.h"
+#include "gameui/options/cvar_slider.h"
 #include "hud.h"
 #include "cl_util.h"
 
@@ -22,11 +24,13 @@ CModelSubOptions::CModelSubOptions(vgui2::Panel *parent)
 	m_pEnemyModels->AddColumnHeader(0, "ModelName", "#BHL_AdvOptions_Models_ModelName", 1024, 0, 1024, vgui2::ListPanel::COLUMN_RESIZEWITHWINDOW);
 	m_pEnemyModels->SetColumnSortable(0, false);
 	m_pEnemyModels->SetIgnoreDoubleClick(true);
-
+	m_pQuakeGuns = new CCvarCheckButton(this, "QuakeGuns", "#BHL_Enable_QuakeGuns", "cl_quakeguns_enable");
+	m_pWeaponSway = new CCvarCheckButton(this, "WeaponSway", "#BHL_Enable_WeaponSway", "cl_weaponlag_enable");
 	m_pAddEnemyModel = new vgui2::Button(this, "AddEnemyModel", "#BHL_AdvOptions_Models_Add", this, "AddEnemyModel");
 	m_pRemoveEnemyModel = new vgui2::Button(this, "RemoveEnemyModel", "#BHL_AdvOptions_Models_Remove", this, "RemoveEnemyModel");
 	m_pRemoveAllEnemyModels = new vgui2::Button(this, "RemoveAllEnemyModels", "#BHL_AdvOptions_Models_RemoveAll", this, "RemoveAllEnemyModels");
 	m_pNewEnemyModelName = new vgui2::TextEntry(this, "NewEnemyModelName");
+
 
 	m_pTeamModel = new CCvarTextEntry(this, "TeamModel", "cl_forceteammatesmodels");
 	m_pEnemyColors = new CCvarTextEntry(this, "EnemyColors", "cl_forceenemycolors");
@@ -113,6 +117,8 @@ void CModelSubOptions::OnApplyChanges()
 	m_pAngledBob->ApplyChanges();
 	m_pNoShells->ApplyChanges();
 	m_pNoViewModel->ApplyChanges();
+	m_pWeaponSway->ApplyChanges();
+	m_pQuakeGuns->ApplyChanges();
 }
 
 void CModelSubOptions::ParseEnemyModels()

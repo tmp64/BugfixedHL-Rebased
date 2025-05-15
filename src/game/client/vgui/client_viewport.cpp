@@ -18,6 +18,10 @@
 #include "score_panel.h"
 #include "client_motd.h"
 #include "spectator_panel.h"
+#include "hud_health.h"
+#include "hud_battery.h"
+#include "hud_ammo.h"
+#include "hud_ammo_secondary.h"
 #include "team_menu.h"
 #include "command_menu.h"
 
@@ -133,6 +137,34 @@ void CClientViewport::ReloadLayout()
 	LoadControlSettings(VGUI2_ROOT_DIR "scripts/HudLayout.res");
 
 	InvalidateLayout(true, true);
+
+	// Load custom positions for the vanilla HUD to avoid overlapping with the new HUD
+	KeyValues *layoutKV = new KeyValues("HudLayout");
+	if (layoutKV->LoadFromFile(g_pFullFileSystem, VGUI2_ROOT_DIR "scripts/HudLayoutBase.res"))
+	{
+		KeyValues *vanillaKV = layoutKV->FindKey("HudVanilla");
+		if (vanillaKV)
+		{
+			const char* szStatusBarY = vanillaKV->GetString("statusbar_ypos", "0");
+			const char* szAmmoHistoryY = vanillaKV->GetString("ammohistory_ypos", "0");
+
+			ComputePos(szStatusBarY, m_iStatusBarYPos, 0, GetTall(), true);
+			ComputePos(szAmmoHistoryY, m_iAmmoHistoryYPos, 0, GetTall(), true);
+		}
+
+	}
+
+	m_pHudAmmoPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudAmmo.res");
+	m_pHudAmmoPanel->InvalidateLayout(true, true);
+
+	m_pHudHealthPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudHealth.res");
+	m_pHudHealthPanel->InvalidateLayout(true, true);
+
+	m_pHudBatteryPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudBattery.res");
+	m_pHudBatteryPanel->InvalidateLayout(true, true);
+
+	m_pHudAmmoSecondaryPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudAmmoSecondary.res");
+	m_pHudAmmoSecondaryPanel->InvalidateLayout(true, true);
 }
 
 void CClientViewport::CreateDefaultPanels()
@@ -140,6 +172,10 @@ void CClientViewport::CreateDefaultPanels()
 	AddNewPanel(m_pScorePanel = new CScorePanel());
 	AddNewPanel(m_pMOTD = new CClientMOTD());
 	AddNewPanel(m_pSpectatorPanel = new CSpectatorPanel());
+	AddNewPanel(m_pHudHealthPanel = new CHudHealthPanel());
+	AddNewPanel(m_pHudBatteryPanel = new CHudBatteryPanel());
+	AddNewPanel(m_pHudAmmoPanel = new CHudAmmoPanel());
+	AddNewPanel(m_pHudAmmoSecondaryPanel = new CHudAmmoSecondaryPanel());
 	AddNewPanel(m_pTeamMenu = new CTeamMenu());
 	AddNewPanel(m_pCommandMenu = new CCommandMenu());
 }
@@ -309,6 +345,125 @@ void CClientViewport::HideScoreBoard()
 		return;
 
 	m_pScorePanel->ShowPanel(false);
+}
+
+void CClientViewport::ShowHealthPanel()
+{
+	m_pHudHealthPanel->ShowPanel(true);
+}
+
+void CClientViewport::HideHealthPanel()
+{
+	m_pHudHealthPanel->ShowPanel(false);
+}
+
+void CClientViewport::IsHealthPanelVisible()
+{
+	if (m_pHudHealthPanel->IsVisible())
+	{
+		m_pHudHealthPanel->ShowPanel(false);
+	}
+	else
+	{
+		m_pHudHealthPanel->ShowPanel(true);
+	}
+}
+
+void CClientViewport::UpdateHealthPanel(int health)
+{
+	m_pHudHealthPanel->UpdateHealthPanel(health);
+}
+
+void CClientViewport::ShowBatteryPanel()
+{
+	m_pHudBatteryPanel->ShowPanel(true);
+}
+
+void CClientViewport::HideBatteryPanel()
+{
+	m_pHudBatteryPanel->ShowPanel(false);
+}
+
+void CClientViewport::IsBatteryPanelVisible()
+{
+	if (m_pHudBatteryPanel->IsVisible())
+	{
+		m_pHudBatteryPanel->ShowPanel(false);
+	}
+	else
+	{
+		m_pHudBatteryPanel->ShowPanel(true);
+	}
+}
+
+void CClientViewport::UpdateBatteryPanel(int amount)
+{
+	m_pHudBatteryPanel->UpdateBatteryPanel(amount);
+}
+
+void CClientViewport::ShowAmmoPanel()
+{
+	m_pHudAmmoPanel->ShowPanel(true);
+}
+
+void CClientViewport::HideAmmoPanel()
+{
+	m_pHudAmmoPanel->ShowPanel(false);
+}
+
+void CClientViewport::IsAmmoPanelVisible()
+{
+	if (m_pHudAmmoPanel->IsVisible())
+	{
+		m_pHudAmmoPanel->ShowPanel(false);
+	}
+	else
+	{
+		m_pHudAmmoPanel->ShowPanel(true);
+	}
+}
+
+// Secondary ammo panel methods
+void CClientViewport::ShowAmmoSecondaryPanel()
+{
+	m_pHudAmmoSecondaryPanel->ShowPanel(true);
+}
+
+void CClientViewport::HideAmmoSecondaryPanel()
+{
+	m_pHudAmmoSecondaryPanel->ShowPanel(false);
+}
+
+void CClientViewport::IsAmmoSecondaryPanelVisible()
+{
+	if (m_pHudAmmoSecondaryPanel->IsVisible())
+	{
+		m_pHudAmmoSecondaryPanel->ShowPanel(false);
+	}
+	else
+	{
+		m_pHudAmmoSecondaryPanel->ShowPanel(true);
+	}
+}
+
+void CClientViewport::UpdateAmmoSecondaryPanel(WEAPON *pWeapon, int maxClip, int ammo1, int ammo2)
+{
+	m_pHudAmmoSecondaryPanel->UpdateAmmoSecondaryPanel(pWeapon, maxClip, ammo1, ammo2);
+}
+
+void CClientViewport::UpdateAmmoPanel(WEAPON *pWeapon, int maxClip, int ammo1, int ammo2)
+{
+	m_pHudAmmoPanel->UpdateAmmoPanel(pWeapon, maxClip, ammo1, ammo2);
+}
+
+int CClientViewport::GetAmmoHistoryYPos()
+{
+	return m_iAmmoHistoryYPos;
+}
+
+int CClientViewport::GetStatusBarYPos()
+{
+	return m_iStatusBarYPos;
 }
 
 void CClientViewport::UpdateSpectatorPanel()

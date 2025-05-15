@@ -118,6 +118,7 @@ private:
 	wrect_t m_rcCross;
 	DAMAGE_IMAGE m_dmg[NUM_DMG_TYPES];
 	int m_bitsDamage;
+	ConVarRef m_pHudCustom{"hud_custom"};
 	void DrawPain(float fTime);
 	void DrawDamage(float fTime);
 	void CalcDamageDirection(Vector vecFrom);

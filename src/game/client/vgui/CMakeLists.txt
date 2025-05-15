@@ -10,6 +10,14 @@ add_sources(
 	command_menu.h
 	crosshair_image.cpp
 	crosshair_image.h
+	hud_health.cpp
+	hud_health.h
+	hud_battery.cpp
+	hud_battery.h
+	hud_ammo.h
+	hud_ammo.cpp
+	hud_ammo_secondary.h
+	hud_ammo_secondary.cpp
 	score_panel.cpp
 	score_panel.h
 	spectator_panel.cpp

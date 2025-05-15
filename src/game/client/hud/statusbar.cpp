@@ -27,6 +27,7 @@
 #include "parsemsg.h"
 #include "statusbar.h"
 #include "text_message.h"
+#include "vgui/client_viewport.h"
 
 #ifdef _TFC
 #define STATUSBAR_ID_LINE 2
@@ -35,6 +36,7 @@
 #endif
 
 ConVar hud_centerid("hud_centerid", "0", FCVAR_ARCHIVE, "Show other players' names in the middle of the screen");
+extern ConVar hud_custom;
 
 DEFINE_HUD_ELEM(CHudStatusBar);
 
@@ -190,7 +192,8 @@ void CHudStatusBar::Draw(float fTime)
 		m_bReparseString = FALSE;
 	}
 
-	int Y_START = ScreenHeight - 52;
+	// Allow to change status bar position when using custom HUD to avoid overlapping
+	int Y_START = hud_custom.GetBool() ? g_pViewport->GetStatusBarYPos() : ScreenHeight - 52;
 
 	// Draw the status bar lines
 	for (int i = 0; i < MAX_STATUSBAR_LINES; i++)

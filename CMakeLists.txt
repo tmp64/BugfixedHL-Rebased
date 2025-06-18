@@ -76,24 +76,13 @@ if( NOT CMAKE_SIZEOF_VOID_P EQUAL 4 )
 	if( NO_SIZEOF_VOID_P_CHECK )
 		message( WARNING "You are not building for 32 bit systems. This is not supported." )
 	else()
-		set( PLAT_ERROR "" )
-		
-		if( CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU" )
-			set( PLAT_ERROR "Did you forget CMAKE_TOOLCHAIN_FILE?" )
-		elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-			set( PLAT_ERROR "Are you generating for Win64?" )
-		else()
-			set( PLAT_ERROR "Check your compiler options." )
-		endif()
-		
-		message( FATAL_ERROR "You are not building for 32 bit systems. ${PLAT_ERROR}" )
+		message( FATAL_ERROR "You are not building for 32 bit systems. Did you forget VCPKG_CHAINLOAD_TOOLCHAIN_FILE?" )
 	endif()
 endif()
 
 #-----------------------------------------------------------------
 # Compiler and linker settings
 #-----------------------------------------------------------------
-# C++14 support
 set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_CXX_EXTENSIONS OFF )
@@ -323,15 +312,28 @@ endfunction()
 #-----------------------------------------------------------------
 if( AUTO_DEPLOY )
 	macro( add_auto_deploy TARGET_NAME PUBLISH_PATHS_FILE )
-		if ( WIN32 )
+		if( CMAKE_CXX_LINKER_SUPPORTS_PDB )
 			add_custom_command( TARGET ${TARGET_NAME}
 				POST_BUILD
-				COMMAND ${CMAKE_SOURCE_DIR}/scripts/DeployLibs.bat "${CMAKE_BINARY_DIR}\\${PUBLISH_PATHS_FILE}" "$<TARGET_FILE:${TARGET_NAME}>" "$<TARGET_PDB_FILE:${TARGET_NAME}>"
+				COMMAND
+					${CMAKE_COMMAND}
+					-P
+					${CMAKE_SOURCE_DIR}/cmake/DeployLibs.cmake
+					--
+					${CMAKE_BINARY_DIR}/${PUBLISH_PATHS_FILE}
+					$<TARGET_FILE:${TARGET_NAME}>
+					$<TARGET_PDB_FILE:${TARGET_NAME}>
 			)
 		else()
 			add_custom_command( TARGET ${TARGET_NAME}
 				POST_BUILD
-				COMMAND ${CMAKE_SOURCE_DIR}/scripts/DeployLibs.sh "${CMAKE_BINARY_DIR}/${PUBLISH_PATHS_FILE}" "$<TARGET_FILE:${TARGET_NAME}>"
+				COMMAND
+					${CMAKE_COMMAND}
+					-P
+					${CMAKE_SOURCE_DIR}/cmake/DeployLibs.cmake
+					--
+					${CMAKE_BINARY_DIR}/${PUBLISH_PATHS_FILE}
+					$<TARGET_FILE:${TARGET_NAME}>
 			)
 		endif()
 	endmacro()

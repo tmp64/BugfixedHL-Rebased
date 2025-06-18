@@ -8,6 +8,7 @@
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
 
+        "AUTO_DEPLOY": false,
         "USE_UPDATER": true,
         "GNU_FORCE_COLORED_OUTPUT": true
       }

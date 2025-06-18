@@ -413,10 +413,19 @@ endfunction()
 
 function(bhl_install_target component_name target_name install_dir)
 	install(
-		TARGETS ${target_name}
+		FILES $<TARGET_FILE:${target_name}>
 		DESTINATION ${install_dir}
 		COMPONENT ${component_name}
 	)
+
+	if( CMAKE_CXX_LINKER_SUPPORTS_PDB )
+		install(
+			FILES $<TARGET_PDB_FILE:${target_name}>
+			DESTINATION ${install_dir}
+			COMPONENT ${component_name}
+			OPTIONAL
+		)
+	endif()
 endfunction()
 
 # Client

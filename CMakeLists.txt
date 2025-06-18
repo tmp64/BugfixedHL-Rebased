@@ -333,16 +333,17 @@ endif()
 # Libraries
 #-----------------------------------------------------------------
 set( THREADS_PREFER_PTHREAD_FLAG ON )
-find_package( Threads REQUIRED )
 find_package( nlohmann_json CONFIG REQUIRED )
-find_package( unofficial-pcre CONFIG REQUIRED )
 find_package( Python 3.8...<4.0 COMPONENTS Interpreter )
+find_package( Threads REQUIRED )
+find_package( unofficial-pcre CONFIG REQUIRED )
 
 include( cmake/lib/SDL2.cmake )
 
 add_subdirectory( external )
 
 if( WIN32 )
+	find_package( stackwalker CONFIG REQUIRED )
 	include( cmake/lib/DInput.cmake )
 endif()
 
@@ -385,13 +386,6 @@ set( GAME_COMMON_INCLUDE_PATHS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/engine
 	${CMAKE_CURRENT_SOURCE_DIR}/src/game_shared
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pm_shared
-)
-
-# Disable PCH for common sources because includes are a mess there
-set_source_files_properties(
-	${GAME_COMMON_SRCS}
-	PROPERTIES
-	SKIP_PRECOMPILE_HEADERS ON
 )
 
 #-----------------------------------------------------------------
@@ -442,3 +436,21 @@ add_subdirectory( src/game/client )
 add_subdirectory( src/game/server )
 add_subdirectory( src/tests )
 add_subdirectory( gamedir )
+
+# Disable PCH for common sources because includes are a mess there
+set_source_files_properties(
+	${GAME_COMMON_SRCS}
+	TARGET_DIRECTORY
+		client
+		server
+		bugfixedapi_amxx
+	PROPERTIES
+		SKIP_PRECOMPILE_HEADERS ON
+)
+
+# Add custom targets for CI
+add_custom_target( ci-client )
+add_dependencies( ci-client client test_client )
+
+add_custom_target( ci-server )
+add_dependencies( ci-server server test_server bugfixedapi_amxx )

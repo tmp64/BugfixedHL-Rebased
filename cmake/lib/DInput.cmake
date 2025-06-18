@@ -13,5 +13,5 @@ block()
 
 	# DXGUID
 	add_library( DXGUID SHARED IMPORTED GLOBAL )
-	set_property( TARGET DInput PROPERTY IMPORTED_IMPLIB ${lib_dir}/lib/dxguid.lib )
+	set_property( TARGET DXGUID PROPERTY IMPORTED_IMPLIB ${lib_dir}/lib/dxguid.lib )
 endblock()

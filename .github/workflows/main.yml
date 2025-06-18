@@ -14,15 +14,25 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
     strategy:
       matrix:
-        runs-on: [windows-2019, ubuntu-20.04]
+        os:
+          - runs-on: windows-2022
+            vcpkg-triplet: x86-windows-static
+            preset: ci-windows
+          - runs-on: ubuntu-22.04
+            vcpkg-triplet: x86-linux
+            preset: ci-linux
         target: [client, server]
     
     # The type of runner that the job will run on
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.os.runs-on }}
+
+    env:
+      VCPKG_ROOT: '${{github.workspace}}/vcpkg'
+      VCPKG_DEFAULT_TRIPLET: '${{ matrix.os.vcpkg-triplet }}'
+      VCPKG_DEFAULT_HOST_TRIPLET: '${{ matrix.os.vcpkg-triplet }}'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -32,30 +42,46 @@ jobs:
           submodules: recursive
           fetch-depth: 0 # Required for automatic versioning
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.8
-      
       - name: Install Ubuntu packages
-        if: matrix.runs-on == 'ubuntu-20.04'
+        if: matrix.os.runs-on == 'ubuntu-22.04'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
-          sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib libssl1.1:i386 libssl-dev:i386 zlib1g-dev:i386
+          sudo apt install -y libc6:i386 linux-libc-dev:i386 ninja-build gcc-multilib g++-multilib
 
-      - name: Build release
-        id: build
+      # Restore artifacts, or setup vcpkg for building artifacts
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        id: runvcpkg
+        with:
+          vcpkgJsonGlob: 'vcpkg.json'
+          vcpkgDirectory: '${{env.VCPKG_ROOT}}'
+          vcpkgGitCommitId: 'ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0'
+          runVcpkgInstall: false
+
+      # Run CMake+vcpkg+Ninja+CTest to generate/build/test.
+      - name: Build and Test with CMake
+        uses: lukka/run-cmake@v10
+        id: runcmake
+        with:
+          configurePreset: '${{ matrix.os.preset }}'
+          buildPreset: '${{ matrix.os.preset }}'
+          buildPresetAdditionalArgs: "['--target', 'ci-${{ matrix.target }}']"
+          testPreset: '${{ matrix.os.preset }}'
+          testPresetAdditionalArgs: "['-R', '${{ matrix.target }}']"
+        env:
+          VCPKG_FORCE_SYSTEM_BINARIES: 1
+
+      # Install
+      - name: Install with CMake
         run: |
-          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2019 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON" --github-actions
+          cd ${{github.workspace}}/_build/${{ matrix.os.preset }}
+          cmake --install . --prefix ${{github.workspace}}/_build/ci-install --component ${{ matrix.target }}
 
-      - name: Run tests
-        run: |
-          cd ./_build_out/build
-          ctest -R ${{ matrix.target }} --build-config RelWithDebInfo --output-on-failure
-
+      # Upload result
       - name: Upload build result
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.build.outputs.artifact_name }}
-          path: ./_build_out/BugfixedHL-*.zip
+          name: bhl-cmake-install-${{ matrix.target }}-${{ matrix.os.preset }}
+          path: ${{github.workspace}}/_build/ci-install
+

@@ -3,7 +3,7 @@
   "configurePresets": [
     {
       "name": "default",
-      "binaryDir": "${sourceDir}/_build",
+      "binaryDir": "${sourceDir}/_build/${presetName}",
       "hidden": true,
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
@@ -14,9 +14,20 @@
       }
     },
     {
+      "name": "vcpkg-windows",
+      "inherits": ["default"],
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "VCPKG_HOST_TRIPLET": "x86-windows-static",
+        "VCPKG_TARGET_TRIPLET": "x86-windows-static"
+      }
+    },
+    {
       "name": "vcpkg-linux",
       "inherits": ["default"],
-      "toolchainFile": "${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
@@ -24,6 +35,61 @@
         "VCPKG_TARGET_TRIPLET": "x86-linux",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/linux-gcc.cmake"
       }
+    },
+    {
+      "name": "ci-base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BUILD_TESTING": true,
+        "GNU_FORCE_COLORED_OUTPUT": false,
+        "USE_UPDATER": true,
+        "WARNINGS_ARE_ERRORS": true
+      }
+    },
+    {
+      "name": "ci-windows",
+      "inherits": ["vcpkg-windows", "ci-base"]
+    },
+    {
+      "name": "ci-linux",
+      "inherits": ["vcpkg-linux", "ci-base"]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ci-base",
+      "hidden": true,
+      "inheritConfigureEnvironment": true
+    },
+    {
+      "name": "ci-windows",
+      "inherits": ["ci-base"],
+      "configurePreset": "ci-windows"
+    },
+    {
+      "name": "ci-linux",
+      "inherits": ["ci-base"],
+      "configurePreset": "ci-linux"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ci-base",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ci-windows",
+      "inherits": ["ci-base"],
+      "configurePreset": "ci-windows"
+    },
+    {
+      "name": "ci-linux",
+      "inherits": ["ci-base"],
+      "configurePreset": "ci-linux"
     }
   ]
 }

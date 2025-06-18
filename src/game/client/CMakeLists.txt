@@ -305,6 +305,7 @@ target_include_directories( client PRIVATE
 	${GAME_COMMON_INCLUDE_PATHS}
 	${SOURCE_SDK_INCLUDE_PATHS}
 	${UPDATER_INCLUDE_PATHS}
+	${CMAKE_SOURCE_DIR}/external/SDL2/include
 )
 
 target_compile_definitions( client PRIVATE
@@ -324,12 +325,8 @@ if( WIN32 )
 		DInput
 		DXGUID
 		Dbghelp
-		StackWalker::StackWalker
+		unofficial::stackwalker::StackWalker
     )
-
-	target_include_directories( client PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2/include
-	)
 else()
 	# Only link with SDL2 on Linux. Windows will conditionally link in runtime.
 	set( CLIENT_PLAT_LIBS

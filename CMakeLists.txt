@@ -346,6 +346,7 @@ endif()
 set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 find_package( nlohmann_json CONFIG REQUIRED )
+find_package( unofficial-pcre CONFIG REQUIRED )
 add_subdirectory( external )
 
 #-----------------------------------------------------------------
@@ -507,7 +508,7 @@ target_link_libraries( client
 	${SOURCE_SDK_LIBS}
 	${UPDATER_LIBS}
 	glad
-	pcre
+	unofficial::pcre::pcre
 	semver
 	nlohmann_json::nlohmann_json
 	${CLIENT_PLAT_LIBS}

@@ -1,7 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
+    "nlohmann-json",
+    "pcre",
+
     {
+      "name": "curl",
       "default-features": false,
       "features": [
         {
@@ -12,18 +16,16 @@
           "name": "openssl",
           "platform": "!windows"
         }
-      ],
-      "name": "curl"
+      ]
     },
     {
-      "default-features": false,
-      "name": "libzip"
+      "name": "libzip",
+      "default-features": false
     },
-    "nlohmann-json",
     {
-      "default-features": false,
       "name": "stackwalker",
-      "platform": "windows"
+      "platform": "windows",
+      "default-features": false
     }
   ]
 }

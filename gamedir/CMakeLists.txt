@@ -1,3 +1,6 @@
+set( TXT_UNICODE_CONVERT_REGEX "\\.utf8\\.txt$" )
+set( TXT_UNICODE_CONVERT_REPLACE ".txt" )
+
 set( CLIENT_FILES
 	resource/GameMenu.res
 
@@ -30,17 +33,17 @@ set( CLIENT_FILES
 	ui/resource/SpectatorInfoPanel.res
 	ui/resource/TeamMenu.res
 
-	ui/resource/language/bugfixedhl_english.txt
-	ui/resource/language/bugfixedhl_russian.txt
-	ui/resource/language/chat_english.txt
-	ui/resource/language/chat_french.txt
-	ui/resource/language/chat_german.txt
-	ui/resource/language/chat_italian.txt
-	ui/resource/language/chat_korean.txt
-	ui/resource/language/chat_russian.txt
-	ui/resource/language/chat_schinese.txt
-	ui/resource/language/chat_spanish.txt
-	ui/resource/language/chat_tchinese.txt
+	ui/resource/language/bugfixedhl_english.utf8.txt
+	ui/resource/language/bugfixedhl_russian.utf8.txt
+	ui/resource/language/chat_english.utf8.txt
+	ui/resource/language/chat_french.utf8.txt
+	ui/resource/language/chat_german.utf8.txt
+	ui/resource/language/chat_italian.utf8.txt
+	ui/resource/language/chat_korean.utf8.txt
+	ui/resource/language/chat_russian.utf8.txt
+	ui/resource/language/chat_schinese.utf8.txt
+	ui/resource/language/chat_spanish.utf8.txt
+	ui/resource/language/chat_tchinese.utf8.txt
 
 	ui/resource/open_source_software.txt
 
@@ -358,21 +361,53 @@ set( SERVER_FILES
 )
 
 function(bhl_install_files component_name file_list)
+	set( converted_txt_files )
+
 	foreach( rel_file_path IN LISTS file_list)
 		cmake_path( HAS_PARENT_PATH rel_file_path has_parent_path )
 
 		if( has_parent_path)
-			cmake_path( GET rel_file_path PARENT_PATH dest )
+			cmake_path( GET rel_file_path PARENT_PATH parent_path )
 		else()
-			set( dest "." )
+			set( parent_path "." )
+		endif()
+
+		if( rel_file_path MATCHES ${TXT_UNICODE_CONVERT_REGEX})
+			# Convert file into UTF-16 LE for VGUI2
+			string( REGEX REPLACE ${TXT_UNICODE_CONVERT_REGEX} ${TXT_UNICODE_CONVERT_REPLACE} converted_rel_file_path ${rel_file_path} )
+
+			file( MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${parent_path}" )
+			set( file_to_copy "${CMAKE_CURRENT_BINARY_DIR}/${converted_rel_file_path}" )
+
+			add_custom_command(
+				OUTPUT ${file_to_copy}
+				COMMAND
+					Python::Interpreter
+					"${CMAKE_SOURCE_DIR}/scripts/reencode_text_file.py"
+					"${CMAKE_CURRENT_SOURCE_DIR}/${rel_file_path}"
+					${file_to_copy}
+				DEPENDS
+					"${CMAKE_SOURCE_DIR}/scripts/reencode_text_file.py"
+					"${CMAKE_CURRENT_SOURCE_DIR}/${rel_file_path}"
+			)
+
+			list( APPEND converted_txt_files ${file_to_copy} )
+		else()
+			# Copy the file as-is
+			set( file_to_copy "${CMAKE_CURRENT_SOURCE_DIR}/${rel_file_path}" )
 		endif()
 
 		install(
-			FILES "${CMAKE_CURRENT_SOURCE_DIR}/${rel_file_path}"
-			DESTINATION ${dest}
+			FILES ${file_to_copy}
+			DESTINATION ${parent_path}
 			COMPONENT ${component_name}
 		)
 	endforeach()
+
+	if( converted_txt_files )
+		# Create custom target to convert the files
+		add_custom_target( convert_utf_files_${component_name} DEPENDS ${converted_txt_files} )
+	endif()
 endfunction()
 
 
@@ -387,6 +422,7 @@ endfunction()
 # Client
 bhl_install_files( client "${CLIENT_FILES}" )
 bhl_install_target( client client "cl_dlls" )
+add_dependencies( client convert_utf_files_client )
 
 # Server
 bhl_install_files( server "${SERVER_FILES}" )

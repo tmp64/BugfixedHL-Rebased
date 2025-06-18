@@ -348,6 +348,7 @@ set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 find_package( nlohmann_json CONFIG REQUIRED )
 find_package( unofficial-pcre CONFIG REQUIRED )
+find_package( Python 3.8...<4.0 COMPONENTS Interpreter )
 
 include( cmake/lib/SDL2.cmake )
 

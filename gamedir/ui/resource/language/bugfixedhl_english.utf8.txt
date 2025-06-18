@@ -1,0 +1,223 @@
+"lang"
+{
+"Language" "English"
+"Tokens"
+{
+"BHL_TeamMenu_Title"				"Select Your Team"
+"BHL_TeamMenu_Auto_Assign"			"  5   Auto Assign"
+"BHL_TeamMenu_Spectate"				"  6   Spectate"
+"BHL_TeamMenu_Cancel"				"  7   Cancel"
+"BHL_TeamMenu_NoMapInfo"			"Map Description is not available."
+
+"BHL_Scores_Map"					"Map: "
+"BHL_Scores_ColSteamID"				"SteamID"
+"BHL_Scores_ColEff"					"Eff"
+"BHL_Scores_ColPing"				"Ping"			// Don't translate this as "latency". They are different things.
+"BHL_Scores_ColPingLoss"			"Ping/Loss"
+"BHL_Scores_PlayerSpec"				"(spectator)"
+"BHL_Scores_MenuMute"				"Mute"
+"BHL_Scores_MenuUnmute"				"Unmute"
+"BHL_Scores_MenuSteamProfile"		"Open Steam profile"
+"BHL_Scores_MenuSteamURL"			"Copy profile URL"
+"BHL_Scores_MenuCopyName"			"Copy nickname"
+"BHL_Scores_MenuCopyNameRaw"		"Copy raw nickname"
+"BHL_Scores_MenuCopySteamID"		"Copy SteamID"
+"BHL_Scores_MenuCopySteamID64"		"Copy SteamID64"
+
+"BHL_Update_Notif_Title"			"Update notification"
+"BHL_Update_Notif_Text"				"A new update has been released."
+"BHL_Update_Notif_OldVer"			"Your version: "
+"BHL_Update_Notif_NewVer"			"Latest version: "
+"BHL_Update_Notif_AutoCheck"		"Automatically check for updates"
+"BHL_Update_Notif_Install"			"Install the update"
+
+"BHL_Update_ErrorTitle"				"Update failed"
+"BHL_Update_DLTitle"				"Downloading the update"
+"BHL_Update_ExtractionTitle"		"Extracting the update"
+"BHL_Update_HashingTitle"			"Validating files"
+"BHL_Update_InstallingTitle"		"Installing the update"
+"BHL_Update_UserCancel"				"Installation was aborted."
+"BHL_Update_MetadataNotFound"		"Your BugfixedHL installation is corrupted.\n\nFailed to locate metadata file.\n\nYou have to manually update the mod."
+"BHL_Update_InvalidModDir"			"Your BugfixedHL installation is corrupted.\n\nMod directory in which BHL is installed doesn't match with the one loaded by the engine.\n\nCheck the console for details."
+"BHL_Update_InternalError"			"An internal error has occured.\n\nCheck the console for details."
+"BHL_Update_MetadataCorrupted"		"Your BugfixedHL installation is corrupted.\n\nYou have to manually update the mod."
+"BHL_Update_TempDirFailed"			"Failed to create temporary directory."
+"BHL_Update_NoAsset"				"Failed to find a compatible asset on GitHub.\n\nPlease, contact the maintainers."
+"BHL_Update_DLWriteOpenFailed"		"Failed to open temporary download file for writing.\n\nCheck the console for details."
+"BHL_Update_DLFailed"				"Failed to download the update.\n\n%s1"
+"BHL_Update_ZipOpenFailed"			"Failed to open the downloaded ZIP archive.\n\n%s1"
+"BHL_Update_ZipExtractFailed"		"Failed to extract the downloaded ZIP archive.\n\n%s1"
+"BHL_Update_NewMetaCorrupted"		"Failed to parse metadata of downloaded update.\n\nPlease, try again later.\nIf the error persists, contact the project maintainers."
+"BHL_Update_HashFailed"				"Failed to validate files.\n\n%s1"
+"BHL_Update_HashMismatch"			"Failed to validate file integrity in the downloaded update.\n\n%s1\n\nPlease, try again later.\nIf the error persists, contact the project maintainers."
+"BHL_Update_FileConflict"			"File conflict"
+"BHL_Update_FileConflict_Text"		"A game file was manually modified. Would you like to replace it?\nAll changes would be lost."
+"BHL_Update_FileConflictCancel"		"No files were updated yet, you are safe to cancel."
+"BHL_Update_Replace"				"Replace"
+"BHL_Update_ReplaceAll"				"Replace All"
+"BHL_Update_Keep"					"Keep"
+"BHL_Update_KeepAll"				"Keep All"
+"BHL_Update_InternalError2"			"An internal error has occured while installing updated files.\n\nThe game may be left in an inconsistent state, BugfixedHL may require manual reinstallation.\nCheck the console for details."
+"BHL_Update_UpdaterDisabled"		"This version of BugfixedHL requires manual installation."
+
+// Advanced options
+"BHL_PickColor"						"Pick"
+"BHL_GameMenu_AdvOptions"			"Advanced options"
+"BHL_AdvOptions"					"Advanced options"
+"BHL_ChangeLog_Title"				"Changelog"
+
+
+// Adv options: HUD
+"BHL_AdvOptions_HUD"				"HUD"
+"BHL_AdvOptions_HUD_Opacity"		"Opacity"
+
+"BHL_AdvOptions_HUD_Color"			"Main color"
+"BHL_AdvOptions_HUD_Color_Title"	"HUD Color"
+
+"BHL_AdvOptions_HUD_Color1"			"HP/AP/Ammo (High)"
+"BHL_AdvOptions_HUD_Color1_Title"	"HUD HP/AP/Ammo (High) color"
+
+"BHL_AdvOptions_HUD_Color2"			"HP/AP/Ammo (Medium)"
+"BHL_AdvOptions_HUD_Color2_Title"	"HUD HP/AP/Ammo (Medium) color"
+
+"BHL_AdvOptions_HUD_Color3"			"HP/AP/Ammo (Low)"
+"BHL_AdvOptions_HUD_Color3_Title"	"HUD HP/AP/Ammo (Medium) color"
+
+"BHL_AdvOptions_HUD_Render"			"Enhanced sprite rendering *"
+"BHL_AdvOptions_HUD_Dim"			"Dim HUD when inactive"
+"BHL_AdvOptions_HUD_MenuFKeys"		"Use F1-F10 in HUD menus"
+"BHL_AdvOptions_HUD_WeapSprite"		"Display weapon sprite"
+"BHL_AdvOptions_HUD_CenterId"		"Center player name hint"
+"BHL_AdvOptions_HUD_Rainbow"		"Enable Rainbow HUD™"
+
+"BHL_AdvOptions_HUD_Speed"			"Show speedometer"
+"BHL_AdvOptions_HUD_SpeedCross"		"Speedometer under crosshair"
+"BHL_AdvOptions_HUD_JumpSpeed"		"Show last jump speed"
+"BHL_AdvOptions_HUD_JumpSpeedCross"	"Jump speed under crosshair"
+
+"BHL_AdvOptions_HUD_Deathnotice"	"VGUI2 Deathnotice *"
+
+"BHL_AdvOptions_HUD_RenderMsg"		"* Requires hardware rendering mode"
+
+"BHL_AdvOptions_Hud_Timer"			"Show timer at the top of the screen"
+"BHL_AdvOptions_Hud_Timer0"			"Never"
+"BHL_AdvOptions_Hud_Timer1"			"Time Left"
+"BHL_AdvOptions_Hud_Timer2"			"Time Passed"
+"BHL_AdvOptions_Hud_Timer3"			"Local time"
+
+"BHL_AdvOptions_Hud_Scale"		    "HUD Scale (req. restart)"
+"BHL_AdvOptions_Hud_ScaleAuto"		"Auto"
+
+
+// Adv options: Chat
+"BHL_AdvOptions_Chat"				"Chat"
+"BHL_AdvOptions_Chat_ChatStyle"		"Chat style"
+"BHL_AdvOptions_Chat_ChatStyle1"	"VGUI2"
+"BHL_AdvOptions_Chat_ChatStyle2"	"Old (bottom)"
+"BHL_AdvOptions_Chat_ChatStyle3"	"Old (top)"
+"BHL_AdvOptions_Chat_V2Label"		"VGUI2 chat options"
+"BHL_AdvOptions_Chat_Time"			"New messages will disappear after N seconds"
+"BHL_AdvOptions_Chat_Mute"			"Mute all comms"
+"BHL_AdvOptions_Chat_MuteLabel"		"Muted players in the scoreboard will be muted in the chat"
+"BHL_AdvOptions_Chat_Sound"			"Chat sound"
+"BHL_AdvOptions_Chat_SoundLabel"	"Play a sound on new chat message"
+"BHL_AdvOptions_Chat_Display"		"Enable chat"
+"BHL_AdvOptions_Chat_Displaylabel"	"Display new messages on the screen"
+
+
+// Adv options: Crosshair
+"BHL_AdvOptions_Cross"				"Crosshair"
+"BHL_AdvOptions_Cross_Enable"		"Enable customizeble crosshair"
+"BHL_AdvOptions_Cross_Color"		"Color"
+"BHL_AdvOptions_Cross_Color_Title"	"Crosshair Color"
+"BHL_AdvOptions_Cross_Gap"			"Gap"
+"BHL_AdvOptions_Cross_Size"			"Size"
+"BHL_AdvOptions_Cross_Thickness"	"Thickness"
+"BHL_AdvOptions_Cross_OutThickness"	"Outline thickness"
+"BHL_AdvOptions_Cross_Dot"			"Show dot in the middle"
+"BHL_AdvOptions_Cross_T"			"Remove top line (look like letter T)"
+
+
+// Adv options: Scoreboard
+"BHL_AdvOptions_Scores"				"Scoreboard"
+"BHL_AdvOptions_Scores_ShowAvatars"	"Show avatars"
+"BHL_AdvOptions_Scores_ShowSteamId"	"Show SteamID"
+"BHL_AdvOptions_Scores_ShowLoss"	"Show packet loss"
+
+"BHL_AdvOptions_Scores_ShowEff"		"Show efficiency"
+"BHL_AdvOptions_Scores_EffType"		"Efficiency type:"
+"BHL_AdvOptions_Scores_EffType0"	"K/D -- K / D"
+"BHL_AdvOptions_Scores_EffType1"	"K/L -- K / (D + 1)"
+"BHL_AdvOptions_Scores_EffType2"	"RCD/NGHL -- K / (K + D)"
+
+"BHL_AdvOptions_Scores_Mouse"		"Context menu mouse button:"
+"BHL_AdvOptions_Scores_Mouse0"		"None"
+"BHL_AdvOptions_Scores_Mouse1"		"Left mouse button"
+"BHL_AdvOptions_Scores_Mouse2"		"Right mouse button"
+
+"BHL_AdvOptions_Scores_Size"		"Scoreboard size:"
+"BHL_AdvOptions_Scores_Size0"		"Automatic"
+"BHL_AdvOptions_Scores_Size1"		"Always large"
+"BHL_AdvOptions_Scores_Size2"		"Always compact"
+
+"BHL_AdvOptions_Scores_ShowInHud"	"Show a mini-scoreboard in HUD\nMaximum number of rows:"
+
+
+// Adv options: General
+"BHL_AdvOptions_General"			"General"
+"BHL_AdvOptions_General_FOV"		"Field of View"
+"BHL_AdvOptions_General_InputWin"	"Windows Cursor"
+"BHL_AdvOptions_General_InputDX"	"DirectInput"
+"BHL_AdvOptions_General_InputSDL"	"Raw Input"
+"BHL_AdvOptions_General_InputRec"	"(recommended)"
+"BHL_AdvOptions_General_Input"		"Mouse input method"
+"BHL_AdvOptions_General_KillSnd"	"Kill Sound"
+"BHL_AdvOptions_General_KillSnd2"	"Play a sound when you get a kill"
+"BHL_AdvOptions_General_HTML"		"Allow HTML MOTD"
+"BHL_AdvOptions_General_HTML2"		"Enable HTML in Message Of The Day dialog"
+"BHL_AdvOptions_General_AutoJump"	"Auto-jump"
+"BHL_AdvOptions_General_AutoJump2"	"Enable auto jumping when spacebar is held"
+"BHL_AdvOptions_General_LogChat"	"Log player chat"
+"BHL_AdvOptions_General_LogChat2"	"Write player chat messages to the log"
+"BHL_AdvOptions_General_LogOther"	"Log other chat"
+"BHL_AdvOptions_General_LogOther2"	"Write non-player chat messages to the log"
+"BHL_AdvOptions_General_AutoDemo"	"Record Demos"
+"BHL_AdvOptions_General_AutoDemo2"	"Demos are recorded at the start of a game"
+"BHL_AdvOptions_General_KeepFor"	"Keep saved demos for"
+"BHL_AdvOptions_General_Days"		"days"
+
+
+// Adv options: About
+"BHL_AdvOptions_About"				"About"
+"BHL_AdvOptions_About_BHL"			"Bugfixed and Improved Half-Life Release"
+"BHL_AdvOptions_About_Version"		"Version: "
+"BHL_AdvOptions_About_NewVersion"	"Latest version: "
+"BHL_AdvOptions_About_NoUpdater"	"N/A (updater not enabled)"
+"BHL_AdvOptions_About_Unknown"		"N/A"
+"BHL_AdvOptions_About_NewUpdate"	"An update is available."
+"BHL_AdvOptions_About_NewUpdate2"	"Go to GitHub to download the update."
+"BHL_AdvOptions_About_Check"		"Check for updates"
+"BHL_AdvOptions_About_Changelog"	"Show changelog"
+"BHL_AdvOptions_About_AutoCheck"	"Automatically check for updates"
+"BHL_AdvOptions_About_GitHub"		"Visit GitHub repository (releases, wiki, etc)"
+"BHL_AdvOptions_About_AGHL"			"Visit AGHL.ru discussion forum"
+"BHL_AdvOptions_About_OSSCredits"	"Used Open Source software"
+
+
+// Adv options: Models
+"BHL_AdvOptions_Models"				"Models"
+"BHL_AdvOptions_Models_EnemyModels"	"Allowed enemy models:"
+"BHL_AdvOptions_Models_ModelName"	"Model"
+"BHL_AdvOptions_Models_Add"			"+"
+"BHL_AdvOptions_Models_Remove"		"Remove"
+"BHL_AdvOptions_Models_RemoveAll"	"Remove All"
+"BHL_AdvOptions_Models_TeamModel"	"Replaced teammate model:"
+"BHL_AdvOptions_Models_EnemyColors"	"Replaced enemy colors (e.g. \"90 30\"):"
+"BHL_AdvOptions_Models_TeamColors"	"Replaced teammate colors (e.g. \"90 30\"):"
+"BHL_AdvOptions_Models_HideCorpses"	"Hide corpses"
+"BHL_AdvOptions_Models_LeftHand"	"Left-handed weapons"
+"BHL_AdvOptions_Models_AngledBob"	"Angle weapon when moving"
+"BHL_AdvOptions_Models_NoShells"	"Disable weapon shells"
+"BHL_AdvOptions_Models_NoViewmodel"	"Hide weapon view model"
+}
+}

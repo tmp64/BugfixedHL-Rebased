@@ -21,7 +21,6 @@ list( APPEND CMAKE_MODULE_PATH
 )
 
 include( InputFilesList )
-include( WinXPSupport )
 include( GitVersionSemverfier )
 
 #-----------------------------------------------------------------

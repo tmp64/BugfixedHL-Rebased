@@ -21,7 +21,6 @@ set( SOURCE_FILES
 source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${SOURCE_FILES} )
 
 add_library( bugfixedapi_amxx SHARED ${SOURCE_FILES} )
-check_winxp_support( bugfixedapi_amxx )
 add_auto_deploy( bugfixedapi_amxx PublishPathAMXX.txt )
 bhl_version_info( bugfixedapi_amxx "bugfixedapi_amxx.dll" "BugfixedHL-Rebased AMXX Module" )
 

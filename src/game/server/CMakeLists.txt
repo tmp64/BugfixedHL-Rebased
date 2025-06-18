@@ -165,7 +165,6 @@ endif()
 source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${SOURCE_FILES} )
 
 add_library( hl SHARED ${SOURCE_FILES} )
-check_winxp_support( hl )
 add_auto_deploy( hl PublishPathServer.txt )
 bhl_version_info( hl "hl.dll" "BugfixedHL-Rebased Server" )
 

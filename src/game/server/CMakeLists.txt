@@ -1,3 +1,5 @@
+set( TARGET_NAME server )
+
 set( SOURCE_FILES
 	${GAME_COMMON_SRCS}
 	CMakeLists.txt
@@ -164,17 +166,17 @@ endif()
 
 source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${SOURCE_FILES} )
 
-add_library( hl SHARED ${SOURCE_FILES} )
-add_auto_deploy( hl server PublishPathServer.txt )
-bhl_version_info( hl "hl.dll" "BugfixedHL-Rebased Server" )
+add_library( ${TARGET_NAME} SHARED ${SOURCE_FILES} )
+add_auto_deploy( ${TARGET_NAME} server PublishPathServer.txt )
+bhl_version_info( ${TARGET_NAME} "hl.dll" "BugfixedHL-Rebased Server" )
 
-target_include_directories( hl PRIVATE
+target_include_directories( ${TARGET_NAME} PRIVATE
 	.
 	${GAME_COMMON_INCLUDE_PATHS}
 	${SOURCE_SDK_INCLUDE_PATHS} # For mathlib
 )
 
-target_compile_definitions( hl PRIVATE
+target_compile_definitions( ${TARGET_NAME} PRIVATE
 	${GAME_COMMON_DEFINES}
 	${SOURCE_SDK_DEFINES}
 	SERVER_DLL
@@ -182,7 +184,7 @@ target_compile_definitions( hl PRIVATE
 	MATHLIB_VECTOR_NONTRIVIAL
 )
 
-target_precompile_headers( hl PRIVATE pch.h )
+target_precompile_headers( ${TARGET_NAME} PRIVATE pch.h )
 
 # Dependencies
 if( WIN32 )
@@ -194,7 +196,7 @@ else()
 endif()
 
 # Link with dependencies
-target_link_libraries( hl 
+target_link_libraries( ${TARGET_NAME} 
 	${SERVER_PLAT_LIBS}
 	semver
 	Threads::Threads
@@ -204,10 +206,13 @@ target_link_libraries( hl
 set( SERVER_LINK_FLAGS "")
 set( SERVER_COMPILE_FLAGS "")
 
-set_target_properties( hl PROPERTIES
+set_target_properties( ${TARGET_NAME} PROPERTIES
 	COMPILE_FLAGS "${SERVER_COMPILE_FLAGS}" 
 	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS}"
 )
 
 # Remove "lib" prefix
-set_target_properties( hl PROPERTIES PREFIX "" )
+set_target_properties( ${TARGET_NAME} PROPERTIES PREFIX "" )
+
+# Set the original name
+set_target_properties( ${TARGET_NAME} PROPERTIES OUTPUT_NAME "hl" )

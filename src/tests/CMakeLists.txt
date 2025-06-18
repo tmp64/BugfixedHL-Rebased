@@ -72,7 +72,7 @@ if( BUILD_TESTING )
 		${TESTS_SERVER}
 	)
 
-	add_dependencies( test_server hl )
+	add_dependencies( test_server server )
 
 	target_include_directories( test_server PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/common
@@ -107,7 +107,7 @@ if( BUILD_TESTING )
 	)
 
 	add_test( NAME server
-		COMMAND test_server "$<TARGET_FILE:hl>"
+		COMMAND test_server "$<TARGET_FILE:server>"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/workdir"
 	)
 

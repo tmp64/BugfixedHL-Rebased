@@ -426,5 +426,5 @@ add_dependencies( client convert_utf_files_client )
 
 # Server
 bhl_install_files( server "${SERVER_FILES}" )
-bhl_install_target( server hl "dlls" )
+bhl_install_target( server server "dlls" )
 bhl_install_target( server bugfixedapi_amxx "addons/amxmodx/modules" )

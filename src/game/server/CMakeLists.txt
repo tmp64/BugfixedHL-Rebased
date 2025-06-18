@@ -165,7 +165,7 @@ endif()
 source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${SOURCE_FILES} )
 
 add_library( hl SHARED ${SOURCE_FILES} )
-add_auto_deploy( hl PublishPathServer.txt )
+add_auto_deploy( hl server PublishPathServer.txt )
 bhl_version_info( hl "hl.dll" "BugfixedHL-Rebased Server" )
 
 target_include_directories( hl PRIVATE

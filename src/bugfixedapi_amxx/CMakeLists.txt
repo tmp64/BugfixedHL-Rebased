@@ -21,7 +21,7 @@ set( SOURCE_FILES
 source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${SOURCE_FILES} )
 
 add_library( bugfixedapi_amxx SHARED ${SOURCE_FILES} )
-add_auto_deploy( bugfixedapi_amxx PublishPathAMXX.txt )
+add_auto_deploy( bugfixedapi_amxx server PublishPathServer.txt )
 bhl_version_info( bugfixedapi_amxx "bugfixedapi_amxx.dll" "BugfixedHL-Rebased AMXX Module" )
 
 target_include_directories( bugfixedapi_amxx PRIVATE

@@ -14,10 +14,35 @@ foreach( i RANGE 0 ${last_arg_idx})
 	endif()
 endforeach()
 
-set( path_list_file ${CMAKE_ARGV${actual_args_start_idx}} )
+# Copy args to temp vars
+math( EXPR arg_binary_dir_idx "${actual_args_start_idx} + 0" )
+set( binary_dir ${CMAKE_ARGV${arg_binary_dir_idx}} )
+
+math( EXPR arg_component_idx "${actual_args_start_idx} + 1" )
+set( component_name ${CMAKE_ARGV${arg_component_idx}} )
+
+math( EXPR arg_config_idx "${actual_args_start_idx} + 2" )
+set( config_name ${CMAKE_ARGV${arg_component_idx}} )
+
+math( EXPR arg_path_list_idx "${actual_args_start_idx} + 3" )
+set( path_list_file ${CMAKE_ARGV${arg_path_list_idx}} )
+
+# Check that args are set
+if( NOT binary_dir )
+	message( FATAL_ERROR "Binary dir path not specified." )
+endif()
+
+if( NOT component_name )
+	message( FATAL_ERROR "Component name not specified." )
+endif()
 
 if( NOT path_list_file )
 	message( FATAL_ERROR "Path list file not specified." )
+endif()
+
+# Check that paths exist
+if( NOT EXISTS "${binary_dir}" )
+	message( FATAL_ERROR "Binary dir ${FATAL_ERROR} doesn't exist." )
 endif()
 
 if( NOT EXISTS "${path_list_file}" )
@@ -30,17 +55,25 @@ file( STRINGS ${path_list_file} deploy_paths )
 
 # Iterate over all paths in the file
 foreach( deploy_path IN LISTS deploy_paths)
-	# Convert to full path
-	file( REAL_PATH ${deploy_path} deploy_path_full )
+	cmake_path( IS_ABSOLUTE deploy_path is_path_absolute )
 
-	# Iterate over all files to copy
-	math( EXPR path_arg_start "${actual_args_start_idx} + 1" )
-	foreach( i RANGE ${path_arg_start} ${last_arg_idx})
-		file( REAL_PATH "${CMAKE_ARGV${i}}" file_to_copy )
-		message(STATUS "${file_to_copy} -> ${deploy_path}")
-		file(
-			COPY ${file_to_copy}
-			DESTINATION ${deploy_path_full}
-		)
-	endforeach()
+	if( NOT is_path_absolute )
+		message( SEND_ERROR "Path must be absolute: ${deploy_path_full}" )
+		continue()
+	endif()
+
+	if( NOT EXISTS "${deploy_path}" )
+		message( SEND_ERROR "Path doesn't exist: ${deploy_path}" )
+		continue()
+	endif()
+
+	# Run cmake --install for the path
+	execute_process(
+		COMMAND
+			${CMAKE_COMMAND}
+			--install ${binary_dir}
+			--config "${config_name}"
+			--component ${component_name}
+			--prefix ${deploy_path}
+	)
 endforeach()

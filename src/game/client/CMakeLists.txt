@@ -297,7 +297,7 @@ endif()
 source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${SOURCE_FILES} )
 
 add_library( client SHARED ${SOURCE_FILES} )
-add_auto_deploy( client PublishPathClient.txt )
+add_auto_deploy( client client PublishPathClient.txt )
 bhl_version_info( client "client.dll" "BugfixedHL-Rebased Client" )
 
 target_include_directories( client PRIVATE

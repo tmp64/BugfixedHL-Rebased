@@ -19,6 +19,11 @@
       "default-features": false,
       "name": "libzip"
     },
-    "nlohmann-json"
+    "nlohmann-json",
+    {
+      "default-features": false,
+      "name": "stackwalker",
+      "platform": "windows"
+    }
   ]
 }

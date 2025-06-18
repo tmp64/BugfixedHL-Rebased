@@ -487,7 +487,7 @@ if( WIN32 )
 		DInput
 		DXGUID
 		Dbghelp
-		stackwalker
+		StackWalker::StackWalker
     )
 
 	target_include_directories( client PRIVATE

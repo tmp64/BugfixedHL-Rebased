@@ -2,7 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
     {
-      "name": "curl",
       "default-features": false,
       "features": [
         {
@@ -13,11 +12,13 @@
           "name": "openssl",
           "platform": "!windows"
         }
-      ]
+      ],
+      "name": "curl"
     },
     {
-      "name": "libzip",
-      "default-features": false
-    }
+      "default-features": false,
+      "name": "libzip"
+    },
+    "nlohmann-json"
   ]
 }

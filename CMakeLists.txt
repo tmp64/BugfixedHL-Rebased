@@ -349,7 +349,14 @@ set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 find_package( nlohmann_json CONFIG REQUIRED )
 find_package( unofficial-pcre CONFIG REQUIRED )
+
+include( cmake/lib/SDL2.cmake )
+
 add_subdirectory( external )
+
+if( WIN32 )
+	include( cmake/lib/DInput.cmake )
+endif()
 
 #-----------------------------------------------------------------
 # Half-Life SDK
@@ -442,95 +449,7 @@ endif()
 #-----------------------------------------------------------------
 set( CMAKE_FOLDER "HL SDK" )
 
-#-----------------------------------------------------------------
-# Client library
-#-----------------------------------------------------------------
-# Add in the shared sources
-add_sources( "${GAME_COMMON_SRCS}" )
-
-# Add in the library headers
-add_sources( "${SDL2_INCLUDE_FILES}" )
-
-# Add in the sources
 add_subdirectory( src/game/client )
-
-preprocess_sources()
-add_library( client SHARED ${PREP_SRCS} )
-check_winxp_support( client )
-add_auto_deploy( client PublishPathClient.txt )
-bhl_version_info( client "client.dll" "BugfixedHL-Rebased Client" )
-
-target_include_directories( client PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
-	${GAME_COMMON_INCLUDE_PATHS}
-	${SOURCE_SDK_INCLUDE_PATHS}
-	${UPDATER_INCLUDE_PATHS}
-)
-
-target_compile_definitions( client PRIVATE
-	${GAME_COMMON_DEFINES}
-	${SOURCE_SDK_DEFINES}
-	${UPDATER_DEFINES}
-	VERSION_SAFE_STEAM_API_INTERFACES
-	CLIENT_DLL
-)
-
-target_precompile_headers( client PRIVATE src/game/client/pch.h )
-
-# Dependencies
-include( cmake/lib/SDL2.cmake )
-
-if( WIN32 )
-	# DInput for direct mouse input
-	include( cmake/lib/DInput.cmake )
-
-	set( CLIENT_PLAT_LIBS
-		wsock32
-		psapi
-		DInput
-		DXGUID
-		Dbghelp
-		StackWalker::StackWalker
-    )
-
-	target_include_directories( client PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2/include
-	)
-else()
-	# Only link with SDL2 on Linux. Windows will conditionally link in runtime.
-	set( CLIENT_PLAT_LIBS
-		dl
-		SDL2
-	)
-endif()
-
-# Link with dependencies
-target_link_libraries( client
-	${GAME_COMMON_LIBS}
-	${SOURCE_SDK_LIBS}
-	${UPDATER_LIBS}
-	glad
-	unofficial::pcre::pcre
-	semver
-	nlohmann_json::nlohmann_json
-	${CLIENT_PLAT_LIBS}
-	Threads::Threads
-)
-
-# Linker flags
-set( CLIENT_LINK_FLAGS "")
-set( CLIENT_COMPILE_FLAGS "")
-
-set_target_properties( client PROPERTIES
-	COMPILE_FLAGS "${CLIENT_COMPILE_FLAGS}"
-	LINK_FLAGS "${GAME_LINKER_FLAGS} ${CLIENT_LINK_FLAGS}"
-)
-
-# Remove "lib" prefix
-set_target_properties( client PROPERTIES PREFIX "" )
-
-create_source_groups( "${CMAKE_SOURCE_DIR}" )
-clear_sources()
 
 #-----------------------------------------------------------------
 # Server library

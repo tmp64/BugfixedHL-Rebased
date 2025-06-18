@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "dependencies": [
+    {
+      "name": "curl",
+      "default-features": false,
+      "features": [
+        {
+          "name": "schannel",
+          "platform": "windows"
+        },
+        {
+          "name": "openssl",
+          "platform": "!windows"
+        }
+      ]
+    },
+    {
+      "name": "libzip",
+      "default-features": false
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 # Bugfixed and Improved Half-Life Release
 #
 
-cmake_minimum_required( VERSION 3.15.0 )
+cmake_minimum_required( VERSION 3.25.0 )
 
 # Use static MSVC runtime
 set( CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" )
@@ -418,42 +418,9 @@ if( USE_UPDATER )
 		message( FATAL_ERROR "Updater requires support for std::filesystem." )
 	endif()
 
-	# Set platform path
-	if( PLATFORM_WINDOWS )
-		set( PLAT_EXTERNAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/windows")
-	elseif( PLATFORM_LINUX )
-		set( PLAT_EXTERNAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/linux")
-	elseif( PLATFORM_MACOS )
-		set( PLAT_EXTERNAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/macos")
-	else()
-		message(FATAL_ERROR "Unknown platform")
-	endif()
-
 	# Find libraries
-	set( ZLIB_ROOT "${PLAT_EXTERNAL_PATH}/zlib" )
-	set( ZLIB_USE_STATIC_LIBS ON )
-	find_package( ZLIB REQUIRED )
-
-	set( libzip_DIR "${PLAT_EXTERNAL_PATH}/libzip/lib/cmake/libzip" )
-	find_package( libzip REQUIRED NO_DEFAULT_PATH )
-
-	if( PLATFORM_LINUX )
-		# The bundled curl statically links with the bundled GnuTLS
-		set( CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${PLAT_EXTERNAL_PATH}/gnutls" )
-		find_package( GnuTLS REQUIRED )
-		
-		set( UPDATER_LIBS
-			${UPDATER_LIBS}
-			$<LINK_GROUP:RESCAN,
-				GnuTLS::GnuTLS,
-				${PLAT_EXTERNAL_PATH}/gnutls/lib/libgmp.a,
-				${PLAT_EXTERNAL_PATH}/gnutls/lib32/libnettle.a,
-				${PLAT_EXTERNAL_PATH}/gnutls/lib32/libhogweed.a>
-		)
-	endif()
-
-	set( CURL_DIR "${PLAT_EXTERNAL_PATH}/curl/lib/cmake/CURL" )
-	find_package( CURL REQUIRED NO_DEFAULT_PATH )
+	find_package( libzip CONFIG REQUIRED )
+	find_package( CURL REQUIRED )
 
 	set( UPDATER_LIBS
 		${UPDATER_LIBS}
@@ -507,12 +474,11 @@ target_compile_definitions( client PRIVATE
 target_precompile_headers( client PRIVATE src/game/client/pch.h )
 
 # Dependencies
-find_package( SDL2 MODULE REQUIRED )
+include( cmake/lib/SDL2.cmake )
 
 if( WIN32 )
 	# DInput for direct mouse input
-	find_package( DInput REQUIRED )
-	find_package( DXGUID REQUIRED )
+	include( cmake/lib/DInput.cmake )
 
 	set( CLIENT_PLAT_LIBS
 		wsock32

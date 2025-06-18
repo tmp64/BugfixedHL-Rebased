@@ -363,6 +363,3 @@ set_target_properties( client PROPERTIES
 
 # Remove "lib" prefix
 set_target_properties( client PROPERTIES PREFIX "" )
-
-create_source_groups( "${CMAKE_SOURCE_DIR}" )
-clear_sources()

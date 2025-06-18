@@ -1,7 +1,12 @@
-add_sources(
+set( SOURCE_FILES
+	${GAME_COMMON_SRCS}
 	CMakeLists.txt
+
 	../../public/vinterface/interface.cpp
 	../../public/vinterface/interface.h
+
+	wpn_shared/hl_wpn_glock.cpp
+	
 	activity.h
 	activitymap.h
 	aflock.cpp
@@ -145,14 +150,65 @@ add_sources(
 	weapons.cpp
 	weapons.h
 	world.cpp
-	wpn_shared/hl_wpn_glock.cpp
 	xen.cpp
 	zombie.cpp
 )
 
 if( PLATFORM_WINDOWS )
-	add_sources(
+	set( SOURCE_FILES
+		${SOURCE_FILES}
 		hl.def
 		resource.h
 	)
 endif()
+
+source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${SOURCE_FILES} )
+
+add_library( hl SHARED ${SOURCE_FILES} )
+check_winxp_support( hl )
+add_auto_deploy( hl PublishPathServer.txt )
+bhl_version_info( hl "hl.dll" "BugfixedHL-Rebased Server" )
+
+target_include_directories( hl PRIVATE
+	.
+	${GAME_COMMON_INCLUDE_PATHS}
+	${SOURCE_SDK_INCLUDE_PATHS} # For mathlib
+)
+
+target_compile_definitions( hl PRIVATE
+	${GAME_COMMON_DEFINES}
+	${SOURCE_SDK_DEFINES}
+	SERVER_DLL
+	MATHLIB_USE_C_ASSERT
+	MATHLIB_VECTOR_NONTRIVIAL
+)
+
+target_precompile_headers( hl PRIVATE pch.h )
+
+# Dependencies
+if( WIN32 )
+	set( SERVER_PLAT_LIBS )
+else()
+	set( SERVER_PLAT_LIBS
+		dl
+	)
+endif()
+
+# Link with dependencies
+target_link_libraries( hl 
+	${SERVER_PLAT_LIBS}
+	semver
+	Threads::Threads
+)
+
+# Linker flags
+set( SERVER_LINK_FLAGS "")
+set( SERVER_COMPILE_FLAGS "")
+
+set_target_properties( hl PROPERTIES
+	COMPILE_FLAGS "${SERVER_COMPILE_FLAGS}" 
+	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS}"
+)
+
+# Remove "lib" prefix
+set_target_properties( hl PROPERTIES PREFIX "" )

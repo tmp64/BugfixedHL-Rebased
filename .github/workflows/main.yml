@@ -15,6 +15,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
+    name: "Build"
+
     strategy:
       matrix:
         os:
@@ -25,7 +27,7 @@ jobs:
             vcpkg-triplet: x86-linux
             preset: ci-linux
         target: [client, server]
-    
+
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os.runs-on }}
 
@@ -94,3 +96,43 @@ jobs:
         with:
           name: ${{ steps.prepare_artifact.outputs.artifact_name }}
           path: ${{github.workspace}}/_build/ci-artifact
+
+  merge-artifacts:
+    name: "Merge Artifacts"
+    needs: build
+
+    strategy:
+      matrix:
+        target: [client, server]
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+        with:
+          submodules: false # Only need scripts folder
+
+      # Download artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          path: ${{github.workspace}}/_build/ci-artifacts
+          pattern: "*-${{ matrix.target }}-ci-*"
+          merge-multiple: true
+
+      # Merge them
+      - name: Merge artifacts
+        id: merge_artifacts
+        run: >
+          python scripts/merge_artifacts.py
+          --artifact-dir ${{github.workspace}}/_build/ci-artifacts
+          --out-dir ${{github.workspace}}/_build/ci-out-artifact
+          --target ${{ matrix.target }}
+          ci-linux
+          ci-windows
+
+      # Upload merged artifact
+      - name: Upload merged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.merge_artifacts.outputs.artifact_name }}
+          path: ${{github.workspace}}/_build/ci-out-artifact

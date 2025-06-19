@@ -13,6 +13,8 @@ import json
 import os
 from pathlib import Path
 
+METADATA_FILE_NAME = 'bugfixedhl_install_metadata.dat'
+
 # List of files that don't need to be updated
 USER_MODIFIABLE_FILES = [
     'ui/resource/ChatScheme.res',
@@ -57,7 +59,7 @@ def create_metadata(version: str, startpath: Path):
 
             meta['files'][path] = file_data
 
-    with open(startpath / 'bugfixedhl_install_metadata.dat', "w", encoding='utf-8') as f:
+    with open(startpath / METADATA_FILE_NAME, "w", encoding='utf-8') as f:
         f.write(json.dumps(meta, indent=2))
 
 

@@ -75,13 +75,22 @@ jobs:
       # Install
       - name: Install with CMake
         run: |
-          cd ${{github.workspace}}/_build/${{ matrix.os.preset }}
-          cmake --install . --prefix ${{github.workspace}}/_build/ci-install --component ${{ matrix.target }}
+          cmake --install ${{github.workspace}}/_build/${{ matrix.os.preset }} --prefix ${{github.workspace}}/_build/ci-install --component ${{ matrix.target }}
+
+      # Prepare artifact
+      - name: Prepare artifact
+        id: prepare_artifact
+        run: >
+          python scripts/package_target.py
+          --build-dir ${{github.workspace}}/_build/${{ matrix.os.preset }}
+          --install-dir ${{github.workspace}}/_build/ci-install
+          --artifact-dir ${{github.workspace}}/_build/ci-artifact
+          --target ${{ matrix.target }}
+          --suffix ${{ matrix.os.preset }}
 
       # Upload result
       - name: Upload build result
         uses: actions/upload-artifact@v4
         with:
-          name: bhl-cmake-install-${{ matrix.target }}-${{ matrix.os.preset }}
-          path: ${{github.workspace}}/_build/ci-install
-
+          name: ${{ steps.prepare_artifact.outputs.artifact_name }}
+          path: ${{github.workspace}}/_build/ci-artifact

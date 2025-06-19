@@ -1,7 +1,7 @@
 import argparse
 import codecs
 
-parser = argparse.ArgumentParser('Converts a UTF-8 text file into a UTF-16 LE text file')
+parser = argparse.ArgumentParser(description='Converts a UTF-8 text file into a UTF-16 LE text file')
 parser.add_argument('src_file', help='Source UTF-8 file')
 parser.add_argument('dst_file', help='Destination UTF-16 LE file')
 

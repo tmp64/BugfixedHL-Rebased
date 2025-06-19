@@ -57,6 +57,9 @@ unset( BHL_REPO_VERSION_PATCH )
 unset( BHL_REPO_VERSION_TAG )
 # Use GIT_XXX from now on
 
+# This will be used by CI build scripts
+file( WRITE ${CMAKE_BINARY_DIR}/version.txt ${GIT_SEM_VERSION} )
+
 project( BugfixedHL VERSION "${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}.${GIT_SKIP}" )
 include( PlatformInfo )
 include( CTest )

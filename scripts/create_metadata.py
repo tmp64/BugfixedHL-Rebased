@@ -3,7 +3,7 @@
 # A function for creating metadata for BHL update file.
 # This file can be called as a script:
 #
-#   ./CreateMetadata.py "1.0.0-dev+version_string" "/path/to/files"
+#   ./create_metadata.py "1.0.0-dev+version_string" "/path/to/files"
 #
 # It will create file
 #   /path/to/files/bugfixedhl_install_metadata.dat
@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 import os
+from pathlib import Path
 
 # List of files that don't need to be updated
 USER_MODIFIABLE_FILES = [
@@ -21,7 +22,7 @@ USER_MODIFIABLE_FILES = [
 ]
 
 
-def create_metadata(version, startpath):
+def create_metadata(version: str, startpath: Path):
     meta = {
         'version': version,
         'files': {}
@@ -56,8 +57,8 @@ def create_metadata(version, startpath):
 
             meta['files'][path] = file_data
 
-    with open(startpath + '/bugfixedhl_install_metadata.dat', "a") as f:
-        f.write(json.dumps(meta, sort_keys=True, indent=4))
+    with open(startpath / 'bugfixedhl_install_metadata.dat', "w", encoding='utf-8') as f:
+        f.write(json.dumps(meta, indent=2))
 
 
 # Script entry point

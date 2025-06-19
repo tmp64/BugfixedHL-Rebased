@@ -408,6 +408,14 @@ function(bhl_install_files component_name file_list)
 		# Create custom target to convert the files
 		add_custom_target( convert_utf_files_${component_name} DEPENDS ${converted_txt_files} )
 	endif()
+
+	# Install readme
+	install(
+		FILES ${CMAKE_SOURCE_DIR}/README.md
+		DESTINATION "."
+		COMPONENT ${component_name}
+		RENAME README_BugfixedHL.md
+	)
 endfunction()
 
 

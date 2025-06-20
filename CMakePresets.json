@@ -10,6 +10,7 @@
 
         "AUTO_DEPLOY": false,
         "USE_UPDATER": true,
+        "GENERATE_AMXX_OFFSETS": false,
         "GNU_FORCE_COLORED_OUTPUT": true
       }
     },
@@ -44,6 +45,7 @@
         "BUILD_TESTING": true,
         "GNU_FORCE_COLORED_OUTPUT": false,
         "USE_UPDATER": true,
+        "GENERATE_AMXX_OFFSETS": true,
         "WARNINGS_ARE_ERRORS": true
       }
     },

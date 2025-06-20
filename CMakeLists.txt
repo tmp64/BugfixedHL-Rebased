@@ -20,6 +20,7 @@ list( APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_LIST_DIR}/cmake"
 )
 
+include( FetchContent )
 include( InputFilesList )
 include( GitVersionSemverfier )
 
@@ -67,9 +68,10 @@ include( CTest )
 #-----------------------------------------------------------------
 # Build options
 #-----------------------------------------------------------------
-option( AUTO_DEPLOY		"Whether to automatically deploy to deploy paths" )
-option( USE_UPDATER		"Enable update checked and downloader" )
-option( NO_STEAM_API	"Disable Steam API" )
+option( AUTO_DEPLOY				"Whether to automatically deploy to deploy paths" )
+option( USE_UPDATER				"Enable update checked and downloader" )
+option( NO_STEAM_API			"Disable Steam API" )
+option( GENERATE_AMXX_OFFSETS	"Generate AMXX offsets when building" )
 
 #-----------------------------------------------------------------
 # Compiler checks

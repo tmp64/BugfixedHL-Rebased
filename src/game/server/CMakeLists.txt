@@ -14,6 +14,7 @@ set( SOURCE_FILES
 	aflock.cpp
 	agrunt.cpp
 	airtank.cpp
+	AmxxOffsetClassList.txt
 	animating.cpp
 	animation.cpp
 	animation.h
@@ -216,3 +217,71 @@ set_target_properties( ${TARGET_NAME} PROPERTIES PREFIX "" )
 
 # Set the original name
 set_target_properties( ${TARGET_NAME} PROPERTIES OUTPUT_NAME "hl" )
+
+if( GENERATE_AMXX_OFFSETS )
+	set( AMXX_OFFSET_GENERATOR_VERSION "1.0.0" )
+	set( AMXX_OFFSET_GENERATOR_DIR "${CMAKE_BINARY_DIR}/amxx-offset-generator" )
+	set( AMXX_OFFSETS_SCRIPT "${AMXX_OFFSET_GENERATOR_DIR}/create_amxx_files.py" )
+	set( AMXX_OFFSETS_CLASS_LIST "${CMAKE_CURRENT_SOURCE_DIR}/AmxxOffsetClassList.txt" )
+	set( AMXX_OFFSETS_OUT "${CMAKE_BINARY_DIR}/amxx-offsets" )
+
+	# Check if platform is supported
+	if( PLATFORM_WINDOWS )
+		set( AMXX_OFFSETS_EXEC "${AMXX_OFFSET_GENERATOR_DIR}/win64/OffsetExporter.Pdb.exe" )
+		set( AMXX_OFFSETS_DBG_FILE $<TARGET_PDB_FILE:server> )
+		set( AMXX_OFFSETS_DBG_FILE_ARG --pdb )
+		set( AMXX_OFFSETS_JSON "${CMAKE_BINARY_DIR}/bhl-amxx-offsets-windows.json" )
+		set( AMXX_OFFSETS_SCRIPT_ARG "--windows=${AMXX_OFFSETS_JSON}" )
+	elseif( PLATFORM_LINUX )
+		set( AMXX_OFFSETS_EXEC "${AMXX_OFFSET_GENERATOR_DIR}/linux64/OffsetExporter.Dwarf" )
+		set( AMXX_OFFSETS_DBG_FILE $<TARGET_FILE:server> )
+		set( AMXX_OFFSETS_DBG_FILE_ARG --so )
+		set( AMXX_OFFSETS_JSON "${CMAKE_BINARY_DIR}/bhl-amxx-offsets-linux.json" )
+		set( AMXX_OFFSETS_SCRIPT_ARG "--linux=${AMXX_OFFSETS_JSON}" )
+
+		# File doesn't have +x set in the ZIP. Fix that.
+		file(
+			CHMOD ${AMXX_OFFSETS_EXEC}
+			PERMISSIONS
+				OWNER_READ OWNER_WRITE OWNER_EXECUTE
+				GROUP_WRITE GROUP_EXECUTE
+				WORLD_READ WORLD_EXECUTE
+		)
+	else()
+		message( FATAL_ERROR "GENERATE_AMXX_OFFSETS is not supported on this platform" )
+	endif()
+
+	# Download the release
+	FetchContent_Declare(
+		amxx-offset-generator
+		URL https://github.com/tmp64/amxx-offset-generator/releases/download/v${AMXX_OFFSET_GENERATOR_VERSION}/amxx-offset-generator-v${AMXX_OFFSET_GENERATOR_VERSION}.zip
+		URL_HASH SHA256=a2e26ea8b94162f505f430094b26eb114fa446f2955db3396394e6c3702e6d50
+		SOURCE_DIR ${AMXX_OFFSET_GENERATOR_DIR}
+	)
+
+	FetchContent_MakeAvailable( amxx-offset-generator )
+
+	# Add command to generate the JSON file and the offset files
+	add_custom_command(
+		TARGET server POST_BUILD
+		COMMAND
+			${AMXX_OFFSETS_EXEC}
+			--class-list ${AMXX_OFFSETS_CLASS_LIST}
+			${AMXX_OFFSETS_DBG_FILE_ARG} ${AMXX_OFFSETS_DBG_FILE}
+			--out ${AMXX_OFFSETS_JSON}
+		COMMAND
+			Python::Interpreter
+			${AMXX_OFFSETS_SCRIPT}
+			${AMXX_OFFSETS_SCRIPT_ARG}
+			--out ${AMXX_OFFSETS_OUT}
+			--banner "BugfixedHL-Rebased offset file. Generated using amxx-offset-generator."
+			--file-prefix "bhl"
+		COMMENT "Generating AMXX offsets"
+	)
+
+	# Recompile when any of that changes
+	target_sources( server PRIVATE
+		${AMXX_OFFSETS_EXEC}
+		${AMXX_OFFSETS_CLASS_LIST}
+	)
+endif()

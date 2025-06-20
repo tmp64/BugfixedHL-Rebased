@@ -28,20 +28,33 @@ def main():
     files: dict[str, tuple[Path, Path]] = {} # lower_case_path -> rel path, root path
 
     for suffix in args.suffixes:
-        # Find the artifact for this suffix
-        name_suffix = f'-{args.target}-{suffix}'
-        artifacts_with_suffix = list(artifact_dir.glob(f'*{name_suffix}', case_sensitive=True))
+        if suffix == '__amxx-offsets':
+            # Special case for generated offsets
+            if args.target != 'server':
+                continue
 
-        if len(artifacts_with_suffix) == 0:
-            raise Exception(f'No artifacts found for suffix = {suffix}')
-        
-        if len(artifacts_with_suffix) > 1:
-            print('Found too many artifacts:')
-            for i in artifacts_with_suffix:
-                print(f'- {i}')
-            raise Exception(f'Too many artifacts found for suffix = {suffix}')
-        
-        artifact_with_suffix = artifacts_with_suffix[0]
+            artifact_with_suffix = artifact_dir / f'bhl-server-amxx-offsets'
+
+            if not artifact_with_suffix.exists():
+                raise Exception(f"Path {artifact_with_suffix} doesn't exist")
+        else:
+            # Find the artifact for this suffix
+            name_suffix = f'-{args.target}-{suffix}'
+            artifacts_with_suffix = list(artifact_dir.glob(f'*{name_suffix}', case_sensitive=True))
+
+            if len(artifacts_with_suffix) == 0:
+                if suffix.startswith('allow-missing'):
+                    continue
+                else:
+                    raise Exception(f'No artifacts found for suffix = {suffix}')
+            
+            if len(artifacts_with_suffix) > 1:
+                print('Found too many artifacts:')
+                for i in artifacts_with_suffix:
+                    print(f'- {i}')
+                raise Exception(f'Too many artifacts found for suffix = {suffix}')
+            
+            artifact_with_suffix = artifacts_with_suffix[0]
 
         # Build the file list
         for dirpath, _, filenames in os.walk(artifact_with_suffix):

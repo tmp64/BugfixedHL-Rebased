@@ -219,7 +219,10 @@ set_target_properties( ${TARGET_NAME} PROPERTIES PREFIX "" )
 set_target_properties( ${TARGET_NAME} PROPERTIES OUTPUT_NAME "hl" )
 
 if( GENERATE_AMXX_OFFSETS )
-	set( AMXX_OFFSET_GENERATOR_VERSION "1.0.0" )
+	# Must also be updated in .github/workflows/main.yml
+	# Must also change URL_HASH
+	set( AMXX_OFFSET_GENERATOR_VERSION "1.0.1" )
+
 	set( AMXX_OFFSET_GENERATOR_DIR "${CMAKE_BINARY_DIR}/amxx-offset-generator" )
 	set( AMXX_OFFSETS_SCRIPT "${AMXX_OFFSET_GENERATOR_DIR}/create_amxx_files.py" )
 	set( AMXX_OFFSETS_CLASS_LIST "${CMAKE_CURRENT_SOURCE_DIR}/AmxxOffsetClassList.txt" )
@@ -238,15 +241,6 @@ if( GENERATE_AMXX_OFFSETS )
 		set( AMXX_OFFSETS_DBG_FILE_ARG --so )
 		set( AMXX_OFFSETS_JSON "${CMAKE_BINARY_DIR}/bhl-amxx-offsets-linux.json" )
 		set( AMXX_OFFSETS_SCRIPT_ARG "--linux=${AMXX_OFFSETS_JSON}" )
-
-		# File doesn't have +x set in the ZIP. Fix that.
-		file(
-			CHMOD ${AMXX_OFFSETS_EXEC}
-			PERMISSIONS
-				OWNER_READ OWNER_WRITE OWNER_EXECUTE
-				GROUP_WRITE GROUP_EXECUTE
-				WORLD_READ WORLD_EXECUTE
-		)
 	else()
 		message( FATAL_ERROR "GENERATE_AMXX_OFFSETS is not supported on this platform" )
 	endif()
@@ -255,11 +249,22 @@ if( GENERATE_AMXX_OFFSETS )
 	FetchContent_Declare(
 		amxx-offset-generator
 		URL https://github.com/tmp64/amxx-offset-generator/releases/download/v${AMXX_OFFSET_GENERATOR_VERSION}/amxx-offset-generator-v${AMXX_OFFSET_GENERATOR_VERSION}.zip
-		URL_HASH SHA256=a2e26ea8b94162f505f430094b26eb114fa446f2955db3396394e6c3702e6d50
+		URL_HASH SHA256=8fb1b0dd311cdbade408621bad66bf58c2e3472a8c68d3126a5b7b1b26c6da8e
 		SOURCE_DIR ${AMXX_OFFSET_GENERATOR_DIR}
 	)
 
 	FetchContent_MakeAvailable( amxx-offset-generator )
+
+	if( PLATFORM_LINUX )
+		# File doesn't have +x set in the ZIP. Fix that.
+		file(
+			CHMOD ${AMXX_OFFSETS_EXEC}
+			PERMISSIONS
+				OWNER_READ OWNER_WRITE OWNER_EXECUTE
+				GROUP_WRITE GROUP_EXECUTE
+				WORLD_READ WORLD_EXECUTE
+		)
+	endif()
 
 	# Add command to generate the JSON file and the offset files
 	add_custom_command(

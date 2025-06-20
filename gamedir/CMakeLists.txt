@@ -162,9 +162,16 @@ bhl_install_target( server server "dlls" )
 bhl_install_target( server bugfixedapi_amxx "addons/amxmodx/modules" )
 
 if( GENERATE_AMXX_OFFSETS )
+	# Generate the install script
+	configure_file(
+		${CMAKE_SOURCE_DIR}/cmake/InstallAmxxOffsets.cmake.in
+		${CMAKE_CURRENT_BINARY_DIR}/InstallAmxxOffsets.cmake
+		@ONLY
+	)
+
 	# Install offset files
 	install(
-		SCRIPT ${CMAKE_SOURCE_DIR}/cmake/InstallAmxxOffsets.cmake
+		SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/InstallAmxxOffsets.cmake
 		COMPONENT server
 	)
 endif()

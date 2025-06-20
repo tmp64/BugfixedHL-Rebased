@@ -51,11 +51,11 @@
     },
     {
       "name": "ci-windows",
-      "inherits": ["vcpkg-windows", "ci-base"]
+      "inherits": ["ci-base", "vcpkg-windows"]
     },
     {
       "name": "ci-linux",
-      "inherits": ["vcpkg-linux", "ci-base"]
+      "inherits": ["ci-base", "vcpkg-linux"]
     }
   ],
   "buildPresets": [

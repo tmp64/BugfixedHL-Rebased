@@ -39,6 +39,10 @@ def create_metadata(version: str, startpath: Path):
             if path.startswith('..'):
                 continue
 
+            # Skip metadata itself (exists when merging artifacts)
+            if path == METADATA_FILE_NAME:
+                continue
+
             file_data = {
                 'size': os.path.getsize(fullpath),
                 'hash_sha1': '',

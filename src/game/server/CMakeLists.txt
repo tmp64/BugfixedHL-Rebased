@@ -218,6 +218,9 @@ set_target_properties( ${TARGET_NAME} PROPERTIES PREFIX "" )
 # Set the original name
 set_target_properties( ${TARGET_NAME} PROPERTIES OUTPUT_NAME "hl" )
 
+# Depend on AMXX module since it's required for cmake --install
+add_dependencies( server bugfixedapi_amxx )
+
 if( GENERATE_AMXX_OFFSETS )
 	# Must also be updated in .github/workflows/main.yml
 	# Must also change URL_HASH

@@ -2,7 +2,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "lldb: Launch",
+            "name": "Half-Life (Windows)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "C:/Program Files/Steam/steamapps/common/Half-Life/hl.exe",
+            "args": [
+                "-steam",
+                "-game", "valve",
+                "-dev",
+                "-insecure",
+            ],
+            "cwd": "C:/Program Files/Steam/steamapps/common/Half-Life",
+            "env": {
+            },
+        },
+        {
+            "name": "Half-Life (Linux)",
             "type": "lldb",
             "request": "launch",
             "program": "${env:HOME}/.local/share/Steam/steamapps/common/Half-Life/hl_linux",
@@ -21,7 +36,7 @@
             },
         },
         {
-            "name": "llvm: Attach",
+            "name": "lldb: Attach",
             "type": "lldb",
             "request": "attach",
             "pid": "${command:pickProcess}"

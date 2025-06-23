@@ -96,7 +96,7 @@ if( BUILD_TESTING )
 
 	set_target_properties( test_server PROPERTIES
 		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/workdir"
-		VS_DEBUGGER_COMMAND_ARGUMENTS "$<TARGET_FILE:hl>"
+		VS_DEBUGGER_COMMAND_ARGUMENTS "$<TARGET_FILE:server>"
 	)
 
 	#-----------------------------------------------------------------

@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Half-Life (Windows)",
-            "type": "lldb",
+            "type": "cppvsdbg",
             "request": "launch",
             "program": "C:/Program Files/Steam/steamapps/common/Half-Life/hl.exe",
             "args": [
@@ -13,8 +13,6 @@
                 "-insecure",
             ],
             "cwd": "C:/Program Files/Steam/steamapps/common/Half-Life",
-            "env": {
-            },
         },
         {
             "name": "Half-Life (Linux)",

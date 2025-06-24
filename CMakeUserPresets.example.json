@@ -2,7 +2,7 @@
   "version": 4,
   "configurePresets": [
     {
-      "name": "user-debug-vs2022",
+      "name": "user-debug-windows",
       "inherits": ["vcpkg-windows"],
       "generator": "Visual Studio 17 2022",
       "architecture": "Win32",
@@ -13,8 +13,8 @@
       }
     },
     {
-      "name": "user-debug-vscode",
-      "inherits": ["vcpkg-windows"],
+      "name": "user-debug-linux",
+      "inherits": ["vcpkg-linux"],
       "cacheVariables": {
         "AUTO_DEPLOY": true,
         "USE_UPDATER": true,
@@ -24,13 +24,13 @@
   ],
   "buildPresets": [
     {
-      "name": "user-debug-vs2022",
-      "configurePreset": "user-debug-vs2022",
+      "name": "user-debug-windows",
+      "configurePreset": "user-debug-windows",
       "inheritConfigureEnvironment": true
     },
     {
-      "name": "user-debug-vscode",
-      "configurePreset": "user-debug",
+      "name": "user-debug-linux",
+      "configurePreset": "user-debug-linux",
       "inheritConfigureEnvironment": true
     }
   ]

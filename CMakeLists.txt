@@ -2,7 +2,7 @@
 # Bugfixed and Improved Half-Life Release
 #
 
-cmake_minimum_required( VERSION 3.25.0 )
+cmake_minimum_required( VERSION 3.30.0 )
 
 # Use static MSVC runtime
 set( CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" )

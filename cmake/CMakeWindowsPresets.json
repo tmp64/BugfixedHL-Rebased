@@ -1,0 +1,21 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "vcpkg",
+      "hidden": true,
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "VCPKG_HOST_TRIPLET": "x86-windows-static",
+        "VCPKG_TARGET_TRIPLET": "x86-windows-static"
+      }
+    },
+    {
+      "name": "platform-generator",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "architecture": "Win32"
+    }
+  ]
+}

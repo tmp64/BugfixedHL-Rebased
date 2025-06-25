@@ -22,10 +22,10 @@ jobs:
         os:
           - runs-on: windows-2022
             vcpkg-triplet: x86-windows-static
-            preset: ci-windows
+            suffix: ci-windows
           - runs-on: ubuntu-22.04
             vcpkg-triplet: x86-linux
-            preset: ci-linux
+            suffix: ci-linux
         target: [client, server]
 
     # The type of runner that the job will run on
@@ -66,10 +66,10 @@ jobs:
         uses: lukka/run-cmake@v10
         id: runcmake
         with:
-          configurePreset: '${{ matrix.os.preset }}'
-          buildPreset: '${{ matrix.os.preset }}'
+          configurePreset: github-actions
+          buildPreset: github-actions
           buildPresetAdditionalArgs: "['--target', 'ci-${{ matrix.target }}']"
-          testPreset: '${{ matrix.os.preset }}'
+          testPreset: github-actions
           testPresetAdditionalArgs: "['-R', '${{ matrix.target }}']"
         env:
           VCPKG_FORCE_SYSTEM_BINARIES: 1
@@ -77,18 +77,18 @@ jobs:
       # Install
       - name: Install with CMake
         run: |
-          cmake --install ${{github.workspace}}/_build/${{ matrix.os.preset }} --prefix ${{github.workspace}}/_build/ci-install --component ${{ matrix.target }}
+          cmake --install ${{github.workspace}}/_build/github-actions --config RelWithDebInfo --prefix ${{github.workspace}}/_build/ci-install --component ${{ matrix.target }}
 
       # Prepare artifact
       - name: Prepare artifact
         id: prepare_artifact
         run: >
           python scripts/package_target.py
-          --build-dir ${{github.workspace}}/_build/${{ matrix.os.preset }}
+          --build-dir ${{github.workspace}}/_build/github-actions
           --install-dir ${{github.workspace}}/_build/ci-install
           --artifact-dir ${{github.workspace}}/_build/ci-artifact
           --target ${{ matrix.target }}
-          --suffix ${{ matrix.os.preset }}
+          --suffix ${{ matrix.os.suffix }}
 
       # Upload result
       - name: Upload build result

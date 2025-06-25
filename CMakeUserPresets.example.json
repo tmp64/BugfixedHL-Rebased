@@ -2,19 +2,8 @@
   "version": 4,
   "configurePresets": [
     {
-      "name": "user-debug-windows",
-      "inherits": ["vcpkg-windows"],
-      "generator": "Visual Studio 17 2022",
-      "architecture": "Win32",
-      "cacheVariables": {
-        "AUTO_DEPLOY": true,
-        "USE_UPDATER": true,
-        "GENERATE_AMXX_OFFSETS": false
-      }
-    },
-    {
-      "name": "user-debug-linux",
-      "inherits": ["vcpkg-linux"],
+      "name": "user",
+      "inherits": ["base", "platform-generator"],
       "cacheVariables": {
         "AUTO_DEPLOY": true,
         "USE_UPDATER": true,
@@ -24,14 +13,16 @@
   ],
   "buildPresets": [
     {
-      "name": "user-debug-windows",
-      "configurePreset": "user-debug-windows",
-      "inheritConfigureEnvironment": true
+      "name": "user-debug",
+      "configurePreset": "user",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Debug"
     },
     {
-      "name": "user-debug-linux",
-      "configurePreset": "user-debug-linux",
-      "inheritConfigureEnvironment": true
+      "name": "user-release",
+      "configurePreset": "user",
+      "inheritConfigureEnvironment": true,
+      "configuration": "RelWithDebInfo"
     }
   ]
 }

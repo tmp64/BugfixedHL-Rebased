@@ -6,7 +6,7 @@
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "clangd.arguments": [
         "-header-insertion=never",
-        "--compile-commands-dir=_build/user-debug"
+        "--compile-commands-dir=_build/user"
     ],
     "cmake.useCMakePresets": "always"
 }

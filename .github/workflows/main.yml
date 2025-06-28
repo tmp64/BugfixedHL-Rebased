@@ -14,15 +14,27 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
+    name: "Build"
+
     strategy:
       matrix:
-        runs-on: [windows-2019, ubuntu-20.04]
+        os:
+          - runs-on: windows-2022
+            vcpkg-triplet: x86-windows-static
+            suffix: ci-windows
+          - runs-on: ubuntu-22.04
+            vcpkg-triplet: x86-linux
+            suffix: ci-linux
         target: [client, server]
-    
+
     # The type of runner that the job will run on
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.os.runs-on }}
+
+    env:
+      VCPKG_ROOT: '${{github.workspace}}/vcpkg'
+      VCPKG_DEFAULT_TRIPLET: '${{ matrix.os.vcpkg-triplet }}'
+      VCPKG_DEFAULT_HOST_TRIPLET: '${{ matrix.os.vcpkg-triplet }}'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -32,30 +44,120 @@ jobs:
           submodules: recursive
           fetch-depth: 0 # Required for automatic versioning
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.8
-      
       - name: Install Ubuntu packages
-        if: matrix.runs-on == 'ubuntu-20.04'
+        if: matrix.os.runs-on == 'ubuntu-22.04'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
-          sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib libssl1.1:i386 libssl-dev:i386 zlib1g-dev:i386
+          sudo apt install -y libc6:i386 linux-libc-dev:i386 ninja-build gcc-multilib g++-multilib
 
-      - name: Build release
-        id: build
+      # Restore artifacts, or setup vcpkg for building artifacts
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        id: runvcpkg
+        with:
+          vcpkgJsonGlob: 'vcpkg.json'
+          vcpkgDirectory: '${{env.VCPKG_ROOT}}'
+          vcpkgGitCommitId: 'ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0'
+          runVcpkgInstall: false
+
+      # Run CMake+vcpkg+Ninja+CTest to generate/build/test.
+      - name: Build and Test with CMake
+        uses: lukka/run-cmake@v10
+        id: runcmake
+        with:
+          configurePreset: github-actions
+          buildPreset: github-actions
+          buildPresetAdditionalArgs: "['--target', 'ci-${{ matrix.target }}']"
+          testPreset: github-actions
+          testPresetAdditionalArgs: "['-R', '${{ matrix.target }}']"
+        env:
+          VCPKG_FORCE_SYSTEM_BINARIES: 1
+
+      # Install
+      - name: Install with CMake
         run: |
-          python ./scripts/BuildRelease.py --target ${{ matrix.target }} --build-type release --vs 2019 --toolset v141_xp --linux-compiler gcc-9 --out-dir ./_build_out --cmake-args="-DWARNINGS_ARE_ERRORS=ON" --github-actions
+          cmake --install ${{github.workspace}}/_build/github-actions --config RelWithDebInfo --prefix ${{github.workspace}}/_build/ci-install --component ${{ matrix.target }}
 
-      - name: Run tests
-        run: |
-          cd ./_build_out/build
-          ctest -R ${{ matrix.target }} --build-config RelWithDebInfo --output-on-failure
+      # Prepare artifact
+      - name: Prepare artifact
+        id: prepare_artifact
+        run: >
+          python scripts/package_target.py
+          --build-dir ${{github.workspace}}/_build/github-actions
+          --install-dir ${{github.workspace}}/_build/ci-install
+          --artifact-dir ${{github.workspace}}/_build/ci-artifact
+          --target ${{ matrix.target }}
+          --suffix ${{ matrix.os.suffix }}
 
+      # Upload result
       - name: Upload build result
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.build.outputs.artifact_name }}
-          path: ./_build_out/BugfixedHL-*.zip
+          name: ${{ steps.prepare_artifact.outputs.artifact_name }}
+          path: ${{github.workspace}}/_build/ci-artifact
+
+  merge-artifacts:
+    name: "Merge Artifacts"
+    needs: build
+
+    strategy:
+      matrix:
+        target: [client, server]
+    runs-on: ubuntu-latest
+
+    env:
+      # Must also be updated in src/game/server/CMakeLists.txt
+      AMXX_OFFSET_GENERATOR_VERSION: "1.0.1"
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+        with:
+          submodules: false # Only need scripts folder
+
+      # Download artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          path: ${{github.workspace}}/_build/ci-artifacts
+          pattern: "*-${{ matrix.target }}-ci-*"
+          merge-multiple: true
+
+      # Download amxx-offset-generator
+      - name: Download amxx-offset-generator
+        run: |
+          mkdir -p ${{github.workspace}}/_build/_amxx
+          cd ${{github.workspace}}/_build/_amxx
+          curl -L --output amxx-offset-generator.zip https://github.com/tmp64/amxx-offset-generator/releases/download/v${AMXX_OFFSET_GENERATOR_VERSION}/amxx-offset-generator-v${AMXX_OFFSET_GENERATOR_VERSION}.zip
+          unzip amxx-offset-generator.zip -d .
+
+      # Generate new AMXX offsets
+      - name: Generate AMXX offsets
+        if: matrix.target == 'server'
+        run: >
+          python
+          ${{github.workspace}}/_build/_amxx/amxx-offset-generator-v${AMXX_OFFSET_GENERATOR_VERSION}/create_amxx_files.py
+          --windows $(find ${{github.workspace}}/_build/ci-artifacts -name "bhl-amxx-offsets-windows.json" -print -quit)
+          --linux $(find ${{github.workspace}}/_build/ci-artifacts -name "bhl-amxx-offsets-linux.json" -print -quit)
+          --out ${{github.workspace}}/_build/ci-artifacts/bhl-server-amxx-offsets/valve_addon/addons/amxmodx/data/gamedata/common.games/custom
+          --banner "BugfixedHL-Rebased offset file. Generated using amxx-offset-generator."
+          --file-prefix "bhl"
+
+      # Merge them
+      - name: Merge artifacts
+        id: merge_artifacts
+        run: >
+          python scripts/merge_artifacts.py
+          --artifact-dir ${{github.workspace}}/_build/ci-artifacts
+          --out-dir ${{github.workspace}}/_build/ci-out-artifact
+          --target ${{ matrix.target }}
+          __amxx-offsets
+          ci-linux
+          ci-windows
+
+      # Upload merged artifact
+      - name: Upload merged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.merge_artifacts.outputs.artifact_name }}
+          path: ${{github.workspace}}/_build/ci-out-artifact

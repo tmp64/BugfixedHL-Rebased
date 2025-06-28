@@ -2,7 +2,7 @@
 # Bugfixed and Improved Half-Life Release
 #
 
-cmake_minimum_required( VERSION 3.15.0 )
+cmake_minimum_required( VERSION 3.30.0 )
 
 # Use static MSVC runtime
 set( CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" )
@@ -20,8 +20,8 @@ list( APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_LIST_DIR}/cmake"
 )
 
+include( FetchContent )
 include( InputFilesList )
-include( WinXPSupport )
 include( GitVersionSemverfier )
 
 #-----------------------------------------------------------------
@@ -58,6 +58,9 @@ unset( BHL_REPO_VERSION_PATCH )
 unset( BHL_REPO_VERSION_TAG )
 # Use GIT_XXX from now on
 
+# This will be used by CI build scripts
+file( WRITE ${CMAKE_BINARY_DIR}/version.txt ${GIT_SEM_VERSION} )
+
 project( BugfixedHL VERSION "${GIT_MAJOR}.${GIT_MINOR}.${GIT_PATCH}.${GIT_SKIP}" )
 include( PlatformInfo )
 include( CTest )
@@ -65,9 +68,10 @@ include( CTest )
 #-----------------------------------------------------------------
 # Build options
 #-----------------------------------------------------------------
-option( AUTO_DEPLOY		"Whether to automatically deploy to deploy paths" )
-option( USE_UPDATER		"Enable update checked and downloader" )
-option( NO_STEAM_API	"Disable Steam API" )
+option( AUTO_DEPLOY				"Whether to automatically deploy to deploy paths" )
+option( USE_UPDATER				"Enable update checked and downloader" )
+option( NO_STEAM_API			"Disable Steam API" )
+option( GENERATE_AMXX_OFFSETS	"Generate AMXX offsets when building" )
 
 #-----------------------------------------------------------------
 # Compiler checks
@@ -76,24 +80,13 @@ if( NOT CMAKE_SIZEOF_VOID_P EQUAL 4 )
 	if( NO_SIZEOF_VOID_P_CHECK )
 		message( WARNING "You are not building for 32 bit systems. This is not supported." )
 	else()
-		set( PLAT_ERROR "" )
-		
-		if( CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU" )
-			set( PLAT_ERROR "Did you forget CMAKE_TOOLCHAIN_FILE?" )
-		elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-			set( PLAT_ERROR "Are you generating for Win64?" )
-		else()
-			set( PLAT_ERROR "Check your compiler options." )
-		endif()
-		
-		message( FATAL_ERROR "You are not building for 32 bit systems. ${PLAT_ERROR}" )
+		message( FATAL_ERROR "You are not building for 32 bit systems. Did you forget VCPKG_CHAINLOAD_TOOLCHAIN_FILE?" )
 	endif()
 endif()
 
 #-----------------------------------------------------------------
 # Compiler and linker settings
 #-----------------------------------------------------------------
-# C++14 support
 set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_CXX_EXTENSIONS OFF )
@@ -322,18 +315,19 @@ endfunction()
 # Autodeploy macro
 #-----------------------------------------------------------------
 if( AUTO_DEPLOY )
-	macro( add_auto_deploy TARGET_NAME PUBLISH_PATHS_FILE )
-		if ( WIN32 )
-			add_custom_command( TARGET ${TARGET_NAME}
-				POST_BUILD
-				COMMAND ${CMAKE_SOURCE_DIR}/scripts/DeployLibs.bat "${CMAKE_BINARY_DIR}\\${PUBLISH_PATHS_FILE}" "$<TARGET_FILE:${TARGET_NAME}>" "$<TARGET_PDB_FILE:${TARGET_NAME}>"
-			)
-		else()
-			add_custom_command( TARGET ${TARGET_NAME}
-				POST_BUILD
-				COMMAND ${CMAKE_SOURCE_DIR}/scripts/DeployLibs.sh "${CMAKE_BINARY_DIR}/${PUBLISH_PATHS_FILE}" "$<TARGET_FILE:${TARGET_NAME}>"
-			)
-		endif()
+	macro( add_auto_deploy target_name component_name publish_paths_file )
+		add_custom_command( TARGET ${target_name}
+			POST_BUILD
+			COMMAND
+				${CMAKE_COMMAND}
+				-P
+				${CMAKE_SOURCE_DIR}/cmake/DeployLibs.cmake
+				--
+				${CMAKE_BINARY_DIR}
+				${component_name}
+				"$<CONFIG>"
+				${CMAKE_BINARY_DIR}/${publish_paths_file}
+		)
 	endmacro()
 else()
 	macro( add_auto_deploy )
@@ -344,8 +338,19 @@ endif()
 # Libraries
 #-----------------------------------------------------------------
 set( THREADS_PREFER_PTHREAD_FLAG ON )
+find_package( nlohmann_json CONFIG REQUIRED )
+find_package( Python 3.8...<4.0 COMPONENTS Interpreter )
 find_package( Threads REQUIRED )
+find_package( unofficial-pcre CONFIG REQUIRED )
+
+include( cmake/lib/SDL2.cmake )
+
 add_subdirectory( external )
+
+if( WIN32 )
+	find_package( stackwalker CONFIG REQUIRED )
+	include( cmake/lib/DInput.cmake )
+endif()
 
 #-----------------------------------------------------------------
 # Half-Life SDK
@@ -388,13 +393,6 @@ set( GAME_COMMON_INCLUDE_PATHS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pm_shared
 )
 
-# Disable PCH for common sources because includes are a mess there
-set_source_files_properties(
-	${GAME_COMMON_SRCS}
-	PROPERTIES
-	SKIP_PRECOMPILE_HEADERS ON
-)
-
 #-----------------------------------------------------------------
 # Source SDK
 #-----------------------------------------------------------------
@@ -418,42 +416,9 @@ if( USE_UPDATER )
 		message( FATAL_ERROR "Updater requires support for std::filesystem." )
 	endif()
 
-	# Set platform path
-	if( PLATFORM_WINDOWS )
-		set( PLAT_EXTERNAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/windows")
-	elseif( PLATFORM_LINUX )
-		set( PLAT_EXTERNAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/linux")
-	elseif( PLATFORM_MACOS )
-		set( PLAT_EXTERNAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/macos")
-	else()
-		message(FATAL_ERROR "Unknown platform")
-	endif()
-
 	# Find libraries
-	set( ZLIB_ROOT "${PLAT_EXTERNAL_PATH}/zlib" )
-	set( ZLIB_USE_STATIC_LIBS ON )
-	find_package( ZLIB REQUIRED )
-
-	set( libzip_DIR "${PLAT_EXTERNAL_PATH}/libzip/lib/cmake/libzip" )
-	find_package( libzip REQUIRED NO_DEFAULT_PATH )
-
-	if( PLATFORM_LINUX )
-		# The bundled curl statically links with the bundled GnuTLS
-		set( CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${PLAT_EXTERNAL_PATH}/gnutls" )
-		find_package( GnuTLS REQUIRED )
-		
-		set( UPDATER_LIBS
-			${UPDATER_LIBS}
-			$<LINK_GROUP:RESCAN,
-				GnuTLS::GnuTLS,
-				${PLAT_EXTERNAL_PATH}/gnutls/lib/libgmp.a,
-				${PLAT_EXTERNAL_PATH}/gnutls/lib32/libnettle.a,
-				${PLAT_EXTERNAL_PATH}/gnutls/lib32/libhogweed.a>
-		)
-	endif()
-
-	set( CURL_DIR "${PLAT_EXTERNAL_PATH}/curl/lib/cmake/CURL" )
-	find_package( CURL REQUIRED NO_DEFAULT_PATH )
+	find_package( libzip CONFIG REQUIRED )
+	find_package( CURL REQUIRED )
 
 	set( UPDATER_LIBS
 		${UPDATER_LIBS}
@@ -471,227 +436,26 @@ endif()
 #-----------------------------------------------------------------
 set( CMAKE_FOLDER "HL SDK" )
 
-#-----------------------------------------------------------------
-# Client library
-#-----------------------------------------------------------------
-# Add in the shared sources
-add_sources( "${GAME_COMMON_SRCS}" )
-
-# Add in the library headers
-add_sources( "${SDL2_INCLUDE_FILES}" )
-
-# Add in the sources
-add_subdirectory( src/game/client )
-
-preprocess_sources()
-add_library( client SHARED ${PREP_SRCS} )
-check_winxp_support( client )
-add_auto_deploy( client PublishPathClient.txt )
-bhl_version_info( client "client.dll" "BugfixedHL-Rebased Client" )
-
-target_include_directories( client PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/src/game/client
-	${GAME_COMMON_INCLUDE_PATHS}
-	${SOURCE_SDK_INCLUDE_PATHS}
-	${UPDATER_INCLUDE_PATHS}
-)
-
-target_compile_definitions( client PRIVATE
-	${GAME_COMMON_DEFINES}
-	${SOURCE_SDK_DEFINES}
-	${UPDATER_DEFINES}
-	VERSION_SAFE_STEAM_API_INTERFACES
-	CLIENT_DLL
-)
-
-target_precompile_headers( client PRIVATE src/game/client/pch.h )
-
-# Dependencies
-find_package( SDL2 MODULE REQUIRED )
-
-if( WIN32 )
-	# DInput for direct mouse input
-	find_package( DInput REQUIRED )
-	find_package( DXGUID REQUIRED )
-
-	set( CLIENT_PLAT_LIBS
-		wsock32
-		psapi
-		DInput
-		DXGUID
-		Dbghelp
-		stackwalker
-    )
-
-	target_include_directories( client PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2/include
-	)
-else()
-	# Only link with SDL2 on Linux. Windows will conditionally link in runtime.
-	set( CLIENT_PLAT_LIBS
-		dl
-		SDL2
-	)
-endif()
-
-# Link with dependencies
-target_link_libraries( client
-	${GAME_COMMON_LIBS}
-	${SOURCE_SDK_LIBS}
-	${UPDATER_LIBS}
-	glad
-	pcre
-	semver
-	nlohmann_json
-	${CLIENT_PLAT_LIBS}
-	Threads::Threads
-)
-
-# Linker flags
-set( CLIENT_LINK_FLAGS "")
-set( CLIENT_COMPILE_FLAGS "")
-
-set_target_properties( client PROPERTIES
-	COMPILE_FLAGS "${CLIENT_COMPILE_FLAGS}"
-	LINK_FLAGS "${GAME_LINKER_FLAGS} ${CLIENT_LINK_FLAGS}"
-)
-
-# Remove "lib" prefix
-set_target_properties( client PROPERTIES PREFIX "" )
-
-create_source_groups( "${CMAKE_SOURCE_DIR}" )
-clear_sources()
-
-#-----------------------------------------------------------------
-# Server library
-#-----------------------------------------------------------------
-# Add in the shared sources
-add_sources( "${GAME_COMMON_SRCS}" )
-
-# Add in the sources
-add_subdirectory( src/game/server )
-
-preprocess_sources()
-add_library( hl SHARED ${PREP_SRCS} )
-check_winxp_support( hl )
-add_auto_deploy( hl PublishPathServer.txt )
-bhl_version_info( hl "hl.dll" "BugfixedHL-Rebased Server" )
-
-target_include_directories( hl PRIVATE
-	#${CMAKE_CURRENT_SOURCE_DIR}/src/game/server	# Already in GAME_COMMON_INCLUDE_PATHS
-	${GAME_COMMON_INCLUDE_PATHS}
-	${SOURCE_SDK_INCLUDE_PATHS} # For mathlib
-)
-
-target_compile_definitions( hl PRIVATE
-	${GAME_COMMON_DEFINES}
-	${SOURCE_SDK_DEFINES}
-	SERVER_DLL
-	MATHLIB_USE_C_ASSERT
-	MATHLIB_VECTOR_NONTRIVIAL
-)
-
-target_precompile_headers( hl PRIVATE src/game/server/pch.h )
-
-# Dependencies
-if( WIN32 )
-	set( SERVER_PLAT_LIBS )
-else()
-	set( SERVER_PLAT_LIBS
-		dl
-	)
-endif()
-
-# Link with dependencies
-target_link_libraries( hl 
-	${SERVER_PLAT_LIBS}
-	semver
-	Threads::Threads
-)
-
-# Linker flags
-set( SERVER_LINK_FLAGS "")
-set( SERVER_COMPILE_FLAGS "")
-
-set_target_properties( hl PROPERTIES
-	COMPILE_FLAGS "${SERVER_COMPILE_FLAGS}" 
-	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS}"
-)
-
-# Remove "lib" prefix
-set_target_properties( hl PROPERTIES PREFIX "" )
-
-create_source_groups( "${CMAKE_SOURCE_DIR}" )
-clear_sources()
-
-#-----------------------------------------------------------------
-# AMXX module
-#-----------------------------------------------------------------
-# Add in the shared sources
-add_sources( "${HL_COMMON_SRCS}" )
-add_sources( "${HL_ENGINE_SRCS}" )
-add_sources( "${HL_PUBLIC_SRCS}" )
-
-# Add in the sources
 add_subdirectory( src/bugfixedapi_amxx )
-
-preprocess_sources()
-add_library( bugfixedapi_amxx SHARED ${PREP_SRCS} )
-check_winxp_support( bugfixedapi_amxx )
-add_auto_deploy( bugfixedapi_amxx PublishPathAMXX.txt )
-bhl_version_info( bugfixedapi_amxx "bugfixedapi_amxx.dll" "BugfixedHL-Rebased AMXX Module" )
-
-target_include_directories( bugfixedapi_amxx PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/src/bugfixedapi_amxx
-	${GAME_COMMON_INCLUDE_PATHS}
-	${CMAKE_CURRENT_SOURCE_DIR}/external/metamod/metamod
-	${SOURCE_SDK_INCLUDE_PATHS} # For mathlib
-)
-
-target_compile_definitions( bugfixedapi_amxx PRIVATE
-	${GAME_COMMON_DEFINES}
-	${SOURCE_SDK_DEFINES}
-	USE_METAMOD
-	HAVE_STDINT_H
-	MATHLIB_USE_C_ASSERT
-	MATHLIB_VECTOR_NONTRIVIAL
-)
-
-# Dependencies
-if( WIN32 )
-	set( AMXX_PLAT_LIBS )
-else()
-	set( AMXX_PLAT_LIBS
-		dl
-	)
-endif()
-
-# Link with dependencies
-target_link_libraries( bugfixedapi_amxx 
-	${AMXX_PLAT_LIBS}
-	Threads::Threads
-)
-
-# Linker flags
-set( SERVER_LINK_FLAGS "")
-set( SERVER_COMPILE_FLAGS "")
-
-set_target_properties( bugfixedapi_amxx PROPERTIES
-	COMPILE_FLAGS "${SERVER_COMPILE_FLAGS}" 
-	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS}"
-)
-
-# Remove "lib" prefix
-set_target_properties( bugfixedapi_amxx PROPERTIES PREFIX "" )
-if ( NOT MSVC )
-	# Add i386 to the file name
-	set_target_properties( bugfixedapi_amxx PROPERTIES OUTPUT_NAME "bugfixedapi_amxx_i386" )
-endif()
-
-create_source_groups( "${CMAKE_SOURCE_DIR}" )
-clear_sources()
-
-#-----------------------------------------------------------------
-# Tests
-#-----------------------------------------------------------------
+add_subdirectory( src/game/client )
+add_subdirectory( src/game/server )
 add_subdirectory( src/tests )
+add_subdirectory( gamedir )
+
+# Disable PCH for common sources because includes are a mess there
+set_source_files_properties(
+	${GAME_COMMON_SRCS}
+	TARGET_DIRECTORY
+		client
+		server
+		bugfixedapi_amxx
+	PROPERTIES
+		SKIP_PRECOMPILE_HEADERS ON
+)
+
+# Add custom targets for CI
+add_custom_target( ci-client )
+add_dependencies( ci-client client test_client )
+
+add_custom_target( ci-server )
+add_dependencies( ci-server server test_server bugfixedapi_amxx )

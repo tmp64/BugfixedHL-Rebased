@@ -15,23 +15,27 @@ set( CLIENT_FILES
 	ui/gfx/default_avatar.tga
 	ui/gfx/hud/speaker.tga
 	ui/gfx/hud/speaker_self.tga
+	ui/gfx/hud/ammo_357.tga
+	ui/gfx/hud/ammo_9mm.tga
+	ui/gfx/hud/ammo_bolt.tga
+	ui/gfx/hud/ammo_buckshot.tga
+	ui/gfx/hud/ammo_energy.tga
+	ui/gfx/hud/ammo_grenade_frag.tga
+	ui/gfx/hud/ammo_grenade_hornet.tga
+	ui/gfx/hud/ammo_grenade_mp5.tga
+	ui/gfx/hud/ammo_grenade_rpg.tga
+	ui/gfx/hud/ammo_grenade_satchel.tga
+	ui/gfx/hud/ammo_grenade_tripmine.tga
+	ui/gfx/hud/ammo_snark.tga
+	ui/gfx/hud/default_ammo.tga
 	ui/gfx/muted_icon32.tga
 	ui/gfx/vgui/800corner1.tga
 	ui/gfx/vgui/800corner2.tga
 	ui/gfx/vgui/800corner3.tga
 	ui/gfx/vgui/800corner4.tga
 
-	ui/resource/Chat.res
-	ui/resource/ChatScheme.res
-	ui/resource/ChatSchemeBase.res
-	ui/resource/ClientScheme.res
-	ui/resource/ClientSchemeBase.res
-	ui/resource/ClientSourceScheme.res
-	ui/resource/ClientSourceSchemeBase.res
-	ui/resource/MOTD.res
-	ui/resource/ScorePanel.res
-	ui/resource/SpectatorInfoPanel.res
-	ui/resource/TeamMenu.res
+	ui/resource/fonts/HemiHead426-Regular.ttf
+	ui/resource/fonts/boxrocket.ttf
 
 	ui/resource/language/bugfixedhl_english.utf8.txt
 	ui/resource/language/bugfixedhl_russian.utf8.txt
@@ -44,8 +48,6 @@ set( CLIENT_FILES
 	ui/resource/language/chat_schinese.utf8.txt
 	ui/resource/language/chat_spanish.utf8.txt
 	ui/resource/language/chat_tchinese.utf8.txt
-
-	ui/resource/open_source_software.txt
 
 	ui/resource/options/AboutSubOptions.res
 	ui/resource/options/ChatSubOptions.res
@@ -61,6 +63,23 @@ set( CLIENT_FILES
 	ui/resource/updater/UpdateFileProgressDialog.res
 	ui/resource/updater/UpdateFileReplaceDialog.res
 	ui/resource/updater/UpdateNotificationDialog.res
+
+	ui/resource/Chat.res
+	ui/resource/ChatScheme.res
+	ui/resource/ChatSchemeBase.res
+	ui/resource/ClientScheme.res
+	ui/resource/ClientSchemeBase.res
+	ui/resource/ClientSourceScheme.res
+	ui/resource/ClientSourceSchemeBase.res
+	ui/resource/HudAmmo.res
+	ui/resource/HudAmmoSecondary.res
+	ui/resource/HudBattery.res
+	ui/resource/HudHealth.res
+	ui/resource/MOTD.res
+	ui/resource/open_source_software.txt
+	ui/resource/ScorePanel.res
+	ui/resource/SpectatorInfoPanel.res
+	ui/resource/TeamMenu.res
 
 	ui/scripts/HudAnimations.txt
 	ui/scripts/HudLayout.res

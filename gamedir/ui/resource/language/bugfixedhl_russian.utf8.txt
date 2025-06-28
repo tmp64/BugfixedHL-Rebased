@@ -1,0 +1,222 @@
+"lang"
+{
+"Language" "Russian"
+"Tokens"
+{
+"BHL_TeamMenu_Title"				"Выберите свою команду"
+"BHL_TeamMenu_Auto_Assign"			"  5   Авто назначение"
+"BHL_TeamMenu_Spectate"				"  6   Наблюдать"
+"BHL_TeamMenu_Cancel"				"  7   Отмена"
+"BHL_TeamMenu_NoMapInfo"			"Описание карты недоступно."
+
+"BHL_Scores_Map"					"Карта: "
+"BHL_Scores_ColSteamID"				"SteamID"
+"BHL_Scores_ColEff"					"Эфф"
+"BHL_Scores_ColPing"				"Пинг"			// Don't translate this as "latency". They are different things.
+"BHL_Scores_ColPingLoss"			"Пинг/Потери"
+"BHL_Scores_PlayerSpec"				"(наблюдатель)"
+"BHL_Scores_MenuMute"				"Заглушить"
+"BHL_Scores_MenuUnmute"				"Размьютить"
+"BHL_Scores_MenuSteamProfile"		"Открыть профиль Steam"
+"BHL_Scores_MenuSteamURL"			"Скопировать ссылку на профиль"
+"BHL_Scores_MenuCopyName"			"Скопировать ник"
+"BHL_Scores_MenuCopyNameRaw"		"Скопировать полный ник"
+"BHL_Scores_MenuCopySteamID"		"Скопировать SteamID"
+"BHL_Scores_MenuCopySteamID64"		"Скопировать SteamID64"
+
+"BHL_Update_Notif_Title"			"Уведомление об обновлении"
+"BHL_Update_Notif_Text"				"Вышло новое обновление."
+"BHL_Update_Notif_OldVer"			"Ваша версия: "
+"BHL_Update_Notif_NewVer"			"Последняя версия: "
+"BHL_Update_Notif_AutoCheck"		"Автоматически проверять обновления"
+"BHL_Update_Notif_Install"			"Установить обновление"
+
+"BHL_Update_ErrorTitle"				"Обновление не удалось"
+"BHL_Update_DLTitle"				"Загрузка обновления"
+"BHL_Update_ExtractionTitle"		"Распаковка обновления"
+"BHL_Update_HashingTitle"			"Проверка целостности файлов"
+"BHL_Update_InstallingTitle"		"Установка обновления"
+"BHL_Update_UserCancel"				"Установка была отменена"
+"BHL_Update_MetadataNotFound"		"Ваш установленный BugfixedHL поврежден.\n\nНе найден файл с метаданными.\n\nВам придется вручную обновить мод."
+"BHL_Update_InvalidModDir"			"Ваш установленный BugfixedHL поврежден.\n\nДиректория, в которую установлен BHL, не совпадает с загруженной двжиком.\n\nЧтобы получить подробности, проверьте консоль."
+"BHL_Update_InternalError"			"Произошла внутренняя ошибка\n\nЧтобы получить подробности, проверьте консоль."
+"BHL_Update_MetadataCorrupted"		"Ваш установленный BugfixedHL поврежден.\n\nВам придется вручную обновить мод."
+"BHL_Update_TempDirFailed"			"Не удалось создать временную директорию."
+"BHL_Update_NoAsset"				"Не удалось найти подходящие ресурсы на GitHub.\n\nПожалуйста свяжитесь с разработчиками."
+"BHL_Update_DLWriteOpenFailed"		"Не удалось открыть временный загрузочный файл для записи.\n\nЧтобы получить подробности, проверьте консоль."
+"BHL_Update_DLFailed"				"Не удалось скачать обновление.\n\n%s1"
+"BHL_Update_ZipOpenFailed"			"Не удалось открыть скачанный архив.\n\n%s1"
+"BHL_Update_ZipExtractFailed"		"Не удалось распаковать скачанный архив.\n\n%s1"
+"BHL_Update_NewMetaCorrupted"		"Не удалось распознать метаданные скачанного файла.\n\nПожалуйста, попробуйте еще раз позже.\nЕсли ошибка сохраняется, свяжитесь с разработчиками."
+"BHL_Update_HashFailed"				"Не удалось проверить файлы.\n\n%s1"
+"BHL_Update_HashMismatch"			"Не удалось проверить файлы на целостность.\n\n%s1\n\nожалуйста, попробуйте еще раз позже.\nЕсли ошибка сохраняется, свяжитесь с разработчиками."
+"BHL_Update_FileConflict"			"Конфликт файлов"
+"BHL_Update_FileConflict_Text"		"Игровой файл был изменен вручную. Вы хотите заменить его?\nВсе изменения будут потеряны."
+"BHL_Update_FileConflictCancel"		"Никакие файлы еще не были обновлены, вы можете безопасно отменить обновление."
+"BHL_Update_Replace"				"Заменить"
+"BHL_Update_ReplaceAll"				"Заменить все"
+"BHL_Update_Keep"					"Оставить"
+"BHL_Update_KeepAll"				"Оставить все"
+"BHL_Update_InternalError2"			"Произошла внутренняя ошибка при установке обновленных файлов.\n\nИгра может быть повреждена, BugfixedHL может потребовать ручной переустановки.\nЧтобы получить подробности, проверьте консоль."
+"BHL_Update_UpdaterDisabled"		"Данная версия BugfixedHL требует ручной установки."
+
+// Advanced options
+"BHL_PickColor"						"Выбрать"
+"BHL_GameMenu_AdvOptions"			"Дополнительные настройки"
+"BHL_AdvOptions"					"Дополнительные настройки"
+"BHL_ChangeLog_Title"				"Список изменений"
+
+
+// Adv options: HUD
+"BHL_AdvOptions_HUD"				"Интерфейс"
+"BHL_AdvOptions_HUD_Opacity"		"Прозрачность"
+
+"BHL_AdvOptions_HUD_Color"			"Основной цвет"
+"BHL_AdvOptions_HUD_Color_Title"	"Цвет интерфейса"
+
+"BHL_AdvOptions_HUD_Color1"			"ХП/АП/Патроны (Много)"
+"BHL_AdvOptions_HUD_Color1_Title"	"Цвет интерфейса ХП/АП/Патроны (Много)"
+
+"BHL_AdvOptions_HUD_Color2"			"ХП/АП/Патроны (Средне)"
+"BHL_AdvOptions_HUD_Color2_Title"	"Цвет интерфейса ХП/АП/Патроны (Средне)"
+
+"BHL_AdvOptions_HUD_Color3"			"ХП/АП/Патроны (Мало)"
+"BHL_AdvOptions_HUD_Color3_Title"	"Цвет интерфейса ХП/АП/Патроны (Мало)"
+
+"BHL_AdvOptions_HUD_Render"			"Улучшенный рендеринг спрайтов*"
+"BHL_AdvOptions_HUD_Dim"			"Затемнить неактивный интерфейс"
+"BHL_AdvOptions_HUD_MenuFKeys"		"Использовать F1-F10 в меню"
+"BHL_AdvOptions_HUD_WeapSprite"		"Отображать спрайт оружия"
+"BHL_AdvOptions_HUD_CenterId"		"Отцентровать имя игрока при наведении"
+"BHL_AdvOptions_HUD_Rainbow"		"Радужный HUD™"
+
+"BHL_AdvOptions_HUD_Speed"			"Показывать спидометр"
+"BHL_AdvOptions_HUD_SpeedCross"		"Спидометр под прицелом"
+"BHL_AdvOptions_HUD_JumpSpeed"		"Скорость последнего прыжка"
+"BHL_AdvOptions_HUD_JumpSpeedCross"	"Скорость прыжка под прицелом"
+
+"BHL_AdvOptions_HUD_Deathnotice"	"Список убийств VGUI2*"
+
+"BHL_AdvOptions_HUD_RenderMsg"		"* Требуется режим аппаратного рендеринга"
+
+"BHL_AdvOptions_Hud_Timer"			"Показывать таймер наверху экрана"
+"BHL_AdvOptions_Hud_Timer0"			"Никогда"
+"BHL_AdvOptions_Hud_Timer1"			"Осталось времени"
+"BHL_AdvOptions_Hud_Timer2"			"Прошло времени"
+"BHL_AdvOptions_Hud_Timer3"			"Местное время"
+
+"BHL_AdvOptions_Hud_Scale"		    "Масштаб интерфейса (треб. перезапуск)"
+"BHL_AdvOptions_Hud_ScaleAuto"		"Автоматически"
+
+
+// Adv options: Chat
+"BHL_AdvOptions_Chat"				"Чат"
+"BHL_AdvOptions_Chat_ChatStyle"		"Стиль чата"
+"BHL_AdvOptions_Chat_ChatStyle1"	"VGUI2"
+"BHL_AdvOptions_Chat_ChatStyle2"	"Старый (снизу)"
+"BHL_AdvOptions_Chat_ChatStyle3"	"Старый (сверху)"
+"BHL_AdvOptions_Chat_V2Label"		"Настройки чата VGUI2"
+"BHL_AdvOptions_Chat_Time"			"Новые сообщения исчезнут через N секунд"
+"BHL_AdvOptions_Chat_Mute"			"Глушить всю связь"
+"BHL_AdvOptions_Chat_MuteLabel"		"Заглушенные игроки также будут заглушены в чате"
+"BHL_AdvOptions_Chat_Sound"			"Звук чата"
+"BHL_AdvOptions_Chat_SoundLabel"	"Проигрывать звук при появлении нового сообщения"
+"BHL_AdvOptions_Chat_Display"		"Включить чат"
+"BHL_AdvOptions_Chat_Displaylabel"	"Отображать новые сообщения на экране"
+
+
+// Adv options: Crosshair
+"BHL_AdvOptions_Cross"				"Прицел"
+"BHL_AdvOptions_Cross_Enable"		"Включить настраиваемый прицел"
+"BHL_AdvOptions_Cross_Color"		"Цвет"
+"BHL_AdvOptions_Cross_Color_Title"	"Цвет прицела"
+"BHL_AdvOptions_Cross_Gap"			"Зазор"
+"BHL_AdvOptions_Cross_Size"			"Размер"
+"BHL_AdvOptions_Cross_Thickness"	"Толщина"
+"BHL_AdvOptions_Cross_OutThickness"	"Толщина обводки"
+"BHL_AdvOptions_Cross_Dot"			"Показывать точку в середине"
+"BHL_AdvOptions_Cross_T"			"Убрать линию сверху (выглядит как буква T)"
+
+
+// Adv options: Scoreboard
+"BHL_AdvOptions_Scores"				"Счёт"
+"BHL_AdvOptions_Scores_ShowAvatars"	"Показывать аватары"
+"BHL_AdvOptions_Scores_ShowSteamId"	"Показывать SteamID"
+"BHL_AdvOptions_Scores_ShowLoss"	"Показывать потерю пакетов"
+
+"BHL_AdvOptions_Scores_ShowEff"		"Показывать эффективность"
+"BHL_AdvOptions_Scores_EffType"		"Тип эффективности:"
+"BHL_AdvOptions_Scores_EffType0"	"K/D -- У / С"
+"BHL_AdvOptions_Scores_EffType1"	"K/L -- У / (С + 1)"
+"BHL_AdvOptions_Scores_EffType2"	"RCD/NGHL -- У / (У + С)"
+
+"BHL_AdvOptions_Scores_Mouse"		"Кнопка мыши для выхода в контекстное меню:"
+"BHL_AdvOptions_Scores_Mouse0"		"Не назначено"
+"BHL_AdvOptions_Scores_Mouse1"		"Левая кнопка мыши"
+"BHL_AdvOptions_Scores_Mouse2"		"Правая кнопка мыши"
+
+"BHL_AdvOptions_Scores_Size"		"Размер счёта:"
+"BHL_AdvOptions_Scores_Size0"		"Автоматически"
+"BHL_AdvOptions_Scores_Size1"		"Всегда большой"
+"BHL_AdvOptions_Scores_Size2"		"Всегда компактный"
+
+"BHL_AdvOptions_Scores_ShowInHud"	"Отображать мини-таблицу на экране\nМаксимальное число строк:"
+
+// Adv options: General
+"BHL_AdvOptions_General"			"Основные"
+"BHL_AdvOptions_General_FOV"		"Поле зрения"
+"BHL_AdvOptions_General_InputWin"	"Курсор Windows"
+"BHL_AdvOptions_General_InputDX"	"DirectInput"
+"BHL_AdvOptions_General_InputSDL"	"Raw Input"
+"BHL_AdvOptions_General_InputRec"	"(рекомендуемый)"
+"BHL_AdvOptions_General_Input"		"Метод ввода с мыши"
+"BHL_AdvOptions_General_KillSnd"	"Звук убийства"
+"BHL_AdvOptions_General_KillSnd2"	"Проигрывать звук при убийстве"
+"BHL_AdvOptions_General_HTML"		"Разрешить HTML MOTD"
+"BHL_AdvOptions_General_HTML2"		"Включить HTML в окне Сообщение дня"
+"BHL_AdvOptions_General_AutoJump"	"Авто-прыжок"
+"BHL_AdvOptions_General_AutoJump2"	"Прыгать автоматически, когда пробел зажат"
+"BHL_AdvOptions_General_LogChat"	"Хранить чат игроков"
+"BHL_AdvOptions_General_LogChat2"	"Записывать сообщения игроков в лог игры"
+"BHL_AdvOptions_General_LogOther"	"Хранить иной чат"
+"BHL_AdvOptions_General_LogOther2"	"Записывать иные сообщения чата в лог игры"
+"BHL_AdvOptions_General_AutoDemo"	"Записывать демо"
+"BHL_AdvOptions_General_AutoDemo2"	"Запись включается вначале игры"
+"BHL_AdvOptions_General_KeepFor"	"Сохранять демо"
+"BHL_AdvOptions_General_Days"		"дней"
+
+
+// Adv options: About
+"BHL_AdvOptions_About"				"О моде"
+"BHL_AdvOptions_About_BHL"			"Bugfixed and Improved Half-Life Release"
+"BHL_AdvOptions_About_Version"		"Версия: "
+"BHL_AdvOptions_About_NewVersion"	"Последняя версия: "
+"BHL_AdvOptions_About_NoUpdater"	"Н/Д (апдейтер не включен)"
+"BHL_AdvOptions_About_Unknown"		"Н/Д"
+"BHL_AdvOptions_About_NewUpdate"	"Доступно обновление."
+"BHL_AdvOptions_About_NewUpdate2"	"Посетите GitHub для загрузки обновления."
+"BHL_AdvOptions_About_Check"		"Проверить обновления"
+"BHL_AdvOptions_About_Changelog"	"Показать лог изменений"
+"BHL_AdvOptions_About_AutoCheck"	"Автоматически проверять обновления"
+"BHL_AdvOptions_About_GitHub"		"Посетить репозиторий GitHub (релизы, вики, и т.д.)"
+"BHL_AdvOptions_About_AGHL"			"Посетить форум AGHL.ru"
+"BHL_AdvOptions_About_OSSCredits"	"Использованное ПО с открытым исходным кодом"
+
+
+// Adv options: Models
+"BHL_AdvOptions_Models"				"Модели"
+"BHL_AdvOptions_Models_EnemyModels"	"Разрешенные модели врагов:"
+"BHL_AdvOptions_Models_ModelName"	"Модель"
+"BHL_AdvOptions_Models_Add"			"+"
+"BHL_AdvOptions_Models_Remove"		"Удалить"
+"BHL_AdvOptions_Models_RemoveAll"	"Удалить все"
+"BHL_AdvOptions_Models_TeamModel"	"Замененная модель союзников:"
+"BHL_AdvOptions_Models_EnemyColors"	"Замененные цвета врагов (например \"90 30\"):"
+"BHL_AdvOptions_Models_TeamColors"	"Замененные цвета союзников (например \"90 30\"):"
+"BHL_AdvOptions_Models_HideCorpses"	"Убрать трупы"
+"BHL_AdvOptions_Models_LeftHand"	"Оружия в левой руке"
+"BHL_AdvOptions_Models_AngledBob"	"Наклонять оружие при движении"
+"BHL_AdvOptions_Models_NoShells"	"Отключить гильзы"
+"BHL_AdvOptions_Models_NoViewmodel"		"Спрятать модели оружия"
+}
+}

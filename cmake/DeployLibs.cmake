@@ -22,7 +22,7 @@ math( EXPR arg_component_idx "${actual_args_start_idx} + 1" )
 set( component_name ${CMAKE_ARGV${arg_component_idx}} )
 
 math( EXPR arg_config_idx "${actual_args_start_idx} + 2" )
-set( config_name ${CMAKE_ARGV${arg_component_idx}} )
+set( config_name ${CMAKE_ARGV${arg_config_idx}} )
 
 math( EXPR arg_path_list_idx "${actual_args_start_idx} + 3" )
 set( path_list_file ${CMAKE_ARGV${arg_path_list_idx}} )

@@ -858,10 +858,22 @@ void CHudAmmo::Draw(float flTime)
 	int AmmoWidth;
 
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
+	{
+		if (g_pViewport) {
+			g_pViewport->HideAmmoPanel();
+			g_pViewport->HideAmmoSecondaryPanel();
+		}
 		return;
+	}
 
 	if ((gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL)))
+	{
+		if (g_pViewport) {
+			g_pViewport->HideAmmoPanel();
+			g_pViewport->HideAmmoSecondaryPanel();
+		}
 		return;
+	}
 
 	// Draw Weapon Menu
 	DrawWList(flTime);
@@ -913,7 +925,14 @@ void CHudAmmo::Draw(float flTime)
 
 	// SPR_Draw Ammo
 	if ((pw->iAmmoType < 0) && (pw->iAmmo2Type < 0))
+	{
+		if (g_pViewport)
+		{
+			g_pViewport->HideAmmoPanel();
+			g_pViewport->HideAmmoSecondaryPanel();
+		}
 		return;
+	}
 
 	int iFlags = DHN_DRAWZERO; // draw 0 values
 
@@ -921,8 +940,27 @@ void CHudAmmo::Draw(float flTime)
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 	y += (int)(gHUD.m_iFontHeight * 0.2f);
 
+	
+	if (g_pViewport)
+	{
+		if (m_pHudCustom.GetBool())
+		{
+			g_pViewport->UpdateAmmoPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
+			g_pViewport->UpdateAmmoSecondaryPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
+			g_pViewport->ShowAmmoPanel();
+		}
+		else
+		{
+			g_pViewport->HideAmmoPanel();
+		}
+	}
+	
+	if (m_pHudCustom.GetBool())
+	{
+		// Hide vanilla hud ammo
+	}
 	// Does weapon have any ammo at all?
-	if (m_pWeapon->iAmmoType > 0)
+	else if (m_pWeapon->iAmmoType > 0)
 	{
 		int iIconWidth = m_pWeapon->rcAmmo.right - m_pWeapon->rcAmmo.left;
 
@@ -972,7 +1010,7 @@ void CHudAmmo::Draw(float flTime)
 		SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo);
 	}
 
-	// Does weapon have seconday ammo?
+	// Does weapon have secondary ammo?
 	if (pw->iAmmo2Type > 0)
 	{
 		int iIconWidth = m_pWeapon->rcAmmo2.right - m_pWeapon->rcAmmo2.left;
@@ -980,6 +1018,16 @@ void CHudAmmo::Draw(float flTime)
 		// Do we have secondary ammo?
 		if ((pw->iAmmo2Type != 0) && (gWR.CountAmmo(pw->iAmmo2Type) > 0))
 		{
+			if (m_pHudCustom.GetBool())
+			{
+				g_pViewport->ShowAmmoSecondaryPanel();
+				return; // Hide vanilla secondary ammo
+			}
+			else
+			{
+				g_pViewport->HideAmmoSecondaryPanel();
+			}
+
 			a = alphaDim * gHUD.GetHudTransparency();
 			gHUD.GetHudAmmoColor(pw->iClip, GetMaxClip(pw->szName), r, g, b);
 			ScaleColors(r, g, b, a);

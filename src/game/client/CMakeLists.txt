@@ -132,12 +132,11 @@ set( SOURCE_FILES
 	hud/voice_status_self.cpp
 	hud/voice_status_self.h
 
+	vgui/IViewportPanel.h
 	vgui/avatar_image.cpp
 	vgui/avatar_image.h
 	vgui/client_motd.cpp
 	vgui/client_motd.h
-	vgui/client_viewport.cpp
-	vgui/client_viewport.h
 	vgui/command_menu.cpp
 	vgui/command_menu.h
 	vgui/crosshair_image.cpp
@@ -150,6 +149,16 @@ set( SOURCE_FILES
 	vgui/team_menu.h
 	vgui/tga_image.cpp
 	vgui/tga_image.h
+	vgui/client_viewport.cpp
+	vgui/client_viewport.h
+	vgui/hud_ammo.cpp
+	vgui/hud_ammo.h
+	vgui/hud_ammo_secondary.cpp
+	vgui/hud_ammo_secondary.h
+	vgui/hud_battery.cpp
+	vgui/hud_battery.h
+	vgui/hud_health.cpp
+	vgui/hud_health.h
 	vgui/viewport_panel_names.h
 
 	bhlcfg.cpp

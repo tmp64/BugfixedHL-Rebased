@@ -222,6 +222,13 @@ public:
 
 	void GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b);
 
+	/**
+	 * Calculate alphas for custom VGUI2 HUD when doing dimming effect.
+	 * Alpha 1 is for glow effect, visible only when dimmed.
+	 * Alpha 2 is for normal text, gets dimmed too.
+	 */
+	std::pair<int, int> GetHudDimAlphas(bool dimEnabled, float &fade, float timeDelta);
+
 	float GetHudTransparency();
 
 	ColorCodeAction GetColorCodeAction();
@@ -290,6 +297,7 @@ private:
 	Color m_HudColor1;
 	Color m_HudColor2;
 	Color m_HudColor3;
+	Color m_HudColor4;
 	Color m_ColorCodeColors[10];
 
 	ColorCodeAction m_ColorCodeAction;

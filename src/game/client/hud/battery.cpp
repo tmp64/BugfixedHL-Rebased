@@ -24,6 +24,7 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "battery.h"
+#include "vgui/client_viewport.h"
 
 DEFINE_HUD_ELEM(CHudBattery);
 
@@ -56,6 +57,9 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 	BEGIN_READ(pbuf, iSize);
 	int battery = READ_SHORT();
 
+	if (g_pViewport)
+		g_pViewport->UpdateBatteryPanel(battery);
+
 	if (battery != m_iBat)
 	{
 		m_fFade = FADE_TIME;
@@ -68,7 +72,12 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 void CHudBattery::Draw(float flTime)
 {
 	if (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH)
+	{
+		if (g_pViewport) {
+			g_pViewport->HideBatteryPanel();
+		}
 		return;
+	}
 
 	int r, g, b, x, y;
 	float a;
@@ -78,7 +87,25 @@ void CHudBattery::Draw(float flTime)
 	rc.top += m_iHeight * ((float)(100 - (min(100, m_iBat))) * 0.01f); // battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
+	{
+		if (g_pViewport) {
+			g_pViewport->HideBatteryPanel();
+		}
 		return;
+	}
+
+	if (g_pViewport)
+	{
+		if (m_pHudCustom.GetBool())
+		{
+			g_pViewport->ShowBatteryPanel();
+			return;
+		}
+		else
+		{
+			g_pViewport->HideBatteryPanel();
+		}
+	}
 
 	if (!hud_dim.GetBool())
 		a = MIN_ALPHA + ALPHA_POINTS_MAX;

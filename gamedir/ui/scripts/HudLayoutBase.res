@@ -9,6 +9,12 @@
 //----------------------------------------------------------//
 "Resource/HudLayout.res"
 {
+	"HudVanilla"
+	{
+		"statusbar_ypos"	"r45"
+		"ammohistory_ypos"	"r42"
+	}
+
 	"HudChat"
 	{
 		"ControlName"		"EditablePanel"

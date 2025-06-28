@@ -128,6 +128,9 @@ ConVar hud_color("hud_color", "255 160 0", FCVAR_BHL_ARCHIVE, "Main color of HUD
 ConVar hud_color1("hud_color1", "0 255 0", FCVAR_BHL_ARCHIVE, "HUD color when >= 90%");
 ConVar hud_color2("hud_color2", "255 160 0", FCVAR_BHL_ARCHIVE, "HUD color when [50%; 90%)");
 ConVar hud_color3("hud_color3", "255 96 0", FCVAR_BHL_ARCHIVE, "HUD color when (25%; 50%)");
+ConVar hud_color4("hud_color4", "255 0 0", FCVAR_BHL_ARCHIVE, "HUD color when (0%; 25%)");
+ConVar hud_color_override("hud_color_override", "0", FCVAR_ARCHIVE, "Enables/disables HUD coloring according to amount");
+ConVar hud_custom("hud_custom", "0", FCVAR_BHL_ARCHIVE, "Custom HUD using VGUI2");
 ConVar hud_draw("hud_draw", "1", FCVAR_ARCHIVE, "Opacity of the HUD");
 ConVar hud_dim("hud_dim", "1", FCVAR_BHL_ARCHIVE, "Dim inactive HUD elements");
 ConVar hud_scale("hud_scale", "0", FCVAR_BHL_ARCHIVE, "HUD Scale: Auto, 50%, 100%, 200%, 400% (restart required)");
@@ -736,6 +739,12 @@ Color CHud::GetHudColor(HudPart hudPart, int value)
 	if (hudPart == HudPart::Common)
 		return m_HudColor;
 
+    if (value <= 25 && hudPart != HudPart::Armor)
+        return m_HudColor4;
+
+    if (hud_color_override.GetBool())
+        return m_HudColor;
+
 	if (value >= 90)
 		return m_HudColor1;
 
@@ -745,7 +754,7 @@ Color CHud::GetHudColor(HudPart hudPart, int value)
 	if (value > 25 || hudPart == HudPart::Armor)
 		return m_HudColor3;
 
-	return Color(255, 0, 0, 255);
+	return m_HudColor4;
 }
 
 void CHud::GetHudColor(HudPart hudPart, int value, int &r, int &g, int &b)
@@ -759,7 +768,8 @@ void CHud::GetHudColor(HudPart hudPart, int value, int &r, int &g, int &b)
 void CHud::GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b)
 {
 	Color c;
-	if (maxvalue == -1 || maxvalue == 0)
+
+	if (maxvalue == -1 || maxvalue == 0 || hud_color_override.GetBool())
 	{
 		// Custom weapons will use default colors
 		c = m_HudColor;
@@ -778,15 +788,44 @@ void CHud::GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b)
 	}
 	else
 	{
-		r = 255;
-		g = 0;
-		b = 0;
-		return;
+		c = m_HudColor4;
 	}
 
 	r = c.r();
 	g = c.g();
 	b = c.b();
+}
+
+
+std::pair<int, int> CHud::GetHudDimAlphas(bool dimEnabled, float &fade, float timeDelta)
+{
+	const float MIN_ALPHA1 = 0.0f; // We want glow effect to hide when not dimmed
+	const float MIN_ALPHA2 = 200.0f; // We want normal text to be visible even when dimmed
+
+	int a1 = 255;
+	int a2 = 255;
+
+	if (!dimEnabled)
+	{
+		a1 = MIN_ALPHA1;
+		a2 = MIN_ALPHA + ALPHA_POINTS_MAX;
+		fade = FADE_TIME;
+	}
+	else if (fade > 0)
+	{
+		fade -= (timeDelta * 20.0f);
+		if (fade <= 0)
+			fade = 0;
+		float fadeProgress = fade / FADE_TIME;
+		a1 = MIN_ALPHA1 + fadeProgress * (255.0f - MIN_ALPHA1);
+		a2 = MIN_ALPHA2 + fadeProgress * (255.0f - MIN_ALPHA2);
+	}
+	else
+	{
+		a1 = MIN_ALPHA1;
+		a2 = MIN_ALPHA2;
+	}
+	return {a1, a2};
 }
 
 float CHud::GetHudTransparency()
@@ -818,6 +857,7 @@ void CHud::UpdateHudColors()
 	ParseColor(hud_color1.GetString(), m_HudColor1);
 	ParseColor(hud_color2.GetString(), m_HudColor2);
 	ParseColor(hud_color3.GetString(), m_HudColor3);
+	ParseColor(hud_color4.GetString(), m_HudColor4);
 }
 
 void CHud::UpdateSupportsCvar()

@@ -1,0 +1,43 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Half-Life (Windows)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "C:/Program Files/Steam/steamapps/common/Half-Life/hl.exe",
+            "args": [
+                "-steam",
+                "-game", "valve",
+                "-dev",
+                "-insecure",
+            ],
+            "cwd": "C:/Program Files/Steam/steamapps/common/Half-Life",
+        },
+        {
+            "name": "Half-Life (Linux)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${env:HOME}/.local/share/Steam/steamapps/common/Half-Life/hl_linux",
+            "args": [
+                "-steam",
+                "-game", "valve",
+                "-dev",
+                "-insecure",
+            ],
+            "cwd": "${env:HOME}/.local/share/Steam/steamapps/common/Half-Life",
+            "env": {
+                "PATH": "${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/amd64/bin:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/amd64/usr/bin:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/usr/bin:/usr/bin:/bin",
+                "STEAM_RUNTIME_LIBRARY_PATH": "${env:HOME}/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_32:${env:HOME}/.local/share/Steam/ubuntu12_32/steam-runtime/pinned_libs_64:/usr/lib32:/usr/lib/libfakeroot:/usr/lib:${env:HOME}/.local/share/Steam/ubuntu12_32/steam-runtime/lib/i386-linux-gnu:${env:HOME}/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/i386-linux-gnu:${env:HOME}/.local/share/Steam/ubuntu12_32/steam-runtime/lib/x86_64-linux-gnu:${env:HOME}/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib/x86_64-linux-gnu:${env:HOME}/.local/share/Steam/ubuntu12_32/steam-runtime/lib:${env:HOME}/.local/share/Steam/ubuntu12_32/steam-runtime/usr/lib",
+                "LD_LIBRARY_PATH": ".:/usr/lib32:/usr/lib:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/pinned_libs_32:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/pinned_libs_64:/usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu/aliases:/usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu/aliases:/usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu:/usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu:/lib/i386-linux-gnu:/usr/local/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib64:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/lib/i386-linux-gnu:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/usr/lib/i386-linux-gnu:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/lib/x86_64-linux-gnu:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/usr/lib/x86_64-linux-gnu:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/lib:${env:HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime/var/steam-runtime/usr/lib",
+                "SteamEnv": "1",
+            },
+        },
+        {
+            "name": "lldb: Attach",
+            "type": "lldb",
+            "request": "attach",
+            "pid": "${command:pickProcess}"
+        },
+    ]
+}

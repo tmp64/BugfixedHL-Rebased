@@ -1,12 +1,20 @@
-add_sources(
+set( TARGET_NAME server )
+
+set( SOURCE_FILES
+	${GAME_COMMON_SRCS}
 	CMakeLists.txt
+
 	../../public/vinterface/interface.cpp
 	../../public/vinterface/interface.h
+
+	wpn_shared/hl_wpn_glock.cpp
+	
 	activity.h
 	activitymap.h
 	aflock.cpp
 	agrunt.cpp
 	airtank.cpp
+	AmxxOffsetClassList.txt
 	animating.cpp
 	animation.cpp
 	animation.h
@@ -145,14 +153,143 @@ add_sources(
 	weapons.cpp
 	weapons.h
 	world.cpp
-	wpn_shared/hl_wpn_glock.cpp
 	xen.cpp
 	zombie.cpp
 )
 
 if( PLATFORM_WINDOWS )
-	add_sources(
+	set( SOURCE_FILES
+		${SOURCE_FILES}
 		hl.def
 		resource.h
+	)
+endif()
+
+source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${SOURCE_FILES} )
+
+add_library( ${TARGET_NAME} SHARED ${SOURCE_FILES} )
+add_auto_deploy( ${TARGET_NAME} server PublishPathServer.txt )
+bhl_version_info( ${TARGET_NAME} "hl.dll" "BugfixedHL-Rebased Server" )
+
+target_include_directories( ${TARGET_NAME} PRIVATE
+	.
+	${GAME_COMMON_INCLUDE_PATHS}
+	${SOURCE_SDK_INCLUDE_PATHS} # For mathlib
+)
+
+target_compile_definitions( ${TARGET_NAME} PRIVATE
+	${GAME_COMMON_DEFINES}
+	${SOURCE_SDK_DEFINES}
+	SERVER_DLL
+	MATHLIB_USE_C_ASSERT
+	MATHLIB_VECTOR_NONTRIVIAL
+)
+
+target_precompile_headers( ${TARGET_NAME} PRIVATE pch.h )
+
+# Dependencies
+if( WIN32 )
+	set( SERVER_PLAT_LIBS )
+else()
+	set( SERVER_PLAT_LIBS
+		dl
+	)
+endif()
+
+# Link with dependencies
+target_link_libraries( ${TARGET_NAME} 
+	${SERVER_PLAT_LIBS}
+	semver
+	Threads::Threads
+)
+
+# Linker flags
+set( SERVER_LINK_FLAGS "")
+set( SERVER_COMPILE_FLAGS "")
+
+set_target_properties( ${TARGET_NAME} PROPERTIES
+	COMPILE_FLAGS "${SERVER_COMPILE_FLAGS}" 
+	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS}"
+)
+
+# Remove "lib" prefix
+set_target_properties( ${TARGET_NAME} PROPERTIES PREFIX "" )
+
+# Set the original name
+set_target_properties( ${TARGET_NAME} PROPERTIES OUTPUT_NAME "hl" )
+
+# Depend on AMXX module since it's required for cmake --install
+add_dependencies( server bugfixedapi_amxx )
+
+if( GENERATE_AMXX_OFFSETS )
+	# Must also be updated in .github/workflows/main.yml
+	# Must also change URL_HASH
+	set( AMXX_OFFSET_GENERATOR_VERSION "1.0.1" )
+
+	set( AMXX_OFFSET_GENERATOR_DIR "${CMAKE_BINARY_DIR}/amxx-offset-generator" )
+	set( AMXX_OFFSETS_SCRIPT "${AMXX_OFFSET_GENERATOR_DIR}/create_amxx_files.py" )
+	set( AMXX_OFFSETS_CLASS_LIST "${CMAKE_CURRENT_SOURCE_DIR}/AmxxOffsetClassList.txt" )
+	set( AMXX_OFFSETS_OUT "${CMAKE_BINARY_DIR}/amxx-offsets" )
+
+	# Check if platform is supported
+	if( PLATFORM_WINDOWS )
+		set( AMXX_OFFSETS_EXEC "${AMXX_OFFSET_GENERATOR_DIR}/win64/OffsetExporter.Pdb.exe" )
+		set( AMXX_OFFSETS_DBG_FILE $<TARGET_PDB_FILE:server> )
+		set( AMXX_OFFSETS_DBG_FILE_ARG --pdb )
+		set( AMXX_OFFSETS_JSON "${CMAKE_BINARY_DIR}/bhl-amxx-offsets-windows.json" )
+		set( AMXX_OFFSETS_SCRIPT_ARG "--windows=${AMXX_OFFSETS_JSON}" )
+	elseif( PLATFORM_LINUX )
+		set( AMXX_OFFSETS_EXEC "${AMXX_OFFSET_GENERATOR_DIR}/linux64/OffsetExporter.Dwarf" )
+		set( AMXX_OFFSETS_DBG_FILE $<TARGET_FILE:server> )
+		set( AMXX_OFFSETS_DBG_FILE_ARG --so )
+		set( AMXX_OFFSETS_JSON "${CMAKE_BINARY_DIR}/bhl-amxx-offsets-linux.json" )
+		set( AMXX_OFFSETS_SCRIPT_ARG "--linux=${AMXX_OFFSETS_JSON}" )
+	else()
+		message( FATAL_ERROR "GENERATE_AMXX_OFFSETS is not supported on this platform" )
+	endif()
+
+	# Download the release
+	FetchContent_Declare(
+		amxx-offset-generator
+		URL https://github.com/tmp64/amxx-offset-generator/releases/download/v${AMXX_OFFSET_GENERATOR_VERSION}/amxx-offset-generator-v${AMXX_OFFSET_GENERATOR_VERSION}.zip
+		URL_HASH SHA256=8fb1b0dd311cdbade408621bad66bf58c2e3472a8c68d3126a5b7b1b26c6da8e
+		SOURCE_DIR ${AMXX_OFFSET_GENERATOR_DIR}
+	)
+
+	FetchContent_MakeAvailable( amxx-offset-generator )
+
+	if( PLATFORM_LINUX )
+		# File doesn't have +x set in the ZIP. Fix that.
+		file(
+			CHMOD ${AMXX_OFFSETS_EXEC}
+			PERMISSIONS
+				OWNER_READ OWNER_WRITE OWNER_EXECUTE
+				GROUP_WRITE GROUP_EXECUTE
+				WORLD_READ WORLD_EXECUTE
+		)
+	endif()
+
+	# Add command to generate the JSON file and the offset files
+	add_custom_command(
+		TARGET server POST_BUILD
+		COMMAND
+			${AMXX_OFFSETS_EXEC}
+			--class-list ${AMXX_OFFSETS_CLASS_LIST}
+			${AMXX_OFFSETS_DBG_FILE_ARG} ${AMXX_OFFSETS_DBG_FILE}
+			--out ${AMXX_OFFSETS_JSON}
+		COMMAND
+			Python::Interpreter
+			${AMXX_OFFSETS_SCRIPT}
+			${AMXX_OFFSETS_SCRIPT_ARG}
+			--out ${AMXX_OFFSETS_OUT}
+			--banner "BugfixedHL-Rebased offset file. Generated using amxx-offset-generator."
+			--file-prefix "bhl"
+		COMMENT "Generating AMXX offsets"
+	)
+
+	# Recompile when any of that changes
+	target_sources( server PRIVATE
+		${AMXX_OFFSETS_EXEC}
+		${AMXX_OFFSETS_CLASS_LIST}
 	)
 endif()

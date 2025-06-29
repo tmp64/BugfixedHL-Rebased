@@ -3,6 +3,14 @@
         "editor.insertSpaces": false,
         "editor.tabSize": 4
     },
+    "[c]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 4
+    },
+    "[cpp]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 4
+    },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "clangd.arguments": [
         "-header-insertion=never",

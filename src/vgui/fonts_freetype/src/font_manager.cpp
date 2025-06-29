@@ -112,7 +112,7 @@ CFont *CFontManager::FindOrCreateFont(const FontSettings &settings)
 	// Create a new font
 	try
 	{
-		std::unique_ptr<CFont> pFont = std::make_unique<CFont>(this, settings);
+		std::unique_ptr<CFont> pFont = std::make_unique<CFont>(this, m_pLogger, settings);
 		pFont->LoadFont();
 		return m_Fonts.emplace_back(std::move(pFont)).get();
 	}
@@ -129,15 +129,13 @@ std::string CFontManager::FindSystemFontPath(const char *pszFontName)
 
 	// https://stackoverflow.com/a/14634033
 	if (!m_hFontConfig)
-	{
 		m_hFontConfig = FcInitLoadConfigAndFonts();
-    }
 
     // configure the search pattern, 
     // assume "name" is a std::string with the desired font name in it
     FcPattern* pat = FcNameParse((const FcChar8*)pszFontName);
     FcConfigSubstitute(m_hFontConfig, pat, FcMatchPattern);
-    FcDefaultSubstitute(pat);
+	FcDefaultSubstitute(pat);
 
     // Find the font
     FcResult res;
@@ -157,4 +155,10 @@ std::string CFontManager::FindSystemFontPath(const char *pszFontName)
 
 	FcPatternDestroy(pat);
 	return fontFile;
+}
+
+void CFontManager::InitFreeType()
+{
+	FT_Error error = FT_Init_FreeType(&m_hFTLib);
+	CheckFreeTypeError(error);
 }

@@ -1,5 +1,9 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <unordered_map>
+#include <bhl/logging/ILogger.h>
+#include <bhl/logging/prefix_logger.h>
 
 class CFontManager;
 
@@ -36,10 +40,19 @@ struct FontSettings
 	bool operator!=(const FontSettings &other) const { return !(*this == other); }
 };
 
+struct GlyphBitmap
+{
+	int wide = 0;
+	int tall = 0;
+	int advance = 0;
+	std::vector<uint8_t> data;
+	FT_Glyph_Metrics metrics;
+};
+
 class CFont
 {
 public:
-	CFont(CFontManager* pFontManager, const FontSettings& settings);
+	CFont(CFontManager* pFontManager, ILogger* pLogger, const FontSettings& settings);
 	
 	//! @returns The font settings that were used to create the font.
 	const FontSettings &GetSettings() const { return m_Settings; }
@@ -47,7 +60,22 @@ public:
 	//! Loads the font.
 	void LoadFont();
 
+	//! Rasterizes a glyph. Results are cached.
+	const GlyphBitmap &RasterizeGlyph(uint32_t codepoint);
+
 private:
+	CPrefixLogger m_Logger;
 	CFontManager *m_pFontManager = nullptr;
 	FontSettings m_Settings;
+	std::vector<uint8_t> m_FontFileData;
+	FT_Face m_Face = {};
+	FT_Int32 m_LoadFlags = 0;
+	FT_Size m_Size = {};
+
+	std::unordered_map<uint32_t, GlyphBitmap> m_GlyphCache;
+
+	static void BlitGlyph(const FT_Bitmap *ft_bitmap, std::vector<uint8_t> dstBuffer);
+
+	void ReadFontFile();
+	GlyphBitmap RasterizeGlyphInternal(uint32_t codepoint);
 };

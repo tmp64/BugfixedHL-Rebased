@@ -346,6 +346,8 @@ target_link_libraries( client
 	nlohmann_json::nlohmann_json
 	${CLIENT_PLAT_LIBS}
 	Threads::Threads
+	utils_logging
+	vgui_fonts_freetype
 )
 
 # Linker flags

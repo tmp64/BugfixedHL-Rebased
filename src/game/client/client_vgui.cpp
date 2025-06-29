@@ -8,6 +8,7 @@
 #include <vgui/IPanel.h>
 #include <vgui/ILocalize.h>
 #include <vgui_controls/Controls.h>
+#include <vgui/fonts_freetype/factory.h>
 #include <convar.h>
 #include "console.h"
 #include "client_vgui.h"
@@ -24,14 +25,54 @@ HScheme VGui_GetDefaultScheme()
 	return 0;
 }
 
-}
+} // namespace vgui2
+
+namespace
+{
+
+class CBhlLogger : public ILogger
+{
+public:
+	virtual void LogMessage(ELogLevel logLevel, std::string_view msg) override
+	{
+		constexpr const char *FMT = "%.*s\n"; // Print first N chars from string
+
+		switch (logLevel)
+		{
+		case ELogLevel::Info:
+			ConPrintf(FMT, msg.size(), msg.data());
+			break;
+		case ELogLevel::Warn:
+			ConPrintf(ConColor::Yellow, FMT, msg.size(), msg.data());
+			break;
+		case ELogLevel::Error:
+			ConPrintf(ConColor::Red, FMT, msg.size(), msg.data());
+			break;
+		default:
+			ConPrintf(FMT, msg.size(), msg.data());
+			break;
+		}
+	}
+};
+
+CBhlLogger g_Logger;
+
+} // namespace
 
 void CClientVGUI::Initialize(CreateInterfaceFn *pFactories, int iNumFactories)
 {
-	ConnectTier1Libraries(pFactories, iNumFactories);
-	ConnectTier2Libraries(pFactories, iNumFactories);
+	std::vector<CreateInterfaceFn> factoryList;
+	factoryList.insert(factoryList.end(), pFactories, pFactories + iNumFactories);
 
-	if (!vgui2::VGui_InitInterfacesList("CLIENT", pFactories, iNumFactories))
+	ConnectTier1Libraries(factoryList.data(), factoryList.size());
+
+	// Init custom font renderer
+	ConnectVGuiFreeTypeLibraries(factoryList.data(), factoryList.size(), &g_Logger);
+	factoryList.insert(factoryList.begin(), GetFreeTypeFactory());
+
+	ConnectTier2Libraries(factoryList.data(), factoryList.size());
+
+	if (!vgui2::VGui_InitInterfacesList("CLIENT", factoryList.data(), factoryList.size()))
 	{
 		Error("Failed to intialize VGUI2\n");
 		Assert(false);

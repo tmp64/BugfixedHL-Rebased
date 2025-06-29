@@ -338,6 +338,8 @@ endif()
 # Libraries
 #-----------------------------------------------------------------
 set( THREADS_PREFER_PTHREAD_FLAG ON )
+find_package( fmt CONFIG REQUIRED )
+find_package( Freetype REQUIRED )
 find_package( nlohmann_json CONFIG REQUIRED )
 find_package( Python 3.8...<4.0 COMPONENTS Interpreter )
 find_package( Threads REQUIRED )
@@ -440,6 +442,8 @@ add_subdirectory( src/bugfixedapi_amxx )
 add_subdirectory( src/game/client )
 add_subdirectory( src/game/server )
 add_subdirectory( src/tests )
+add_subdirectory( src/utils/logging )
+add_subdirectory( src/vgui/fonts_freetype )
 add_subdirectory( gamedir )
 
 # Disable PCH for common sources because includes are a mess there

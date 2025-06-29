@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
+    "fmt",
     "nlohmann-json",
     "pcre",
 
@@ -26,6 +27,15 @@
       "name": "stackwalker",
       "platform": "windows",
       "default-features": false
+    },
+    {
+      "name": "freetype",
+      "default-features": false,
+      "features": [
+        "error-strings",
+        "subpixel-rendering",
+        "zlib"
+      ]
     }
   ]
 }

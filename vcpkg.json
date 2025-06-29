@@ -36,6 +36,10 @@
         "subpixel-rendering",
         "zlib"
       ]
+    },
+    {
+      "name": "fontconfig",
+      "default-features": false
     }
   ]
 }

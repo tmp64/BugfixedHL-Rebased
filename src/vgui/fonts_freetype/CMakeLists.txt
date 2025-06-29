@@ -4,6 +4,11 @@ add_library( ${TARGET_NAME} STATIC
 	include/vgui/fonts_freetype/factory.h
 
 	src/factory.cpp
+	src/font_manager.cpp
+	src/font_manager.h
+	src/font.cpp
+	src/font.h
+	src/pch.h
 	src/vgui_scheme_wrap.h
 )
 
@@ -20,6 +25,7 @@ target_include_directories( ${TARGET_NAME}
 
 target_compile_definitions( ${TARGET_NAME}
 	PUBLIC
+		${COMMON_DEFINES}
 		${SOURCE_SDK_DEFINES}
 )
 
@@ -30,4 +36,5 @@ target_link_libraries( ${TARGET_NAME}
 		utils_logging
 	PRIVATE
 		Freetype::Freetype
+		Fontconfig::Fontconfig
 )

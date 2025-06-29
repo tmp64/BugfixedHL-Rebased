@@ -39,6 +39,9 @@ public:
 
 		switch (logLevel)
 		{
+		case ELogLevel::Debug:
+			gEngfuncs.Con_DPrintf(FMT, msg.size(), msg.data());
+			break;
 		case ELogLevel::Info:
 			ConPrintf(FMT, msg.size(), msg.data());
 			break;

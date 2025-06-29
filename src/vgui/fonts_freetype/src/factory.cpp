@@ -1,11 +1,15 @@
 #include <memory>
 #include <tier1/KeyValues.h>
 #include <tier2/tier2.h>
+#include <vgui/IScheme.h>
+#include <vgui/ISurface.h>
 #include <bhl/logging/ILogger.h>
 #include <bhl/logging/prefix_logger.h>
 #include <vgui/fonts_freetype/factory.h>
 #include <FileSystem.h>
 #include "vgui_scheme_wrap.h"
+#include "font_manager.h"
+#include "font.h"
 
 template <typename T>
 T *FindInterfaceInFactory(CreateInterfaceFn *pFactories, int iNumFactories, const char *pszName)
@@ -26,12 +30,14 @@ class CFreeTypeSchemeManager : public CVGuiSchemeManagerWrap
 public:
 	CFreeTypeSchemeManager(
 	    ILogger *pLogger,
-	    IFileSystem* pFileSystem,
-	    vgui2::ISchemeManager* pBaseSchemeManager)
+	    IFileSystem *pFileSystem,
+	    vgui2::ISchemeManager *pBaseSchemeManager,
+	    CFontManager *pFontManager)
 	{
 		m_pBase = pBaseSchemeManager;
 		m_pLogger = pLogger;
 		m_pFileSystem = pFileSystem;
+		m_pFontManager = pFontManager;
     }
 	
 	virtual vgui2::HScheme LoadSchemeFromFile(const char *fileName, const char *tag) override
@@ -80,7 +86,25 @@ public:
 					continue;
 				}
 
-				m_pLogger->LogInfo("Font: {}::{} (prop={}) = 0x{:X}", tag, fontName, isProportional, hFont);
+				m_pLogger->LogDebug("Font: {}::{} (prop={}) = 0x{:X}", tag, fontName, isProportional, hFont);
+
+				// Parse settings
+				FontSettings settings = m_pFontManager->ParseFontSettings(font, isProportional);
+
+				if (!settings.IsValid())
+				{
+					m_pLogger->LogDebug("Font: {}::{} (prop={}) failed to load settings", tag, fontName, isProportional);
+					continue;
+				}
+
+				// Load the font
+				CFont *pMyFont = m_pFontManager->FindOrCreateFont(settings);
+
+				if (!pMyFont)
+				{
+					m_pLogger->LogDebug("Font: {}::{} (prop={}) failed to load font", tag, fontName, isProportional);
+					continue;
+				}
             }
         }
 
@@ -90,6 +114,7 @@ public:
 private:
 	ILogger *m_pLogger = nullptr;
 	IFileSystem *m_pFileSystem = nullptr;
+	CFontManager *m_pFontManager = nullptr;
 };
 
 class CFreeTypeFactory
@@ -101,10 +126,21 @@ public:
 	    ILogger *pLogger)
 	    : m_Logger(pLogger, "VGuiFreeType")
 	{
+		auto pRealFileSystem = FindInterfaceInFactory<IFileSystem>(pFactories, iNumFactories, FILESYSTEM_INTERFACE_VERSION);
+		auto pRealSurface = FindInterfaceInFactory<vgui2::ISurface>(pFactories, iNumFactories, VGUI_SURFACE_INTERFACE_VERSION_GS);
+		auto pRealSchemeManager = FindInterfaceInFactory<vgui2::ISchemeManager>(pFactories, iNumFactories, VGUI_SCHEME_INTERFACE_VERSION_GS);
+
+		m_pFontManager = std::make_unique<CFontManager>(
+		    &m_Logger,
+		    pRealSurface,
+		    pRealSchemeManager
+		);
+
 		m_pSchemeManager = std::make_unique<CFreeTypeSchemeManager>(
 		    &m_Logger,
-		    FindInterfaceInFactory<IFileSystem>(pFactories, iNumFactories, FILESYSTEM_INTERFACE_VERSION),
-		    FindInterfaceInFactory<vgui2::ISchemeManager>(pFactories, iNumFactories, VGUI_SCHEME_INTERFACE_VERSION_GS));
+		    pRealFileSystem,
+		    pRealSchemeManager,
+		    m_pFontManager.get());
 	}
 
 	void *CreateInterface(const char *pName, int *pReturnCode)
@@ -123,6 +159,7 @@ public:
 
 private:
 	CPrefixLogger m_Logger;
+	std::unique_ptr<CFontManager> m_pFontManager;
 	std::unique_ptr<CFreeTypeSchemeManager> m_pSchemeManager;
 };
 

@@ -4,6 +4,7 @@
 
 enum class ELogLevel
 {
+	Debug,
 	Info,
 	Warn,
 	Error,
@@ -20,6 +21,9 @@ struct ILogger
 		std::string text = fmt::vformat(format, args);
 		LogMessage(logLevel, text);
 	}
+
+	template <typename... Args>
+    void LogDebug(std::string_view format, const Args &...args) { VLogMessage(ELogLevel::Debug, format, fmt::make_format_args(args...)); }
 
 	template <typename... Args>
     void LogInfo(std::string_view format, const Args &...args) { VLogMessage(ELogLevel::Info, format, fmt::make_format_args(args...)); }

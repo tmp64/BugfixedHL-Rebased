@@ -135,8 +135,10 @@ void CClientViewport::ReloadLayout()
 {
 	// reload the .res file from disk
 	LoadControlSettings(VGUI2_ROOT_DIR "scripts/HudLayout.res");
-
-	InvalidateLayout(true, true);
+	m_pHudAmmoPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudAmmo.res");
+	m_pHudHealthPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudHealth.res");
+	m_pHudBatteryPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudBattery.res");
+	m_pHudAmmoSecondaryPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudAmmoSecondary.res");
 
 	// Load custom positions for the vanilla HUD to avoid overlapping with the new HUD
 	KeyValues *layoutKV = new KeyValues("HudLayout");
@@ -154,17 +156,7 @@ void CClientViewport::ReloadLayout()
 
 	}
 
-	m_pHudAmmoPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudAmmo.res");
-	m_pHudAmmoPanel->InvalidateLayout(true, true);
-
-	m_pHudHealthPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudHealth.res");
-	m_pHudHealthPanel->InvalidateLayout(true, true);
-
-	m_pHudBatteryPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudBattery.res");
-	m_pHudBatteryPanel->InvalidateLayout(true, true);
-
-	m_pHudAmmoSecondaryPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudAmmoSecondary.res");
-	m_pHudAmmoSecondaryPanel->InvalidateLayout(true, true);
+	InvalidateLayout(true, true);
 }
 
 void CClientViewport::CreateDefaultPanels()

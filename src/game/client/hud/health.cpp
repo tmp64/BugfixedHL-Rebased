@@ -28,6 +28,7 @@
 #include "parsemsg.h"
 #include "health.h"
 #include "vgui/client_viewport.h"
+#include "vgui/hud_health.h"
 
 #define PAIN_NAME   "sprites/%d_pain.spr"
 #define DAMAGE_NAME "sprites/%d_dmg.spr"
@@ -102,7 +103,7 @@ int CHudHealth::MsgFunc_Health(const char *pszName, int iSize, void *pbuf)
 	int x = READ_BYTE();
 
 	if (g_pViewport)
-		g_pViewport->UpdateHealthPanel(x);
+		g_pViewport->GetHealthPanel()->UpdateHealthPanel(x);
 
 	m_iFlags |= HUD_ACTIVE;
 
@@ -176,7 +177,7 @@ void CHudHealth::Draw(float flTime)
 	if ((gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH) || gEngfuncs.IsSpectateOnly())
 	{
 		if (g_pViewport) {
-			g_pViewport->HideHealthPanel();
+			g_pViewport->GetHealthPanel()->ShowPanel(false);
 		}
 		return;
 	}
@@ -223,12 +224,12 @@ void CHudHealth::Draw(float flTime)
 			// If custom HUD is enabled, disable old HUD
 			if (hud_custom.GetBool())
 			{
-				g_pViewport->ShowHealthPanel();
+				g_pViewport->GetHealthPanel()->ShowPanel(true);
 				return;
 			}
 			else
 			{
-				g_pViewport->HideHealthPanel();
+				g_pViewport->GetHealthPanel()->ShowPanel(false);
 			}
 		}
 		
@@ -264,7 +265,7 @@ void CHudHealth::Draw(float flTime)
 		FillRGBA(x, y, iWidth, iHeight, r, g, b, a);
 	} else {
 		if (g_pViewport) {
-			g_pViewport->HideHealthPanel();
+			g_pViewport->GetHealthPanel()->ShowPanel(false);
 		}
 	}
 

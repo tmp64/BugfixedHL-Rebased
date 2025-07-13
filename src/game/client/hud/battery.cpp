@@ -25,6 +25,7 @@
 #include "parsemsg.h"
 #include "battery.h"
 #include "vgui/client_viewport.h"
+#include "vgui/hud_battery.h"
 
 DEFINE_HUD_ELEM(CHudBattery);
 
@@ -58,7 +59,7 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 	int battery = READ_SHORT();
 
 	if (g_pViewport)
-		g_pViewport->UpdateBatteryPanel(battery);
+		g_pViewport->GetBatteryPanel()->UpdateBatteryPanel(battery);
 
 	if (battery != m_iBat)
 	{
@@ -74,7 +75,8 @@ void CHudBattery::Draw(float flTime)
 	if (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH)
 	{
 		if (g_pViewport) {
-			g_pViewport->HideBatteryPanel();
+			g_pViewport->GetBatteryPanel()->ShowPanel(false);
+
 		}
 		return;
 	}
@@ -89,7 +91,7 @@ void CHudBattery::Draw(float flTime)
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
 	{
 		if (g_pViewport) {
-			g_pViewport->HideBatteryPanel();
+			g_pViewport->GetBatteryPanel()->ShowPanel(false);
 		}
 		return;
 	}
@@ -98,12 +100,12 @@ void CHudBattery::Draw(float flTime)
 	{
 		if (hud_custom.GetBool())
 		{
-			g_pViewport->ShowBatteryPanel();
+			g_pViewport->GetBatteryPanel()->ShowPanel(true);
 			return;
 		}
 		else
 		{
-			g_pViewport->HideBatteryPanel();
+			g_pViewport->GetBatteryPanel()->ShowPanel(false);
 		}
 	}
 

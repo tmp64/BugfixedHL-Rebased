@@ -68,26 +68,11 @@ public:
 	void ShowVGUIMenu(int iMenu);
 	void HideAllVGUIMenu();
 
-	void ShowHealthPanel();
-	void HideHealthPanel();
-	void IsHealthPanelVisible();
-	void UpdateHealthPanel(int health);
-
-	void ShowBatteryPanel();
-	void HideBatteryPanel();
-	void IsBatteryPanelVisible();
-	void UpdateBatteryPanel(int amount);
+	CHudHealthPanel *GetHealthPanel();
+	CHudBatteryPanel *GetBatteryPanel();
+	CHudAmmoPanel *GetAmmoPanel();
+	CHudAmmoSecondaryPanel *GetAmmoSecondaryPanel();
 	
-	void ShowAmmoPanel();
-	void HideAmmoPanel();
-	void IsAmmoPanelVisible();
-	void UpdateAmmoPanel(WEAPON *pWeapon, int maxClip, int ammo1, int ammo2);
-	
-	void ShowAmmoSecondaryPanel();
-	void HideAmmoSecondaryPanel();
-	void IsAmmoSecondaryPanelVisible();
-	void UpdateAmmoSecondaryPanel(WEAPON *pWeapon, int maxClip, int ammo1, int ammo2);
-
 	// Allows to get custom positions to avoid overlapping with other panels
 	int GetAmmoHistoryYPos();
 	int GetStatusBarYPos();

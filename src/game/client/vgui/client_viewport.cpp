@@ -339,113 +339,24 @@ void CClientViewport::HideScoreBoard()
 	m_pScorePanel->ShowPanel(false);
 }
 
-void CClientViewport::ShowHealthPanel()
-{
-	m_pHudHealthPanel->ShowPanel(true);
+CHudHealthPanel *CClientViewport::GetHealthPanel()
+{ 
+	return m_pHudHealthPanel;
 }
 
-void CClientViewport::HideHealthPanel()
+CHudBatteryPanel *CClientViewport::GetBatteryPanel()
 {
-	m_pHudHealthPanel->ShowPanel(false);
+	return m_pHudBatteryPanel; 
 }
 
-void CClientViewport::IsHealthPanelVisible()
-{
-	if (m_pHudHealthPanel->IsVisible())
-	{
-		m_pHudHealthPanel->ShowPanel(false);
-	}
-	else
-	{
-		m_pHudHealthPanel->ShowPanel(true);
-	}
+CHudAmmoPanel *CClientViewport::GetAmmoPanel()
+{ 
+	return m_pHudAmmoPanel; 
 }
 
-void CClientViewport::UpdateHealthPanel(int health)
-{
-	m_pHudHealthPanel->UpdateHealthPanel(health);
-}
-
-void CClientViewport::ShowBatteryPanel()
-{
-	m_pHudBatteryPanel->ShowPanel(true);
-}
-
-void CClientViewport::HideBatteryPanel()
-{
-	m_pHudBatteryPanel->ShowPanel(false);
-}
-
-void CClientViewport::IsBatteryPanelVisible()
-{
-	if (m_pHudBatteryPanel->IsVisible())
-	{
-		m_pHudBatteryPanel->ShowPanel(false);
-	}
-	else
-	{
-		m_pHudBatteryPanel->ShowPanel(true);
-	}
-}
-
-void CClientViewport::UpdateBatteryPanel(int amount)
-{
-	m_pHudBatteryPanel->UpdateBatteryPanel(amount);
-}
-
-void CClientViewport::ShowAmmoPanel()
-{
-	m_pHudAmmoPanel->ShowPanel(true);
-}
-
-void CClientViewport::HideAmmoPanel()
-{
-	m_pHudAmmoPanel->ShowPanel(false);
-}
-
-void CClientViewport::IsAmmoPanelVisible()
-{
-	if (m_pHudAmmoPanel->IsVisible())
-	{
-		m_pHudAmmoPanel->ShowPanel(false);
-	}
-	else
-	{
-		m_pHudAmmoPanel->ShowPanel(true);
-	}
-}
-
-// Secondary ammo panel methods
-void CClientViewport::ShowAmmoSecondaryPanel()
-{
-	m_pHudAmmoSecondaryPanel->ShowPanel(true);
-}
-
-void CClientViewport::HideAmmoSecondaryPanel()
-{
-	m_pHudAmmoSecondaryPanel->ShowPanel(false);
-}
-
-void CClientViewport::IsAmmoSecondaryPanelVisible()
-{
-	if (m_pHudAmmoSecondaryPanel->IsVisible())
-	{
-		m_pHudAmmoSecondaryPanel->ShowPanel(false);
-	}
-	else
-	{
-		m_pHudAmmoSecondaryPanel->ShowPanel(true);
-	}
-}
-
-void CClientViewport::UpdateAmmoSecondaryPanel(WEAPON *pWeapon, int maxClip, int ammo1, int ammo2)
-{
-	m_pHudAmmoSecondaryPanel->UpdateAmmoSecondaryPanel(pWeapon, maxClip, ammo1, ammo2);
-}
-
-void CClientViewport::UpdateAmmoPanel(WEAPON *pWeapon, int maxClip, int ammo1, int ammo2)
-{
-	m_pHudAmmoPanel->UpdateAmmoPanel(pWeapon, maxClip, ammo1, ammo2);
+CHudAmmoSecondaryPanel *CClientViewport::GetAmmoSecondaryPanel()
+{ 
+	return m_pHudAmmoSecondaryPanel; 
 }
 
 int CClientViewport::GetAmmoHistoryYPos()

@@ -31,6 +31,8 @@
 #include "crosshair.h"
 #include "menu.h"
 #include "vgui/client_viewport.h"
+#include "vgui/hud_ammo.h"
+#include "vgui/hud_ammo_secondary.h"
 
 ConVar hud_fastswitch("hud_fastswitch", "0", FCVAR_ARCHIVE, "Controls whether or not weapons can be selected in one keypress");
 ConVar hud_weapon("hud_weapon", "0", FCVAR_BHL_ARCHIVE, "Controls displaying sprite of currently selected weapon");
@@ -860,8 +862,8 @@ void CHudAmmo::Draw(float flTime)
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
 	{
 		if (g_pViewport) {
-			g_pViewport->HideAmmoPanel();
-			g_pViewport->HideAmmoSecondaryPanel();
+			g_pViewport->GetAmmoPanel()->ShowPanel(false);
+			g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(false);
 		}
 		return;
 	}
@@ -869,8 +871,8 @@ void CHudAmmo::Draw(float flTime)
 	if ((gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL)))
 	{
 		if (g_pViewport) {
-			g_pViewport->HideAmmoPanel();
-			g_pViewport->HideAmmoSecondaryPanel();
+			g_pViewport->GetAmmoPanel()->ShowPanel(false);
+			g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(false);
 		}
 		return;
 	}
@@ -928,8 +930,8 @@ void CHudAmmo::Draw(float flTime)
 	{
 		if (g_pViewport)
 		{
-			g_pViewport->HideAmmoPanel();
-			g_pViewport->HideAmmoSecondaryPanel();
+			g_pViewport->GetAmmoPanel()->ShowPanel(false);
+			g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(false);
 		}
 		return;
 	}
@@ -945,13 +947,13 @@ void CHudAmmo::Draw(float flTime)
 	{
 		if (hud_custom.GetBool())
 		{
-			g_pViewport->UpdateAmmoPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
-			g_pViewport->UpdateAmmoSecondaryPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
-			g_pViewport->ShowAmmoPanel();
+			g_pViewport->GetAmmoPanel()->UpdateAmmoPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
+			g_pViewport->GetAmmoSecondaryPanel()->UpdateAmmoSecondaryPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
+			g_pViewport->GetAmmoPanel()->ShowPanel(true);
 		}
 		else
 		{
-			g_pViewport->HideAmmoPanel();
+			g_pViewport->GetAmmoPanel()->ShowPanel(false);
 		}
 	}
 	
@@ -1020,12 +1022,12 @@ void CHudAmmo::Draw(float flTime)
 		{
 			if (hud_custom.GetBool())
 			{
-				g_pViewport->ShowAmmoSecondaryPanel();
+				g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(true);
 				return; // Hide vanilla secondary ammo
 			}
 			else
 			{
-				g_pViewport->HideAmmoSecondaryPanel();
+				g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(false);
 			}
 
 			a = alphaDim * gHUD.GetHudTransparency();

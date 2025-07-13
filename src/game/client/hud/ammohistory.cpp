@@ -31,7 +31,6 @@ ConVar hud_drawhistory_time("hud_drawhistory_time", "5", FCVAR_BHL_ARCHIVE, "How
 HistoryResource gHR;
 
 // Allow to change ammo history position when using custom HUD to avoid overlapping
-extern ConVar hud_custom;
 #define AMMO_PICKUP_GAP         (gHR.iHistoryGap + 5)
 #define AMMO_PICKUP_PICK_HEIGHT (((hud_custom.GetBool()) ? ScreenHeight - g_pViewport->GetAmmoHistoryYPos() : 32) + (gHR.iHistoryGap * 2))
 #define AMMO_PICKUP_HEIGHT_MAX  (ScreenHeight - 100)

@@ -943,7 +943,7 @@ void CHudAmmo::Draw(float flTime)
 	
 	if (g_pViewport)
 	{
-		if (m_pHudCustom.GetBool())
+		if (hud_custom.GetBool())
 		{
 			g_pViewport->UpdateAmmoPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
 			g_pViewport->UpdateAmmoSecondaryPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
@@ -955,7 +955,7 @@ void CHudAmmo::Draw(float flTime)
 		}
 	}
 	
-	if (m_pHudCustom.GetBool())
+	if (hud_custom.GetBool())
 	{
 		// Hide vanilla hud ammo
 	}
@@ -1018,7 +1018,7 @@ void CHudAmmo::Draw(float flTime)
 		// Do we have secondary ammo?
 		if ((pw->iAmmo2Type != 0) && (gWR.CountAmmo(pw->iAmmo2Type) > 0))
 		{
-			if (m_pHudCustom.GetBool())
+			if (hud_custom.GetBool())
 			{
 				g_pViewport->ShowAmmoSecondaryPanel();
 				return; // Hide vanilla secondary ammo

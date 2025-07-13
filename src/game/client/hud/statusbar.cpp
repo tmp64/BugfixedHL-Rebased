@@ -36,7 +36,6 @@
 #endif
 
 ConVar hud_centerid("hud_centerid", "0", FCVAR_ARCHIVE, "Show other players' names in the middle of the screen");
-extern ConVar hud_custom;
 
 DEFINE_HUD_ELEM(CHudStatusBar);
 

@@ -18,7 +18,6 @@ private:
 	int m_iBat;
 	float m_fFade;
 	int m_iHeight; // width of the battery innards
-	ConVarRef m_pHudCustom{"hud_custom"};
 };
 
 #endif

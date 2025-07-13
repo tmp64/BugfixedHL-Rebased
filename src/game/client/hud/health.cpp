@@ -221,7 +221,7 @@ void CHudHealth::Draw(float flTime)
 		if (g_pViewport)
 		{
 			// If custom HUD is enabled, disable old HUD
-			if (m_pHudCustom.GetBool())
+			if (hud_custom.GetBool())
 			{
 				g_pViewport->ShowHealthPanel();
 				return;

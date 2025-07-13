@@ -96,7 +96,7 @@ void CHudBattery::Draw(float flTime)
 
 	if (g_pViewport)
 	{
-		if (m_pHudCustom.GetBool())
+		if (hud_custom.GetBool())
 		{
 			g_pViewport->ShowBatteryPanel();
 			return;

@@ -352,6 +352,7 @@ extern CHud gHUD;
 
 extern ConVar hud_draw;
 extern ConVar hud_dim;
+extern ConVar hud_custom;
 extern ConVar default_fov;
 
 extern int g_iPlayerClass;

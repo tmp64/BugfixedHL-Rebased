@@ -63,8 +63,6 @@ private:
 	int m_iMaxClip;
 	int m_iAmmoCount;
 	int m_iAmmoCount2;
-
-	ConVarRef m_pHudDim{"hud_dim"};
 };
 
 #endif

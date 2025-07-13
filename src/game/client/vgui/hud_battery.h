@@ -40,8 +40,6 @@ private:
 
 	float m_fFade = 0.0f;
 	int m_iBattery = 100;
-
-	ConVarRef m_pHudDim{"hud_dim"};
 };
 
 #endif

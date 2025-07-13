@@ -64,7 +64,7 @@ void CHudBatteryPanel::Reset()
 void CHudBatteryPanel::OnThink()
 {	
 	// Glow effect will be visible only when dimmed
-	auto [a1, a2] = gHUD.GetHudDimAlphas(m_pHudDim.GetBool(), m_fFade, gHUD.m_flTimeDelta);
+	auto [a1, a2] = gHUD.GetHudDimAlphas(hud_dim.GetBool(), m_fFade, gHUD.m_flTimeDelta);
 
 	Color currentColor = gHUD.GetHudColor(HudPart::Armor, m_iBattery);
 	currentColor[3] = a1;

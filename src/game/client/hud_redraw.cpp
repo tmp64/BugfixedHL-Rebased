@@ -22,6 +22,8 @@
 #include "cl_util.h"
 #include "hud/spectator.h"
 #include "vgui/client_viewport.h"
+#include "vgui/hud_health.h"
+#include "vgui/hud_battery.h"
 #include "results.h"
 #include "svc_messages.h"
 
@@ -168,6 +170,17 @@ int CHud::Redraw(float flTime, int intermission)
 
 	// if no redrawing is necessary
 	// return 0;
+
+	bool showPanels = hud_draw.GetFloat() > 0 && hud_custom.GetBool() &&
+					  (m_iWeaponBits & (1 << (WEAPON_SUIT))) &&
+					  !(m_iHideHUDDisplay & (HIDEHUD_ALL | HIDEHUD_HEALTH) ||
+					  gEngfuncs.IsSpectateOnly());
+
+	if (g_pViewport)
+	{
+		g_pViewport->GetHealthPanel()->ShowPanel(showPanels);
+		g_pViewport->GetBatteryPanel()->ShowPanel(showPanels);
+	}
 
 	// draw all registered HUD elements
 	if (hud_draw.GetFloat() > 0)

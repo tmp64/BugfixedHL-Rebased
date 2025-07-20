@@ -72,14 +72,11 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 
 void CHudBattery::Draw(float flTime)
 {
-	if (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH)
-	{
-		if (g_pViewport) {
-			g_pViewport->GetBatteryPanel()->ShowPanel(false);
-
-		}
+	if (hud_custom.GetBool())
 		return;
-	}
+
+	if (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH)
+		return;
 
 	int r, g, b, x, y;
 	float a;
@@ -89,25 +86,7 @@ void CHudBattery::Draw(float flTime)
 	rc.top += m_iHeight * ((float)(100 - (min(100, m_iBat))) * 0.01f); // battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
-	{
-		if (g_pViewport) {
-			g_pViewport->GetBatteryPanel()->ShowPanel(false);
-		}
 		return;
-	}
-
-	if (g_pViewport)
-	{
-		if (hud_custom.GetBool())
-		{
-			g_pViewport->GetBatteryPanel()->ShowPanel(true);
-			return;
-		}
-		else
-		{
-			g_pViewport->GetBatteryPanel()->ShowPanel(false);
-		}
-	}
 
 	if (!hud_dim.GetBool())
 		a = MIN_ALPHA + ALPHA_POINTS_MAX;

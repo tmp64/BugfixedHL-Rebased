@@ -174,13 +174,11 @@ void CHudHealth::Draw(float flTime)
 	float a;
 	int HealthWidth;
 
-	if ((gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH) || gEngfuncs.IsSpectateOnly())
-	{
-		if (g_pViewport) {
-			g_pViewport->GetHealthPanel()->ShowPanel(false);
-		}
+	if (hud_custom.GetBool())
 		return;
-	}
+
+	if ((gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH) || gEngfuncs.IsSpectateOnly())
+		return;
 
 	if (!m_hSprite)
 		m_hSprite = LoadSprite(PAIN_NAME);
@@ -219,20 +217,6 @@ void CHudHealth::Draw(float flTime)
 	// Only draw health if we have the suit.
 	if (gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT)))
 	{
-		if (g_pViewport)
-		{
-			// If custom HUD is enabled, disable old HUD
-			if (hud_custom.GetBool())
-			{
-				g_pViewport->GetHealthPanel()->ShowPanel(true);
-				return;
-			}
-			else
-			{
-				g_pViewport->GetHealthPanel()->ShowPanel(false);
-			}
-		}
-		
 		HealthWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
 		int CrossWidth = m_rcCross.right - m_rcCross.left;
 		int iOffset = (m_rcCross.bottom - m_rcCross.top - gHUD.m_iFontHeight) / 2;
@@ -263,10 +247,6 @@ void CHudHealth::Draw(float flTime)
 		gHUD.GetHudColor(HudPart::Common, 0, r, g, b);
 
 		FillRGBA(x, y, iWidth, iHeight, r, g, b, a);
-	} else {
-		if (g_pViewport) {
-			g_pViewport->GetHealthPanel()->ShowPanel(false);
-		}
 	}
 
 	DrawDamage(flTime);

@@ -142,7 +142,7 @@ void CClientViewport::ReloadLayout()
 
 	// Load custom positions for the vanilla HUD to avoid overlapping with the new HUD
 	KeyValues *layoutKV = new KeyValues("HudLayout");
-	if (layoutKV->LoadFromFile(g_pFullFileSystem, VGUI2_ROOT_DIR "scripts/HudLayoutBase.res"))
+	if (layoutKV->LoadFromFile(g_pFullFileSystem, VGUI2_ROOT_DIR "scripts/HudLayout.res"))
 	{
 		KeyValues *vanillaKV = layoutKV->FindKey("HudVanilla");
 		if (vanillaKV)

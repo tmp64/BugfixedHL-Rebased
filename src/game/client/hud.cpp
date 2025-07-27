@@ -797,15 +797,15 @@ void CHud::GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b)
 }
 
 
-std::pair<int, int> CHud::GetHudDimAlphas(bool dimEnabled, float &fade, float timeDelta)
+std::pair<int, int> CHud::GetHudDimAlphas(float &fade)
 {
-	const float MIN_ALPHA1 = 0.0f; // We want glow effect to hide when not dimmed
-	const float MIN_ALPHA2 = 200.0f; // We want normal text to be visible even when dimmed
+	constexpr float MIN_ALPHA1 = 0.0f; // We want glow effect to hide when not dimmed
+	constexpr float MIN_ALPHA2 = 200.0f; // We want normal text to be visible even when dimmed
 
 	int a1 = 255;
 	int a2 = 255;
 
-	if (!dimEnabled)
+	if (!hud_dim.GetBool())
 	{
 		a1 = MIN_ALPHA1;
 		a2 = MIN_ALPHA + ALPHA_POINTS_MAX;
@@ -813,7 +813,7 @@ std::pair<int, int> CHud::GetHudDimAlphas(bool dimEnabled, float &fade, float ti
 	}
 	else if (fade > 0)
 	{
-		fade -= (timeDelta * 20.0f);
+		fade -= m_flTimeDelta * HUD_FADE_RATE;
 		if (fade <= 0)
 			fade = 0;
 		float fadeProgress = fade / FADE_TIME;

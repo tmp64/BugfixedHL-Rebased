@@ -144,7 +144,7 @@ void CHudAmmoSecondaryPanel::OnThink()
 	m_pAmmoLabelGlow->SetText(buf);
 
 	// Glow effect will be visible only when dimmed
-	auto [a1, a2] = gHUD.GetHudDimAlphas(hud_dim.GetBool(), m_fFade, gHUD.m_flTimeDelta);
+	auto [a1, a2] = gHUD.GetHudDimAlphas(m_fFade);
 
 	if (!hud_dim.GetBool())
 	{

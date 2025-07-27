@@ -64,7 +64,7 @@ void CHudHealthPanel::Reset()
 void CHudHealthPanel::OnThink()
 {	
 	// Glow effect will be visible only when dimmed
-	auto [a1, a2] = gHUD.GetHudDimAlphas(hud_dim.GetBool(), m_fFade, gHUD.m_flTimeDelta);
+	auto [a1, a2] = gHUD.GetHudDimAlphas(m_fFade);
 
 	Color currentColor = gHUD.GetHudColor(HudPart::Health, m_iHealth);
 	currentColor[3] = a1;

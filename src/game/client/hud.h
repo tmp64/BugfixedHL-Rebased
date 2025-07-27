@@ -53,6 +53,9 @@
 #define HUD_INTERMISSION 2
 #define HUD_DRAW_ALWAYS  4 //!< Draw even if hud_draw = 0
 
+//! Speed at which HUD will fade out
+constexpr float HUD_FADE_RATE = 20;
+
 //! Fallback sprite resolution if the current one can't be found.
 constexpr int HUD_FALLBACK_RES = 640;
 
@@ -226,8 +229,10 @@ public:
 	 * Calculate alphas for custom VGUI2 HUD when doing dimming effect.
 	 * Alpha 1 is for glow effect, visible only when dimmed.
 	 * Alpha 2 is for normal text, gets dimmed too.
+	 * @param	fade	Fade timer. Decremented automatically.
+	 * @returns Alpha 1 and alpha 2.
 	 */
-	std::pair<int, int> GetHudDimAlphas(bool dimEnabled, float &fade, float timeDelta);
+	std::pair<int, int> GetHudDimAlphas(float &fade);
 
 	float GetHudTransparency();
 

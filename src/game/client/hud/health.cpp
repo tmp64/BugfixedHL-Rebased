@@ -188,7 +188,7 @@ void CHudHealth::Draw(float flTime)
 	else if (m_fFade > 0)
 	{
 		// Fade the health number back to dim
-		m_fFade -= (gHUD.m_flTimeDelta * 20);
+		m_fFade -= gHUD.m_flTimeDelta * HUD_FADE_RATE;
 		if (m_fFade <= 0)
 			m_fFade = 0;
 		a = MIN_ALPHA + (m_fFade / FADE_TIME) * ALPHA_POINTS_FLASH;

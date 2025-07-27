@@ -254,7 +254,7 @@ void CHudAmmoPanel::OnThink()
 	}
 
 	// Show glow effect when dimmed, if not, set full alpha and hide glow digits
-	auto [a1, a2] = gHUD.GetHudDimAlphas(hud_dim.GetBool(), m_fFade, gHUD.m_flTimeDelta);
+	auto [a1, a2] = gHUD.GetHudDimAlphas(m_fFade);
 	
 	// Set colors for glow and normal digits
 	m_hudCurrentColor = Color(r, g, b, a1);

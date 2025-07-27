@@ -4,13 +4,12 @@
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Label.h>
 #include "hud.h"
-#include "cl_util.h"
-#include "client_steam_context.h"
 #include "client_vgui.h"
 #include "client_viewport.h"
 #include "hud_ammo_secondary.h"
 #include "hud/ammo.h"
 #include "vgui/tga_image.h"
+#include "hud_renderer.h"
 
 CHudAmmoSecondaryPanel::CHudAmmoSecondaryPanel()
     : BaseClass(nullptr, VIEWPORT_PANEL_HUD_AMMO_SEC)
@@ -42,10 +41,20 @@ void CHudAmmoSecondaryPanel::ApplySchemeSettings(vgui2::IScheme *pScheme)
 void CHudAmmoSecondaryPanel::PaintBackground()
 {
 	DrawBox(0, 0, GetWide(), GetTall(), GetBgColor(), 1.0f);
-	m_pAmmoIcon->SetPos(m_iAmmoIconX, m_iAmmoIconY);
-	m_pAmmoIcon->SetSize(m_iAmmoIconWide, m_iAmmoIconTall);
-	m_pAmmoIcon->SetColor(m_hudCurrentColor);
-	m_pAmmoIcon->Paint();
+
+	if (m_hAmmoSpriteFallback)
+	{
+		int yOffset = (m_iAmmoIconTall - m_rcAmmoSpriteFallbackRect.GetHeight()) / 2;
+		CHudRenderer::SpriteSet(m_hAmmoSpriteFallback, m_hudCurrentColor.r(), m_hudCurrentColor.g(), m_hudCurrentColor.b());
+		CHudRenderer::SpriteDrawAdditive(0, m_iAmmoIconX, m_iAmmoIconY + yOffset, &m_rcAmmoSpriteFallbackRect);
+	}
+	else
+	{
+		m_pAmmoIcon->SetPos(m_iAmmoIconX, m_iAmmoIconY);
+		m_pAmmoIcon->SetSize(m_iAmmoIconWide, m_iAmmoIconTall);
+		m_pAmmoIcon->SetColor(m_hudCurrentColor);
+		m_pAmmoIcon->Paint();
+	}
 }
 
 enum AmmoType
@@ -82,6 +91,7 @@ void CHudAmmoSecondaryPanel::UpdateAmmoSecondaryPanel(WEAPON *pWeapon, int maxCl
 		m_iMaxClip = maxClip;
 		m_iAmmoCount = ammo1;
 		m_iAmmoCount2 = ammo2;
+		m_hAmmoSpriteFallback = 0;
 
 		// Set the ammo icon based on the ammo type
 		switch (m_iAmmo2Type)
@@ -90,7 +100,16 @@ void CHudAmmoSecondaryPanel::UpdateAmmoSecondaryPanel(WEAPON *pWeapon, int maxCl
 			m_pAmmoIcon = m_pAmmoGrenadeMP5;
 			break;
 		default:
-			m_pAmmoIcon = m_pAmmoIconDefault;
+			if (pWeapon->hAmmo2 && CHudRenderer::Get().IsAvailable())
+			{
+				m_hAmmoSpriteFallback = pWeapon->hAmmo2;
+				m_rcAmmoSpriteFallbackRect = pWeapon->rcAmmo2;
+			}
+			else
+			{
+				m_pAmmoIcon = m_pAmmoIconDefault;
+			}
+
 			break;
 		}
 	}

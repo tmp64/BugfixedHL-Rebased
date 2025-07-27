@@ -77,6 +77,10 @@ private:
 	CTGAImage *m_pAmmoGrenadeTripmine = nullptr;
 	CTGAImage *m_pAmmoSnark = nullptr;
 
+	// Fallback ammo sprite
+	HSPRITE m_hAmmoSpriteFallback = 0;
+	wrect_t m_rcAmmoSpriteFallbackRect = {};
+
 	float m_fFade = 0.0f;
 	Color m_hudCurrentColor{};
 

@@ -4,13 +4,12 @@
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Label.h>
 #include "hud.h"
-#include "cl_util.h"
-#include "client_steam_context.h"
 #include "client_vgui.h"
 #include "client_viewport.h"
 #include "hud_ammo.h"
 #include "hud/ammo.h"
 #include "vgui/tga_image.h"
+#include "hud_renderer.h"
 
 CHudAmmoPanel::CHudAmmoPanel()
     : BaseClass(nullptr, VIEWPORT_PANEL_HUD_AMMO)
@@ -84,10 +83,19 @@ void CHudAmmoPanel::PaintBackground()
 	vgui2::surface()->DrawFilledRect(m_iDividerX, m_iDividerY, m_iDividerX + m_iDividerWide, m_iDividerY + m_iDividerTall);
 
 	// Draw the ammo icon
-	m_pAmmoIcon->SetPos(iconX, m_iAmmoIconY);
-	m_pAmmoIcon->SetSize(m_iAmmoIconWide, m_iAmmoIconTall);
-	m_pAmmoIcon->SetColor(m_hudCurrentColor);
-	m_pAmmoIcon->Paint();
+	if (m_hAmmoSpriteFallback)
+	{
+		int yOffset = (m_iAmmoIconTall - m_rcAmmoSpriteFallbackRect.GetHeight()) / 2;
+		CHudRenderer::SpriteSet(m_hAmmoSpriteFallback, m_hudCurrentColor.r(), m_hudCurrentColor.g(), m_hudCurrentColor.b());
+		CHudRenderer::SpriteDrawAdditive(0, iconX, m_iAmmoIconY + yOffset, &m_rcAmmoSpriteFallbackRect);
+	}
+	else
+	{
+		m_pAmmoIcon->SetPos(iconX, m_iAmmoIconY);
+		m_pAmmoIcon->SetSize(m_iAmmoIconWide, m_iAmmoIconTall);
+		m_pAmmoIcon->SetColor(m_hudCurrentColor);
+		m_pAmmoIcon->Paint();
+	}
 }
 
 enum AmmoType
@@ -124,6 +132,7 @@ void CHudAmmoPanel::UpdateAmmoPanel(WEAPON *pWeapon, int maxClip, int ammo1, int
 		m_iMaxClip = maxClip;
 		m_iAmmoCount = ammo1;
 		m_iAmmoCount2 = ammo2;
+		m_hAmmoSpriteFallback = 0;
 
 		// Set the ammo icon based on the ammo type
 		switch (m_iAmmoType)
@@ -165,7 +174,16 @@ void CHudAmmoPanel::UpdateAmmoPanel(WEAPON *pWeapon, int maxClip, int ammo1, int
 			m_pAmmoIcon = m_pAmmoSnark;
 			break;
 		default:
-			m_pAmmoIcon = m_pAmmoIconDefault;
+			if (pWeapon->hAmmo && CHudRenderer::Get().IsAvailable())
+			{
+				m_hAmmoSpriteFallback = pWeapon->hAmmo;
+				m_rcAmmoSpriteFallbackRect = pWeapon->rcAmmo;
+			}
+			else
+			{
+				m_pAmmoIcon = m_pAmmoIconDefault;
+			}
+
 			break;
 		}
 	}

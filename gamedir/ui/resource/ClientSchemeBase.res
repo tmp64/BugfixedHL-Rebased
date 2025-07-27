@@ -534,9 +534,12 @@ Scheme
 		{
 			"1"
 			{
-				"name"  "Hemi Head 426"
-				"tall"  "26"				
-				"weight" "0"
+				"name"  "Hemi Head 426" [$WINDOWS]
+				"name"  "Arial" [!$WINDOWS]
+				"tall"  "26" [$WINDOWS]
+				"tall"  "22" [!$WINDOWS]
+				"weight" "0" [$WINDOWS]
+				"weight" "700" [!$WINDOWS]
 				"additive" "1"
 				"antialias" "1"
 			}
@@ -545,9 +548,12 @@ Scheme
 		{
 			"1"
 			{
-				"name"  "Hemi Head 426"
-				"tall"  "26"				
-				"weight" "0"
+				"name"  "Hemi Head 426" [$WINDOWS]
+				"name"  "Arial" [!$WINDOWS]
+				"tall"  "26" [$WINDOWS]
+				"tall"  "22" [!$WINDOWS]
+				"weight" "0" [$WINDOWS]
+				"weight" "700" [!$WINDOWS]
 				"additive" "1"
 				"antialias" "1"
 				"blur"      "4"
@@ -559,9 +565,12 @@ Scheme
 		{
 			"1"
 			{
-				"name"  "Hemi Head 426"
-				"tall"  "18"
-				"weight" "0"
+				"name"  "Hemi Head 426" [$WINDOWS]
+				"name"  "Arial" [!$WINDOWS]
+				"tall"  "18" [$WINDOWS]
+				"tall"  "16" [!$WINDOWS]
+				"weight" "0" [$WINDOWS]
+				"weight" "700" [!$WINDOWS]
 				"additive" "1"
 				"antialias" "1"
 			}
@@ -570,9 +579,12 @@ Scheme
 		{
 			"1"
 			{
-				"name"  "Hemi Head 426"
-				"tall"  "18"
-				"weight" "0"
+				"name"  "Hemi Head 426" [$WINDOWS]
+				"name"  "Arial" [!$WINDOWS]
+				"tall"  "18" [$WINDOWS]
+				"tall"  "16" [!$WINDOWS]
+				"weight" "0" [$WINDOWS]
+				"weight" "700" [!$WINDOWS]
 				"additive" "1"
 				"antialias" "1"
 				"blur"      "4"

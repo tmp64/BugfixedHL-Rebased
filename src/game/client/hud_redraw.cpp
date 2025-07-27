@@ -171,15 +171,19 @@ int CHud::Redraw(float flTime, int intermission)
 	// if no redrawing is necessary
 	// return 0;
 
-	bool showPanels = hud_draw.GetFloat() > 0 && hud_custom.GetBool() &&
-					  (m_iWeaponBits & (1 << (WEAPON_SUIT))) &&
-					  !(m_iHideHUDDisplay & (HIDEHUD_ALL | HIDEHUD_HEALTH) ||
-					  gEngfuncs.IsSpectateOnly());
+	bool showCustomHudPanels =
+	    hud_draw.GetFloat() > 0 &&
+		hud_custom.GetBool() &&
+		(m_iWeaponBits & (1 << (WEAPON_SUIT))) &&
+		!(
+			(m_iHideHUDDisplay & (HIDEHUD_ALL | HIDEHUD_HEALTH)) ||
+			gEngfuncs.IsSpectateOnly()
+		);
 
 	if (g_pViewport)
 	{
-		g_pViewport->GetHealthPanel()->ShowPanel(showPanels);
-		g_pViewport->GetBatteryPanel()->ShowPanel(showPanels);
+		g_pViewport->GetHealthPanel()->ShowPanel(showCustomHudPanels);
+		g_pViewport->GetBatteryPanel()->ShowPanel(showCustomHudPanels);
 	}
 
 	// draw all registered HUD elements

@@ -126,6 +126,12 @@ void CHudAmmoSecondaryPanel::Reset()
 
 void CHudAmmoSecondaryPanel::OnThink()
 {
+	if (hud_draw.GetFloat() <= 0)
+	{
+		ShowPanel(false);
+		return;
+	}
+
 	int r, g, b;
 	// Does weapon have any ammo at all?
 	if (m_iAmmoType > 0)

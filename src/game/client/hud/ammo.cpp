@@ -920,7 +920,7 @@ void CHudAmmo::Draw(float flTime)
 	if (hud_weapon.GetBool())
 	{
 		y = ScreenHeight - (m_pWeapon->rcInactive.bottom - m_pWeapon->rcInactive.top);
-		x = ScreenWidth - (8.5 * AmmoWidth) - (m_pWeapon->rcInactive.right - m_pWeapon->rcInactive.left);
+		x = ScreenWidth - (hud_custom.GetBool() ? g_pViewport->GetWeaponXPos() : (8.5 * AmmoWidth)) - (m_pWeapon->rcInactive.right - m_pWeapon->rcInactive.left);
 		SPR_Set(m_pWeapon->hInactive, r, g, b);
 		SPR_DrawAdditive(0, x, y, &m_pWeapon->rcInactive);
 	}

@@ -13,6 +13,7 @@
 	{
 		"statusbar_ypos"	"r45"
 		"ammohistory_ypos"	"r42"
+		"weapon_xpos"		"150"
 	}
 
 	"HudChat"

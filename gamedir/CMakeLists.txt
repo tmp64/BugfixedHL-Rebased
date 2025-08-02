@@ -35,6 +35,7 @@ set( CLIENT_FILES
 	ui/gfx/vgui/800corner4.tga
 
 	ui/resource/fonts/HemiHead426-Regular.ttf
+	ui/resource/fonts/HemiHead426-Linux-Regular.ttf
 	ui/resource/fonts/boxrocket.ttf
 
 	ui/resource/language/bugfixedhl_english.utf8.txt

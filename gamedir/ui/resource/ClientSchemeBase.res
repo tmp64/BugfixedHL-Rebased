@@ -535,11 +535,9 @@ Scheme
 			"1"
 			{
 				"name"  "Hemi Head 426" [$WINDOWS]
-				"name"  "Arial" [!$WINDOWS]
-				"tall"  "26" [$WINDOWS]
-				"tall"  "22" [!$WINDOWS]
-				"weight" "0" [$WINDOWS]
-				"weight" "700" [!$WINDOWS]
+				"name"  "Hemi Head 426 Linux" [!$WINDOWS]
+				"tall"  "26"
+				"weight" "0"
 				"additive" "1"
 				"antialias" "1"
 			}
@@ -549,11 +547,9 @@ Scheme
 			"1"
 			{
 				"name"  "Hemi Head 426" [$WINDOWS]
-				"name"  "Arial" [!$WINDOWS]
-				"tall"  "26" [$WINDOWS]
-				"tall"  "22" [!$WINDOWS]
-				"weight" "0" [$WINDOWS]
-				"weight" "700" [!$WINDOWS]
+				"name"  "Hemi Head 426 Linux" [!$WINDOWS]
+				"tall"  "26"
+				"weight" "0"
 				"additive" "1"
 				"antialias" "1"
 				"blur"      "4"
@@ -566,11 +562,9 @@ Scheme
 			"1"
 			{
 				"name"  "Hemi Head 426" [$WINDOWS]
-				"name"  "Arial" [!$WINDOWS]
-				"tall"  "18" [$WINDOWS]
-				"tall"  "16" [!$WINDOWS]
-				"weight" "0" [$WINDOWS]
-				"weight" "700" [!$WINDOWS]
+				"name"  "Hemi Head 426 Linux" [!$WINDOWS]
+				"tall"  "18"
+				"weight" "0"
 				"additive" "1"
 				"antialias" "1"
 			}
@@ -580,11 +574,9 @@ Scheme
 			"1"
 			{
 				"name"  "Hemi Head 426" [$WINDOWS]
-				"name"  "Arial" [!$WINDOWS]
-				"tall"  "18" [$WINDOWS]
-				"tall"  "16" [!$WINDOWS]
-				"weight" "0" [$WINDOWS]
-				"weight" "700" [!$WINDOWS]
+				"name"  "Hemi Head 426 Linux" [!$WINDOWS]
+				"tall"  "18"
+				"weight" "0"
 				"additive" "1"
 				"antialias" "1"
 				"blur"      "4"
@@ -1010,7 +1002,8 @@ Scheme
 	{
 		"1"		"resource/HALFLIFE2.ttf"
 		"2"     "ui/resource/fonts/HemiHead426-Regular.ttf"
-		"3"     "ui/resource/fonts/boxrocket.ttf"
+		"3"     "ui/resource/fonts/HemiHead426-Linux-Regular.ttf"
+		"4"     "ui/resource/fonts/boxrocket.ttf"
 	}
 	
 }

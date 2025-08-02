@@ -31,9 +31,11 @@
         "ControlName"                "Label"
         "fieldName"                  "Ammo"
         "fgcolor_override"           "255 160 0 255"
-        "xpos"                       "4"
+        "xpos"                       "4" [$WINDOWS]
+        "xpos"                       "6" [!$WINDOWS]
         "ypos"                       "0"
-        "wide"                       "24"
+        "wide"                       "24" [$WINDOWS]
+        "wide"                       "27" [!$WINDOWS]
         "tall"                       "22"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -60,9 +62,11 @@
         "ControlName"                "Label"
         "fieldName"                  "AmmoGlow"
         "fgcolor_override"           "255 160 0 255"
-        "xpos"                       "4"
+        "xpos"                       "4" [$WINDOWS]
+        "xpos"                       "6" [!$WINDOWS]
         "ypos"                       "0"
-        "wide"                       "24"
+        "wide"                       "24" [$WINDOWS]
+        "wide"                       "27" [!$WINDOWS]
         "tall"                       "22"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -89,9 +93,11 @@
         "ControlName"                "Label"
         "fieldName"                  "AmmoBg"
         "fgcolor_override"           "128 128 128 16"
-        "xpos"                       "4"
+        "xpos"                       "4" [$WINDOWS]
+        "xpos"                       "6" [!$WINDOWS]
         "ypos"                       "0"
-        "wide"                       "24"
+        "wide"                       "24" [$WINDOWS]
+        "wide"                       "27" [!$WINDOWS]
         "tall"                       "22"
         "autoResize"                 "0"
         "pinCorner"                  "0"

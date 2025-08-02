@@ -48,7 +48,8 @@
         "fgcolor_override"           "255 160 0 255"
         "xpos"                       "4"
         "ypos"                       "4"
-        "wide"                       "50"
+        "wide"                       "50" [$WINDOWS]
+        "wide"                       "52" [!$WINDOWS]
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -77,7 +78,8 @@
         "fgcolor_override"           "255 160 0 255"
         "xpos"                       "4"
         "ypos"                       "4"
-        "wide"                       "50"
+        "wide"                       "50" [$WINDOWS]
+        "wide"                       "52" [!$WINDOWS]
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -106,7 +108,8 @@
         "fgcolor_override"           "128 128 128 16"
         "xpos"                       "4"
         "ypos"                       "4"
-        "wide"                       "50"
+        "wide"                       "50" [$WINDOWS]
+        "wide"                       "52" [!$WINDOWS]
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -133,7 +136,8 @@
         "fgcolor_override"           "255 160 0 255"
         "xpos"                       "50"
         "ypos"                       "4"
-        "wide"                       "50"
+        "wide"                       "50" [$WINDOWS]
+        "wide"                       "52" [!$WINDOWS]
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -162,7 +166,8 @@
         "fgcolor_override"           "255 160 0 255"
         "xpos"                       "50"
         "ypos"                       "4"
-        "wide"                       "50"
+        "wide"                       "50" [$WINDOWS]
+        "wide"                       "52" [!$WINDOWS]
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -191,7 +196,8 @@
         "fgcolor_override"           "128 128 128 16"
         "xpos"                       "50"
         "ypos"                       "4"
-        "wide"                       "50"
+        "wide"                       "50" [$WINDOWS]
+        "wide"                       "52" [!$WINDOWS]
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"

@@ -51,9 +51,11 @@
     {
         "ControlName"                "Label"
         "fieldName"                  "BatteryAmount"
-        "xpos"                       "18"
+        "xpos"                       "18" [$WINDOWS]
+        "xpos"                       "20" [!$WINDOWS]
         "ypos"                       "4"
-        "wide"                       "50"
+        "wide"                       "50" [$WINDOWS]
+        "wide"                       "52" [!$WINDOWS]
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -79,9 +81,11 @@
         "ControlName"                "Label"
         "fieldName"                  "BatteryAmountBg"
         "fgcolor_override"           "128 128 128 16"
-        "xpos"                       "18"
+        "xpos"                       "18" [$WINDOWS]
+        "xpos"                       "20" [!$WINDOWS]
         "ypos"                       "4"
-        "wide"                       "50"
+        "wide"                       "50" [$WINDOWS]
+        "wide"                       "52" [!$WINDOWS]
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"
@@ -105,9 +109,11 @@
     {
         "ControlName"                "Label"
         "fieldName"                  "BatteryAmountGlow"
-        "xpos"                       "18"
+        "xpos"                       "18" [$WINDOWS]
+        "xpos"                       "20" [!$WINDOWS]
         "ypos"                       "4"
-        "wide"                       "50"
+        "wide"                       "50" [$WINDOWS]
+        "wide"                       "52" [!$WINDOWS]
         "tall"                       "20"
         "autoResize"                 "0"
         "pinCorner"                  "0"

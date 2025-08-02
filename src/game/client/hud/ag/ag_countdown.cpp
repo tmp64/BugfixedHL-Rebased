@@ -48,7 +48,7 @@ void AgHudCountdown::Draw(float fTime)
 		{
 			// Write arena text.
 			sprintf(szText, "%s vs %s", m_szPlayer1, m_szPlayer2);
-			AgDrawHudStringCentered(ScreenWidth / 2, gHUD.m_scrinfo.iCharHeight * 7, ScreenWidth, szText, r, g, b);
+			gHUD.DrawHudStringColorCodesCentered(ScreenWidth / 2, gHUD.m_scrinfo.iCharHeight * 7, ScreenWidth, szText, r, g, b);
 		}
 		else
 		{
@@ -62,7 +62,7 @@ void AgHudCountdown::Draw(float fTime)
 		if (strlen(m_szPlayer1) != 0)
 		{
 			sprintf(szText, "Last round won by %s", m_szPlayer1);
-			AgDrawHudStringCentered(ScreenWidth / 2, gHUD.m_scrinfo.iCharHeight * 7, ScreenWidth, szText, r, g, b);
+			gHUD.DrawHudStringColorCodesCentered(ScreenWidth / 2, gHUD.m_scrinfo.iCharHeight * 7, ScreenWidth, szText, r, g, b);
 		}
 		else
 		{

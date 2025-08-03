@@ -39,8 +39,13 @@ enum
 class CScorePanel;
 class CClientMOTD;
 class CSpectatorPanel;
+class CHudHealthPanel;
+class CHudBatteryPanel;
+class CHudAmmoPanel;
+class CHudAmmoSecondaryPanel;
 class CTeamMenu;
 class CCommandMenu;
+struct WEAPON;
 
 class CClientViewport : public vgui2::EditablePanel
 {
@@ -62,6 +67,16 @@ public:
 
 	void ShowVGUIMenu(int iMenu);
 	void HideAllVGUIMenu();
+
+	CHudHealthPanel *GetHealthPanel();
+	CHudBatteryPanel *GetBatteryPanel();
+	CHudAmmoPanel *GetAmmoPanel();
+	CHudAmmoSecondaryPanel *GetAmmoSecondaryPanel();
+	
+	// Allows to get custom positions to avoid overlapping with other panels
+	int GetAmmoHistoryYPos();
+	int GetStatusBarYPos();
+	int GetWeaponXPos();
 
 	bool IsScoreBoardVisible();
 	void ShowScoreBoard();
@@ -110,6 +125,10 @@ private:
 	CScorePanel *m_pScorePanel = nullptr;
 	CClientMOTD *m_pMOTD = nullptr;
 	CSpectatorPanel *m_pSpectatorPanel = nullptr;
+	CHudHealthPanel *m_pHudHealthPanel = nullptr;
+	CHudBatteryPanel *m_pHudBatteryPanel = nullptr;
+	CHudAmmoPanel *m_pHudAmmoPanel = nullptr;
+	CHudAmmoSecondaryPanel *m_pHudAmmoSecondaryPanel = nullptr;
 	CTeamMenu *m_pTeamMenu = nullptr;
 	CCommandMenu *m_pCommandMenu = nullptr;
 
@@ -130,6 +149,11 @@ private:
 	// Command Menu
 	float m_flMenuOpenTime = 0;
 	bool m_bMenuIsKeyTapped = false;
+
+	// Custom HUD positions
+	int m_iStatusBarYPos = 0;
+	int m_iAmmoHistoryYPos = 0;
+	int m_iWeaponXPos = 0;
 
 	Color m_pTeamColors[5] = {
 		Color(216, 216, 216, 255), // "Off" white (default)

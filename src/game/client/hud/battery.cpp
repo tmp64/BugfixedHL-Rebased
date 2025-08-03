@@ -24,6 +24,8 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "battery.h"
+#include "vgui/client_viewport.h"
+#include "vgui/hud_battery.h"
 
 DEFINE_HUD_ELEM(CHudBattery);
 
@@ -56,6 +58,9 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 	BEGIN_READ(pbuf, iSize);
 	int battery = READ_SHORT();
 
+	if (g_pViewport)
+		g_pViewport->GetBatteryPanel()->UpdateBatteryPanel(battery);
+
 	if (battery != m_iBat)
 	{
 		m_fFade = FADE_TIME;
@@ -67,6 +72,9 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 
 void CHudBattery::Draw(float flTime)
 {
+	if (hud_custom.GetBool())
+		return;
+
 	if (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH)
 		return;
 

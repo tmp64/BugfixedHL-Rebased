@@ -18,6 +18,10 @@
 #include "score_panel.h"
 #include "client_motd.h"
 #include "spectator_panel.h"
+#include "hud_health.h"
+#include "hud_battery.h"
+#include "hud_ammo.h"
+#include "hud_ammo_secondary.h"
 #include "team_menu.h"
 #include "command_menu.h"
 
@@ -131,6 +135,28 @@ void CClientViewport::ReloadLayout()
 {
 	// reload the .res file from disk
 	LoadControlSettings(VGUI2_ROOT_DIR "scripts/HudLayout.res");
+	m_pHudAmmoPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudAmmo.res");
+	m_pHudHealthPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudHealth.res");
+	m_pHudBatteryPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudBattery.res");
+	m_pHudAmmoSecondaryPanel->LoadControlSettings(VGUI2_ROOT_DIR "resource/HudAmmoSecondary.res");
+
+	// Load custom positions for the vanilla HUD to avoid overlapping with the new HUD
+	KeyValues *layoutKV = new KeyValues("HudLayout");
+	if (layoutKV->LoadFromFile(g_pFullFileSystem, VGUI2_ROOT_DIR "scripts/HudLayout.res"))
+	{
+		KeyValues *vanillaKV = layoutKV->FindKey("HudVanilla");
+		if (vanillaKV)
+		{
+			const char* szStatusBarY = vanillaKV->GetString("statusbar_ypos", "0");
+			const char* szAmmoHistoryY = vanillaKV->GetString("ammohistory_ypos", "0");
+			const char* szWeaponX = vanillaKV->GetString("weapon_xpos", "0");
+
+			ComputePos(szStatusBarY, m_iStatusBarYPos, 0, GetTall(), true);
+			ComputePos(szAmmoHistoryY, m_iAmmoHistoryYPos, 0, GetTall(), true);
+			ComputePos(szWeaponX, m_iWeaponXPos, 0, GetWide(),  true);
+		}
+
+	}
 
 	InvalidateLayout(true, true);
 }
@@ -140,6 +166,10 @@ void CClientViewport::CreateDefaultPanels()
 	AddNewPanel(m_pScorePanel = new CScorePanel());
 	AddNewPanel(m_pMOTD = new CClientMOTD());
 	AddNewPanel(m_pSpectatorPanel = new CSpectatorPanel());
+	AddNewPanel(m_pHudHealthPanel = new CHudHealthPanel());
+	AddNewPanel(m_pHudBatteryPanel = new CHudBatteryPanel());
+	AddNewPanel(m_pHudAmmoPanel = new CHudAmmoPanel());
+	AddNewPanel(m_pHudAmmoSecondaryPanel = new CHudAmmoSecondaryPanel());
 	AddNewPanel(m_pTeamMenu = new CTeamMenu());
 	AddNewPanel(m_pCommandMenu = new CCommandMenu());
 }
@@ -309,6 +339,41 @@ void CClientViewport::HideScoreBoard()
 		return;
 
 	m_pScorePanel->ShowPanel(false);
+}
+
+CHudHealthPanel *CClientViewport::GetHealthPanel()
+{ 
+	return m_pHudHealthPanel;
+}
+
+CHudBatteryPanel *CClientViewport::GetBatteryPanel()
+{
+	return m_pHudBatteryPanel; 
+}
+
+CHudAmmoPanel *CClientViewport::GetAmmoPanel()
+{ 
+	return m_pHudAmmoPanel; 
+}
+
+CHudAmmoSecondaryPanel *CClientViewport::GetAmmoSecondaryPanel()
+{ 
+	return m_pHudAmmoSecondaryPanel; 
+}
+
+int CClientViewport::GetAmmoHistoryYPos()
+{
+	return m_iAmmoHistoryYPos;
+}
+
+int CClientViewport::GetStatusBarYPos()
+{
+	return m_iStatusBarYPos;
+}
+
+int CClientViewport::GetWeaponXPos()
+{
+	return m_iWeaponXPos;
 }
 
 void CClientViewport::UpdateSpectatorPanel()

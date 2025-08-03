@@ -27,6 +27,8 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "health.h"
+#include "vgui/client_viewport.h"
+#include "vgui/hud_health.h"
 
 #define PAIN_NAME   "sprites/%d_pain.spr"
 #define DAMAGE_NAME "sprites/%d_dmg.spr"
@@ -100,6 +102,9 @@ int CHudHealth::MsgFunc_Health(const char *pszName, int iSize, void *pbuf)
 	BEGIN_READ(pbuf, iSize);
 	int x = READ_BYTE();
 
+	if (g_pViewport)
+		g_pViewport->GetHealthPanel()->UpdateHealthPanel(x);
+
 	m_iFlags |= HUD_ACTIVE;
 
 	// Only update the fade if we've changed health
@@ -169,6 +174,9 @@ void CHudHealth::Draw(float flTime)
 	float a;
 	int HealthWidth;
 
+	if (hud_custom.GetBool())
+		return;
+
 	if ((gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH) || gEngfuncs.IsSpectateOnly())
 		return;
 
@@ -180,7 +188,7 @@ void CHudHealth::Draw(float flTime)
 	else if (m_fFade > 0)
 	{
 		// Fade the health number back to dim
-		m_fFade -= (gHUD.m_flTimeDelta * 20);
+		m_fFade -= gHUD.m_flTimeDelta * HUD_FADE_RATE;
 		if (m_fFade <= 0)
 			m_fFade = 0;
 		a = MIN_ALPHA + (m_fFade / FADE_TIME) * ALPHA_POINTS_FLASH;

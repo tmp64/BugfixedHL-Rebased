@@ -135,6 +135,8 @@ public:
 
 	CRainbow m_Rainbow;
 
+	HSPRITE white_sprite = 0;
+
 	//-----------------------------------------------------
 	// HUD exports
 	//-----------------------------------------------------
@@ -146,6 +148,7 @@ public:
 	void Shutdown();
 	void ApplyViewportSchemeSettings(vgui2::IScheme *pScheme);
 	void SaveEngineVersion();
+	bool IsTriggerForSinglePlayer(color24 rendercolor);
 
 	/**
 	 * Returns whether DLL is installed onto AG mod.

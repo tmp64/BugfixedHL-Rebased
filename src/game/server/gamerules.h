@@ -46,6 +46,18 @@ enum
 	GR_PLR_DROP_AMMO_NO,
 };
 
+// additional enum for flag check
+enum
+{
+	FLAG_GR_DROP_DEFAULT,
+	FLAG_GR_DROP_GUN_ALL = 1 << 0,
+	FLAG_GR_DROP_GUN_ACTIVE = 1 << 1,
+	FLAG_GR_DROP_GUN_NO = 1 << 2,
+	FLAG_GR_DROP_AMMO_ALL = 1 << 3,
+	FLAG_GR_DROP_AMMO_ACTIVE = 1 << 4,
+	FLAG_GR_DROP_AMMO_NO = 1 << 5
+};
+
 // Player relationship return codes
 enum
 {

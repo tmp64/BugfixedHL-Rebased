@@ -3,6 +3,7 @@
 #include <vgui_controls/PropertyPage.h>
 
 class CCvarColor;
+class CCvarCheckButton;
 
 class CHudSubOptionsColors : public vgui2::PropertyPage
 {
@@ -15,8 +16,9 @@ public:
 	virtual void OnApplyChanges();
 
 private:
-	vgui2::Label *m_pColorLabel[4];
-	CCvarColor *m_pColorValue[4];
+	vgui2::Label *m_pColorLabel[5];
+	CCvarColor *m_pColorValue[5];
+	CCvarCheckButton *m_pColorOverride = nullptr;
 };
 
 #endif

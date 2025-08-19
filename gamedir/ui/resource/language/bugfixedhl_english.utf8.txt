@@ -81,7 +81,12 @@
 "BHL_AdvOptions_HUD_Color2_Title"	"HUD HP/AP/Ammo (Medium) color"
 
 "BHL_AdvOptions_HUD_Color3"			"HP/AP/Ammo (Low)"
-"BHL_AdvOptions_HUD_Color3_Title"	"HUD HP/AP/Ammo (Medium) color"
+"BHL_AdvOptions_HUD_Color3_Title"	"HUD HP/AP/Ammo (Low) color"
+
+"BHL_AdvOptions_HUD_Color4"			"HP/AP/Ammo (Very low)"
+"BHL_AdvOptions_HUD_Color4_Title"	"HUD HP/AP/Ammo (Very low) color"
+
+"BHL_AdvOptions_HUD_ColorOverride"	"Color HUD numbers by amount (HP/AP/Ammo)"
 
 "BHL_AdvOptions_HUD_Render"			"Enhanced sprite rendering *"
 "BHL_AdvOptions_HUD_Dim"			"Dim HUD when inactive"
@@ -96,6 +101,7 @@
 "BHL_AdvOptions_HUD_JumpSpeedCross"	"Jump speed under crosshair"
 
 "BHL_AdvOptions_HUD_Deathnotice"	"VGUI2 Deathnotice *"
+"BHL_AdvOptions_HUD_CustomHud"  	"VGUI2 Custom HUD (HP/AP/Ammo) *"
 
 "BHL_AdvOptions_HUD_RenderMsg"		"* Requires hardware rendering mode"
 

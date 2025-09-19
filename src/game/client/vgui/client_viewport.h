@@ -76,6 +76,7 @@ public:
 	// Allows to get custom positions to avoid overlapping with other panels
 	int GetAmmoHistoryYPos();
 	int GetStatusBarYPos();
+	int GetDamageYPos();
 	int GetWeaponXPos();
 
 	bool IsScoreBoardVisible();
@@ -153,6 +154,7 @@ private:
 	// Custom HUD positions
 	int m_iStatusBarYPos = 0;
 	int m_iAmmoHistoryYPos = 0;
+	int m_iDamageYPos = 0;
 	int m_iWeaponXPos = 0;
 
 	Color m_pTeamColors[5] = {

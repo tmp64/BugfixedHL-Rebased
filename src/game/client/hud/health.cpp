@@ -174,14 +174,18 @@ void CHudHealth::Draw(float flTime)
 	float a;
 	int HealthWidth;
 
-	if (hud_custom.GetBool())
-		return;
-
 	if ((gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH) || gEngfuncs.IsSpectateOnly())
 		return;
 
 	if (!m_hSprite)
 		m_hSprite = LoadSprite(PAIN_NAME);
+	
+	if (hud_custom.GetBool())
+	{
+		DrawDamage(flTime);
+		DrawPain(flTime);
+		return;
+	}
 
 	if (!hud_dim.GetBool())
 		a = MIN_ALPHA + ALPHA_POINTS_MAX;
@@ -468,7 +472,7 @@ void CHudHealth::UpdateTiles(float flTime, long bitsDamage)
 		{
 			// put this one at the bottom
 			pdmg->x = giDmgWidth / 8;
-			pdmg->y = ScreenHeight - giDmgHeight * 2;
+			pdmg->y = (hud_custom.GetBool() ? g_pViewport->GetDamageYPos() : ScreenHeight) -  giDmgHeight * 2;
 			pdmg->fExpire = flTime + DMG_IMAGE_LIFE;
 
 			// move everyone else up

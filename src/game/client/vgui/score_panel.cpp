@@ -720,7 +720,9 @@ void CScorePanel::UpdateScoresAndCounts()
 		TeamData &td = m_TeamData[pi->GetTeamNumber()];
 		td.iFrags += pi->GetFrags();
 		td.iDeaths += pi->GetDeaths();
-		td.iPlayerCount++;
+		
+		if (GetPlayerTeam(pi) != TEAM_SPECTATOR)
+			td.iPlayerCount++;
 
 		iPlayerCount++;
 	}

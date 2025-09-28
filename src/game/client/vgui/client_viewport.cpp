@@ -149,10 +149,12 @@ void CClientViewport::ReloadLayout()
 		{
 			const char* szStatusBarY = vanillaKV->GetString("statusbar_ypos", "0");
 			const char* szAmmoHistoryY = vanillaKV->GetString("ammohistory_ypos", "0");
+			const char* szDamageY = vanillaKV->GetString("damage_ypos", "0");
 			const char* szWeaponX = vanillaKV->GetString("weapon_xpos", "0");
 
 			ComputePos(szStatusBarY, m_iStatusBarYPos, 0, GetTall(), true);
 			ComputePos(szAmmoHistoryY, m_iAmmoHistoryYPos, 0, GetTall(), true);
+			ComputePos(szDamageY, m_iDamageYPos, 0, GetTall(), true);
 			ComputePos(szWeaponX, m_iWeaponXPos, 0, GetWide(),  true);
 		}
 
@@ -369,6 +371,11 @@ int CClientViewport::GetAmmoHistoryYPos()
 int CClientViewport::GetStatusBarYPos()
 {
 	return m_iStatusBarYPos;
+}
+
+int CClientViewport::GetDamageYPos()
+{
+	return m_iDamageYPos;
 }
 
 int CClientViewport::GetWeaponXPos()

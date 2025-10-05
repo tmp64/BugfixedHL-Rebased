@@ -28,7 +28,7 @@ if(GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
         "${_git_dir}/HEAD"
     )
 
-    execute_process(COMMAND ${GIT_EXECUTABLE} describe --long
+    execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --long
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                     RESULT_VARIABLE _git_code
                     OUTPUT_VARIABLE _git_result

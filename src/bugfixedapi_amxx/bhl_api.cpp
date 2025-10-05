@@ -27,7 +27,9 @@ bhl::E_ApiInitResult bhl::InitServerApi()
 {
 	assert(!IsServerApiReady());
 
-	const char* pszModule = gpMetaUtilFuncs->pfnGetGameInfo(PLID, GINFO_DLL_FULLPATH);
+	const char *pszModule = gpMetaUtilFuncs->pfnGetGameInfo(PLID, GINFO_DLL_FULLPATH);
+	LOG_DEVELOPER(PLID, "Server DLL path: %s", pszModule);
+	
 	g_pServerModule = Sys_LoadModule(pszModule);
 
 	if (!g_pServerModule)

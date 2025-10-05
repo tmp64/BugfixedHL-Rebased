@@ -28,9 +28,9 @@ include( GitVersionSemverfier )
 # Version
 #-----------------------------------------------------------------
 set( BHL_REPO_VERSION_MAJOR 1 )
-set( BHL_REPO_VERSION_MINOR 13 )
-set( BHL_REPO_VERSION_PATCH 1 )
-set( BHL_REPO_VERSION_TAG "" )
+set( BHL_REPO_VERSION_MINOR 14 )
+set( BHL_REPO_VERSION_PATCH 0 )
+set( BHL_REPO_VERSION_TAG "dev" )
 
 if( GIT_SUCCESS )
 	message( "Version: ${GIT_SEM_VERSION} (from Git)" )

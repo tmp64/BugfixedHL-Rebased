@@ -154,13 +154,13 @@ CSysModule *Sys_LoadModule(const char *pModuleName)
 
 			_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", szCwd, pModuleName);
 
-			hDLL = dlopen(szAbsoluteModuleName, RTLD_NOW);
+			hDLL = (HMODULE)dlopen(szAbsoluteModuleName, RTLD_NOW);
 		}
 	}
 	else
 	{
 		_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s", pModuleName);
-		hDLL = dlopen(pModuleName, RTLD_NOW);
+		hDLL = (HMODULE)dlopen(pModuleName, RTLD_NOW);
 	}
 #endif
 
@@ -177,7 +177,7 @@ CSysModule *Sys_LoadModule(const char *pModuleName)
 #else
 		printf("Error:%s\n", dlerror());
 		_snprintf(str, sizeof(str), "%s.so", szAbsoluteModuleName);
-		hDLL = dlopen(str, RTLD_NOW);
+		hDLL = (HMODULE)dlopen(str, RTLD_NOW);
 #endif
 	}
 
@@ -224,7 +224,7 @@ CreateInterfaceFn Sys_GetFactory(CSysModule *pModule)
 	//pointer-to-function and pointer-to-object
 	//
 	// so lets get around it :)
-	return (CreateInterfaceFn)(GetProcAddress(hDLL, CREATEINTERFACE_PROCNAME));
+	return (CreateInterfaceFn)(GetProcAddress((void *)hDLL, CREATEINTERFACE_PROCNAME));
 #endif
 }
 

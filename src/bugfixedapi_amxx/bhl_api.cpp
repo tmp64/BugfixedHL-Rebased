@@ -1,5 +1,6 @@
 #include <cassert>
 #include "bhl_api.h"
+#include "amxxmodule.h"
 
 namespace
 {
@@ -26,17 +27,9 @@ bhl::E_ApiInitResult bhl::InitServerApi()
 {
 	assert(!IsServerApiReady());
 
-	// Load module
-#if defined(_WIN32)
-	const char *pszModule = "hl.dll";
-#elif defined(__APPLE__) || defined(PLATFORM_MACOS)
-	const char *pszModule = "hl.dylib";
-#elif defined(LINUX) || defined(PLATFORM_LINUX)
-	const char *pszModule = "hl.so";
-#else
-#error Platform not supported: no module name
-#endif
-
+	const char *pszModule = gpMetaUtilFuncs->pfnGetGameInfo(PLID, GINFO_DLL_FULLPATH);
+	LOG_DEVELOPER(PLID, "Server DLL path: %s", pszModule);
+	
 	g_pServerModule = Sys_LoadModule(pszModule);
 
 	if (!g_pServerModule)

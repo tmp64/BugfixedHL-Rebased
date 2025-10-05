@@ -27,11 +27,10 @@ include( GitVersionSemverfier )
 #-----------------------------------------------------------------
 # Version
 #-----------------------------------------------------------------
-# Also needs to be changed in scripts/BuildRelease.py
 set( BHL_REPO_VERSION_MAJOR 1 )
 set( BHL_REPO_VERSION_MINOR 13 )
 set( BHL_REPO_VERSION_PATCH 0 )
-set( BHL_REPO_VERSION_TAG "dev" )
+set( BHL_REPO_VERSION_TAG "" )
 
 if( GIT_SUCCESS )
 	message( "Version: ${GIT_SEM_VERSION} (from Git)" )

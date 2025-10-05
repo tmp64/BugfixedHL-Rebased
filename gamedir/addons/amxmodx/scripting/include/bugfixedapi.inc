@@ -91,7 +91,7 @@ native bhl_get_client_version_commit(idx, buf[], size = sizeof(buf));
  * @param idx			Player's index
  * @return				0 or 1
  */
-native bhl_is_client_version_valid(idx)
+native bhl_is_client_version_valid(idx);
 
 /**
  * @see bhl_set_automatic_motd

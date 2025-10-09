@@ -747,7 +747,7 @@ void CScorePanel::UpdateScoresAndCounts()
 			localizedName = wbuf2;
 		}
 
-		V_snwprintf(wbuf, 128, L"%s (%d/%d)", localizedName, td.iPlayerCount, iPlayerCount);
+		V_snwprintf(wbuf, 128, L"%ls (%d/%d)", localizedName, td.iPlayerCount, iPlayerCount);
 		m_pPlayerList->ModifyColumn(nTeamID, "name", wbuf);
 
 		// Team efficiency

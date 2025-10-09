@@ -22,6 +22,8 @@ extern IParticleMan *g_pParticleMan;
 
 ConVar r_dynamic_ent_light("r_dynamic_ent_light", "1", FCVAR_BHL_ARCHIVE);
 ConVar cl_hidecorpses("cl_hidecorpses", "0", FCVAR_BHL_ARCHIVE);
+extern ConVar cl_show_server_triggers;
+extern ConVar cl_show_server_triggers_alpha;
 
 void Game_AddObjects(void);
 
@@ -53,6 +55,12 @@ int CL_DLLEXPORT HUD_AddEntity(int type, struct cl_entity_s *ent, const char *mo
 	default:
 		break;
 	}
+
+	// show triggers that would be transferred from server-side with specific value in renderfx to differ it from other entities
+	// update: there is a new implementation of displaying triggers that allows you to display even when planes is stripped due to optimizations in updated map compiler
+	// so this code will only work if the value 2 is specified in the cvar, but it should not be deleted imo
+	if ((ent->curstate.rendermode == kRenderTransColor) && (ent->curstate.renderfx == kRenderFxTrigger) && (cl_show_server_triggers.GetInt() == 2) && !gHUD.IsTriggerForSinglePlayer(ent->curstate.rendercolor))
+		ent->curstate.renderamt = std::clamp(cl_show_server_triggers_alpha.GetFloat(), 0.0f, 255.0f);
 
 	// hide corpses option
 	if (cl_hidecorpses.GetBool() && ent->curstate.renderfx == kRenderFxDeadPlayer)

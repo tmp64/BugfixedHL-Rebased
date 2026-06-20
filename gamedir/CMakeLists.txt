@@ -180,6 +180,13 @@ add_dependencies( client convert_utf_files_client )
 bhl_install_files( server "${SERVER_FILES}" )
 bhl_install_target( server server "dlls" )
 bhl_install_target( server bugfixedapi_amxx "addons/amxmodx/modules" )
+bhl_install_target( server hl_extended_api "addons/amxmodx/modules" )
+
+install(
+	FILES ${CMAKE_SOURCE_DIR}/src/hl_extended_api/hl_extended_api.inc
+	DESTINATION "addons/amxmodx/scripting/include"
+	COMPONENT server
+)
 
 if( GENERATE_AMXX_OFFSETS )
 	# Generate the install script

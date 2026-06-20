@@ -436,6 +436,7 @@ endif()
 set( CMAKE_FOLDER "HL SDK" )
 
 add_subdirectory( src/bugfixedapi_amxx )
+add_subdirectory( src/hl_extended_api )
 add_subdirectory( src/game/client )
 add_subdirectory( src/game/server )
 add_subdirectory( src/tests )
@@ -448,6 +449,7 @@ set_source_files_properties(
 		client
 		server
 		bugfixedapi_amxx
+		hl_extended_api
 	PROPERTIES
 		SKIP_PRECOMPILE_HEADERS ON
 )
@@ -457,4 +459,4 @@ add_custom_target( ci-client )
 add_dependencies( ci-client client test_client )
 
 add_custom_target( ci-server )
-add_dependencies( ci-server server test_server bugfixedapi_amxx )
+add_dependencies( ci-server server test_server bugfixedapi_amxx hl_extended_api )

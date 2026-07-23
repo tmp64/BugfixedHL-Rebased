@@ -71,6 +71,11 @@ private:
 	double *m_pflFrameTime = nullptr;
 	double m_flFrameTimeReminder = 0;
 
+  // Blur Bug
+	uintptr_t m_iBlurBugPlace = 0;
+	uint8_t m_BlurBugPlaceBackup[10] = { 0 };
+	void PatchBlurBug(bool enable);
+
 	// Connectionless Packet
 	using ConnectionlessPacketFunc = void (*)();
 	ConnectionlessPacketFunc m_fnEngineCLPHandler = nullptr;
@@ -235,6 +240,7 @@ void CEnginePatchesWindows::PlatformPatchesInit()
 
 	PatchFPSBug(true);
 	PatchConnectionlessPacketHandler(true);
+  PatchBlurBug(true);
 	SetAffinity();
 }
 
@@ -242,6 +248,7 @@ void CEnginePatchesWindows::PlatformPatchesShutdown()
 {
 	PatchFPSBug(false);
 	PatchConnectionlessPacketHandler(false);
+  PatchBlurBug(false);
 	PatchCommandList(false);
 	RemoveSvcHooks();
 }
@@ -596,6 +603,54 @@ void CEnginePatchesWindows::ConnectionlessPacketHandler()
 
 	// Call engine handler
 	s_EnginePatchesInstance.m_fnEngineCLPHandler();
+}
+
+void CEnginePatchesWindows::PatchBlurBug(bool enable)
+{
+  if (gHUD.GetEngineBuild() >= ENGINE_BUILD_ANNIVERSARY_FIRST)
+		return;
+    
+	if (enable)
+	{
+		if (m_iBlurBugPlace)
+			return;
+
+		const char data1[] = "8843028B4510C64303FF";
+		const char mask1[] = "FFFFFFFFFFFFFFFFFFFF";
+		uintptr_t addr1 = MemoryFindForward(m_EngineModule.iBase, m_EngineModule.iEnd, data1, mask1);
+
+		if (addr1)
+		{
+			m_iBlurBugPlace = addr1;
+
+			memcpy(m_BlurBugPlaceBackup, (void*)m_iBlurBugPlace, 10);
+
+			const char data2[] = "6AFF8F038843038B4510";
+			unsigned char newBytes[10];
+			ConvertHexString(data2, newBytes, sizeof(newBytes));
+
+			DWORD oldProtect;
+			VirtualProtect((void*)m_iBlurBugPlace, 10, PAGE_EXECUTE_READWRITE, &oldProtect);
+			memcpy((void*)m_iBlurBugPlace, newBytes, 10);
+			VirtualProtect((void*)m_iBlurBugPlace, 10, oldProtect, &oldProtect);
+		}
+		else
+		{
+			ConPrintf(ConColor::Red, "Engine patch: offset of Blur Bug not found.\n");
+		}
+	}
+	else
+	{
+		if (!m_iBlurBugPlace)
+			return;
+
+		DWORD oldProtect;
+		VirtualProtect((void*)m_iBlurBugPlace, 10, PAGE_EXECUTE_READWRITE, &oldProtect);
+		memcpy((void*)m_iBlurBugPlace, m_BlurBugPlaceBackup, 10);
+		VirtualProtect((void*)m_iBlurBugPlace, 10, oldProtect, &oldProtect);
+		
+		m_iBlurBugPlace = 0;
+	}
 }
 
 void CEnginePatchesWindows::PatchCommandList(bool enable)

@@ -140,6 +140,8 @@ ConVar cl_autowepswitch("cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_BHL_ARCHI
 ConVar cl_righthand("cl_righthand", "0", FCVAR_BHL_ARCHIVE, "If enabled, activates the left-handed mode");
 ConVar cl_viewmodel_fov("cl_viewmodel_fov", "0", FCVAR_BHL_ARCHIVE, "Sets the field-of-view for the viewmodel");
 ConVar showtriggers("showtriggers", "0", 0, "Shows trigger brushes");
+ConVar cl_show_server_triggers("cl_show_server_triggers", "0", FCVAR_BHL_ARCHIVE, "Shows server triggers if transmitted in special way");
+ConVar cl_show_server_triggers_alpha("cl_show_server_triggers_alpha", "120", FCVAR_BHL_ARCHIVE);
 
 ConVar aghl_version("aghl_version", APP_VERSION, 0, "BugfixedHL version");
 ConVar aghl_supports("aghl_supports", "0", 0, "Bitfield of features supported by this client");
@@ -629,6 +631,26 @@ void CHud::SaveEngineVersion()
 		Q_strncpy(m_szEngineVersion, "< sv_version not found >", sizeof(m_szEngineVersion));
 		m_iEngineBuildNumber = -1;
 	}
+}
+
+bool CHud::IsTriggerForSinglePlayer(color24 rendercolor)
+{
+	auto r = rendercolor.r;
+	auto g = rendercolor.g;
+	auto b = rendercolor.b;
+
+	if ((r == 128) && (g == 128) && (b == 128)) // trigger_autosave
+		return true;
+	else if ((r == 79) && (g == 255) && (b == 10)) // trigger_changelevel
+		return true;
+	else if ((r == 150) && (g == 75) && (b == 0)) // trigger_endsection
+		return true;
+	else if ((r == 238) && (g == 154) && (b == 77)) // trigger_monsterjump
+		return true;
+	else if ((r == 203) && (g == 103) && (b == 212)) // trigger_transition
+		return true;
+
+	return false;
 }
 
 bool CHud::IsAG()

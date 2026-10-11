@@ -31,6 +31,8 @@
 #include "crosshair.h"
 #include "menu.h"
 #include "vgui/client_viewport.h"
+#include "vgui/hud_ammo.h"
+#include "vgui/hud_ammo_secondary.h"
 
 ConVar hud_fastswitch("hud_fastswitch", "0", FCVAR_ARCHIVE, "Controls whether or not weapons can be selected in one keypress");
 ConVar hud_weapon("hud_weapon", "0", FCVAR_BHL_ARCHIVE, "Controls displaying sprite of currently selected weapon");
@@ -284,7 +286,7 @@ void CHudAmmo::Reset(void)
 {
 	m_fFade = 0;
 	m_pWeapon = NULL;
-	m_fOnTarget = FALSE;
+	m_fOnTarget = false;
 	m_iFlags |= HUD_ACTIVE; //!!!
 
 	gpActiveSel = NULL;
@@ -552,10 +554,7 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf)
 	int iClip = READ_CHAR();
 
 	// detect if we're also on target
-	if (iState > 1)
-	{
-		m_fOnTarget = TRUE;
-	}
+	m_fOnTarget = iState > 1;
 
 	if (iId < 1)
 	{
@@ -861,10 +860,22 @@ void CHudAmmo::Draw(float flTime)
 	int AmmoWidth;
 
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
+	{
+		if (g_pViewport) {
+			g_pViewport->GetAmmoPanel()->ShowPanel(false);
+			g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(false);
+		}
 		return;
+	}
 
 	if ((gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL)))
+	{
+		if (g_pViewport) {
+			g_pViewport->GetAmmoPanel()->ShowPanel(false);
+			g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(false);
+		}
 		return;
+	}
 
 	// Draw Weapon Menu
 	DrawWList(flTime);
@@ -909,14 +920,21 @@ void CHudAmmo::Draw(float flTime)
 	if (hud_weapon.GetBool())
 	{
 		y = ScreenHeight - (m_pWeapon->rcInactive.bottom - m_pWeapon->rcInactive.top);
-		x = ScreenWidth - (8.5 * AmmoWidth) - (m_pWeapon->rcInactive.right - m_pWeapon->rcInactive.left);
+		x = ScreenWidth - (hud_custom.GetBool() ? g_pViewport->GetWeaponXPos() : (8.5 * AmmoWidth)) - (m_pWeapon->rcInactive.right - m_pWeapon->rcInactive.left);
 		SPR_Set(m_pWeapon->hInactive, r, g, b);
 		SPR_DrawAdditive(0, x, y, &m_pWeapon->rcInactive);
 	}
 
 	// SPR_Draw Ammo
 	if ((pw->iAmmoType < 0) && (pw->iAmmo2Type < 0))
+	{
+		if (g_pViewport)
+		{
+			g_pViewport->GetAmmoPanel()->ShowPanel(false);
+			g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(false);
+		}
 		return;
+	}
 
 	int iFlags = DHN_DRAWZERO; // draw 0 values
 
@@ -924,8 +942,27 @@ void CHudAmmo::Draw(float flTime)
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 	y += (int)(gHUD.m_iFontHeight * 0.2f);
 
+	
+	if (g_pViewport)
+	{
+		if (hud_custom.GetBool())
+		{
+			g_pViewport->GetAmmoPanel()->UpdateAmmoPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
+			g_pViewport->GetAmmoSecondaryPanel()->UpdateAmmoSecondaryPanel(m_pWeapon, GetMaxClip(pw->szName), gWR.CountAmmo(pw->iAmmoType), gWR.CountAmmo(pw->iAmmo2Type));
+			g_pViewport->GetAmmoPanel()->ShowPanel(true);
+		}
+		else
+		{
+			g_pViewport->GetAmmoPanel()->ShowPanel(false);
+		}
+	}
+	
+	if (hud_custom.GetBool())
+	{
+		// Hide vanilla hud ammo
+	}
 	// Does weapon have any ammo at all?
-	if (m_pWeapon->iAmmoType > 0)
+	else if (m_pWeapon->iAmmoType > 0)
 	{
 		int iIconWidth = m_pWeapon->rcAmmo.right - m_pWeapon->rcAmmo.left;
 
@@ -975,7 +1012,7 @@ void CHudAmmo::Draw(float flTime)
 		SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo);
 	}
 
-	// Does weapon have seconday ammo?
+	// Does weapon have secondary ammo?
 	if (pw->iAmmo2Type > 0)
 	{
 		int iIconWidth = m_pWeapon->rcAmmo2.right - m_pWeapon->rcAmmo2.left;
@@ -983,6 +1020,16 @@ void CHudAmmo::Draw(float flTime)
 		// Do we have secondary ammo?
 		if ((pw->iAmmo2Type != 0) && (gWR.CountAmmo(pw->iAmmo2Type) > 0))
 		{
+			if (hud_custom.GetBool())
+			{
+				g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(true);
+				return; // Hide vanilla secondary ammo
+			}
+			else
+			{
+				g_pViewport->GetAmmoSecondaryPanel()->ShowPanel(false);
+			}
+
 			a = alphaDim * gHUD.GetHudTransparency();
 			gHUD.GetHudAmmoColor(pw->iClip, GetMaxClip(pw->szName), r, g, b);
 			ScaleColors(r, g, b, a);

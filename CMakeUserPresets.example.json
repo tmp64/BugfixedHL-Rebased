@@ -1,0 +1,28 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "user",
+      "inherits": ["base", "platform-generator"],
+      "cacheVariables": {
+        "AUTO_DEPLOY": true,
+        "USE_UPDATER": true,
+        "GENERATE_AMXX_OFFSETS": false
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "user-debug",
+      "configurePreset": "user",
+      "inheritConfigureEnvironment": true,
+      "configuration": "Debug"
+    },
+    {
+      "name": "user-release",
+      "configurePreset": "user",
+      "inheritConfigureEnvironment": true,
+      "configuration": "RelWithDebInfo"
+    }
+  ]
+}

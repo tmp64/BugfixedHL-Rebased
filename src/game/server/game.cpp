@@ -43,6 +43,7 @@ cvar_t fraglimit = { "mp_fraglimit", "0", FCVAR_SERVER };
 cvar_t timelimit = { "mp_timelimit", "0", FCVAR_SERVER };
 cvar_t friendlyfire = { "mp_friendlyfire", "0", FCVAR_SERVER };
 cvar_t bunnyhop = { "mp_bunnyhop", "1", FCVAR_SERVER };
+cvar_t ducktap = { "mp_ducktap", "1", FCVAR_SERVER };
 cvar_t falldamage = { "mp_falldamage", "0", FCVAR_SERVER };
 cvar_t weaponstay = { "mp_weaponstay", "0", FCVAR_SERVER };
 cvar_t selfgauss = { "mp_selfgauss", "1", FCVAR_SERVER };
@@ -58,11 +59,17 @@ cvar_t allowmonsters = { "mp_allowmonsters", "0", FCVAR_SERVER };
 cvar_t mp_chattime = { "mp_chattime", "10", FCVAR_SERVER };
 cvar_t mp_notify_player_status = { "mp_notify_player_status", "7" }; // Notifications about join/leave/spectate
 
-cvar_t mp_welcomecam = { "mp_welcomecam", "1", FCVAR_SERVER };
-cvar_t mp_respawn_fix = { "mp_respawn_fix", "1", FCVAR_SERVER };
+ConVar mp_welcomecam("mp_welcomecam", "1", 0, "Don't spawn players immediately on join");
+ConVar mp_welcomecam_delay("mp_welcomecam_delay", "0.2", 0, "Delay before the player can leave welcome cam");
+ConVar mp_respawn_fix("mp_respawn_fix", "1", 0, "Fix inconsistent respawn times and standing corpses");
+ConVar mp_respawn_delay("mp_respawn_delay", "1.5", 0, "Time until palyers can respawn after death. Requires mp_respawn_fix 1.");
 
 cvar_t motdfile_unicode = { "motdfile_unicode", "motd_unicode.txt", FCVAR_SERVER };
 cvar_t motdfile_html = { "motdfile_html", "motd.html", FCVAR_SERVER };
+
+ConVar mp_wallgauss("mp_wallgauss", "1.0", 0, "Wallgauss damage scale. 0 disables wallgauss.");
+ConVar mp_rpg_fix("mp_rpg_fix", "0", 0, "Fix RPG rocket exploding when firing it while moving backwards at high speed.");
+ConVar mp_blastradius("mp_blastradius", "1.0", 0, "Explosion radius scale.");
 
 cvar_t mp_dmg_crowbar = { "mp_dmg_crowbar", "25", FCVAR_SERVER };
 cvar_t mp_dmg_glock = { "mp_dmg_glock", "12", FCVAR_SERVER };
@@ -500,6 +507,7 @@ void GameDLLInit(void)
 
 	CVAR_REGISTER(&friendlyfire);
 	CVAR_REGISTER(&bunnyhop);
+	CVAR_REGISTER(&ducktap);
 	CVAR_REGISTER(&falldamage);
 	CVAR_REGISTER(&weaponstay);
 	CVAR_REGISTER(&selfgauss);
@@ -515,9 +523,6 @@ void GameDLLInit(void)
 	CVAR_REGISTER(&mp_chattime);
 	CVAR_REGISTER(&sv_busters);
 	CVAR_REGISTER(&mp_notify_player_status);
-
-	CVAR_REGISTER(&mp_welcomecam);
-	CVAR_REGISTER(&mp_respawn_fix);
 
 	CVAR_REGISTER(&motdfile_unicode);
 	CVAR_REGISTER(&motdfile_html);

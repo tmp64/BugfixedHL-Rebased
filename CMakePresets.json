@@ -1,0 +1,56 @@
+{
+  "version": 9,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 30
+  },
+  "include": [
+    "cmake/CMake${hostSystemName}Presets.json"
+  ],
+  "configurePresets": [
+    {
+      "name": "base",
+      "inherits": ["vcpkg"],
+      "binaryDir": "${sourceDir}/_build/${presetName}",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+
+        "AUTO_DEPLOY": false,
+        "USE_UPDATER": true,
+        "GENERATE_AMXX_OFFSETS": false,
+        "GNU_FORCE_COLORED_OUTPUT": true
+      }
+    },
+    {
+      "name": "github-actions",
+      "inherits": ["base"],
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "BUILD_TESTING": true,
+        "GNU_FORCE_COLORED_OUTPUT": false,
+        "USE_UPDATER": true,
+        "GENERATE_AMXX_OFFSETS": true,
+        "WARNINGS_ARE_ERRORS": true
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "github-actions",
+      "configurePreset": "github-actions",
+      "inheritConfigureEnvironment": true,
+      "configuration": "RelWithDebInfo"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "github-actions",
+      "configurePreset": "github-actions",
+      "configuration": "RelWithDebInfo",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

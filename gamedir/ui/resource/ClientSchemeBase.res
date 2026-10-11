@@ -528,6 +528,74 @@ Scheme
 				"symbol"	"1"
 			}
 		}
+
+		// Custom fonts for VGUI2 HUD
+		HudNumbers
+		{
+			"1"
+			{
+				"name"  "Hemi Head 426" [$WINDOWS]
+				"name"  "Hemi Head 426 Linux" [!$WINDOWS]
+				"tall"  "26"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
+		HudNumbersGlow
+		{
+			"1"
+			{
+				"name"  "Hemi Head 426" [$WINDOWS]
+				"name"  "Hemi Head 426 Linux" [!$WINDOWS]
+				"tall"  "26"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+				"blur"      "4"
+				"scanlines" "2"
+				"custom" "1"
+			}
+		}
+		HudNumbersSmall
+		{
+			"1"
+			{
+				"name"  "Hemi Head 426" [$WINDOWS]
+				"name"  "Hemi Head 426 Linux" [!$WINDOWS]
+				"tall"  "18"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
+		HudNumbersSmallGlow
+		{
+			"1"
+			{
+				"name"  "Hemi Head 426" [$WINDOWS]
+				"name"  "Hemi Head 426 Linux" [!$WINDOWS]
+				"tall"  "18"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+				"blur"      "4"
+				"scanlines" "2"
+				"custom" "1"
+			}
+		}
+		Icons  // for health, armor, etc.
+		{
+			"1"
+			{
+				"name"  "BoxRocket"
+				"tall"  "24"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+				"custom" "1"
+		   }
+		}	
 	}
 
 	//
@@ -933,7 +1001,9 @@ Scheme
 	CustomFontFiles
 	{
 		"1"		"resource/HALFLIFE2.ttf"
-	
+		"2"     "ui/resource/fonts/HemiHead426-Regular.ttf"
+		"3"     "ui/resource/fonts/HemiHead426-Linux-Regular.ttf"
+		"4"     "ui/resource/fonts/boxrocket.ttf"
 	}
 	
 }

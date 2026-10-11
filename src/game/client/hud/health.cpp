@@ -27,6 +27,8 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "health.h"
+#include "vgui/client_viewport.h"
+#include "vgui/hud_health.h"
 
 #define PAIN_NAME   "sprites/%d_pain.spr"
 #define DAMAGE_NAME "sprites/%d_dmg.spr"
@@ -99,6 +101,9 @@ int CHudHealth::MsgFunc_Health(const char *pszName, int iSize, void *pbuf)
 	// TODO: update local health data
 	BEGIN_READ(pbuf, iSize);
 	int x = READ_BYTE();
+
+	if (g_pViewport)
+		g_pViewport->GetHealthPanel()->UpdateHealthPanel(x);
 
 	m_iFlags |= HUD_ACTIVE;
 
@@ -174,13 +179,20 @@ void CHudHealth::Draw(float flTime)
 
 	if (!m_hSprite)
 		m_hSprite = LoadSprite(PAIN_NAME);
+	
+	if (hud_custom.GetBool())
+	{
+		DrawDamage(flTime);
+		DrawPain(flTime);
+		return;
+	}
 
 	if (!hud_dim.GetBool())
 		a = MIN_ALPHA + ALPHA_POINTS_MAX;
 	else if (m_fFade > 0)
 	{
 		// Fade the health number back to dim
-		m_fFade -= (gHUD.m_flTimeDelta * 20);
+		m_fFade -= gHUD.m_flTimeDelta * HUD_FADE_RATE;
 		if (m_fFade <= 0)
 			m_fFade = 0;
 		a = MIN_ALPHA + (m_fFade / FADE_TIME) * ALPHA_POINTS_FLASH;
@@ -191,7 +203,7 @@ void CHudHealth::Draw(float flTime)
 	// Apply wider range health from client_state_t structure, if available
 	cl_entity_t *player = gEngfuncs.GetLocalPlayer();
 	int health = player->curstate.health;
-	health = clamp(health, 0, 999);
+
 	if (m_iHealth != health && health > 255)
 	{
 		m_fFade = FADE_TIME;
@@ -221,7 +233,10 @@ void CHudHealth::Draw(float flTime)
 
 		x = CrossWidth + HealthWidth / 2;
 
-		x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b);
+		if (m_iHealth < 1000)
+			x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b);
+		else
+			x = gHUD.DrawHudNumber(x, y, m_iHealth, r, g, b);
 
 		x += HealthWidth / 2;
 
@@ -457,7 +472,7 @@ void CHudHealth::UpdateTiles(float flTime, long bitsDamage)
 		{
 			// put this one at the bottom
 			pdmg->x = giDmgWidth / 8;
-			pdmg->y = ScreenHeight - giDmgHeight * 2;
+			pdmg->y = (hud_custom.GetBool() ? g_pViewport->GetDamageYPos() : ScreenHeight) -  giDmgHeight * 2;
 			pdmg->fExpire = flTime + DMG_IMAGE_LIFE;
 
 			// move everyone else up

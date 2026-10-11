@@ -1,3 +1,0 @@
-add_library( nlohmann_json INTERFACE IMPORTED GLOBAL )
-
-set_property( TARGET nlohmann_json PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include )

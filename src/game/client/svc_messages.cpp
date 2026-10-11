@@ -121,6 +121,7 @@ void CSvcMessages::Init()
 	m_Handlers.funcs.pfnSvcStuffText = CallMember<&CSvcMessages::SvcStuffText>;
 	m_Handlers.funcs.pfnSvcSendCvarValue = CallMember<&CSvcMessages::SvcSendCvarValue>;
 	m_Handlers.funcs.pfnSvcSendCvarValue2 = CallMember<&CSvcMessages::SvcSendCvarValue2>;
+	m_Handlers.funcs.pfnSvcUpdateUserInfo = CallMember<&CSvcMessages::SvcUpdateUserInfo>;
 
 	CEnginePatches::Get().HookSvcHandlers(m_Handlers.array);
 	m_bInitialized = true;
@@ -703,4 +704,47 @@ void CSvcMessages::SvcSendCvarValue2()
 	}
 
 	CEnginePatches::Get().GetEngineSvcHandlers().pfnSvcSendCvarValue2();
+}
+
+void CSvcMessages::SvcUpdateUserInfo()
+{
+	BEGIN_READ(GetMsgBuf().GetBuf(), GetMsgBuf().GetSize(), GetMsgBuf().GetReadPos());
+
+	int slot = READ_BYTE();
+	long userid = READ_LONG();
+	char *userinfo = SAFE_READ_STRING(); // can't use READ_STRING because it can be interrupted by invalid UTF-8 symbol
+
+	// Get 16 bytes of CD key hash
+	byte cdkey[16] = {};
+	for (int i = 0; i < 16; i++)
+	{
+		cdkey[i] = READ_BYTE();
+	}
+
+	// Check if userinfo doesn't contain any bad things (https://github.com/rehlds/ReHLDS/pull/1074)
+	if (!Q_UnicodeValidate(userinfo))
+	{
+		// Seems like someone wanted to do a little trolling
+		// Now we need to prevent arbitrary network data and svc_bad kick
+		Q_UnicodeRepair(userinfo, STRINGCONVERT_REPLACE);
+		gEngfuncs.Con_DPrintf("Repaired invalid UTF-8 string in player's userinfo. Slot: %d, userid: %d\n", slot, userid);
+
+		// Rewrite buffer without invalid chars
+		byte *buffer = (byte *)GetMsgBuf().GetBuf();
+		byte *bufPtr = buffer + GetMsgBuf().GetReadPos();
+
+		*bufPtr++ = (byte)slot; // BYTE
+
+		Q_memcpy(bufPtr, &userid, sizeof(userid)); // LONG
+		bufPtr += sizeof(userid);
+
+		int userInfoLength = Q_strlen(userinfo) + 1;
+		Q_memcpy(bufPtr, userinfo, userInfoLength); // STRING
+		bufPtr += userInfoLength;
+
+		Q_memcpy(bufPtr, cdkey, sizeof(cdkey)); // 16 BYTES
+		bufPtr += sizeof(cdkey);
+	}
+
+	CEnginePatches::Get().GetEngineSvcHandlers().pfnSvcUpdateUserInfo();
 }

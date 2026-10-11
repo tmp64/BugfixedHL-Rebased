@@ -27,6 +27,7 @@
 #include "parsemsg.h"
 #include "statusbar.h"
 #include "text_message.h"
+#include "vgui/client_viewport.h"
 
 #ifdef _TFC
 #define STATUSBAR_ID_LINE 2
@@ -190,7 +191,8 @@ void CHudStatusBar::Draw(float fTime)
 		m_bReparseString = FALSE;
 	}
 
-	int Y_START = ScreenHeight - 52;
+	// Allow to change status bar position when using custom HUD to avoid overlapping
+	int Y_START = hud_custom.GetBool() ? g_pViewport->GetStatusBarYPos() : ScreenHeight - 52;
 
 	// Draw the status bar lines
 	for (int i = 0; i < MAX_STATUSBAR_LINES; i++)

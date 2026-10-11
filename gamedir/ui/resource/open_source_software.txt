@@ -1,5 +1,6 @@
 This project relies on a number of open-source projects.
-If source code of the software is included in the repository, it may or may not has been modified for better compatibility and may differ from the original.
+If source code of the software is included in the repository, it may or may not have been
+modified for better compatibility and may differ from the original.
 
 =======================================================================================
 
@@ -10,7 +11,7 @@ https://curl.se/libcurl/
 
 COPYRIGHT AND PERMISSION NOTICE
 
-Copyright (c) 1996 - 2023, Daniel Stenberg, <daniel@haxx.se>, and many
+Copyright (c) 1996 - 2025, Daniel Stenberg, <daniel@haxx.se>, and many
 contributors, see the THANKS file.
 
 All rights reserved.
@@ -39,7 +40,7 @@ https://libzip.org/
 
 
 
-Copyright (C) 1999-2020 Dieter Baron and Thomas Klausner
+Copyright (C) 1999-2025 Dieter Baron and Thomas Klausner
 
 The authors can be contacted at <info@libzip.org>
 
@@ -77,11 +78,7 @@ zlib - https://www.zlib.net/
 A Massively Spiffy Yet Delicately Unobtrusive Compression Library
 (Also Free, Not to Mention Unencumbered by Patents) 
 
-
-
-Copyright notice:
-
- (C) 1995-2022 Jean-loup Gailly and Mark Adler
+  Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -102,17 +99,21 @@ Copyright notice:
   Jean-loup Gailly        Mark Adler
   jloup@gzip.org          madler@alumni.caltech.edu
 
+
+  The data format used by the zlib library is described by RFCs (Request for
+  Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
+  (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
+
 =======================================================================================
 
-MbedTLS - An open source, portable, easy to use, readable and flexible TLS library,
-and reference implementation of the PSA Cryptography API.
-https://github.com/Mbed-TLS/mbedtls
-
+OpenSSL - a robust, commercial-grade, full-featured toolkit for general-purpose
+cryptography and secure communication.
+https://openssl-library.org/
 
 
                                  Apache License
                            Version 2.0, January 2004
-                        http://www.apache.org/licenses/
+                        https://www.apache.org/licenses/
 
    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
@@ -287,31 +288,6 @@ https://github.com/Mbed-TLS/mbedtls
 
    END OF TERMS AND CONDITIONS
 
-   APPENDIX: How to apply the Apache License to your work.
-
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
-
-   Copyright [yyyy] [name of copyright owner]
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
 =======================================================================================
 
 JSON for Modern C++
@@ -347,47 +323,9 @@ PCRE - Perl Compatible Regular Expressions
 https://www.pcre.org/
 
 
+           Copyright (c) 1997-2014 University of Cambridge
 
-PCRE LICENCE
-------------
-
-PCRE is a library of functions to support regular expressions whose syntax
-and semantics are as close as possible to those of the Perl 5 language.
-
-Release 7 of PCRE is distributed under the terms of the "BSD" licence, as
-specified below. The documentation for PCRE, supplied in the "doc"
-directory, is distributed under the same terms as the software itself.
-
-The basic library functions are written in C and are freestanding. Also
-included in the distribution is a set of C++ wrapper functions.
-
-
-THE BASIC LIBRARY FUNCTIONS
----------------------------
-
-Written by:       Philip Hazel
-Email local part: ph10
-Email domain:     cam.ac.uk
-
-University of Cambridge Computing Service,
-Cambridge, England.
-
-Copyright (c) 1997-2009 University of Cambridge
-All rights reserved.
-
-
-THE C++ WRAPPER FUNCTIONS
--------------------------
-
-Contributed by:   Google Inc.
-
-Copyright (c) 2007-2008, Google Inc.
-All rights reserved.
-
-
-THE "BSD" LICENCE
------------------
-
+-----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
@@ -398,10 +336,9 @@ modification, are permitted provided that the following conditions are met:
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
 
-    * Neither the name of the University of Cambridge nor the name of Google
-      Inc. nor the names of their contributors may be used to endorse or
-      promote products derived from this software without specific prior
-      written permission.
+    * Neither the name of the University of Cambridge nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -414,8 +351,7 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-
-End
+-----------------------------------------------------------------------------
 
 =======================================================================================
 

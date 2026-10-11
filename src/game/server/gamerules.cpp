@@ -43,6 +43,7 @@ ConVar mp_useslowdown("mp_useslowdown", "1", 0, "Slowdown behavior on +USE. 0 - 
 void CGameRules::Think(void)
 {
 	PM_SetBHopCapEnabled(!bunnyhop.value);
+	PM_SetDucktapCapEnabled(!ducktap.value);
 	PM_SetUseSlowDownType(mp_useslowdown.GetEnumClamped<EUseSlowDownType>());
 }
 

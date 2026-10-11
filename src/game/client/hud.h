@@ -53,6 +53,9 @@
 #define HUD_INTERMISSION 2
 #define HUD_DRAW_ALWAYS  4 //!< Draw even if hud_draw = 0
 
+//! Speed at which HUD will fade out
+constexpr float HUD_FADE_RATE = 20;
+
 //! Fallback sprite resolution if the current one can't be found.
 constexpr int HUD_FALLBACK_RES = 640;
 
@@ -165,10 +168,12 @@ public:
 	int DrawHudString(int x, int y, int iMaxX, char *szString, int r, int g, int b);
 	int DrawHudStringReverse(int xpos, int ypos, int iMinX, char *szString, int r, int g, int b);
 	int DrawHudStringColorCodes(int x, int y, int iMaxX, char *string, int _r, int _g, int _b);
+	int DrawHudStringColorCodesCentered(int x, int y, int iMaxX, char *string, int _r, int _g, int _b);
 	int DrawHudStringReverseColorCodes(int x, int y, int iMaxX, char *string, int _r, int _g, int _b);
 	int DrawHudNumberString(int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b);
 	int GetNumWidth(int iNumber, int iFlags);
 	int GetHudCharWidth(int c);
+	int GetHudStringWidthColorCodes(char *string);
 	int CalculateCharWidth(int c);
 
 	//! @returns The font height for string render functions.
@@ -221,6 +226,15 @@ public:
 	void GetHudColor(HudPart hudPart, int value, int &r, int &g, int &b);
 
 	void GetHudAmmoColor(int value, int maxvalue, int &r, int &g, int &b);
+
+	/**
+	 * Calculate alphas for custom VGUI2 HUD when doing dimming effect.
+	 * Alpha 1 is for glow effect, visible only when dimmed.
+	 * Alpha 2 is for normal text, gets dimmed too.
+	 * @param	fade	Fade timer. Decremented automatically.
+	 * @returns Alpha 1 and alpha 2.
+	 */
+	std::pair<int, int> GetHudDimAlphas(float &fade);
 
 	float GetHudTransparency();
 
@@ -290,6 +304,7 @@ private:
 	Color m_HudColor1;
 	Color m_HudColor2;
 	Color m_HudColor3;
+	Color m_HudColor4;
 	Color m_ColorCodeColors[10];
 
 	ColorCodeAction m_ColorCodeAction;
@@ -344,6 +359,7 @@ extern CHud gHUD;
 
 extern ConVar hud_draw;
 extern ConVar hud_dim;
+extern ConVar hud_custom;
 extern ConVar default_fov;
 
 extern int g_iPlayerClass;

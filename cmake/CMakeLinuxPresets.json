@@ -1,0 +1,22 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "vcpkg",
+      "hidden": true,
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "VCPKG_HOST_TRIPLET": "x86-linux",
+        "VCPKG_TARGET_TRIPLET": "x86-linux",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/linux-gcc.cmake"
+      }
+    },
+    {
+      "name": "platform-generator",
+      "hidden": true,
+      "generator": "Ninja Multi-Config"
+    }
+  ]
+}

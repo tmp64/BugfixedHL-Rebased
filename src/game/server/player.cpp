@@ -1406,18 +1406,24 @@ void CBasePlayer::PlayerDeathThink(void)
 	pev->angles.x = 0;
 
 	if (pev->modelindex && (!m_fSequenceFinished) && (pev->deadflag == DEAD_DYING))
+	{
 		StudioFrameAdvance();
-
-	if (mp_respawn_fix.value <= 0)
-	{
 		m_flRespawnTimer += gpGlobals->frametime;
-		if (m_flRespawnTimer < 4.0f) // 120 frames at 30fps -- animations should be no longer than this
-			return;
+
+		if (!mp_respawn_fix.GetBool())
+		{
+			// HL25 behavior: wait until animation ends.
+			// If animation is longer than 4 seconds, assume it finished.
+			if (m_flRespawnTimer < 4.0f)
+				return;
+		}
 	}
-	else
+
+	if (mp_respawn_fix.GetBool())
 	{
+		// BHL behavior: wait for fixed time
 		// time given to animate corpse and don't allow to respawn till this time ends
-		if (gpGlobals->time < m_flDeathAnimationStartTime + 1.5)
+		if (gpGlobals->time < m_flDeathAnimationStartTime + mp_respawn_delay.GetFloat())
 			return;
 	}
 
@@ -3471,7 +3477,7 @@ void CBasePlayer::Spawn(void)
 	m_lastx = m_lasty = 0;
 
 	m_iChatFlood = 0;
-	m_flNextChatTime = gpGlobals->time;
+	m_flNextChatTime = 0; // Not using gpGlobals->time - see Host_Say
 	m_flNextFullupdate[0] = gpGlobals->time;
 	m_flNextFullupdate[1] = gpGlobals->time;
 

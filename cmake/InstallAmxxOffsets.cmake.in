@@ -1,0 +1,20 @@
+# Set the binary dir path from configure_file
+set( ACTUAL_BINARY_DIR "@CMAKE_BINARY_DIR@" )
+
+# Glob all offset files
+file(
+	GLOB offset_files
+	LIST_DIRECTORIES false
+	"${ACTUAL_BINARY_DIR}/amxx-offsets/*.txt"
+	"${ACTUAL_BINARY_DIR}/bhl-amxx-offsets-*.json"
+)
+
+if( NOT offset_files )
+	message( FATAL_ERROR "Offset files not found" )
+endif()
+
+# Install them
+file(
+	INSTALL ${offset_files}
+	DESTINATION "${CMAKE_INSTALL_PREFIX}/addons/amxmodx/data/gamedata/common.games/custom"
+)

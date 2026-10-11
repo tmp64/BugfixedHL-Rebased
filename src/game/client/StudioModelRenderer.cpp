@@ -22,19 +22,6 @@
 #include "GameStudioModelRenderer.h"
 #include "opengl.h"
 
-// Bones that used in gait animation
-#define NUM_LEGS_BONES 8
-const char *legs_bones[NUM_LEGS_BONES] = {
-	"Bip01",
-	"Bip01 Pelvis",
-	"Bip01 L Leg",
-	"Bip01 L Leg1",
-	"Bip01 L Foot",
-	"Bip01 R Leg",
-	"Bip01 R Leg1",
-	"Bip01 R Foot",
-};
-
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
 
@@ -964,19 +951,26 @@ void CStudioModelRenderer::StudioSetupBones(void)
 
 		pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pPlayerInfo->gaitsequence;
 
+		int copy = 1;
+
 		panim = StudioGetAnim(m_pRenderModel, pseqdesc);
 		StudioCalcRotations(pos2, q2, pseqdesc, panim, m_pPlayerInfo->gaitframe);
 
 		for (i = 0; i < m_pStudioHeader->numbones; i++)
 		{
-			for (int j = 0; j < NUM_LEGS_BONES; j++)
+			if (!strcmp(pbones[i].name, "Bip01 Spine"))
 			{
-				if (strcmp(pbones[i].name, legs_bones[j]))
-					continue;
-				// setup animation only for legs bones
+				copy = 0;
+			}
+			else if (pbones[i].parent != -1 && !strcmp(pbones[pbones[i].parent].name, "Bip01 Pelvis"))
+			{
+				copy = 1;
+			}
+
+			if (copy)
+			{
 				memcpy(pos[i], pos2[i], sizeof(pos[i]));
 				memcpy(q[i], q2[i], sizeof(q[i]));
-				break;
 			}
 		}
 	}

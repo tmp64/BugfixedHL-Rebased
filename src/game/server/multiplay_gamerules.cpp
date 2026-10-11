@@ -33,6 +33,16 @@
 
 #include <CBugfixedServer.h>
 
+ConVar mp_weapondrop_type("mp_weapondrop_type", "0", 0, "Sets drop behavior for weapons/ammo after death\n"
+    "  0  - default behavior\n"
+    "  +1 - gun: drop all\n"
+    "  +2 - gun: drop active only\n"
+    "  +4 - gun: drop none\n"
+    "  +8 - ammo: drop all\n"
+    " +16 - ammo: drop active only\n"
+    " +32 - ammo: drop none\n"
+    "  Flags can be combined (sum values).");
+
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 extern DLL_GLOBAL BOOL g_fGameOver;
 extern int gmsgDeathMsg; // client dll messages
@@ -603,11 +613,11 @@ void CHalfLifeMultiplay ::PlayerSpawn(CBasePlayer *pPlayer)
 	CBaseEntity *pWeaponEntity = NULL;
 
 	// Start welcome cam for new players
-	if (!pPlayer->m_bPutInServer && mp_welcomecam.value != 0)
+	if (!pPlayer->m_bPutInServer && mp_welcomecam.GetBool() != 0)
 	{
 		// don't let him spawn as soon as he enters the server
 		// give enough time to plugins to send the player to spectator mode
-		pPlayer->m_flNextAttack = 0.2;
+		pPlayer->m_flNextAttack = mp_welcomecam_delay.GetFloat();
 
 		pPlayer->StartWelcomeCam();
 		return;
@@ -1135,6 +1145,15 @@ float CHalfLifeMultiplay::FlHEVChargerRechargeTime(void)
 //=========================================================
 int CHalfLifeMultiplay::DeadPlayerWeapons(CBasePlayer *pPlayer)
 {
+	int flags = mp_weapondrop_type.GetInt();
+
+	if (flags & FLAG_GR_DROP_GUN_ALL)
+		return GR_PLR_DROP_GUN_ALL;
+	else if (flags & FLAG_GR_DROP_GUN_ACTIVE)
+		return GR_PLR_DROP_GUN_ACTIVE;
+	else if (flags & FLAG_GR_DROP_GUN_NO)
+		return GR_PLR_DROP_GUN_NO;
+
 	return GR_PLR_DROP_GUN_ACTIVE;
 }
 
@@ -1142,6 +1161,15 @@ int CHalfLifeMultiplay::DeadPlayerWeapons(CBasePlayer *pPlayer)
 //=========================================================
 int CHalfLifeMultiplay::DeadPlayerAmmo(CBasePlayer *pPlayer)
 {
+	int flags = mp_weapondrop_type.GetInt();
+
+	if (flags & FLAG_GR_DROP_AMMO_ALL)
+		return GR_PLR_DROP_AMMO_ALL;
+	else if (flags & FLAG_GR_DROP_AMMO_ACTIVE)
+		return GR_PLR_DROP_AMMO_ACTIVE;
+	else if (flags & FLAG_GR_DROP_AMMO_NO)
+		return GR_PLR_DROP_AMMO_NO;
+
 	return GR_PLR_DROP_AMMO_ACTIVE;
 }
 

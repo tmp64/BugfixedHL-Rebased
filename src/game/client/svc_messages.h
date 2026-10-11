@@ -227,6 +227,16 @@ private:
 	 *   long: Request ID
 	 */
 	void SvcSendCvarValue2();
+
+	 /**
+	 * svc_updateuserinfo: Update client's userinfo.
+	 * Message contents:
+	 *   byte: client index
+	 *   long: client userID
+	 *   string: userinfo
+	 *   16 bytes: CD key hash
+	 */
+	void SvcUpdateUserInfo();
 };
 
 #endif SVC_MESSAGES_H

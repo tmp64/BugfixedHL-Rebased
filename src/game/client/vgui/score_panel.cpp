@@ -720,7 +720,9 @@ void CScorePanel::UpdateScoresAndCounts()
 		TeamData &td = m_TeamData[pi->GetTeamNumber()];
 		td.iFrags += pi->GetFrags();
 		td.iDeaths += pi->GetDeaths();
-		td.iPlayerCount++;
+		
+		if (GetPlayerTeam(pi) != TEAM_SPECTATOR)
+			td.iPlayerCount++;
 
 		iPlayerCount++;
 	}
@@ -745,7 +747,7 @@ void CScorePanel::UpdateScoresAndCounts()
 			localizedName = wbuf2;
 		}
 
-		V_snwprintf(wbuf, 128, L"%s (%d/%d)", localizedName, td.iPlayerCount, iPlayerCount);
+		V_snwprintf(wbuf, 128, L"%ls (%d/%d)", localizedName, td.iPlayerCount, iPlayerCount);
 		m_pPlayerList->ModifyColumn(nTeamID, "name", wbuf);
 
 		// Team efficiency

@@ -67,6 +67,7 @@ ConVar::ConVar(const char *name, const char *def_val, int flags, const char *des
 	GetCvar()->name = GetName();
 	GetCvar()->string = GetDefaultValue();
 	GetCvar()->flags = GetFlags();
+	GetCvar()->value = atof(GetDefaultValue());
 #endif
 }
 
@@ -83,26 +84,6 @@ const char *ConVar::GetDefaultValue()
 int ConVar::GetFlags()
 {
 	return m_iFlags;
-}
-
-float ConVar::GetFloat()
-{
-	return GetCvar()->value;
-}
-
-int ConVar::GetInt()
-{
-	return (int)GetCvar()->value;
-}
-
-bool ConVar::GetBool()
-{
-	return !!GetInt();
-}
-
-const char *ConVar::GetString()
-{
-	return GetCvar()->string;
 }
 
 void ConVar::SetValue(float val)

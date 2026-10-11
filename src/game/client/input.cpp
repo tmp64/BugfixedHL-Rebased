@@ -921,6 +921,12 @@ int CL_ButtonBits(int bResetState)
 				g_bLongJumped = true;
 			}
 		}
+		else if (!PM_GetOnGround())
+		{
+			// Do not allow long jump to trigger an additional jump while in the air
+			bits |= IN_DUCK;
+			g_bLongJumped = true;
+		}
 		else
 		{
 			if (PM_GetWaterLevel() == 2)

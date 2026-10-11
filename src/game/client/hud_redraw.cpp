@@ -22,6 +22,8 @@
 #include "cl_util.h"
 #include "hud/spectator.h"
 #include "vgui/client_viewport.h"
+#include "vgui/hud_health.h"
+#include "vgui/hud_battery.h"
 #include "results.h"
 #include "svc_messages.h"
 
@@ -169,6 +171,21 @@ int CHud::Redraw(float flTime, int intermission)
 	// if no redrawing is necessary
 	// return 0;
 
+	bool showCustomHudPanels =
+	    hud_draw.GetFloat() > 0 &&
+		hud_custom.GetBool() &&
+		(m_iWeaponBits & (1 << (WEAPON_SUIT))) &&
+		!(
+			(m_iHideHUDDisplay & (HIDEHUD_ALL | HIDEHUD_HEALTH)) ||
+			gEngfuncs.IsSpectateOnly()
+		);
+
+	if (g_pViewport)
+	{
+		g_pViewport->GetHealthPanel()->ShowPanel(showCustomHudPanels);
+		g_pViewport->GetBatteryPanel()->ShowPanel(showCustomHudPanels);
+	}
+
 	// draw all registered HUD elements
 	if (hud_draw.GetFloat() > 0)
 	{
@@ -245,6 +262,19 @@ int CHud::DrawHudNumberString(int xpos, int ypos, int iMinX, int iNumber, int r,
 int CHud::DrawHudStringReverse(int xpos, int ypos, int iMinX, char *szString, int r, int g, int b)
 {
 	return xpos - gEngfuncs.pfnDrawStringReverse(xpos, ypos, szString, r, g, b);
+}
+
+int CHud::DrawHudStringColorCodesCentered(int x, int y, int iMaxX, char *string, int _r, int _g, int _b)
+{
+	auto width = GetHudStringWidthColorCodes(string);
+	return DrawHudStringColorCodes(x - width / 2, y, iMaxX, string, _r, _g, _b);
+}
+
+int CHud::GetHudStringWidthColorCodes(char *string)
+{
+	static char buffer[1024];
+	RemoveColorCodes(string, buffer, sizeof(buffer));
+	return DrawHudStringColorCodes(0, 0, 0, buffer, 0, 0, 0);
 }
 
 int CHud::DrawHudStringColorCodes(int x, int y, int iMaxX, char *string, int _r, int _g, int _b)

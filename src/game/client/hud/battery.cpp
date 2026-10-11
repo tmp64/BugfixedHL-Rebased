@@ -24,6 +24,8 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "battery.h"
+#include "vgui/client_viewport.h"
+#include "vgui/hud_battery.h"
 
 DEFINE_HUD_ELEM(CHudBattery);
 
@@ -55,7 +57,9 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 
 	BEGIN_READ(pbuf, iSize);
 	int battery = READ_SHORT();
-	battery = clamp(battery, 0, 999);
+
+	if (g_pViewport)
+		g_pViewport->GetBatteryPanel()->UpdateBatteryPanel(battery);
 
 	if (battery != m_iBat)
 	{
@@ -68,6 +72,9 @@ int CHudBattery::MsgFunc_Battery(const char *pszName, int iSize, void *pbuf)
 
 void CHudBattery::Draw(float flTime)
 {
+	if (hud_custom.GetBool())
+		return;
+
 	if (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH)
 		return;
 
@@ -121,5 +128,9 @@ void CHudBattery::Draw(float flTime)
 	}
 
 	x += m_rc1.GetWidth();
-	x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b);
+
+	if (m_iBat < 1000)
+		x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b);
+	else
+		x = gHUD.DrawHudNumber(x, y, m_iBat, r, g, b);
 }

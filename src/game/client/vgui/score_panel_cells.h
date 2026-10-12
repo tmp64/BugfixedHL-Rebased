@@ -119,13 +119,11 @@ void DrawScoreBadge(const ScoreCellStyle &style, int x, int yCenter, const wchar
 int GetScoreBadgeWide(const ScoreCellStyle &style, const wchar_t *text);
 
 /**
- * Draws a sprite of hud.txt stretched to wide x tall and tinted with color.
- * Unlike CHudRenderer it draws a VGUI2 texture, so it works with every renderer.
- * @param	bBlended	The brightness of the sprite is its alpha, like an additive sprite. VGUI2 stops blending
- *						once a panel has drawn text in the current paint pass, so such a panel passes false and
- *						the sprite is drawn with an alpha test and its own colors, as in the software renderer.
+ * Draws a sprite of hud.txt stretched to wide x tall and tinted with color, additively like the HUD.
+ * OpenGL draws it with TriangleAPI, which blends on its own. The software renderer draws a VGUI2 texture
+ * of that size with an alpha test, because VGUI2 doesn't blend there and after text in a paint pass.
  */
-void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color, bool bBlended);
+void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color);
 
 void DrawCellText(vgui2::HFont font, int x, int y, Color color, const wchar_t *text);
 

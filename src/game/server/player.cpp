@@ -5026,7 +5026,7 @@ Vector CBasePlayer ::AutoaimDeflection(Vector &vecSrc, float flDist, float flDel
 	edict_t *bestent;
 	TraceResult tr;
 
-	if (g_psv_aim->value == 0 && (!g_psv_allow_autoaim || g_psv_allow_autoaim->value != 0))
+	if (g_psv_aim->value == 0 || (g_psv_allow_autoaim && g_psv_allow_autoaim->value == 0))
 	{
 		m_fOnTarget = FALSE;
 		return g_vecZero;

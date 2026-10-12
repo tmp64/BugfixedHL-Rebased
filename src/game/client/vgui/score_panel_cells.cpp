@@ -1,17 +1,17 @@
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstring>
 #include <cwchar>
+#include <map>
 #include <vector>
 #include <vgui/ISurface.h>
 #include <vgui_controls/Controls.h>
 #include <com_model.h>
-#include <r_studioint.h>
 #include "hud.h"
 #include "cl_util.h"
+#include "hud_renderer.h"
 #include "vgui/score_panel_cells.h"
-
-extern engine_studio_api_t IEngineStudio;
 
 namespace
 {
@@ -27,11 +27,21 @@ constexpr int SPRITE_MAX_SIZE = 1024;
 //! Without blending, darker texels of an additive sprite would draw as a dark fringe
 constexpr int SPRITE_ALPHA_TEST_MIN = 48;
 
+//! Sprite textures of the software renderer, one per drawn size; VGUI2 can't delete textures, so they are reused
+constexpr int MAX_SPRITE_TEXTURES = 64;
+
 constexpr int TEXTURE_NOT_CREATED = -2;
 constexpr int TEXTURE_FAILED = -1;
 
-//! VGUI2 textures of hud.txt sprites by sprite index: [0] blended, [1] alpha-tested
-std::vector<int> s_SpriteTextures[2];
+struct SpriteTexture
+{
+	int id = TEXTURE_NOT_CREATED;
+	unsigned lastUse = 0;
+};
+
+//! Sprite textures by sprite index, wide and tall
+std::map<std::array<int, 3>, SpriteTexture> s_SpriteTextures;
+unsigned s_iSpriteTextureUse = 0;
 
 /**
  * Draws a box with round corners line by line, so it doesn't depend on alpha blending.
@@ -57,46 +67,9 @@ int GetBadgePadding(const ScoreCellStyle &style)
 }
 
 /**
- * Gives transparent texels the color of their brightest opaque neighbour, so filtering doesn't add a fringe.
+ * Reads the colors of rectangle rc of the first frame of a sprite file, 3 bytes per texel.
  */
-void DilateSpriteColors(std::vector<unsigned char> &rgba, int wide, int tall)
-{
-	std::vector<unsigned char> source = rgba;
-
-	for (int y = 0; y < tall; y++)
-	{
-		for (int x = 0; x < wide; x++)
-		{
-			unsigned char *out = &rgba[(y * wide + x) * 4];
-
-			if (out[3] != 0)
-				continue;
-
-			const unsigned char *best = nullptr;
-
-			for (int ny = std::max(y - 1, 0); ny <= std::min(y + 1, tall - 1); ny++)
-			{
-				for (int nx = std::max(x - 1, 0); nx <= std::min(x + 1, wide - 1); nx++)
-				{
-					const unsigned char *texel = &source[(ny * wide + nx) * 4];
-
-					if (texel[3] != 0 && (!best || std::max({ texel[0], texel[1], texel[2] }) > std::max({ best[0], best[1], best[2] })))
-						best = texel;
-				}
-			}
-
-			if (best)
-				memcpy(out, best, 3);
-		}
-	}
-}
-
-/**
- * Reads rectangle rc of the first frame of a sprite file as RGBA.
- * Blended: alpha is the brightness and colors are scaled up by it, so blending looks like additive drawing.
- * Alpha-tested: texels keep their colors and are opaque if they are bright enough.
- */
-bool LoadSpriteRGBA(const char *path, const wrect_t &rc, bool bAlphaTest, std::vector<unsigned char> &rgba, int &wide, int &tall)
+bool LoadSpriteRGB(const char *path, const wrect_t &rc, std::vector<unsigned char> &rgb, int &wide, int &tall)
 {
 	int length = 0;
 	unsigned char *file = gEngfuncs.COM_LoadFile(path, 5, &length);
@@ -137,50 +110,26 @@ bool LoadSpriteRGBA(const char *path, const wrect_t &rc, bool bAlphaTest, std::v
 		const unsigned char *pixels = file + pos;
 		wide = x1 - x0;
 		tall = y1 - y0;
-		// Transparent texels are white, so filtering doesn't darken the edges
-		rgba.assign(wide * tall * 4, 255);
+		rgb.assign(wide * tall * 3, 0);
 
 		for (int y = 0; y < tall; y++)
 		{
 			for (int x = 0; x < wide; x++)
 			{
 				int index = pixels[(y0 + y) * frame[2] + x0 + x];
-				int color[3];
+				unsigned char *out = &rgb[(y * wide + x) * 3];
 
 				for (int i = 0; i < 3; i++)
 				{
 					if (texFormat == SPRITE_INDEXALPHA)
-						color[i] = paletteSize == 256 ? palette[255][i] * index / 255 : 0;
+						out[i] = paletteSize == 256 ? palette[255][i] * index / 255 : 0;
 					else if (texFormat == SPRITE_ALPHATEST && index == 255)
-						color[i] = 0;
+						out[i] = 0;
 					else
-						color[i] = index < paletteSize ? palette[index][i] : 0;
-				}
-
-				int alpha = std::max(std::max(color[0], color[1]), color[2]);
-				unsigned char *out = &rgba[(y * wide + x) * 4];
-
-				if (bAlphaTest)
-				{
-					bool bOpaque = alpha >= SPRITE_ALPHA_TEST_MIN;
-
-					for (int i = 0; i < 3 && bOpaque; i++)
-						out[i] = static_cast<unsigned char>(color[i]);
-
-					out[3] = bOpaque ? 255 : 0;
-				}
-				else
-				{
-					for (int i = 0; i < 3 && alpha > 0; i++)
-						out[i] = static_cast<unsigned char>(color[i] * 255 / alpha);
-
-					out[3] = static_cast<unsigned char>(alpha);
+						out[i] = index < paletteSize ? palette[index][i] : 0;
 				}
 			}
 		}
-
-		if (bAlphaTest)
-			DilateSpriteColors(rgba, wide, tall);
 
 		bValid = wide > 0 && tall > 0;
 	}
@@ -189,18 +138,136 @@ bool LoadSpriteRGBA(const char *path, const wrect_t &rc, bool bAlphaTest, std::v
 	return bValid;
 }
 
-int CreateSpriteTexture(int sprite, bool bAlphaTest)
+struct ScaleTap
 {
-	const model_t *model = gEngfuncs.GetSpritePointer(gHUD.GetSprite(sprite));
-	std::vector<unsigned char> rgba;
-	int wide = 0;
-	int tall = 0;
+	int index;
+	float weight;
+};
 
-	if (!model || !LoadSpriteRGBA(model->name, gHUD.GetSpriteRect(sprite), bAlphaTest, rgba, wide, tall))
+/**
+ * Returns the source texels of destination pixel i when srcSize texels are scaled to dstSize pixels:
+ * the two nearest ones with linear weights when the image grows, the covered ones when it shrinks.
+ */
+std::vector<ScaleTap> GetScaleTaps(int i, int srcSize, int dstSize)
+{
+	std::vector<ScaleTap> taps;
+	float scale = (float)srcSize / dstSize;
+
+	if (scale <= 1.0f)
+	{
+		float center = (i + 0.5f) * scale - 0.5f;
+		int i0 = (int)floorf(center);
+		float frac = center - i0;
+		taps.push_back({ std::clamp(i0, 0, srcSize - 1), 1.0f - frac });
+		taps.push_back({ std::clamp(i0 + 1, 0, srcSize - 1), frac });
+	}
+	else
+	{
+		int i0 = (int)(i * scale);
+		int i1 = std::clamp((int)((i + 1) * scale), i0 + 1, srcSize);
+
+		for (int j = i0; j < i1; j++)
+			taps.push_back({ j, 1.0f / (i1 - i0) });
+	}
+
+	return taps;
+}
+
+/**
+ * Scales the sprite colors to the drawn size, so the software renderer doesn't scale them into blocks.
+ * Pixels bright enough are opaque, the rest transparent: the texture is drawn without blending.
+ */
+void ScaleSpriteToRGBA(const std::vector<unsigned char> &rgb, int srcWide, int srcTall, int wide, int tall, std::vector<unsigned char> &rgba)
+{
+	std::vector<std::vector<ScaleTap>> tapsX(wide);
+	std::vector<std::vector<ScaleTap>> tapsY(tall);
+
+	for (int x = 0; x < wide; x++)
+		tapsX[x] = GetScaleTaps(x, srcWide, wide);
+
+	for (int y = 0; y < tall; y++)
+		tapsY[y] = GetScaleTaps(y, srcTall, tall);
+
+	rgba.assign(wide * tall * 4, 0);
+
+	for (int y = 0; y < tall; y++)
+	{
+		for (int x = 0; x < wide; x++)
+		{
+			float color[3] = {};
+
+			for (const ScaleTap &ty : tapsY[y])
+			{
+				for (const ScaleTap &tx : tapsX[x])
+				{
+					const unsigned char *texel = &rgb[(ty.index * srcWide + tx.index) * 3];
+
+					for (int i = 0; i < 3; i++)
+						color[i] += texel[i] * tx.weight * ty.weight;
+				}
+			}
+
+			unsigned char *out = &rgba[(y * wide + x) * 4];
+
+			if (std::max({ color[0], color[1], color[2] }) < SPRITE_ALPHA_TEST_MIN)
+				continue;
+
+			for (int i = 0; i < 3; i++)
+				out[i] = static_cast<unsigned char>(std::clamp(color[i] + 0.5f, 0.0f, 255.0f));
+
+			out[3] = 255;
+		}
+	}
+}
+
+int GetSpriteTexture(int sprite, int wide, int tall)
+{
+	SpriteTexture &texture = s_SpriteTextures[{ sprite, wide, tall }];
+	texture.lastUse = ++s_iSpriteTextureUse;
+
+	if (texture.id != TEXTURE_NOT_CREATED)
+		return texture.id;
+
+	texture.id = TEXTURE_FAILED;
+
+	const model_t *model = gEngfuncs.GetSpritePointer(gHUD.GetSprite(sprite));
+	std::vector<unsigned char> rgb;
+	std::vector<unsigned char> rgba;
+	int srcWide = 0;
+	int srcTall = 0;
+
+	if (!model || !LoadSpriteRGB(model->name, gHUD.GetSpriteRect(sprite), rgb, srcWide, srcTall))
 		return TEXTURE_FAILED;
 
-	int id = vgui2::surface()->CreateNewTextureID(true);
-	vgui2::surface()->DrawSetTextureRGBA(id, rgba.data(), wide, tall, true, false);
+	ScaleSpriteToRGBA(rgb, srcWide, srcTall, wide, tall, rgba);
+
+	// Over the limit the texture of the least recently drawn size is reused
+	int id = TEXTURE_FAILED;
+
+	if (s_SpriteTextures.size() > MAX_SPRITE_TEXTURES)
+	{
+		auto oldest = s_SpriteTextures.end();
+
+		for (auto it = s_SpriteTextures.begin(); it != s_SpriteTextures.end(); ++it)
+		{
+			if (it->second.id >= 0 && (oldest == s_SpriteTextures.end() || it->second.lastUse < oldest->second.lastUse))
+				oldest = it;
+		}
+
+		if (oldest != s_SpriteTextures.end())
+		{
+			id = oldest->second.id;
+			s_SpriteTextures.erase(oldest);
+		}
+	}
+
+	bool bReused = id != TEXTURE_FAILED;
+
+	if (!bReused)
+		id = vgui2::surface()->CreateNewTextureID(true);
+
+	vgui2::surface()->DrawSetTextureRGBA(id, rgba.data(), wide, tall, false, bReused);
+	texture.id = id;
 	return id;
 }
 
@@ -423,7 +490,7 @@ void CScoreCellImage::PaintText()
 
 	if (iconWide > 0 && iconTall > 0)
 	{
-		DrawScoreSprite(m_iSprite, x, yCenter - iconTall / 2, iconWide, iconTall, m_Color, false);
+		DrawScoreSprite(m_iSprite, x, yCenter - iconTall / 2, iconWide, iconTall, m_Color);
 		x += iconSpace;
 	}
 
@@ -555,29 +622,31 @@ int GetScoreBadgeWide(const ScoreCellStyle &style, const wchar_t *text)
 	return GetCellTextWide(style.hBadgeFont, text) + 2 * GetBadgePadding(style);
 }
 
-void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color, bool bBlended)
+void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color)
 {
-	if (sprite < 0 || wide <= 0 || tall <= 0)
+	if (sprite < 0 || wide <= 0 || tall <= 0 || wide > SPRITE_MAX_SIZE || tall > SPRITE_MAX_SIZE || gHUD.GetSprite(sprite) <= 0)
 		return;
 
-	bool bAlphaTest = !bBlended || !IEngineStudio.IsHardware();
-	std::vector<int> &textures = s_SpriteTextures[bAlphaTest];
+	// Neither way blends with the alpha of the color, a dimmer color stands in for translucency
+	int r = color.r() * color.a() / 255;
+	int g = color.g() * color.a() / 255;
+	int b = color.b() * color.a() / 255;
 
-	if (sprite >= static_cast<int>(textures.size()))
-		textures.resize(sprite + 1, TEXTURE_NOT_CREATED);
+	if (CHudRenderer::Get().IsAvailable())
+	{
+		// TriangleAPI sets its own blending, while VGUI2 turns blending off once a panel has drawn text
+		CHudRenderer::SpriteSet(gHUD.GetSprite(sprite), r, g, b);
+		CHudRenderer::SpriteDrawAdditiveScaled(0, x, y, wide, tall, &gHUD.GetSpriteRect(sprite));
+		return;
+	}
 
-	if (textures[sprite] == TEXTURE_NOT_CREATED)
-		textures[sprite] = CreateSpriteTexture(sprite, bAlphaTest);
+	int texture = GetSpriteTexture(sprite, wide, tall);
 
-	if (textures[sprite] == TEXTURE_FAILED)
+	if (texture == TEXTURE_FAILED)
 		return;
 
-	// Translucency can't be drawn without blending, a dimmer color stands in for it
-	if (bAlphaTest)
-		color = Color(color.r() * color.a() / 255, color.g() * color.a() / 255, color.b() * color.a() / 255, 255);
-
-	vgui2::surface()->DrawSetTexture(textures[sprite]);
-	vgui2::surface()->DrawSetColor(color);
+	vgui2::surface()->DrawSetTexture(texture);
+	vgui2::surface()->DrawSetColor(Color(r, g, b, 255));
 	vgui2::surface()->DrawTexturedRect(x, y, x + wide, y + tall);
 }
 

@@ -25,6 +25,7 @@ struct ScoreCellStyle
 	int iStripTall = 0; //!< Height of the steps strip
 	int iStripGap = 0; //!< Distance between the steps text and the strip
 	int iSpacing = 0; //!< Distance between icon, text, badge and counter
+	int iMargin = 0; //!< Free width at the right of a cell, so its content doesn't touch the next column
 };
 
 /**
@@ -93,6 +94,7 @@ private:
 	int m_iBadgeCount = 0;
 
 	void Clear();
+	int GetAreaWide() const;
 	int GetAlignOffset(int contentWide, int areaWide);
 
 	/**
@@ -119,9 +121,11 @@ int GetScoreBadgeWide(const ScoreCellStyle &style, const wchar_t *text);
 /**
  * Draws a sprite of hud.txt stretched to wide x tall and tinted with color.
  * Unlike CHudRenderer it draws a VGUI2 texture, so it works with every renderer.
- * The sprite is drawn with alpha blending, its brightness is the alpha, like an additive sprite.
+ * @param	bBlended	The brightness of the sprite is its alpha, like an additive sprite. VGUI2 stops blending
+ *						once a panel has drawn text in the current paint pass, so such a panel passes false and
+ *						the sprite is drawn with an alpha test and its own colors, as in the software renderer.
  */
-void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color);
+void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color, bool bBlended);
 
 void DrawCellText(vgui2::HFont font, int x, int y, Color color, const wchar_t *text);
 

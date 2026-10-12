@@ -774,7 +774,7 @@ void CHudServerPanel::PaintBackground()
 			PaintStripCells(id, state, el);
 			break;
 		case bhl::sb::E_ElementKind::Icon:
-			DrawScoreSprite(state.iSprite, state.iIconX, state.iIconY, state.iIconWide, state.iIconTall, GetColor(state, 255));
+			DrawScoreSprite(state.iSprite, state.iIconX, state.iIconY, state.iIconWide, state.iIconTall, GetColor(state, 255), true);
 			break;
 		default:
 			break;
@@ -864,7 +864,7 @@ void CHudServerPanel::PaintStripCells(int id, const ElementState &state, const C
 
 		int x = state.x + i * step + (state.iCellWide - wide) / 2;
 		int y = state.y + (state.tall - tall) / 2;
-		DrawScoreSprite(sprite, x, y, wide, tall, GetColor(state, cell > state.iCur ? alphaIconFuture : 255));
+		DrawScoreSprite(sprite, x, y, wide, tall, GetColor(state, cell > state.iCur ? alphaIconFuture : 255), true);
 	}
 }
 

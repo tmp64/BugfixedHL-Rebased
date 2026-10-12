@@ -236,6 +236,7 @@ private:
 	CPanelAnimationVarAliasType(int, m_iCellStripTall, "cell_strip_tall", "2", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iCellStripGap, "cell_strip_gap", "1", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iCellSpacing, "cell_spacing", "3", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellMargin, "cell_margin", "6", "proportional_int");
 
 	// Banner in the header, its rows are elements placed BannerTop and BannerBottom
 	CPanelAnimationVar(Color, m_BannerBgColor, "banner_bgcolor", "255 64 32 48");

@@ -753,6 +753,8 @@ stored and HUD elements still use it.
   (`column_name_min`), then down to 80 units; columns that still don't fit are dropped from the
   end.
 - While a `Steps` column is visible, rows are taller so the strip fits under the text.
+- The content of a custom cell (and the title of a custom column) leaves `cell_margin` (6 units)
+  free at its right, so a strip or a long text doesn't touch the next column.
 - Team section headers show team cells in the same columns as text only, without icons, dots or
   strips: `Icon` as its name, `Progress` as `cur/max`. A `Meter` column with `max ≤ 10` stays
   empty, like dots without a counter. Badges of team cells follow their host cell as in player
@@ -795,7 +797,10 @@ way as the scoreboard. Without such a column it doesn't change.
 - `Icon`: the sprite from `hud.txt`, scaled to the row height with its aspect ratio kept and tinted
   with the row text color. The text follows to the right. The client reads the sprite file and
   draws it as a VGUI2 texture, so icons work with every renderer, the software one included.
-  The brightness of a pixel becomes its alpha, so the icon looks like an additive sprite.
+  VGUI2 stops alpha blending once a row has drawn text, so the icon keeps the colors of the sprite
+  and only its pixels brighter than 48 are drawn (an alpha test). HUD elements draw icons before
+  any text and use blending there: the brightness of a pixel becomes its alpha, so the icon looks
+  like an additive sprite. The software renderer always gets the alpha-tested icon.
 - `Meter` keeps the dot look of the scoreboard, which is not the HUD `Meter` (8.7). Dots are discs
   of `cell_dot_size` with `cell_dot_gap` between them, smaller when the column or the row is too
   small for 10 of them:
@@ -1738,7 +1743,7 @@ Scoreboard_SetColumns(bool:warmup){
 	sbWarmupColumns = warmup
 	
 	bhl_sb_add_column("level","#BHL_SB_Level",BHL_SB_STEPS,60,0,BHL_SB_COL_MARK_LAST | (warmup ? BHL_SB_COL_HIDDEN : BHL_SB_COL_PRIMARY))
-	bhl_sb_add_column("weapon","#BHL_SB_Weapon",BHL_SB_ICON,120,0,levelFlags)
+	bhl_sb_add_column("weapon","#BHL_SB_Weapon",BHL_SB_ICON,100,0,levelFlags)
 	bhl_sb_add_column("progress","#BHL_SB_Progress",BHL_SB_METER,teamplay ? 60 : 90,0,levelFlags)
 	bhl_sb_add_column("kills","#BHL_SB_Kills",BHL_SB_TEXT,60,warmup ? 1 : 2,BHL_SB_COL_RIGHT | killsFlags)
 	bhl_sb_add_column("score","",BHL_SB_TEXT,0,warmup ? 2 : 1,BHL_SB_COL_HIDDEN)

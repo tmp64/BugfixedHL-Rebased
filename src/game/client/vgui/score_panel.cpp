@@ -1470,6 +1470,7 @@ void CScorePanel::BuildCustomColumns()
 	m_CellStyle.iStripTall = m_iCellStripTall;
 	m_CellStyle.iStripGap = m_iCellStripGap;
 	m_CellStyle.iSpacing = m_iCellSpacing;
+	m_CellStyle.iMargin = m_iCellMargin;
 
 	// Column names indexed by ColumnType, the same as the keys of Builtin columns
 	static const char *const s_StdColumnNames[] = { "rank", "avatar", "name", "steamid", "eff", "frags", "deaths", "ping" };

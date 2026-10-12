@@ -6,9 +6,12 @@
 #include <vgui/ISurface.h>
 #include <vgui_controls/Controls.h>
 #include <com_model.h>
+#include <r_studioint.h>
 #include "hud.h"
 #include "cl_util.h"
 #include "vgui/score_panel_cells.h"
+
+extern engine_studio_api_t IEngineStudio;
 
 namespace
 {
@@ -21,11 +24,14 @@ constexpr int SPRITE_INDEXALPHA = 2;
 constexpr int SPRITE_ALPHATEST = 3;
 constexpr int SPRITE_MAX_SIZE = 1024;
 
+//! Without blending, darker texels of an additive sprite would draw as a dark fringe
+constexpr int SPRITE_ALPHA_TEST_MIN = 48;
+
 constexpr int TEXTURE_NOT_CREATED = -2;
 constexpr int TEXTURE_FAILED = -1;
 
-//! VGUI2 textures of hud.txt sprites by sprite index
-std::vector<int> s_SpriteTextures;
+//! VGUI2 textures of hud.txt sprites by sprite index: [0] blended, [1] alpha-tested
+std::vector<int> s_SpriteTextures[2];
 
 /**
  * Draws a box with round corners line by line, so it doesn't depend on alpha blending.
@@ -51,10 +57,46 @@ int GetBadgePadding(const ScoreCellStyle &style)
 }
 
 /**
- * Reads rectangle rc of the first frame of a sprite file as RGBA.
- * Alpha is the brightness and colors are scaled up by it, so blending looks like additive drawing.
+ * Gives transparent texels the color of their brightest opaque neighbour, so filtering doesn't add a fringe.
  */
-bool LoadSpriteRGBA(const char *path, const wrect_t &rc, std::vector<unsigned char> &rgba, int &wide, int &tall)
+void DilateSpriteColors(std::vector<unsigned char> &rgba, int wide, int tall)
+{
+	std::vector<unsigned char> source = rgba;
+
+	for (int y = 0; y < tall; y++)
+	{
+		for (int x = 0; x < wide; x++)
+		{
+			unsigned char *out = &rgba[(y * wide + x) * 4];
+
+			if (out[3] != 0)
+				continue;
+
+			const unsigned char *best = nullptr;
+
+			for (int ny = std::max(y - 1, 0); ny <= std::min(y + 1, tall - 1); ny++)
+			{
+				for (int nx = std::max(x - 1, 0); nx <= std::min(x + 1, wide - 1); nx++)
+				{
+					const unsigned char *texel = &source[(ny * wide + nx) * 4];
+
+					if (texel[3] != 0 && (!best || std::max({ texel[0], texel[1], texel[2] }) > std::max({ best[0], best[1], best[2] })))
+						best = texel;
+				}
+			}
+
+			if (best)
+				memcpy(out, best, 3);
+		}
+	}
+}
+
+/**
+ * Reads rectangle rc of the first frame of a sprite file as RGBA.
+ * Blended: alpha is the brightness and colors are scaled up by it, so blending looks like additive drawing.
+ * Alpha-tested: texels keep their colors and are opaque if they are bright enough.
+ */
+bool LoadSpriteRGBA(const char *path, const wrect_t &rc, bool bAlphaTest, std::vector<unsigned char> &rgba, int &wide, int &tall)
 {
 	int length = 0;
 	unsigned char *file = gEngfuncs.COM_LoadFile(path, 5, &length);
@@ -118,12 +160,27 @@ bool LoadSpriteRGBA(const char *path, const wrect_t &rc, std::vector<unsigned ch
 				int alpha = std::max(std::max(color[0], color[1]), color[2]);
 				unsigned char *out = &rgba[(y * wide + x) * 4];
 
-				for (int i = 0; i < 3 && alpha > 0; i++)
-					out[i] = static_cast<unsigned char>(color[i] * 255 / alpha);
+				if (bAlphaTest)
+				{
+					bool bOpaque = alpha >= SPRITE_ALPHA_TEST_MIN;
 
-				out[3] = static_cast<unsigned char>(alpha);
+					for (int i = 0; i < 3 && bOpaque; i++)
+						out[i] = static_cast<unsigned char>(color[i]);
+
+					out[3] = bOpaque ? 255 : 0;
+				}
+				else
+				{
+					for (int i = 0; i < 3 && alpha > 0; i++)
+						out[i] = static_cast<unsigned char>(color[i] * 255 / alpha);
+
+					out[3] = static_cast<unsigned char>(alpha);
+				}
 			}
 		}
+
+		if (bAlphaTest)
+			DilateSpriteColors(rgba, wide, tall);
 
 		bValid = wide > 0 && tall > 0;
 	}
@@ -132,14 +189,14 @@ bool LoadSpriteRGBA(const char *path, const wrect_t &rc, std::vector<unsigned ch
 	return bValid;
 }
 
-int CreateSpriteTexture(int sprite)
+int CreateSpriteTexture(int sprite, bool bAlphaTest)
 {
 	const model_t *model = gEngfuncs.GetSpritePointer(gHUD.GetSprite(sprite));
 	std::vector<unsigned char> rgba;
 	int wide = 0;
 	int tall = 0;
 
-	if (!model || !LoadSpriteRGBA(model->name, gHUD.GetSpriteRect(sprite), rgba, wide, tall))
+	if (!model || !LoadSpriteRGBA(model->name, gHUD.GetSpriteRect(sprite), bAlphaTest, rgba, wide, tall))
 		return TEXTURE_FAILED;
 
 	int id = vgui2::surface()->CreateNewTextureID(true);
@@ -274,6 +331,11 @@ void CScoreCellImage::SetColor(Color col)
 	m_Color = col;
 }
 
+int CScoreCellImage::GetAreaWide() const
+{
+	return std::max(m_iWide - m_Style.iMargin, 0);
+}
+
 int CScoreCellImage::GetAlignOffset(int contentWide, int areaWide)
 {
 	int freeWide = std::max(areaWide - contentWide, 0);
@@ -325,6 +387,7 @@ void CScoreCellImage::PaintText()
 	vgui2::HFont font = m_Style.hFont;
 	int spacing = m_Style.iSpacing;
 	int yCenter = m_iY + m_iTall / 2;
+	int areaWide = GetAreaWide();
 
 	// Sprite scaled to the row height with its aspect ratio kept
 	int iconWide = 0;
@@ -339,9 +402,9 @@ void CScoreCellImage::PaintText()
 			iconTall = std::max(m_iTall - 2 * spacing, 1);
 			iconWide = rc.GetWidth() * iconTall / rc.GetHeight();
 
-			if (iconWide > m_iWide)
+			if (iconWide > areaWide)
 			{
-				iconWide = m_iWide;
+				iconWide = areaWide;
 				iconTall = rc.GetHeight() * iconWide / rc.GetWidth();
 			}
 		}
@@ -350,17 +413,17 @@ void CScoreCellImage::PaintText()
 	// Badges come first: the text is cut to the rest
 	int iconSpace = iconWide > 0 ? iconWide + spacing : 0;
 	int badgeCount = 0;
-	int badgesWide = GetBadgesWide(m_iWide - iconSpace, badgeCount);
+	int badgesWide = GetBadgesWide(areaWide - iconSpace, badgeCount);
 
 	wchar_t text[ARRAYSIZE(m_wszText)];
 	V_wcsncpy(text, m_wszText, sizeof(text));
-	int textWide = FitCellText(font, text, std::max(m_iWide - iconSpace - badgesWide, 0));
+	int textWide = FitCellText(font, text, std::max(areaWide - iconSpace - badgesWide, 0));
 
-	int x = m_iX + GetAlignOffset(iconSpace + textWide + badgesWide, m_iWide);
+	int x = m_iX + GetAlignOffset(iconSpace + textWide + badgesWide, areaWide);
 
 	if (iconWide > 0 && iconTall > 0)
 	{
-		DrawScoreSprite(m_iSprite, x, yCenter - iconTall / 2, iconWide, iconTall, m_Color);
+		DrawScoreSprite(m_iSprite, x, yCenter - iconTall / 2, iconWide, iconTall, m_Color, false);
 		x += iconSpace;
 	}
 
@@ -377,8 +440,9 @@ void CScoreCellImage::PaintMeter()
 	int maxDots = bhl::sb::MAX_DOTS;
 	bool bBar = m_iMax > maxDots;
 	int badgeCount = 0;
-	int badgesWide = GetBadgesWide(m_iWide, badgeCount);
-	int areaWide = m_iWide - badgesWide;
+	int cellWide = GetAreaWide();
+	int badgesWide = GetBadgesWide(cellWide, badgeCount);
+	int areaWide = cellWide - badgesWide;
 
 	// Only the bar has a counter: dots are easy to count
 	wchar_t counter[32] = L"";
@@ -397,7 +461,7 @@ void CScoreCellImage::PaintMeter()
 	// The bar has the length of a full row of dots
 	int barWide = dot > 0 ? maxDots * dot + (maxDots - 1) * gap : 0;
 	int contentWide = bBar ? barWide + counterSpace : std::max(m_iMax * (dot + gap) - gap, 0);
-	int x = m_iX + GetAlignOffset(contentWide + badgesWide, m_iWide);
+	int x = m_iX + GetAlignOffset(contentWide + badgesWide, cellWide);
 	int y = m_iY + (m_iTall - dot) / 2;
 	int cur = std::clamp(m_iCur, 0, m_iMax);
 
@@ -431,8 +495,9 @@ void CScoreCellImage::PaintSteps()
 
 	// The strip takes the width that the badges leave
 	int badgeCount = 0;
-	int badgesWide = GetBadgesWide(m_iWide, badgeCount);
-	int stripWide = m_iWide - badgesWide;
+	int cellWide = GetAreaWide();
+	int badgesWide = GetBadgesWide(cellWide, badgeCount);
+	int stripWide = cellWide - badgesWide;
 
 	int textTall = vgui2::surface()->GetFontTall(font);
 	int stripTall = m_Style.iStripTall;
@@ -490,21 +555,28 @@ int GetScoreBadgeWide(const ScoreCellStyle &style, const wchar_t *text)
 	return GetCellTextWide(style.hBadgeFont, text) + 2 * GetBadgePadding(style);
 }
 
-void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color)
+void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color, bool bBlended)
 {
 	if (sprite < 0 || wide <= 0 || tall <= 0)
 		return;
 
-	if (sprite >= static_cast<int>(s_SpriteTextures.size()))
-		s_SpriteTextures.resize(sprite + 1, TEXTURE_NOT_CREATED);
+	bool bAlphaTest = !bBlended || !IEngineStudio.IsHardware();
+	std::vector<int> &textures = s_SpriteTextures[bAlphaTest];
 
-	if (s_SpriteTextures[sprite] == TEXTURE_NOT_CREATED)
-		s_SpriteTextures[sprite] = CreateSpriteTexture(sprite);
+	if (sprite >= static_cast<int>(textures.size()))
+		textures.resize(sprite + 1, TEXTURE_NOT_CREATED);
 
-	if (s_SpriteTextures[sprite] == TEXTURE_FAILED)
+	if (textures[sprite] == TEXTURE_NOT_CREATED)
+		textures[sprite] = CreateSpriteTexture(sprite, bAlphaTest);
+
+	if (textures[sprite] == TEXTURE_FAILED)
 		return;
 
-	vgui2::surface()->DrawSetTexture(s_SpriteTextures[sprite]);
+	// Translucency can't be drawn without blending, a dimmer color stands in for it
+	if (bAlphaTest)
+		color = Color(color.r() * color.a() / 255, color.g() * color.a() / 255, color.b() * color.a() / 255, 255);
+
+	vgui2::surface()->DrawSetTexture(textures[sprite]);
 	vgui2::surface()->DrawSetColor(color);
 	vgui2::surface()->DrawTexturedRect(x, y, x + wide, y + tall);
 }

@@ -135,3 +135,150 @@ native bhl_show_motd_from_file(E_MotdType:type, idx, const file[]);
  * @param	deaths	Number of deaths
  */
 native bhl_set_player_score(idx, frags, deaths);
+
+//------------------------------------
+// Client capabilities and the scoreboard extension
+// See docs/scoreboard-protocol.md in the BugfixedHL repository
+//------------------------------------
+
+enum BhlClientCaps
+{
+	BHL_CAPS_NONE = 0,
+	BHL_CAPS_SCOREBOARD_V1 = (1 << 0),
+	BHL_CAPS_GUNGAME_HUD_V1 = (1 << 1)
+};
+
+enum BhlSbDisplay
+{
+	BHL_SB_TEXT = 0,
+	BHL_SB_ICON = 1,
+	BHL_SB_METER = 2,
+	BHL_SB_BUILTIN = 3,
+	BHL_SB_STEPS = 4
+};
+
+enum BhlSbHide
+{
+	BHL_SB_HIDE_NONE = 0,
+	BHL_SB_HIDE_FRAGS = (1 << 0),
+	BHL_SB_HIDE_DEATHS = (1 << 1),
+	BHL_SB_HIDE_EFF = (1 << 2),
+	BHL_SB_HIDE_STEAMID = (1 << 3)
+};
+
+enum BhlSbColumnFlags
+{
+	BHL_SB_COL_NONE = 0,
+	BHL_SB_COL_HIDDEN = (1 << 0),
+	BHL_SB_COL_CENTER = (1 << 1),
+	BHL_SB_COL_RIGHT = (2 << 1),
+	BHL_SB_COL_PRIMARY = (1 << 3)
+};
+
+enum BhlSbTarget
+{
+	BHL_SB_INVALID = -1,
+	BHL_SB_GLOBAL = 0
+};
+
+/**
+ * Add to the sort priority of bhl_sb_add_column for ascending order.
+ */
+#define BHL_SB_SORT_ASC 0x80
+
+/**
+ * Returns the scoreboard target of a player.
+ * @param idx			Player's index
+ */
+stock BhlSbTarget:bhl_sb_player(idx)
+{
+	return BhlSbTarget:idx;
+}
+
+/**
+ * Returns the scoreboard target of a team.
+ * The target stays valid until the map changes.
+ * @param teamName		Team name, the same that get_user_team() returns
+ * @return				Team target or BHL_SB_INVALID
+ */
+native BhlSbTarget:bhl_sb_team(const teamName[]);
+
+/**
+ * Returns features the client reports to the server.
+ * Use bitwise AND to check:
+ * if (bhl_get_client_caps(idx) & BHL_CAPS_GUNGAME_HUD_V1) { ... }
+ * @param idx			Player's index
+ * @return				BhlClientCaps bitfield, BHL_CAPS_NONE on servers without the feature
+ */
+native BhlClientCaps:bhl_get_client_caps(idx);
+
+/**
+ * Called when the value returned by bhl_get_client_caps() changes for a player in game.
+ * @param idx			Player's index
+ */
+forward bhl_client_caps_changed(idx);
+
+/**
+ * Returns whether the server supports the scoreboard extension.
+ * All other bhl_sb_* natives do nothing when it returns false.
+ */
+native bool:bhl_sb_available();
+
+/**
+ * Removes the schema, all values and lists. Clients return to the standard scoreboard.
+ */
+native bhl_sb_reset();
+
+/**
+ * Turns the custom scoreboard on.
+ * @param hide			Standard columns to hide
+ * @param preset		Client preset name, "" for the generic look
+ * @param title			Replaces the server name if not empty
+ * @param tag			Badge next to the title, for example "FFA"
+ */
+native bhl_sb_config(BhlSbHide:hide, const preset[] = "", const title[] = "", const tag[] = "");
+
+/**
+ * Adds a column, or replaces the column with the same key. Columns are shown in the order they are added.
+ * @param key			Up to 15 characters of [a-z0-9_]. For BHL_SB_BUILTIN one of:
+ *						rank, frags, deaths, eff, steamid, ping
+ * @param title			Text or #token shipped with the client, "" for the default title of a built-in column
+ * @param display		How the values are drawn
+ * @param width			Width in proportional units, 0 for the default
+ * @param sort			0 or sort priority starting at 1, plus BHL_SB_SORT_ASC for ascending order
+ * @param flags			Column flags
+ * @return				true on success
+ */
+native bool:bhl_sb_add_column(const key[], const title[], BhlSbDisplay:display = BHL_SB_TEXT,
+                              width = 0, sort = 0, BhlSbColumnFlags:flags = BHL_SB_COL_NONE);
+
+/**
+ * Sets a value of a column for a target.
+ * Values for players that are not connected are ignored.
+ * Setting the value a cell already has sends nothing.
+ * @param target		BHL_SB_GLOBAL, bhl_sb_player(idx) or bhl_sb_team(name)
+ * @param key			Column key
+ */
+native bhl_sb_set_int(BhlSbTarget:target, const key[], value);
+native bhl_sb_set_text(BhlSbTarget:target, const key[], const text[]);
+native bhl_sb_set_icon(BhlSbTarget:target, const key[], const sprite[], const text[]);
+native bhl_sb_set_progress(BhlSbTarget:target, const key[], cur, max);
+
+/**
+ * Clears a value of a target, or every value of the target if key is empty.
+ */
+native bhl_sb_clear(BhlSbTarget:target, const key[] = "");
+
+/**
+ * Creates a list on first use and sets its size (up to 64 items).
+ * @param key			Up to 15 characters of [a-z0-9_]
+ * @return				true on success
+ */
+native bool:bhl_sb_list_resize(const key[], count);
+
+/**
+ * Sets an item of a list. Items out of range are ignored.
+ */
+native bhl_sb_list_set_int(const key[], index, value);
+native bhl_sb_list_set_text(const key[], index, const text[]);
+native bhl_sb_list_set_icon(const key[], index, const sprite[], const text[]);

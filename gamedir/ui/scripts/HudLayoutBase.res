@@ -106,4 +106,39 @@
 		"default_name_color_kill"	"OffWhite"
 		"default_name_color_death"	"OffWhite"
 	}
+
+	HudGunGamePanel
+	{
+		"fieldName"			"HudGunGamePanel"
+		"visible"			"1"
+		"enabled"			"1"
+		"xpos"				"0"
+		"ypos"				"0"
+		"wide"				"f0"
+		"tall"				"f0"
+
+		// Place block at the top center
+		"place_ypos"		"12"		// Top of the place line
+		"line_gap"			"2"			// Distance between the place line and the overtake line
+		"meter_gap"			"6"			// Distance above the kills meter
+		"dot_size"			"7"			// Diameter of a kill dot, height of the kill bar
+		"dot_gap"			"3"			// Distance between kill dots
+		"counter_gap"		"6"			// Distance between the kill bar and its counter
+		"large_font"		"GunGameHudLarge"
+		"text_font"			"GunGameHudText"
+
+		// Level bar at the bottom center, on the line of the health and ammo numbers
+		"cell_wide"			"30"		// Width of a level cell
+		"cell_min_wide"		"14"		// Cells shrink down to this width, then the bar shows a window around the current level
+		"cell_tall"			"15"		// Height of a level cell
+		"cell_gap"			"3"			// Distance between level cells
+		"icon_padding"		"2"			// Padding of the weapon icon inside a cell
+		"bar_max_wide"		"300"		// Maximal width of the level bar
+
+		// Alpha of the HUD color (hud_color)
+		"alpha_passed"		"112"		// Passed level cells
+		"alpha_current"		"48"		// Current level cell, drawn with a frame
+		"alpha_future"		"24"		// Next level cells
+		"alpha_dim"			"80"		// Icons of the next levels, the empty part of the kill bar
+	}
 }

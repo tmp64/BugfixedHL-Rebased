@@ -47,6 +47,7 @@
 #include "sdl_rt.h"
 #include "fog.h"
 #include "engine_builds.h"
+#include "scoreboard_data.h"
 
 #if USE_UPDATER
 #include "updater/update_checker.h"
@@ -78,6 +79,7 @@
 #include "hud/jumpspeed.h"
 #include "hud/timer.h"
 #include "hud/strafeguide.h"
+#include "hud/gungame_hud.h"
 
 // Adrenaline Gamer HUD Elements
 #include "hud/ag/ag_countdown.h"
@@ -143,6 +145,7 @@ ConVar showtriggers("showtriggers", "0", 0, "Shows trigger brushes");
 
 ConVar aghl_version("aghl_version", APP_VERSION, 0, "BugfixedHL version");
 ConVar aghl_supports("aghl_supports", "0", 0, "Bitfield of features supported by this client");
+ConVar bhl_caps_userinfo("_bhl", "3", FCVAR_USERINFO, "Bitfield of BugfixedHL client capabilities, set automatically");
 ConVar cl_enable_html_motd("cl_enable_html_motd", "1", FCVAR_BHL_ARCHIVE, "Enables/disables support for HTML MOTDs");
 
 ConVar zoom_sensitivity_ratio("zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE | FCVAR_BHL_ARCHIVE);
@@ -376,6 +379,7 @@ void CHud::Init(void)
 	RegisterHudElem<CHudJumpspeed>();
 	RegisterHudElem<CHudTimer>();
 	RegisterHudElem<CHudStrafeGuide>();
+	RegisterHudElem<CHudGunGamePanel>();
 
 	if (CHudRenderer::Get().IsAvailable())
 	{
@@ -409,6 +413,7 @@ void CHud::Init(void)
 
 	bhlcfg::Init();
 	CResults::Get().Init();
+	CScoreboardData::Get().Init();
 
 #if USE_UPDATER
 	CHttpClient::Get();
@@ -442,6 +447,7 @@ void CHud::VidInit(void)
 	}
 
 	CSvcMessages::Get().VidInit();
+	CScoreboardData::Get().VidInit();
 
 	// ----------
 	// Load Sprites
@@ -541,6 +547,21 @@ void CHud::VidInit(void)
 
 	for (CHudElem *i : m_HudList)
 		i->VidInit();
+
+	UpdateCapsUserinfo();
+}
+
+static int GetClientCaps()
+{
+	bhl::E_ClientCaps caps = bhl::E_ClientCaps::None;
+
+	if (CScoreboardData::IsCustomEnabled())
+		SetEnumFlag(caps, bhl::E_ClientCaps::ScoreboardV1);
+
+	if (CScoreboardData::IsGunGameHudEnabled())
+		SetEnumFlag(caps, bhl::E_ClientCaps::GunGameHudV1);
+
+	return static_cast<int>(caps);
 }
 
 void CHud::Frame(double time)
@@ -554,6 +575,7 @@ void CHud::Frame(double time)
 
 	CHudVoiceStatus::Get()->RunFrame(time);
 	CResults::Get().Frame();
+	CScoreboardData::Get().Frame();
 
 #if USE_UPDATER
 	CHttpClient::Get().RunFrame();
@@ -567,6 +589,12 @@ void CHud::Frame(double time)
 		m_bIsHTMLEnabled = cl_enable_html_motd.GetBool();
 		UpdateSupportsCvar();
 	}
+
+	if (GetClientCaps() != m_iCaps || strcmp(bhl_caps_userinfo.GetString(), m_szCaps))
+		UpdateCapsUserinfo();
+
+	if (m_iCapsCheckFrame != 0 && m_iFrameCount >= m_iCapsCheckFrame)
+		CheckCapsUserinfo();
 
 	while (m_NextFrameQueue.size())
 	{
@@ -870,6 +898,52 @@ void CHud::UpdateSupportsCvar()
 	char buf[64];
 	snprintf(buf, sizeof(buf), "aghl_supports %u", static_cast<unsigned int>(supports));
 	gEngfuncs.pfnClientCmd(buf);
+}
+
+void CHud::UpdateCapsUserinfo()
+{
+	int caps = GetClientCaps();
+
+	if (caps != m_iCaps)
+	{
+		m_iCaps = caps;
+		snprintf(m_szCaps, sizeof(m_szCaps), "%x", static_cast<unsigned int>(caps));
+		m_iCapsCheckFrame = 0;
+		m_bCapsCheckFailed = false;
+	}
+
+	if (strcmp(bhl_caps_userinfo.GetString(), m_szCaps))
+		bhl_caps_userinfo.SetValue(m_szCaps);
+
+	if (!m_bCapsCheckFailed && m_iCapsCheckFrame == 0)
+	{
+		m_bCapsSetinfoSent = false;
+		m_iCapsCheckFrame = m_iFrameCount + 1;
+	}
+}
+
+void CHud::CheckCapsUserinfo()
+{
+	m_iCapsCheckFrame = 0;
+
+	if (!strcmp(gEngfuncs.LocalPlayerInfo_ValueForKey(bhl_caps_userinfo.GetName()), m_szCaps))
+		return;
+
+	if (!m_bCapsSetinfoSent)
+	{
+		char buf[64];
+		snprintf(buf, sizeof(buf), "setinfo %s %s\n", bhl_caps_userinfo.GetName(), m_szCaps);
+		gEngfuncs.pfnClientCmd(buf);
+		m_bCapsSetinfoSent = true;
+
+		// The command runs from the command buffer, give it a full frame
+		m_iCapsCheckFrame = m_iFrameCount + 2;
+	}
+	else
+	{
+		ConPrintf(ConColor::Red, "Failed to put %s into userinfo, it may be full. The server will query the cvar instead.\n", bhl_caps_userinfo.GetName());
+		m_bCapsCheckFailed = true;
+	}
 }
 
 EHudScale CHud::DetectMaxHudScale()

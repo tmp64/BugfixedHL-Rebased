@@ -12,5 +12,13 @@ enum class E_ClientSupports : unsigned int
 	HtmlMotd = (1 << 1)
 };
 
+//! Features the client reports in the "_bhl" userinfo key (docs/scoreboard-protocol.md)
+enum class E_ClientCaps : unsigned int
+{
+	None = 0,
+	ScoreboardV1 = (1 << 0),
+	GunGameHudV1 = (1 << 1)
+};
+
 }
 #endif

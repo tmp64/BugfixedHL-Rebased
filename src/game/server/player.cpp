@@ -35,6 +35,7 @@
 #include "gamerules.h"
 #include "game.h"
 #include "hltv.h"
+#include <ScoreboardProtocol.h>
 
 // #define DUCKFIX
 
@@ -216,6 +217,7 @@ int gmsgViewMode = 0;
 int gmsgVGUIMenu = 0;
 int gmsgStatusIcon = 0;
 int gmsgFog = 0;
+int gmsgBhlScore = 0;
 
 const char *const gCustomMessages[] = {
 	"IconInfo",
@@ -287,6 +289,7 @@ void LinkUserMessages(void)
 	}
 
 	gmsgFog = REG_USER_MSG("Fog", 7);
+	gmsgBhlScore = REG_USER_MSG(bhl::sb::MSG_NAME, -1);
 }
 
 LINK_ENTITY_TO_CLASS(player, CBasePlayer);

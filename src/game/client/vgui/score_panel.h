@@ -3,12 +3,14 @@
 
 #include <array>
 #include <map>
+#include <vector>
 #include <steam/steam_api.h>
 #include <tier1/utlmap.h>
 #include <vgui_controls/Frame.h>
 #include <cdll_dll.h>
 #include "IViewportPanel.h"
 #include "viewport_panel_names.h"
+#include "vgui/score_panel_cells.h"
 
 namespace vgui2
 {
@@ -52,6 +54,8 @@ public:
 	virtual void ApplySchemeSettings(vgui2::IScheme *pScheme) override;
 	virtual void OnThink() override;
 	virtual void OnCommand(const char *command) override;
+	virtual void PaintBackground() override;
+	virtual void Paint() override;
 
 	// IViewportPanel overrides
 	virtual const char *GetName() override;
@@ -69,6 +73,15 @@ private:
 	static constexpr int HEADER_SECTION_ID = 0;
 	static constexpr float HIGHLIGHT_KILLER_TIME = 10.f;
 	static constexpr float UPDATE_PERIOD = 0.5f;
+
+	//! First index of custom cell images in m_pImageList (avatars use 1..MAX_PLAYERS)
+	static constexpr int CELL_IMAGE_BASE = MAX_PLAYERS + 1;
+
+	//! Width of a row is the width of the list minus this padding (SectionedListPanel::LayoutPanels)
+	static constexpr int LIST_ROW_PADDING = 10;
+
+	//! Gap at the right of a cell (COLUMN_DATA_GAP of SectionedListPanel)
+	static constexpr int COLUMN_DATA_GAP = 2;
 
 	enum class MenuAction
 	{
@@ -100,6 +113,31 @@ private:
 		bool bIsConnected = false;
 		int nItemID = -1;
 		int nTeamID = 0;
+	};
+
+	enum class ColumnType
+	{
+		Rank,
+		Avatar,
+		Name,
+		SteamID,
+		Eff,
+		Frags,
+		Deaths,
+		Ping,
+		Custom,
+	};
+
+	struct CustomColumn
+	{
+		ColumnType type = ColumnType::Custom;
+		int nColumnID = -1; //!< Column id in the store for ColumnType::Custom
+		int nSlot = -1; //!< Cell image slot of an image column, -1 for a text column
+		int iAlign = 0; //!< 0 left, 1 center, 2 right
+		int iFlags = 0; //!< SectionedListPanel column flags
+		int iWidth = 0;
+		char szName[32] = {}; //!< Column name, also the key in row data
+		wchar_t wszTitle[64] = {};
 	};
 
 	struct MenuData
@@ -138,6 +176,25 @@ private:
 
 	char m_szSpectatorTag[32] = "(spectator)";
 
+	// Custom scoreboard (docs/scoreboard-protocol.md)
+	vgui2::Label *m_pLeaderTitleLabel = nullptr;
+	vgui2::Label *m_pLeaderLineLabel = nullptr;
+	std::vector<CustomColumn> m_CustomColumns;
+	ScoreCellStyle m_CellStyle;
+	char m_szLayoutFile[64] = {};
+	wchar_t m_wszTag[32] = {};
+	bool m_bCustom = false;
+	bool m_bGunGame = false;
+	bool m_bSectionsDirty = false; //!< A section was created outside of RefreshItems
+	int m_iStoreSerial = -1;
+	int m_iSchemaSerial = -1;
+	int m_iSortedTeamCount = 0;
+	int m_iDefaultLineSpacing = 0;
+	int m_iLineSpacingExtra = 0; //!< Added to the line spacing while a Steps column is visible
+	int m_iLevelColumn = -1;
+	int m_iWeaponColumn = -1;
+	int m_iProgressColumn = -1;
+
 	// Column widths
 	CPanelAnimationVarAliasType(int, m_iColumnWidthAvatar, "column_avatar", "26", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iColumnWidthName, "column_name", "170", "proportional_int");
@@ -151,6 +208,41 @@ private:
 	CPanelAnimationVarAliasType(int, m_iMinHeight, "min_height", "200", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iVerticalMargin, "vertical_margin", "30", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iBottomPadding, "bottom_padding", "4", "proportional_int");
+
+	// Custom scoreboard. A key set in ScorePanel_<preset>.res must also be set in ScorePanel.res:
+	// otherwise it keeps the preset value after switching back.
+	CPanelAnimationVarAliasType(int, m_iColumnWidthRank, "column_rank", "24", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iColumnWidthNameMin, "column_name_min", "100", "proportional_int");
+	CPanelAnimationVar(vgui2::HFont, m_CellFont, "cell_font", "Default");
+	CPanelAnimationVar(vgui2::HFont, m_BadgeFont, "badge_font", "DefaultVerySmall");
+	CPanelAnimationVar(Color, m_CellFilledColor, "cell_filled_color", "255 160 0 255");
+	CPanelAnimationVar(Color, m_CellEmptyColor, "cell_empty_color", "84 56 16 255");
+	CPanelAnimationVar(Color, m_CellCurrentColor, "cell_current_color", "255 255 255 255");
+	CPanelAnimationVar(Color, m_CellLastColor, "cell_last_color", "255 64 32 255");
+	CPanelAnimationVar(Color, m_BadgeBgColor, "badge_bgcolor", "255 160 0 255");
+	CPanelAnimationVar(Color, m_BadgeFgColor, "badge_fgcolor", "0 0 0 255");
+	CPanelAnimationVarAliasType(int, m_iCellDotSize, "cell_dot_size", "6", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellDotGap, "cell_dot_gap", "2", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellStripTall, "cell_strip_tall", "2", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellStripGap, "cell_strip_gap", "1", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellSpacing, "cell_spacing", "3", "proportional_int");
+
+	// GunGame preset, set in ScorePanel_gungame.res
+	CPanelAnimationVar(int, m_iGGWidePercent, "gg_wide_percent", "70");
+	CPanelAnimationVar(int, m_iGGTopPercent, "gg_top_percent", "10");
+	CPanelAnimationVar(int, m_iGGPingHigh, "gg_ping_high", "100");
+	CPanelAnimationVar(Color, m_GGOwnRowColor, "gg_own_row_bgcolor", "255 160 0 56");
+	CPanelAnimationVar(Color, m_GGFinalRowColor, "gg_final_row_bgcolor", "255 64 32 40");
+	CPanelAnimationVar(Color, m_GGEmphasisColor, "gg_emphasis_color", "255 176 0 255");
+	CPanelAnimationVar(Color, m_GGPlaceFirstColor, "gg_place_first_color", "255 160 0 255");
+	CPanelAnimationVar(Color, m_GGPlaceFirstTextColor, "gg_place_first_textcolor", "0 0 0 255");
+	CPanelAnimationVar(Color, m_GGPlaceTopColor, "gg_place_top_color", "112 72 16 255");
+	CPanelAnimationVar(Color, m_GGPlaceFinalColor, "gg_place_final_color", "255 64 32 255");
+	CPanelAnimationVar(Color, m_GGPingHighColor, "gg_ping_high_color", "255 80 80 255");
+	CPanelAnimationVar(Color, m_GGBannerBgColor, "gg_banner_bgcolor", "255 64 32 48");
+	CPanelAnimationVar(Color, m_GGBannerAccentColor, "gg_banner_accent_color", "255 160 0 255");
+	CPanelAnimationVarAliasType(int, m_iGGBannerPadding, "gg_banner_padding", "3", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iGGBannerAccentWide, "gg_banner_accent_wide", "2", "proportional_int");
 
 	/**
 	 * Updates all labels, recreates all sections, recalculates all data.
@@ -269,6 +361,67 @@ private:
 	 * Sorts rows in DESC order by frags.
 	 */
 	static bool StaticPlayerSortFuncByFrags(vgui2::SectionedListPanel *list, int itemID1, int itemID2);
+
+	/**
+	 * Returns true if team ilhs goes before team irhs.
+	 */
+	bool IsTeamBefore(int ilhs, int irhs);
+
+	/**
+	 * Loads ScorePanel_<preset>.res if the active preset has one, ScorePanel.res otherwise.
+	 */
+	void UpdateLayoutFile();
+
+	/**
+	 * Builds m_CustomColumns. Sets the width of the panel in the GunGame preset.
+	 */
+	void BuildCustomColumns();
+
+	/**
+	 * Returns the cell image at an index of m_pImageList. Creates it on first use.
+	 */
+	CScoreCellImage *GetCellImage(int index);
+
+	/**
+	 * Fills custom cells of a player row.
+	 */
+	void UpdateCustomCells(CPlayerInfo *pi, KeyValues *kv);
+
+	/**
+	 * Fills custom cells of a team section header.
+	 */
+	void UpdateCustomTeamHeader(int nTeamID);
+
+	/**
+	 * Updates the map line and the leader banner of the GunGame preset.
+	 */
+	void UpdateGunGameHeader(int iPlayerCount);
+
+	/**
+	 * Returns the place for the rank column, 0 for none.
+	 */
+	int GetPlayerRank(int client);
+	int GetTeamRank(int nTeamID);
+
+	/**
+	 * Returns true if the GunGame player is on the last level.
+	 */
+	bool IsOnLastLevel(int client);
+
+	/**
+	 * Returns true if a level value is on its last level (cur = max).
+	 */
+	static bool IsLastLevel(const CScoreboardData::Value &level);
+
+	/**
+	 * Returns true if player client1 goes before client2 in the custom scoreboard.
+	 */
+	static bool IsPlayerBefore(int client1, int client2);
+
+	/**
+	 * Sorts rows by the sort keys of the custom scoreboard.
+	 */
+	static bool StaticPlayerSortFuncCustom(vgui2::SectionedListPanel *list, int itemID1, int itemID2);
 };
 
 #endif

@@ -2,11 +2,12 @@
 #define IBUGFIXEDAPI_H
 #include <vinterface/interface.h>
 #include <ClientSupportsFlags.h>
+#include <IScoreboardExt.h>
 #include <enum_utils.h>
 
 #define IBUGFIXEDSERVER_NAME  "IBugfixedServer"
 #define IBUGFIXEDSERVER_MAJOR 1
-#define IBUGFIXEDSERVER_MINOR 0
+#define IBUGFIXEDSERVER_MINOR 2
 
 class CGameRules;
 class IGameVersion;
@@ -146,6 +147,23 @@ public:
 	 * @param	deaths	Number of deaths
 	 */
 	virtual void SetPlayerScore(int idx, int frags, int deaths) = 0;
+
+	/**
+	 * Returns features the client reports in the "_bhl" userinfo key or cvar.
+	 * Returns None for an empty slot or a client that doesn't report anything.
+	 *
+	 * Added in version v1.2
+	 *
+	 * @param	idx		Client index [1; (maxplayers)]
+	 */
+	virtual bhl::E_ClientCaps GetClientCaps(int idx) = 0;
+
+	/**
+	 * Returns the scoreboard extension. Never null.
+	 *
+	 * Added in version v1.2
+	 */
+	virtual bhl::IScoreboardExt *GetScoreboard() = 0;
 };
 }
 #endif

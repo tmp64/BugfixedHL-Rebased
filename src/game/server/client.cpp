@@ -100,6 +100,8 @@ GLOBALS ASSUMED SET:  g_fGameOver
 */
 void ClientDisconnect(edict_t *pEntity)
 {
+	serverapi()->ClientDisconnect(pEntity);
+
 	if (g_fGameOver)
 		return;
 
@@ -674,6 +676,8 @@ it gets sent into the rest of the engine.
 */
 void ClientUserInfoChanged(edict_t *pEntity, char *infobuffer)
 {
+	serverapi()->ClientUserInfoChanged(pEntity, infobuffer);
+
 	// Is the client spawned yet?
 	if (!pEntity->pvPrivateData)
 		return;
@@ -749,6 +753,7 @@ void ServerDeactivate(void)
 
 	// Peform any shutdown operations here...
 	//
+	serverapi()->ServerDeactivate();
 }
 
 void ServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
@@ -840,6 +845,8 @@ void StartFrame(void)
 {
 	if (g_pGameRules)
 		g_pGameRules->Think();
+
+	serverapi()->StartFrame();
 
 	if (g_fGameOver)
 		return;

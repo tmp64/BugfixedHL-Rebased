@@ -3,6 +3,7 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "speedometer.h"
+#include "hud/gungame_hud.h"
 
 extern ConVar hud_jumpspeed;
 extern ConVar hud_jumpspeed_below_cross;
@@ -59,7 +60,7 @@ void CHudSpeedometer::Draw(float time)
 		if (hud_jumpspeed.GetBool() && !hud_jumpspeed_below_cross.GetBool())
 			yoffset = gHUD.m_iFontHeight;
 
-		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2 - yoffset;
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2 - yoffset - CHudGunGamePanel::GetLevelBarOffset();
 	}
 
 	if (hud_draw.GetFloat() > 0)

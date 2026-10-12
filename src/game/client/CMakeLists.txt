@@ -101,6 +101,8 @@ set( SOURCE_FILES
 	hud/flashlight.h
 	hud/geiger.cpp
 	hud/geiger.h
+	hud/gungame_hud.cpp
+	hud/gungame_hud.h
 	hud/health.cpp
 	hud/health.h
 	hud/jumpspeed.cpp
@@ -143,6 +145,8 @@ set( SOURCE_FILES
 	vgui/crosshair_image.h
 	vgui/score_panel.cpp
 	vgui/score_panel.h
+	vgui/score_panel_cells.cpp
+	vgui/score_panel_cells.h
 	vgui/spectator_panel.cpp
 	vgui/spectator_panel.h
 	vgui/team_menu.cpp
@@ -222,6 +226,8 @@ set( SOURCE_FILES
 	rainbow.h
 	results.cpp
 	results.h
+	scoreboard_data.cpp
+	scoreboard_data.h
 	sdl_rt.cpp
 	sdl_rt.h
 	studio_util.cpp

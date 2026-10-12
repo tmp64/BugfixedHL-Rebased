@@ -28,6 +28,7 @@
 #include "statusbar.h"
 #include "text_message.h"
 #include "vgui/client_viewport.h"
+#include "hud/gungame_hud.h"
 
 #ifdef _TFC
 #define STATUSBAR_ID_LINE 2
@@ -193,6 +194,7 @@ void CHudStatusBar::Draw(float fTime)
 
 	// Allow to change status bar position when using custom HUD to avoid overlapping
 	int Y_START = hud_custom.GetBool() ? g_pViewport->GetStatusBarYPos() : ScreenHeight - 52;
+	int levelBarTop = CHudGunGamePanel::GetLevelBarTop();
 
 	// Draw the status bar lines
 	for (int i = 0; i < MAX_STATUSBAR_LINES; i++)
@@ -202,6 +204,10 @@ void CHudStatusBar::Draw(float fTime)
 
 		int x = 8;
 		int y = Y_START - (4 + TextHeight * i); // draw along bottom of screen
+
+		// Keep the lines above the GunGame level bar
+		if (levelBarTop != -1)
+			y = min(y, levelBarTop - TextHeight * (i + 1));
 
 		// let user set status ID bar centering
 		if ((i == STATUSBAR_ID_LINE) && hud_centerid.GetBool())

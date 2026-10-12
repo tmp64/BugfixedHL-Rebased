@@ -79,7 +79,7 @@
 #include "hud/jumpspeed.h"
 #include "hud/timer.h"
 #include "hud/strafeguide.h"
-#include "hud/gungame_hud.h"
+#include "hud/server_panel.h"
 
 // Adrenaline Gamer HUD Elements
 #include "hud/ag/ag_countdown.h"
@@ -379,7 +379,7 @@ void CHud::Init(void)
 	RegisterHudElem<CHudJumpspeed>();
 	RegisterHudElem<CHudTimer>();
 	RegisterHudElem<CHudStrafeGuide>();
-	RegisterHudElem<CHudGunGamePanel>();
+	RegisterHudElem<CHudServerPanel>();
 
 	if (CHudRenderer::Get().IsAvailable())
 	{
@@ -414,6 +414,11 @@ void CHud::Init(void)
 	bhlcfg::Init();
 	CResults::Get().Init();
 	CScoreboardData::Get().Init();
+
+	// The engine executes the configs before the first frame
+	CallOnNextFrame([this]() {
+		UpdateCapsUserinfo();
+	});
 
 #if USE_UPDATER
 	CHttpClient::Get();
@@ -555,11 +560,12 @@ static int GetClientCaps()
 {
 	bhl::E_ClientCaps caps = bhl::E_ClientCaps::None;
 
-	if (CScoreboardData::IsCustomEnabled())
+	// HUD elements read the store, so they need the data too
+	if (CScoreboardData::IsCustomEnabled() || CScoreboardData::IsHudEnabled())
 		SetEnumFlag(caps, bhl::E_ClientCaps::ScoreboardV1);
 
-	if (CScoreboardData::IsGunGameHudEnabled())
-		SetEnumFlag(caps, bhl::E_ClientCaps::GunGameHudV1);
+	if (CScoreboardData::IsHudEnabled())
+		SetEnumFlag(caps, bhl::E_ClientCaps::HudV1);
 
 	return static_cast<int>(caps);
 }
@@ -914,6 +920,8 @@ void CHud::UpdateCapsUserinfo()
 
 	if (strcmp(bhl_caps_userinfo.GetString(), m_szCaps))
 		bhl_caps_userinfo.SetValue(m_szCaps);
+
+	CScoreboardData::Get().SetClientCaps(static_cast<bhl::E_ClientCaps>(caps));
 
 	if (!m_bCapsCheckFailed && m_iCapsCheckFrame == 0)
 	{

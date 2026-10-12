@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Таблица счёта и HUD — разбор нового протокола</title>
+  <style>
+    :root{--paper:#f4f3ef;--ink:#202825;--muted:#57625d;--line:#d6dcd5;--card:#fff;--green:#1d624c;--soft:#e6eee8;--amber:#805014;--amber-bg:#fff1d8;--dark:#182e28;--mono:ui-monospace,SFMono-Regular,Consolas,monospace}
+    *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #387bc0;outline-offset:4px}a{color:var(--green);text-underline-offset:3px}p{margin:0 0 14px}h1,h2,h3{line-height:1.15;letter-spacing:-.025em;margin:0}h1{font-size:clamp(34px,5vw,60px);max-width:850px;font-weight:650}h2{font-size:clamp(25px,3vw,34px);font-weight:650}h3{font-size:20px;font-weight:650}code{font-family:var(--mono);font-size:.88em;overflow-wrap:anywhere}p code,li code,td code{background:#eaf0ea;padding:1px 4px;border-radius:4px}pre{font:13px/1.7 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;margin:16px 0 0}small,.small{font-size:13px}.muted{color:var(--muted)}.wrap{max-width:1160px;margin:auto;padding:0 36px}.masthead{display:flex;justify-content:space-between;gap:16px;padding:25px 0 22px;border-bottom:1px solid var(--line);font-size:12px;font-weight:650;letter-spacing:.07em;text-transform:uppercase}.masthead span:last-child{color:var(--muted)}header{padding:54px 0 30px}.eyebrow{color:var(--green);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:15px}.intro{max-width:850px;font-size:18px;margin:24px 0 20px}.status{display:flex;align-items:flex-start;gap:12px;max-width:920px;padding:14px 17px;border-left:3px solid #b7751e;background:var(--amber-bg);font-size:14px}.status strong{white-space:nowrap;color:var(--amber)}nav{display:flex;gap:9px 24px;flex-wrap:wrap;margin:25px 0 0}nav a{font-size:14px;text-decoration:none;border-bottom:1px solid var(--line)}section{padding:38px 0;border-top:1px solid var(--line)}.section-head{display:flex;gap:18px;align-items:baseline;margin-bottom:22px}.section-num{font:13px var(--mono);color:var(--green)}.lede{max-width:880px;color:var(--muted)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.card{padding:22px;background:var(--card);border:1px solid var(--line);border-radius:12px}.card h3{margin-bottom:10px}.flow{display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin:23px 0}.flow-node{border-top:3px solid var(--green);padding:16px;background:var(--soft);min-height:146px}.flow-node strong{display:block;margin-bottom:7px}.flow-node p{font-size:14px;margin:0}.arrow{text-align:center;color:var(--green)}.note{font-size:14px;color:var(--muted);margin:14px 0 0}.term-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0 0}.term-list div{padding:0 15px 0 0}.term-list dt{font-weight:650}.term-list dd{margin:3px 0 0;font-size:14px;color:var(--muted)}.transport{background:var(--dark);color:#f2f6f1;padding:24px;border-radius:12px;margin:22px 0}.transport-head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.transport-head span{color:#b7d5c6;font-size:14px}.envelope{display:flex;gap:5px;margin:19px 0 15px;min-height:55px}.envelope span{display:flex;align-items:center;justify-content:center;padding:10px 17px;background:#29463b;border-radius:5px;font:14px var(--mono)}.envelope span:first-child{background:#c0decb;color:#17392a;min-width:160px}.envelope span:last-child{flex:1}.transport p{margin:0;font-size:14px;color:#ceded4}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;color:var(--muted);font-weight:600;font-size:12px}th,td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}th:first-child,td:first-child{padding-left:0}th:last-child,td:last-child{padding-right:0}.types{margin-bottom:23px}.types td:first-child{white-space:nowrap}details{border-top:1px solid var(--line);padding:15px 0}summary{cursor:pointer;font-weight:600;line-height:1.5}details>p:first-of-type{margin-top:15px}details .table-wrap{margin-top:15px}.operation-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:22px 0 12px}.operation-buttons button{display:flex;align-items:center;gap:10px;text-align:left;padding:13px 12px;background:transparent;border:1px solid var(--line);border-radius:7px;font-size:14px;min-height:52px}.operation-buttons button span{font:12px var(--mono);color:var(--muted)}.operation-buttons button[aria-pressed=true]{color:#fff;background:var(--green);border-color:var(--green)}.operation-buttons button[aria-pressed=true] span{color:#d4ecde}.op-panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:23px;min-height:235px}.op-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}.op-size{font:12px var(--mono);color:var(--muted)}.wire{padding:13px 15px;background:var(--soft);border-radius:6px;margin:16px 0;font:13px/1.7 var(--mono);overflow-wrap:anywhere}.fields{display:flex;flex-wrap:wrap;gap:7px}.field{background:#f1f3ef;padding:5px 8px;border-radius:4px;font-size:12px}.op-panel p:last-child{margin:0}.sequence{display:flex;flex-wrap:wrap;gap:5px;margin:18px 0}.sequence span{font:12px var(--mono);background:var(--soft);padding:5px 9px;border-radius:4px}.sequence b{font-weight:400;color:var(--muted);padding:2px}.example-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;align-items:start}.byte-groups{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0}.byte-group{display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:#eef2ee;border:1px solid transparent;border-radius:6px;padding:10px 12px;text-align:left;max-width:100%;min-height:67px}.byte-group span{font-size:12px;color:var(--muted)}.byte-group code{font-size:12px;line-height:1.7;text-align:left;word-spacing:2px}.byte-group[aria-pressed=true]{background:var(--soft);border-color:var(--green);box-shadow:inset 0 -2px var(--green)}.byte-explanation{font-size:14px;min-height:74px;margin:0;padding:13px 0;border-top:1px solid var(--line)}.control-line{display:flex;justify-content:space-between;gap:12px;margin:16px 0 7px;font-size:14px}.control-line output{font:14px var(--mono);font-weight:600}input[type=range]{width:100%;accent-color:var(--green);margin:3px 0 15px;min-height:26px}.screen{background:var(--dark);color:#e1eedf;border-radius:9px;padding:23px}.screen .eyebrow{color:#a9c7b5;margin:0 0 27px;font-size:11px}.screen table{color:inherit;font-size:13px}.screen td,.screen th{border-color:#456052;padding:8px 7px}.screen th{color:#a9c7b5;font-size:11px}.screen .hud-label{text-align:center;color:#a9c7b5;font-size:12px;margin:22px 0 6px}.screen .hud-dots{display:flex;justify-content:center;gap:10px;padding:8px 0 4px}.dot{width:15px;height:15px;border:2px solid #c7d97d;border-radius:50%}.dot.filled{background:#c7d97d}.screen .screen-foot{text-align:center;color:#a9c7b5;font-size:11px;margin:17px 0 0}.delta{margin-top:19px;font-size:14px}.delta code{display:block;padding:10px 12px;margin-top:8px;background:var(--soft);border-radius:6px}.kind-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}.kind{border-top:2px solid var(--green);padding-top:12px}.kind strong{display:block;font-size:15px}.kind p{font-size:14px;color:var(--muted);margin:5px 0 0}.template-code{padding:13px 15px;background:var(--soft);font:13px/1.8 var(--mono);overflow-wrap:anywhere;border-radius:7px;margin:15px 0}.rendered-text{font-size:18px;line-height:1.5;color:var(--green);font-weight:650;margin-bottom:5px}.checks{display:flex;gap:18px;flex-wrap:wrap;margin:20px 0}.checks label{display:flex;gap:9px;align-items:center;font-size:14px;cursor:pointer;min-height:36px}.checks input{accent-color:var(--green);width:18px;height:18px}.compat-result{display:grid;grid-template-columns:100px 1fr;gap:17px;align-items:start;padding:19px;background:var(--soft);border-radius:8px}.caps-value{font:28px var(--mono);color:var(--green)}.caps-value small{display:block;font-size:12px;margin-bottom:7px}.compat-result p{margin:0;font-size:14px}.review-row{display:grid;grid-template-columns:38px 1fr;gap:15px;padding:20px 0;border-top:1px solid var(--line)}.review-row:first-child{border-top:0;padding-top:6px}.review-marker{width:30px;height:30px;border-radius:50%;background:var(--amber-bg);color:var(--amber);font:14px/30px var(--mono);text-align:center}.review-row h3{font-size:18px;margin:0 0 9px}.review-row p{font-size:14px;margin-bottom:8px}.source{font-size:12px;color:var(--muted)}.source a{color:inherit}.finding-detail{font-size:14px}.finding-detail summary{font-weight:500}.conclusion{margin-top:18px;font-size:15px;padding:15px 19px;background:var(--soft);border-left:3px solid var(--green)}footer{border-top:1px solid var(--line);padding:25px 0 42px;color:var(--muted);font-size:12px}footer p{max-width:900px;margin-bottom:8px}.no-js{padding:16px;background:var(--amber-bg)}[hidden]{display:none!important}
+    @media(max-width:800px){.wrap{padding:0 22px}header{padding-top:35px}.grid2,.example-grid{grid-template-columns:1fr}.operation-buttons{grid-template-columns:repeat(2,1fr)}.kind-grid{grid-template-columns:1fr 1fr}.flow-node{min-height:180px}.term-list{gap:12px}.grid3{grid-template-columns:1fr}.masthead{font-size:11px}.op-panel{min-height:0}}
+    @media(max-width:520px){body{font-size:15px}.wrap{padding:0 17px}.masthead{align-items:flex-start}.masthead span:last-child{text-align:right;max-width:120px}.intro{font-size:16px}.status{display:block}.status strong{display:block;margin-bottom:5px}section{padding:29px 0}.section-head{gap:12px}.flow{grid-template-columns:1fr;margin:18px 0}.flow-node{min-height:0}.arrow{transform:rotate(90deg);padding:3px}.term-list{grid-template-columns:1fr}.term-list div{padding:0}.transport{padding:17px}.envelope{flex-direction:column}.envelope span:first-child{min-width:0}.card,.op-panel{padding:17px}.operation-buttons button{font-size:13px;padding:11px 9px;gap:7px}.fields{gap:5px}.field{font-size:11px}.compat-result{grid-template-columns:1fr;gap:9px}.caps-value{font-size:22px}.caps-value small{display:inline;margin-right:8px}.checks{gap:4px 15px}.byte-explanation{min-height:0}.screen{padding:17px}.screen table{font-size:12px}.review-row{gap:10px;grid-template-columns:30px 1fr}th,td{padding:9px 8px}.section-num{font-size:12px}.kind-grid{gap:15px}nav{gap:8px 15px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    @media print{body{background:#fff;color:#111;font-size:11pt}.wrap{max-width:none;padding:0}header{padding:20px 0}h1{font-size:30pt}h2{font-size:20pt}section{padding:22px 0}nav,.operation-buttons,input[type=range],.checks{display:none}details>*{display:block!important}details>summary{list-style:none}.card,.op-panel,.screen,.transport{break-inside:avoid}.screen,.transport{background:#edf2ec;color:#172d24;print-color-adjust:exact}.screen th,.screen .eyebrow,.screen .hud-label,.screen .screen-foot,.transport p,.transport-head span{color:#324f42}.byte-group{print-color-adjust:exact}.review-row{break-inside:avoid}a{color:inherit}footer{padding-bottom:0}.no-js{display:none}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead"><span>BugfixedHL · технический разбор</span><span>12 октября 2026</span></div>
+  <header>
+    <p class="eyebrow">Суть · сообщения · вопросы к проекту</p>
+    <h1>Как сервер задаёт таблицу счёта и игровой интерфейс</h1>
+    <p class="intro">Таблица результатов игроков — <strong>scoreboard</strong>. Текст, значки и индикаторы поверх игры — <strong>HUD</strong>. Правила обмена данными называются <strong>протоколом</strong>. Новый протокол позволяет серверу настраивать оба представления из одного набора значений.</p>
+    <div class="status"><strong>Пока проект</strong><span>Разобран второй черновик документа — <b>Draft 2</b>, версия протокола 1. Далее описано предлагаемое поведение. Сравнение с предыдущим черновиком и замечания собраны в конце; готовность реализации здесь не подтверждается.</span></div>
+    <nav aria-label="Разделы отчёта"><a href="#idea">01 · Принцип</a><a href="#wire">02 · Формат сообщений</a><a href="#example">03 · Байты на примере</a><a href="#hud">04 · Тексты и совместимость</a><a href="#review">05 · Ревью</a></nav>
+  </header>
+  <main>
+    <section id="idea">
+      <div class="section-head"><span class="section-num">01</span><h2>Данные общие, представлений два</h2></div>
+      <p class="lede">Серверный модуль с правилами режима — <b>плагин</b> — задаёт значения и оформление. Игровая программа пользователя — <b>клиент</b> — хранит их и рисует интерфейс. Ей не нужно знать правила конкретного режима, например GunGame, где игрок проходит уровни оружия.</p>
+      <div class="flow" aria-label="Плагин меняет состояние сервера; сервер отправляет сообщения; клиент рисует таблицу и HUD">
+        <div class="flow-node"><strong>Плагин</strong><p>Задаёт столбцы, уровни, оружие, тексты и видимость.</p></div><span class="arrow" aria-hidden="true">→</span>
+        <div class="flow-node"><strong>Сервер</strong><p>Хранит состояние и отправляет изменения каждому клиенту.</p></div><span class="arrow" aria-hidden="true">→</span>
+        <div class="flow-node"><strong>Клиент</strong><p>Обновляет таблицу и HUD из одного хранилища данных.</p></div>
+      </div>
+      <dl class="term-list">
+        <div><dt>Владелец значения</dt><dd>Вся игра, игрок или команда. В сообщении это <code>target</code>.</dd></div>
+        <div><dt>Ячейка</dt><dd>Значение для одного владельца в одном столбце: например, уровень игрока.</dd></div>
+        <div><dt>Ключ</dt><dd>Короткое имя, например <code>level</code>. Плагин использует имена; сервер назначает числовые номера — <code>id</code>.</dd></div>
+        <div><dt>Элемент</dt><dd>Один объект HUD: строка, значок, индикатор или лента значков.</dd></div>
+        <div><dt>Шаблон и вариант</dt><dd>Текст с местами для подстановки данных — шаблон. Один из альтернативных текстов элемента — вариант.</dd></div>
+        <div><dt>Ссылка на значение</dt><dd>Имя, по которому клиент берёт ячейку или вычисленное значение для элемента.</dd></div>
+      </dl>
+      <p class="note">Набор настроек таблицы и её столбцов называется <b>схемой</b>. Столбец может быть скрыт, но его данные всё равно доступны для сортировки и HUD.</p>
+      <p class="source">Основание: <a href="scoreboard-protocol.md#2-overview">документ, §2, §5.1, §8.1</a>.</p>
+    </section>
+    <section id="wire">
+      <div class="section-head"><span class="section-num">02</span><h2>Что именно идёт по сети</h2></div>
+      <p><b>Байт</b> — единица данных из восьми двоичных разрядов, или <b>битов</b>. Один байт хранит число от 0 до 255. Набор битов-переключателей называется <b>битовой маской</b>. Ниже байты записаны в шестнадцатеричной системе: <code>0x03</code> означает число 3, <code>0xFF</code> — 255.</p>
+      <div class="transport">
+        <div class="transport-head"><strong>Сообщение BhlScore</strong><span>До 192 байт, включая код операции</span></div>
+        <div class="envelope"><span>1 байт: что сделать</span><span>Остальные байты: данные операции</span></div>
+        <p>Это двоичный формат. Одно сообщение содержит одну операцию. Движок доставляет его надёжно одному клиенту через режим <code>MSG_ONE</code>. Ограничение 192 байта относится к содержимому BhlScore; служебные заголовки сети здесь не считаются.</p>
+      </div>
+      <p class="small">Первый байт — <b>код операции</b> (<code>op</code>). Поле — отдельная часть сообщения. Тип поля определяет его размер и способ чтения:</p>
+      <div class="table-wrap types"><table><thead><tr><th>Тип</th><th>Размер</th><th>Смысл</th></tr></thead><tbody>
+        <tr><td><code>byte</code></td><td>1 байт</td><td>Целое 0…255.</td></tr>
+        <tr><td><code>short / word</code></td><td>2 байта</td><td>Целое −32 768…32 767 / 0…65 535.</td></tr>
+        <tr><td><code>long</code></td><td>4 байта</td><td>Целое −2³¹…2³¹−1; в поле видимости те же 32 бита служат переключателями.</td></tr>
+        <tr><td><code>string</code></td><td>Длина текста + 1</td><td>Текст в UTF-8 — кодировке с разным числом байтов на символ. Конец обозначает нулевой байт <code>00</code>, называемый NUL.</td></tr>
+      </tbody></table></div>
+      <p class="small">В многобайтовом числе младший байт идёт первым — порядок <b>little-endian</b>: число 300 передаётся как <code>2C 01</code>. Лимиты текста считаются в байтах без завершающего NUL, а не в буквах.</p>
+      <p class="small">Выберите операцию. В записи ниже <code>поле:тип</code> указывает имя и тип, квадратные скобки — повторяющуюся группу.</p>
+      <div class="operation-buttons" id="op-buttons" role="group" aria-label="Операции BhlScore">
+        <button type="button" data-op="0" aria-pressed="false"><span>0x00</span>Сброс</button><button type="button" data-op="1" aria-pressed="false"><span>0x01</span>Настройки</button><button type="button" data-op="2" aria-pressed="false"><span>0x02</span>Столбец</button><button type="button" data-op="3" aria-pressed="true"><span>0x03</span>Значения</button><button type="button" data-op="4" aria-pressed="false"><span>0x04</span>Список</button><button type="button" data-op="5" aria-pressed="false"><span>0x05</span>Элемент</button><button type="button" data-op="6" aria-pressed="false"><span>0x06</span>Текст</button><button type="button" data-op="7" aria-pressed="false"><span>0x07</span>Видимость</button>
+      </div>
+      <div class="op-panel" id="op-panel" aria-live="polite" aria-atomic="true">
+        <div class="op-top"><h3 id="op-title">Values · значения ячеек</h3><span class="op-size" id="op-size">до 192 байт</span></div>
+        <p id="op-description">Передаёт одну или несколько групп ячеек. Каждая группа относится к игре, игроку или команде.</p>
+        <div class="fields" id="op-fields"><span class="field">target — владелец значения</span><span class="field">count — число ячеек</span><span class="field">column — номер столбца</span><span class="field">type — тип значения</span><span class="field">len — длина данных</span><span class="field">payload — данные значения</span></div>
+        <div class="wire" id="op-wire">op:byte → [target:byte → count:byte → [column:byte → type:byte → len:byte → payload:len байт] × count] до конца сообщения</div>
+        <p class="note" id="op-note">Новый тип можно пропустить по длине len. Для неизвестного типа ячейка очищается. Остальные ячейки сообщения продолжают читаться.</p>
+      </div>
+      <details><summary>Какими бывают значения ячеек и элементов списка</summary>
+        <p class="small">Каждое значение имеет обёртку <code>type:byte → len:byte → payload</code>. Длина <code>len</code> учитывает только данные после этих двух байтов. «Текущий / максимальный» далее сокращены до <code>cur / max</code>.</p>
+        <div class="table-wrap"><table><thead><tr><th>Тип значения</th><th>Код / длина данных</th><th>Данные</th></tr></thead><tbody>
+          <tr><td>Пусто — <code>None</code></td><td>0 / 0</td><td>Очищает ячейку.</td></tr>
+          <tr><td>Число — <code>Int</code></td><td>1 / 1, 2 или 4</td><td>Целое со знаком, включая однобайтовый вариант.</td></tr>
+          <tr><td>Текст — <code>Text</code></td><td>2 / 1…32</td><td>Одна строка с NUL.</td></tr>
+          <tr><td>Значок — <code>Icon</code></td><td>3 / 2…64</td><td>Имя готового изображения клиента — спрайта — и подпись: две строки с NUL. Само изображение не передаётся.</td></tr>
+          <tr><td>Прогресс — <code>Progress</code></td><td>4 / 2 или 4</td><td><code>cur</code>, затем <code>max</code>: два <code>byte</code> или два <code>word</code>.</td></tr>
+          <tr><td>Часы — <code>Clock</code></td><td>5 / 5</td><td><code>ms:long</code> — миллисекунды; <code>flags:byte</code> — настройки. Бит 0: идут; бит 1: обратный отсчёт. Клиент продолжает отсчёт сам.</td></tr>
+        </tbody></table></div>
+        <p class="small"><code>target</code>: <code>00</code> — игра; <code>01…40</code> — игроки 1–64; <code>81…C0</code> — команды 1–64. Столбец <code>FF</code> вместе с <code>None</code> очищает все ячейки владельца. Список — именованная последовательность значений всей игры; длинный список делится между сообщениями.</p>
+      </details>
+      <details><summary>Все восемь форматов одной таблицей</summary>
+        <p class="small">Поля перечислены в порядке передачи после <code>op:byte</code>. Набор битов-переключателей называется <b>битовой маской</b>; такую роль играют поля <code>flags</code>, <code>visible</code> и <code>hide</code>. Текст с местами для подстановки данных называется <b>шаблоном</b>.</p>
+        <div class="table-wrap"><table id="all-formats"><thead><tr><th>Операция</th><th>Поля после кода операции</th></tr></thead><tbody>
+          <tr><td><code>00 Reset</code></td><td><code>version:byte</code></td></tr>
+          <tr><td><code>01 Config</code></td><td><code>flags:word → title:string → tag:string</code></td></tr>
+          <tr><td><code>02 Column</code></td><td><code>id:byte → display:byte → flags:word → width:byte → sort:byte → key:string → title:string → host:byte</code></td></tr>
+          <tr><td><code>03 Values</code></td><td><code>[target:byte → count:byte → [column:byte → type:byte → len:byte → payload:len байт] × count]</code> до конца</td></tr>
+          <tr><td><code>04 List</code></td><td><code>id:byte → total:byte → start:byte → key:string → [type:byte → len:byte → payload:len байт]</code> до конца</td></tr>
+          <tr><td><code>05 Element</code></td><td><code>id:byte → kind:byte → flags:word → x:short → y:short → align:byte → place:byte → parent:byte → gap:byte → color:4 byte → font:byte → select:string → value:string → list:string → count:byte → [id:byte → value:short] × count</code>. Для удаления: только <code>id</code> и <code>kind = 0</code>.</td></tr>
+          <tr><td><code>06 Template</code></td><td><code>id:byte → variant:byte → text:string</code></td></tr>
+          <tr><td><code>07 HudState</code></td><td><code>visible:long → hide:word</code></td></tr>
+        </tbody></table></div>
+      </details>
+      <p class="note">Передача всего текущего состояния называется <b>полной синхронизацией</b>. После неё сервер отправляет только изменения.</p>
+      <details><summary>Порядок отправки, ограничения и защита от ошибок</summary>
+        <p class="small">Сначала сброс, затем определения и данные, в конце — тексты и видимость:</p>
+        <div class="sequence" aria-label="Порядок отправки"><span>Reset</span><b>→</b><span>Config / Column</span><b>→</b><span>List</span><b>→</b><span>Values</span><b>→</b><span>Element</span><b>→</b><span>Template</span><b>→</b><span>HudState</span></div>
+        <p class="small">После входа синхронизация начинается примерно через 0,5 с. Бюджет — около 512 байт на клиента за кадр, затем при его исчерпании пауза около 0,1 с. Далее отправляются изменения; несколько записей одной ячейки за кадр сворачиваются в последнее значение.</p>
+        <p class="small">Лимиты: 32 столбца, 32 элемента, 8 списков по 64 значения, 8 вариантов текста на элемент, 16 подстановок на шаблон. Текст шаблона — до 188 байт: <code>1 + 1 + 1 + 188 + 1 = 192</code> с заголовком и NUL. Слишком длинный шаблон отклоняется целиком.</p>
+        <p class="small">Неизвестные операции игнорируются. Неверный тип или повреждённые данные значения очищают ячейку. Если <code>Values</code> оборвалось, уже применённые ячейки сохраняются. У фиксированных операций можно добавлять поля в конец; <code>Values</code> и <code>List</code> расширяются новыми типами либо операциями.</p>
+      </details>
+      <p class="source">Основание: <a href="scoreboard-protocol.md#4-message-bhlscore">документ, §4–5</a>. Это форматы Draft 2.</p>
+    </section>
+    <section id="example">
+      <div class="section-head"><span class="section-num">03</span><h2>Одна строка игрока — 28 байт</h2></div>
+      <p class="lede">Пример из документа: игрок 5, уровень 12 из 24, оружие MP5, одно убийство из трёх. Номера столбцов: уровень — 1, оружие — 2, прогресс убийств — 3. Нажмите на блок байтов, чтобы разобрать его.</p>
+      <div class="example-grid">
+        <div class="card">
+          <h3>Сообщение Values</h3>
+          <div class="control-line"><label for="kills">Убийств на текущем уровне</label><output id="kills-output" for="kills">1 / 3</output></div>
+          <input id="kills" type="range" min="0" max="3" value="1" step="1">
+          <div class="byte-groups" id="byte-groups" role="group" aria-label="Разбор байтов сообщения">
+            <button type="button" class="byte-group" data-field="op" aria-pressed="false"><span>Операция · 1 байт</span><code>03</code></button>
+            <button type="button" class="byte-group" data-field="target" aria-pressed="false"><span>Владелец · 2 байта</span><code>05 03</code></button>
+            <button type="button" class="byte-group" data-field="level" aria-pressed="false"><span>Уровень · 5 байт</span><code>01 04 02 0C 18</code></button>
+            <button type="button" class="byte-group" data-field="weapon" aria-pressed="false"><span>Оружие · 15 байт</span><code>02 03 0C 64 5F 39 6D 6D 41 52 00 4D 50 35 00</code></button>
+            <button type="button" class="byte-group" data-field="progress" aria-pressed="true"><span>Убийства · 5 байт</span><code id="progress-bytes">03 04 02 01 03</code></button>
+          </div>
+          <p class="byte-explanation" id="byte-explanation" aria-live="polite">Столбец 3; тип 4 — пара «текущее / максимум»; длина данных 2 байта; текущее 1, максимум 3.</p>
+          <p class="note">В документе указано 27 байт для группы: это верно. Вместе с кодом операции всё сообщение занимает 28 байт.</p>
+        </div>
+        <div>
+          <div class="screen">
+            <p class="eyebrow">Условный вид · одни и те же данные</p>
+            <table aria-label="Пример строки таблицы"><thead><tr><th>Игрок</th><th>Уровень</th><th>Оружие</th><th>Убийства</th></tr></thead><tbody><tr><td>Игрок 5</td><td>12 / 24</td><td>MP5</td><td id="row-progress">1 / 3</td></tr></tbody></table>
+            <p class="hud-label">Индикатор HUD</p><div class="hud-dots" id="hud-dots" role="img" aria-label="1 убийство из 3"><span class="dot filled"></span><span class="dot"></span><span class="dot"></span></div>
+            <p class="screen-foot">Таблица упрощена для объяснения.</p>
+          </div>
+          <p class="delta">Если изменились только убийства, достаточно отправить одну ячейку — <b>8 байт</b>:<code id="delta-bytes">03 05 01 03 04 02 01 03</code></p>
+          <p class="note">Текст и оформление HUD повторно передавать не нужно. Ползунок демонстрирует формат, а не переход на следующий уровень по правилам игры.</p>
+        </div>
+      </div>
+      <p class="source">Основание: <a href="scoreboard-protocol.md#44-example-one-gungame-row">документ, §4.4</a>.</p>
+    </section>
+    <section id="hud">
+      <div class="section-head"><span class="section-num">04</span><h2>Как данные превращаются в HUD</h2></div>
+      <p><b>Элемент</b> — один объект на экране. Сервер задаёт его вид, положение, цвет, размер текста и источник значения. Есть четыре вида:</p>
+      <div class="kind-grid">
+        <div class="kind"><strong>Строка — Text</strong><p>Место, отрыв, время или другой текст.</p></div><div class="kind"><strong>Индикатор — Meter</strong><p>Прогресс точками или полосой.</p></div><div class="kind"><strong>Лента — Strip</strong><p>Последовательность значков, например уровни оружия.</p></div><div class="kind"><strong>Значок — Icon</strong><p>Изображение с необязательной подписью.</p></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h3>Текст пересчитывает клиент</h3>
+          <p class="small"><b>Шаблон</b> — текст с подстановками в фигурных скобках. <b>Ссылка</b> внутри скобок выбирает ячейку по ключу либо вычисляемое клиентом значение с <code>@</code>.</p>
+          <p class="small">Например, <code>@rival</code> — имя ближайшего соперника впереди; <code>@pass</code> — сколько единиц счёта нужно для обгона. Здесь единица счёта соответствует одному убийству.</p>
+          <div class="template-code">До обгона {@rival}: {@pass|# убийство|# убийства|# убийств}</div>
+          <p class="small">Вертикальная черта <code>|</code> разделяет формы слова; <code>#</code> заменяется числом. Имя и число подставляются из данных.</p>
+          <div class="control-line"><label for="pass">До обгона соперника</label><output id="pass-output" for="pass">3</output></div><input id="pass" type="range" min="1" max="25" value="3" step="1">
+          <div id="template-result" class="rendered-text" aria-live="polite">До обгона Соперник: 3 убийства</div>
+          <p class="note">Если обязательного значения нет, вся строка скрывается. Подстановка вида <code>{key?}</code> допускает отсутствие значения.</p>
+        </div>
+        <div class="card">
+          <h3>Чьи данные и чьи тексты</h3>
+          <p class="small">Игрок видит свои данные; наблюдатель — данные того, за кем следит. Поиск ячейки: <b>игрок → его команда → вся игра</b>, до первого найденного значения. Без наблюдаемого игрока доступны только общие ячейки.</p>
+          <p class="small">Язык и видимость принадлежат смотрящему клиенту. Сервер может отправить русскому наблюдателю русский текст с данными другого игрока.</p>
+          <p class="small">До восьми альтернативных текстов элемента называются <b>вариантами</b>. Поле <code>select</code> выбирает их по числу 0–7, например по фазе матча. Это не программный код: условия режима остаются в плагине.</p>
+          <p class="small">Имя готового перевода — <b>токен локализации</b>, например <code>#BHL_HUD_Place</code>. Его перевод уже хранится у клиента. Плагин также может отправить собственный готовый текст на языке пользователя.</p>
+        </div>
+      </div>
+      <details><summary>Положение и показ элементов</summary>
+        <p class="small">Для положения относительно экрана координаты <code>x / y</code> передаются как доля размера экрана, умноженная на 8192. Специальное значение <code>−8192</code> означает центр; <code>y = 205</code> — примерно 2,5% высоты от верхнего края. Выравнивание выбирает, какую точку элемента привязать к позиции.</p>
+        <p class="small">Можно размещать элемент у другого элемента, рядом с числами здоровья и боезапаса либо в верхней части таблицы. Элемент появляется только при разрешённой видимости, подходящем состоянии игры и наличии содержимого. Показ надписи в заголовке таблицы не зависит от настройки экранных элементов HUD.</p>
+        <p class="small">Сервер может попросить скрыть таймер, строку следующей карты, дополнительные таймеры и нижние индикаторы скорости. Настройка пользователя, отключающая серверные элементы, отменяет эти запросы.</p>
+      </details>
+      <div class="card" style="margin-top:18px">
+        <h3>Совместимость: клиент выбирает возможности</h3>
+        <p class="small" style="margin-top:12px">Набор битов-переключателей — <b>битовая маска возможностей</b> — передаётся серверу под именем <code>_bhl</code>. Бит 0, <code>ScoreboardV1</code>, разрешает получать данные; бит 1, <code>HudV1</code>, сообщает, что клиент рисует элементы HUD. Ниже предполагается новый активный сервер с таблицей и HUD.</p>
+        <div class="checks"><label><input type="checkbox" id="custom-scoreboard" checked>Показывать новую таблицу</label><label><input type="checkbox" id="server-hud" checked>Показывать серверный HUD</label></div>
+        <div class="compat-result" aria-live="polite" aria-atomic="true"><div class="caps-value"><small>_bhl</small><span id="caps-number">3</span></div><p id="compat-text">Данные приходят. Новая таблица и серверные элементы включены. Плагин отключает заменённые ими собственные надписи.</p></div>
+        <p class="note">Управляющие настройки: <code>hud_scoreboard_custom</code> и <code>hud_server_elements</code>. Старый клиент не получает BhlScore; новый клиент на старом сервере сохраняет стандартный интерфейс. Бит HudV1 сам по себе не разрешает отправку: он имеет смысл только вместе со ScoreboardV1.</p>
+      </div>
+      <p class="source">Основание: <a href="scoreboard-protocol.md#3-client-capabilities">документ, §3, §8, §10–11</a>.</p>
+    </section>
+    <section id="review">
+      <div class="section-head"><span class="section-num">05</span><h2>Что важно закрыть до реализации</h2></div>
+      <p class="lede">Архитектура разделяет правила режима, данные и отображение. Форматы основных сообщений определены. Ниже — вопросы к полноте спецификации, а не подтверждённые ошибки уже работающего Draft 2.</p>
+      <div class="card" style="margin:22px 0">
+        <h3>Что меняется относительно предыдущего черновика</h3>
+        <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Проверено</th><th>Предыдущий черновик</th><th>В проекте Draft 2</th></tr></thead><tbody>
+          <tr><td>Операции</td><td>Только 0…4</td><td>Дополнительно Element, Template, HudState</td></tr>
+          <tr><td>Столбцы и типы</td><td>16 столбцов; нет часов и отметок после ячейки</td><td>32; часы Clock и отметки Badge</td></tr>
+          <tr><td>Формат Config</td><td>Между flags и title есть имя готового оформления — preset</td><td>Поле preset удалено</td></tr>
+          <tr><td>Возможность HUD</td><td>Специально для GunGame: GunGameHudV1</td><td>Общая для режимов: HudV1</td></tr>
+          <tr><td>Интерфейс модуля и сервера</td><td>Набор функций взаимодействия — API — версии 1.2</td><td>Требуется API 1.3</td></tr>
+        </tbody></table></div>
+        <p class="note">Сборки двух черновиков нельзя смешивать: клиент, сервер, модуль и плагин должны обновляться вместе. Одинаковый номер протокола 1 не означает совместимость этих черновиков.</p>
+        <p class="source">База сравнения — сохранённая ревизия кода <code>7a864400310b</code>. В рабочей копии уже начат перенос общих объявлений на Draft 2. Ниже — файлы и строки базовой ревизии; ссылки открывают рабочие файлы: <a href="../src/game/shared/ScoreboardProtocol.h">ScoreboardProtocol.h, строки 17, 43–68</a>; <a href="../src/game/server/CScoreboardExt.cpp">CScoreboardExt.cpp, 537–546</a>; <a href="../src/game/shared/ClientSupportsFlags.h">ClientSupportsFlags.h, 20</a>; <a href="../src/game/shared/IBugfixedServer.h">IBugfixedServer.h, 10</a>. Документ: §9.1, §11.</p>
+      </div>
+      <div class="review-row"><div class="review-marker">1</div><div><h3>Восстановить данные после очистки клиентом</h3><p>При переинициализации изображения — событии <code>VidInit</code> — клиент очищает хранилище. Но среди причин полной синхронизации этого события нет. Если сервер не выполняет повторную подготовку интерфейса и возможности не меняются, состояние нечем восстановить.</p><p><b>Уточнить:</b> сохранять данные при таком событии либо явно описать запрос и гарантированный запуск повторной синхронизации.</p><p class="source">Документ: §3.2, §5.3, §6.1; строки 99–103, 658–665, 705–707.</p></div></div>
+      <div class="review-row"><div class="review-marker">2</div><div><h3>Безопасно заменить уже видимый элемент</h3><p>Новое определение сохраняет прежние шаблоны на клиенте. Определение и новые тексты могут прийти в разных кадрах из-за лимита отправки. Если старый бит видимости включён, новое оформление может временно использовать старый текст.</p><p><b>Уточнить:</b> сначала скрывать или удалять заменяемый элемент либо применять определение и тексты совместно, только после их получения.</p><p class="source">Документ: §4.3 Element / HudState, §5.2; строки 471–474, 507–509, 641–654.</p></div></div>
+      <div class="review-row"><div class="review-marker">3</div><div><h3>Определить время часов при поздней отправке</h3><p>Клиент запускает часы от момента получения. Не описано, как сервер пересчитывает их значение после задержки или при подключении нового игрока. Для отсчёта, заданного минуту назад, нельзя просто повторить исходное число.</p><p><b>Уточнить:</b> хранить время установки и перед отправкой вычислять актуальное значение, включая остановку обратного отсчёта на нуле.</p><p class="source">Документ: §4.3 Clock, §5.1–5.3, §9.2; строки 367–371, 612–617, 658–665, 1518–1519.</p></div></div>
+      <details class="finding-detail"><summary>Ещё один граничный случай: ссылка на собственное значение</summary><p>Поле <code>value</code> допускает встроенные ссылки, а <code>@value</code> обозначает это же поле. Для <code>value = @value</code> и <code>value = ^@value</code> не задано завершение вычисления. Следует запретить такие привязки или считать цикл отсутствующим значением. Основание: §4.3, §8.10–8.11, §9.2.</p></details>
+      <div class="conclusion"><b>Вывод ревью:</b> протокол можно объяснить как «определения + значения + тексты + видимость». Перед реализацией нужно закрепить восстановление состояния, порядок замены элементов и поведение часов. Проверка в игре остаётся отдельным этапом.</div>
+    </section>
+  </main>
+  <footer>
+    <p>Источник: <a href="scoreboard-protocol.md">docs/scoreboard-protocol.md</a>, рабочая версия Draft 2 на 12.10.2026; сопоставлена с базовой ревизией кода <code>7a864400310b</code>. Номера строк документа относятся к этой версии. Исходный документ не изменён.</p>
+    <p>Отчёт работает без сети. Примеры — иллюстрации формата, не подключение к игре и не реализация протокола. Воспроизведение записей игры, трансляции матчей и другие серверные реализации исключены из объёма проекта самим документом.</p>
+  </footer>
+  <noscript><p class="no-js">JavaScript отключён: полный формат сообщений доступен в раскрываемой таблице; интерактивные примеры остаются в исходном состоянии.</p></noscript>
+</div>
+<script>
+(() => {
+  'use strict';
+  const operations = [
+    {title:'Reset · сброс',size:'2 байта',description:'Очищает схему, значения, списки, элементы и тексты. Возвращает стандартную таблицу и обычную видимость HUD.',wire:'op:byte(0x00) → version:byte',fields:['version — версия, сейчас 1'],note:'Версия 0 игнорируется; версия 1 и выше принимается. Поддержку протокола клиент объявляет отдельно. Удаляются все данные расширения, включая запросы скрыть стандартные части HUD.'},
+    {title:'Config · настройки таблицы',size:'до 83 байт',description:'Включает пользовательскую таблицу и задаёт её заголовок и короткую отметку после имени сервера.',wire:'op:byte(0x01) → flags:word → title:string → tag:string',fields:['flags — биты скрываемых столбцов','title — заголовок, до 63 байт','tag — отметка, до 15 байт'],note:'Набор битов-переключателей называется битовой маской. Здесь биты 0–3 скрывают счёт, смерти, эффективность и SteamID — идентификатор аккаунта. Имя, аватар и задержку связи скрыть нельзя. Для HUD эта операция не обязательна.'},
+    {title:'Column · определение столбца',size:'до 56 байт',description:'Задаёт вид, порядок, ширину, выравнивание и участие столбца в сортировке.',wire:'op:byte(0x02) → id:byte → display:byte → flags:word → width:byte → sort:byte → key:string → title:string → host:byte',fields:['id — номер 0–31','display — вид ячеек','flags — настройки битами','width — ширина','sort — приоритет и направление','key — ключ до 15 байт','title — название до 31 байта','host — столбец для отметки'],note:'Виды: текст, значок, индикатор, стандартный столбец, ступени, отметка после другой ячейки. sort: биты 0–6 — приоритет (1 первый), бит 7 — по возрастанию. Повторное определение сохраняет значения ячеек.'},
+    {title:'Values · значения ячеек',size:'до 192 байт',description:'Передаёт одну или несколько групп ячеек. Каждая группа относится к игре, игроку или команде.',wire:'op:byte(0x03) → [target:byte → count:byte → [column:byte → type:byte → len:byte → payload:len байт] × count] до конца сообщения',fields:['target — владелец значения','count — число ячеек','column — номер столбца','type — тип значения','len — длина данных','payload — данные значения'],note:'Новый тип можно пропустить по длине len. Для неизвестного типа ячейка очищается. Остальные ячейки сообщения продолжают читаться.'},
+    {title:'List · именованный список',size:'до 192 байт',description:'Передаёт часть упорядоченного списка значений всей игры, например оружие всех уровней. У каждого значения те же type, len и данные, что у ячейки.',wire:'op:byte(0x04) → id:byte → total:byte → start:byte → key:string → [type:byte → len:byte → payload:len байт] до конца сообщения',fields:['id — номер списка 0–7','total — полный размер 0–64','start — позиция первого значения, от 0','key — имя, до 15 байт'],note:'Длинный список идёт несколькими сообщениями с разным start. Число значений в сообщении определяется его концом. total = 0 удаляет список.'},
+    {title:'Element · определение элемента HUD',size:'до 147 байт; удаление — 3',description:'Задаёт один объект интерфейса: строку, индикатор, ленту или значок. Его тексты передаются отдельно.',wire:'op:byte(0x05) → id:byte → kind:byte → flags:word → x:short → y:short → align:byte → place:byte → parent:byte → gap:byte → color:4 byte → font:byte → select:string → value:string → list:string → count:byte → [id:byte → value:short] × count',fields:['id — номер 0–31','kind — вид, 0 удаляет','flags — настройки битами','x / y — положение','align — выравнивание','place — способ размещения','parent / gap — сосед и отступ','color — красный, зелёный, синий, непрозрачность','font — номер шрифта','select — выбор текста по значению','value — ссылка на данные','list — ключ списка','count — число параметров, до 16'],note:'Вид kind: 1 — строка, 2 — индикатор, 3 — лента, 4 — значок. Для удаления после kind = 0 больше полей нет; id = 255 удаляет все элементы. select и value — до 31 байта, list — до 15.'},
+    {title:'Template · текст с подстановками',size:'до 192 байт',description:'Шаблон — строка с местами для подстановки данных. Вариант — один из альтернативных текстов элемента.',wire:'op:byte(0x06) → id:byte → variant:byte → text:string',fields:['id — номер элемента','variant — номер варианта 0–7','text — до 188 байт'],note:'Пустая строка удаляет вариант. Сначала должен прийти Element. Текст можно отправить отдельно каждому игроку на его языке; клиент вычисляет подстановки каждый кадр.'},
+    {title:'HudState · видимость',size:'7 байт',description:'Полностью заменяет состояние видимости элементов и набор скрытых частей стандартного HUD.',wire:'op:byte(0x07) → visible:long → hide:word',fields:['visible — 32 бита, по одному на элемент','hide — 16 бит, по одному на скрываемую часть'],note:'Такой набор переключателей называется битовой маской. visible читается как беззнаковая маска. После сброса обе маски равны 0. hide без настройки серверного HUD игнорируется.'}
+  ];
+  const byId = id => document.getElementById(id);
+  document.querySelectorAll('[data-op]').forEach(button => button.addEventListener('click', () => {
+    const index = Number(button.dataset.op), op = operations[index];
+    document.querySelectorAll('[data-op]').forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+    byId('op-title').textContent = op.title; byId('op-size').textContent = op.size;
+    byId('op-description').textContent = op.description; byId('op-wire').textContent = op.wire;
+    byId('op-note').textContent = op.note;
+    byId('op-fields').replaceChildren(...op.fields.map(value => { const el = document.createElement('span'); el.className = 'field'; el.textContent = value; return el; }));
+  }));
+  let selectedField = 'progress';
+  const hex = n => n.toString(16).padStart(2,'0').toUpperCase();
+  function renderBytes() {
+    const kills = Number(byId('kills').value);
+    byId('kills-output').textContent = `${kills} / 3`;
+    byId('progress-bytes').textContent = `03 04 02 ${hex(kills)} 03`;
+    byId('delta-bytes').textContent = `03 05 01 03 04 02 ${hex(kills)} 03`;
+    byId('row-progress').textContent = `${kills} / 3`;
+    byId('hud-dots').setAttribute('aria-label', `${kills} из 3 убийств`);
+    byId('hud-dots').querySelectorAll('.dot').forEach((dot,index) => dot.classList.toggle('filled', index < kills));
+    const explanations = {
+      op:'03 — код Values. Всё, что идёт дальше, — группы ячеек. Общая длина приходит от движка и отдельным полем BhlScore не записывается.',
+      target:'05 — игрок с номером 5. 03 — у него передаются три ячейки. Это десятичные числа 5 и 3 в однобайтовой записи.',
+      level:'01 — столбец уровня. 04 — тип «прогресс». 02 — два байта данных: 0C = 12, 18 = 24. Получается уровень 12 из 24.',
+      weapon:'02 — столбец оружия. 03 — тип «значок». 0C = 12 байт данных: восемь байт для d_9mmAR с NUL и четыре для MP5 с NUL. Вместе с тремя полями заголовка — 15 байт.',
+      progress:`Столбец 3; тип 4 — пара «текущее / максимум»; длина данных 2 байта; текущее ${kills}, максимум 3.`
+    };
+    byId('byte-explanation').textContent = explanations[selectedField];
+    document.querySelectorAll('[data-field]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.field === selectedField)));
+  }
+  byId('kills').addEventListener('input', renderBytes);
+  document.querySelectorAll('[data-field]').forEach(button => button.addEventListener('click', () => { selectedField = button.dataset.field; renderBytes(); }));
+  function renderTemplate() {
+    const n = Number(byId('pass').value), last = n % 10, lastTwo = n % 100;
+    const form = last === 1 && lastTwo !== 11 ? 'убийство' : last >= 2 && last <= 4 && !(lastTwo >= 12 && lastTwo <= 14) ? 'убийства' : 'убийств';
+    byId('pass-output').textContent = String(n); byId('template-result').textContent = `До обгона Соперник: ${n} ${form}`;
+  }
+  byId('pass').addEventListener('input', renderTemplate);
+  function renderCaps() {
+    const scoreboard = byId('custom-scoreboard').checked, hud = byId('server-hud').checked;
+    const caps = (scoreboard || hud ? 1 : 0) | (hud ? 2 : 0);
+    byId('caps-number').textContent = String(caps);
+    byId('compat-text').textContent = hud
+      ? (scoreboard ? 'Данные приходят. Новая таблица и серверные элементы включены. Плагин отключает заменённые ими собственные надписи.' : 'Данные приходят, включая HUD. Таблица стандартная; серверные элементы включены. Отключение новой таблицы не отключает HUD.')
+      : scoreboard ? 'Данные приходят, включая определения HUD, но экранные элементы не рисуются. Новая таблица и её надписи в заголовке остаются; плагин возвращает собственные надписи HUD.'
+      : 'BhlScore больше не отправляется, клиент очищает хранилище. Остаются стандартная таблица и надписи плагина. Повторное включение любой настройки вызывает полную синхронизацию.';
+  }
+  byId('custom-scoreboard').addEventListener('change', renderCaps); byId('server-hud').addEventListener('change', renderCaps);
+  renderBytes(); renderTemplate(); renderCaps();
+})();
+</script>
+</body>
+</html>

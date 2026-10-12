@@ -74,6 +74,9 @@ private:
 	static constexpr float HIGHLIGHT_KILLER_TIME = 10.f;
 	static constexpr float UPDATE_PERIOD = 0.5f;
 
+	//! Update period while the store has a running Clock, so its seconds change on time
+	static constexpr float CLOCK_UPDATE_PERIOD = 0.1f;
+
 	//! First index of custom cell images in m_pImageList (avatars use 1..MAX_PLAYERS)
 	static constexpr int CELL_IMAGE_BASE = MAX_PLAYERS + 1;
 
@@ -100,6 +103,8 @@ private:
 		Normal = 1,
 		Compact = 2,
 	};
+
+	class CSectionHeader;
 
 	struct TeamData
 	{
@@ -132,12 +137,20 @@ private:
 	{
 		ColumnType type = ColumnType::Custom;
 		int nColumnID = -1; //!< Column id in the store for ColumnType::Custom
-		int nSlot = -1; //!< Cell image slot of an image column, -1 for a text column
+		int nSlot = -1; //!< Cell image slot of a custom column, -1 for a standard one
 		int iAlign = 0; //!< 0 left, 1 center, 2 right
 		int iFlags = 0; //!< SectionedListPanel column flags
 		int iWidth = 0;
 		char szName[32] = {}; //!< Column name, also the key in row data
 		wchar_t wszTitle[64] = {};
+	};
+
+	//! Row of the banner in the header (docs/scoreboard-protocol.md, 6.8)
+	struct BannerRow
+	{
+		wchar_t wszText[bhl::sb::TEMPLATE_BUF_LEN] = {}; //!< Evaluated text, "" when the row is not drawn
+		Color color;
+		int x = 0, y = 0, wide = 0, tall = 0; //!< Set by LayoutBanner
 	};
 
 	struct MenuData
@@ -177,23 +190,21 @@ private:
 	char m_szSpectatorTag[32] = "(spectator)";
 
 	// Custom scoreboard (docs/scoreboard-protocol.md)
-	vgui2::Label *m_pLeaderTitleLabel = nullptr;
-	vgui2::Label *m_pLeaderLineLabel = nullptr;
+	BannerRow m_BannerTop; //!< On the line of the server name
+	BannerRow m_BannerBottom; //!< On the line of the map name
 	std::vector<CustomColumn> m_CustomColumns;
+	std::array<CSectionHeader *, MAX_TEAMS + 2> m_SectionHeaders = {}; //!< Headers of the sections by team
 	ScoreCellStyle m_CellStyle;
+	wchar_t m_wszTitle[bhl::sb::MAX_TITLE_LEN + 1] = {}; //!< Drawn in place of the server name
 	wchar_t m_wszTag[32] = {};
 	bool m_bCustom = false;
-	bool m_bGunGame = false;
 	bool m_bSectionsDirty = false; //!< A section was created outside of RefreshItems
 	int m_iStoreSerial = -1;
 	int m_iSchemaSerial = -1;
 	int m_iSortedTeamCount = 0;
 	int m_iDefaultLineSpacing = 0;
 	int m_iLineSpacingExtra = 0; //!< Added to the line spacing while a Steps column is visible
-	int m_iLevelColumn = -1;
-	int m_iWeaponColumn = -1;
-	int m_iProgressColumn = -1;
-	int m_iServerNameWide = -1; //!< Width of the server name label before the leader banner cut it
+	int m_iServerNameWide = -1; //!< Width of the server name label before the banner cut it
 
 	// Column widths
 	CPanelAnimationVarAliasType(int, m_iColumnWidthAvatar, "column_avatar", "26", "proportional_int");
@@ -226,11 +237,11 @@ private:
 	CPanelAnimationVarAliasType(int, m_iCellStripGap, "cell_strip_gap", "1", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iCellSpacing, "cell_spacing", "3", "proportional_int");
 
-	// Banner "Leader on the last level" of the GunGame preset
-	CPanelAnimationVar(Color, m_GGBannerBgColor, "gg_banner_bgcolor", "255 64 32 48");
-	CPanelAnimationVar(Color, m_GGBannerAccentColor, "gg_banner_accent_color", "255 160 0 255");
-	CPanelAnimationVarAliasType(int, m_iGGBannerPadding, "gg_banner_padding", "1", "proportional_int");
-	CPanelAnimationVarAliasType(int, m_iGGBannerAccentWide, "gg_banner_accent_wide", "2", "proportional_int");
+	// Banner in the header, its rows are elements placed BannerTop and BannerBottom
+	CPanelAnimationVar(Color, m_BannerBgColor, "banner_bgcolor", "255 64 32 48");
+	CPanelAnimationVar(Color, m_BannerAccentColor, "banner_accent_color", "255 160 0 255");
+	CPanelAnimationVarAliasType(int, m_iBannerPadding, "banner_padding", "1", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iBannerAccentWide, "banner_accent_wide", "2", "proportional_int");
 
 	/**
 	 * Updates all labels, recreates all sections, recalculates all data.
@@ -356,6 +367,11 @@ private:
 	bool IsTeamBefore(int ilhs, int irhs);
 
 	/**
+	 * Returns true if the team sections are still in the order of IsTeamBefore.
+	 */
+	bool AreTeamsSorted();
+
+	/**
 	 * Builds m_CustomColumns.
 	 */
 	void BuildCustomColumns();
@@ -376,33 +392,24 @@ private:
 	void UpdateCustomTeamHeader(int nTeamID);
 
 	/**
-	 * Updates the leader banner of the GunGame preset. It stands in the header left of the player count.
+	 * Evaluates the banner rows. Lays the banner out again if a text changed.
 	 */
-	void UpdateLeaderBanner();
+	void UpdateBanner();
 
 	/**
-	 * Returns the place for the rank column, 0 for none.
+	 * Evaluates one banner row and sets its color.
+	 * @param	schemeColor	Color of the row for an element with HudColor
+	 * @return	true if its text changed
 	 */
-	int GetPlayerRank(int client);
-	int GetTeamRank(int nTeamID);
+	bool UpdateBannerRow(BannerRow &row, bhl::sb::E_Place place, Color schemeColor);
 
 	/**
-	 * Returns true if the GunGame player is on the last level.
+	 * Places the banner in the header left of the player count and narrows the server name.
 	 */
-	bool IsOnLastLevel(int client);
+	void LayoutBanner();
 
 	/**
-	 * Returns true if a level value is on its last level (cur = max).
-	 */
-	static bool IsLastLevel(const CScoreboardData::Value &level);
-
-	/**
-	 * Returns true if player client1 goes before client2 in the custom scoreboard.
-	 */
-	static bool IsPlayerBefore(int client1, int client2);
-
-	/**
-	 * Sorts rows by the sort keys of the custom scoreboard.
+	 * Sorts rows by the order of the custom scoreboard.
 	 */
 	static bool StaticPlayerSortFuncCustom(vgui2::SectionedListPanel *list, int itemID1, int itemID2);
 };

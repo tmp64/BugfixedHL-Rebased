@@ -145,13 +145,9 @@ void CHudScores::Update()
 
 		// Sort teams based on the score
 		std::sort(m_SortedTeamIDs.begin(), m_SortedTeamIDs.begin() + iTeamCount, [&](int ilhs, int irhs) {
+			// The same full order as the scoreboard
 			if (iPrimaryCol != -1)
-			{
-				int cmp = sbData.CompareTeams(ilhs, irhs);
-
-				if (cmp != 0)
-					return cmp < 0;
-			}
+				return sbData.CompareTeams(ilhs, irhs) < 0;
 
 			const TeamData &lhs = m_TeamData[ilhs];
 			const TeamData &rhs = m_TeamData[irhs];
@@ -206,13 +202,9 @@ void CHudScores::Update()
 
 		// Sort players
 		std::sort(m_SortedPlayerIDs.begin(), m_SortedPlayerIDs.begin() + iPlayerCount, [&](int ilhs, int irhs) {
+			// The same full order as the scoreboard
 			if (iPrimaryCol != -1)
-			{
-				int cmp = sbData.ComparePlayers(ilhs, irhs);
-
-				if (cmp != 0)
-					return cmp < 0;
-			}
+				return sbData.ComparePlayers(ilhs, irhs) < 0;
 
 			CPlayerInfo *lhs = GetPlayerInfo(ilhs);
 			CPlayerInfo *rhs = GetPlayerInfo(irhs);

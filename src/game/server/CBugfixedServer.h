@@ -41,6 +41,8 @@ public:
 	void PrintClientCaps();
 
 private:
+	static constexpr float CAPS_REQUERY_INTERVAL = 10.0f; //!< Seconds between "_bhl" queries of a client that answers them
+
 	enum E_RequestType
 	{
 		REQUEST_VERSION = 0,
@@ -86,11 +88,12 @@ private:
 		bool isReady = false; //!< InitHUD was sent
 		bool isBot = false; //!< Cached on connect because Spawn clears FL_FAKECLIENT
 		bool isProxy = false; //!< HLTV
-		bhl::E_ClientCaps caps = bhl::E_ClientCaps::None;
+		bhl::E_ClientCaps caps = bhl::E_ClientCaps::None; //!< Known bits of "_bhl", GetClientCaps normalizes them
 		E_CapsSource capsSource = CAPS_SOURCE_UNKNOWN;
 		bool isCapsQueried = false;
 		bool isCapsQueryDeferred = false; //!< Waits for a SteamID
-		float nextCapsQuery = 0;
+		float nextCapsQuery = 0; //!< Next try of a deferred query
+		float nextCapsRequery = 0; //!< Next query while the source is CAPS_SOURCE_QUERY
 	};
 
 	bhl_client_info_t m_pClientInfo[MAX_PLAYERS + 1];
@@ -107,6 +110,9 @@ private:
 	void ReadClientCaps(edict_t *pEntity, char *infobuffer);
 	void QueryClientCaps(edict_t *pEntity);
 	void SetClientCaps(int idx, bhl::E_ClientCaps caps, E_CapsSource source);
+
+	//! Caps as plugins see them (3.1): HudV1 only with ScoreboardV1, None for bots, HLTV and empty slots
+	bhl::E_ClientCaps GetNormalizedCaps(int idx);
 
 public:
 	//----------------------------------------------------------------------------------------------------

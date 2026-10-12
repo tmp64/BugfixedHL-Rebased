@@ -28,8 +28,9 @@ struct ScoreCellStyle
 };
 
 /**
- * Image of a custom scoreboard cell: text, icon, meter or steps.
- * Draws within the bounds set by the row. An empty cell draws nothing.
+ * Image of a custom scoreboard cell: text, icon, meter or steps, followed by badges.
+ * Draws within the bounds set by the row or the section header. An empty cell draws only its badges.
+ * Texts are drawn as they are: a VGUI2 text image would take '&' for a hotkey mark.
  */
 class CScoreCellImage : public vgui2::IImage
 {
@@ -37,13 +38,21 @@ public:
 	CScoreCellImage(const ScoreCellStyle &style);
 
 	/**
-	 * Sets a value of the store drawn as display (docs/scoreboard-protocol.md, 6.6).
-	 * Content setters clear the badge.
+	 * Sets a value of the store drawn as the column shows it (docs/scoreboard-protocol.md, 6.6).
+	 * Clears the badges.
 	 */
-	void SetValue(bhl::sb::E_Display display, const CScoreboardData::Value &value);
+	void SetValue(const CScoreboardData::Column &column, const CScoreboardData::Value &value);
 
-	//! Sets the badge after the text, nullptr for none
-	void SetBadge(const wchar_t *badge);
+	/**
+	 * Sets a text, drawn like a Text cell. Clears the badges.
+	 */
+	void SetText(const wchar_t *text);
+
+	/**
+	 * Adds a badge after the content (6.7). Badges are drawn in the order they were added,
+	 * as many as fit into the cell. An empty text adds nothing.
+	 */
+	void AddBadge(const wchar_t *text);
 
 	//! @param	align	0 left, 1 center, 2 right
 	void SetAlign(int align);
@@ -66,8 +75,12 @@ private:
 		Steps,
 	};
 
+	//! Room for the badge texts of one cell, each with its NUL
+	static constexpr int BADGES_LEN = 128;
+
 	const ScoreCellStyle &m_Style;
 	Kind m_Kind = Kind::Empty;
+	bool m_bMarkLast = false;
 	int m_iAlign = 0;
 	int m_iX = 0, m_iY = 0;
 	int m_iWide = 0, m_iTall = 0;
@@ -75,10 +88,22 @@ private:
 	int m_iCur = 0, m_iMax = 0;
 	Color m_Color = Color(255, 255, 255, 255);
 	wchar_t m_wszText[128] = {};
-	wchar_t m_wszBadge[32] = {};
+	wchar_t m_wszBadges[BADGES_LEN] = {}; //!< Badge texts one after another
+	int m_iBadgesLen = 0; //!< Used part of m_wszBadges
+	int m_iBadgeCount = 0;
 
 	void Clear();
-	int GetAlignOffset(int contentWide);
+	int GetAlignOffset(int contentWide, int areaWide);
+
+	/**
+	 * Returns the width of the first badges that fit into maxWide, each with the spacing before it.
+	 * @param	count	Receives the number of these badges
+	 */
+	int GetBadgesWide(int maxWide, int &count);
+
+	//! Draws the first count badges after x
+	void PaintBadges(int x, int yCenter, int count);
+
 	void PaintText();
 	void PaintMeter();
 	void PaintSteps();
@@ -101,14 +126,13 @@ void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color);
 void DrawCellText(vgui2::HFont font, int x, int y, Color color, const wchar_t *text);
 
 /**
- * Builds a string from a localization token with %s1..%s3.
- * A missing token gives an empty string.
+ * Returns the width of a text drawn by DrawCellText.
  */
-void ConstructScoreText(wchar_t *buf, int bufSizeBytes, const char *token, int count, const wchar_t *arg1, const wchar_t *arg2 = nullptr, const wchar_t *arg3 = nullptr);
+int GetCellTextWide(vgui2::HFont font, const wchar_t *text);
 
 /**
- * Builds "N kills" with the plural form of the client language.
+ * Cuts a text with an ellipsis to fit into maxWide. Returns the width of the result.
  */
-void FormatScoreKills(wchar_t *buf, int bufSizeBytes, int kills);
+int FitCellText(vgui2::HFont font, wchar_t *text, int maxWide);
 
 #endif

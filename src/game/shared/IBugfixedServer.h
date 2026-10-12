@@ -7,7 +7,7 @@
 
 #define IBUGFIXEDSERVER_NAME  "IBugfixedServer"
 #define IBUGFIXEDSERVER_MAJOR 1
-#define IBUGFIXEDSERVER_MINOR 2
+#define IBUGFIXEDSERVER_MINOR 3
 
 class CGameRules;
 class IGameVersion;
@@ -149,19 +149,23 @@ public:
 	virtual void SetPlayerScore(int idx, int frags, int deaths) = 0;
 
 	/**
-	 * Returns features the client reports in the "_bhl" userinfo key or cvar.
-	 * Returns None for an empty slot or a client that doesn't report anything.
+	 * Returns features the client reports in the "_bhl" userinfo key or cvar, normalized
+	 * (docs/scoreboard-protocol.md, 3.1): only known bits, HudV1 only together with ScoreboardV1,
+	 * None for bots, HLTV proxies, empty slots and clients that don't report anything.
 	 *
-	 * Added in version v1.2
+	 * Added in version v1.3
 	 *
 	 * @param	idx		Client index [1; (maxplayers)]
 	 */
 	virtual bhl::E_ClientCaps GetClientCaps(int idx) = 0;
 
 	/**
-	 * Returns the scoreboard extension. Never null.
+	 * Returns the scoreboard and HUD extension. Never null.
 	 *
-	 * Added in version v1.2
+	 * Draft builds of the extension reported v1.2 with an incompatible IScoreboardExt,
+	 * so callers must not use it below v1.3.
+	 *
+	 * Added in version v1.3
 	 */
 	virtual bhl::IScoreboardExt *GetScoreboard() = 0;
 };

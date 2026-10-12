@@ -107,9 +107,9 @@
 		"default_name_color_death"	"OffWhite"
 	}
 
-	HudGunGamePanel
+	HudServerPanel
 	{
-		"fieldName"			"HudGunGamePanel"
+		"fieldName"			"HudServerPanel"
 		"visible"			"1"
 		"enabled"			"1"
 		"xpos"				"0"
@@ -117,28 +117,33 @@
 		"wide"				"f0"
 		"tall"				"f0"
 
-		// Place block at the top center
-		"place_ypos"		"12"		// Top of the place line
-		"line_gap"			"2"			// Distance between the place line and the overtake line
-		"meter_gap"			"6"			// Distance above the kills meter
-		"dot_size"			"7"			// Diameter of a kill dot, height of the kill bar
-		"dot_gap"			"3"			// Distance between kill dots
-		"counter_gap"		"6"			// Distance between the kill bar and its counter
-		"large_font"		"GunGameHudLarge"
-		"text_font"			"GunGameHudText"
+		// Defaults of the params of HUD elements defined by the server; a param sent by the server wins.
+		// Sizes are proportional units of a 640x480 screen, alphas are 0-255 and apply to the element color.
 
-		// Level bar at the bottom center, on the line of the health and ammo numbers
-		"cell_wide"			"30"		// Width of a level cell
-		"cell_min_wide"		"14"		// Cells shrink down to this width, then the bar shows a window around the current level
-		"cell_tall"			"15"		// Height of a level cell
-		"cell_gap"			"3"			// Distance between level cells
-		"icon_padding"		"2"			// Padding of the weapon icon inside a cell
-		"bar_max_wide"		"300"		// Maximal width of the level bar
+		// Meter: dots, or a rounded bar with a counter
+		"dots"				"10"		// Up to this max the meter is drawn as dots, above it as a bar; 0: always a bar
+		"dot_size"			"7"			// Diameter of a dot, height of the bar
+		"dot_gap"			"3"			// Distance between dots
+		"bar_wide"			"0"			// Length of the bar; 0: the length of "dots" dots (10 for 0 dots)
+		"counter"			"1"			// Counter: 0 never, 1 with the bar, 2 always
+		"counter_gap"		"6"			// Distance between the meter and the counter
+		"alpha_empty"		"80"		// Empty part of the bar
 
-		// Alpha of the HUD color (hud_color)
-		"alpha_passed"		"112"		// Passed level cells
-		"alpha_current"		"48"		// Current level cell, drawn with a frame
-		"alpha_future"		"24"		// Next level cells
-		"alpha_dim"			"80"		// Icons of the next levels, the empty part of the kill bar
+		// Strip: a row of cells, the current one framed
+		"cell_wide"			"30"		// Width of a cell
+		"cell_min_wide"		"14"		// Cells shrink down to this width, then the strip shows a window around the current cell
+		"cell_tall"			"15"		// Height of a cell
+		"cell_gap"			"3"			// Distance between cells
+		"icon_padding"		"2"			// Padding of the icon inside a cell
+		"max_wide"			"300"		// Width limit of the strip; 0: the screen width
+		"alpha_passed"		"112"		// Cells before the current one
+		"alpha_current"		"48"		// Current cell
+		"alpha_future"		"24"		// Cells after the current one
+		"alpha_icon_future"	"80"		// Icons and texts of the cells after the current one
+		"frame"				"1"			// 1: the current cell has a frame
+
+		// Icon: a sprite of hud.txt with a text after it
+		"icon_tall"			"0"			// Height of the icon; 0: the height of the element font
+		"icon_gap"			"2"			// Distance between the icon and the text
 	}
 }

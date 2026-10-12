@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <cwchar>
+#include <memory>
 #include <string>
 #include <vgui/IImage.h>
 #include <vgui/IInputInternal.h>
@@ -130,7 +132,104 @@ private:
 	bool m_bIsMuted = false;
 };
 
+/**
+ * Draws a text on a line of the header like a label of that line: vertically centered, cut to wide.
+ * @return	Width of the drawn text
+ */
+int PaintHeaderText(vgui2::HFont font, int x, int y, int wide, int tall, Color color, const wchar_t *text)
+{
+	wchar_t buf[bhl::sb::TEMPLATE_BUF_LEN];
+	V_wcsncpy(buf, text, sizeof(buf));
+	int textWide = FitCellText(font, buf, wide);
+
+	if (buf[0])
+		DrawCellText(font, x, y + (tall - vgui2::surface()->GetFontTall(font)) / 2, color, buf);
+
+	return textWide;
 }
+
+}
+
+/**
+ * Section header of the custom scoreboard. Columns added with HEADER_IMAGE are drawn by cells:
+ * texts from the server keep their '&', which a label takes for a hotkey mark, and team cells
+ * are followed by their badges (docs/scoreboard-protocol.md, 6.7).
+ */
+class CScorePanel::CSectionHeader : public vgui2::SectionedListPanelHeader
+{
+public:
+	DECLARE_CLASS_SIMPLE(CSectionHeader, vgui2::SectionedListPanelHeader);
+
+	CSectionHeader(vgui2::SectionedListPanel *parent, int sectionID, const ScoreCellStyle &style)
+	    : BaseClass(parent, "", sectionID)
+	    , m_Style(style)
+	{
+	}
+
+	/**
+	 * Creates the cell of a column that was added to the section with HEADER_IMAGE.
+	 */
+	CScoreCellImage *AddCell(int column)
+	{
+		if (column >= (int)m_Cells.size())
+			m_Cells.resize(column + 1);
+
+		m_Cells[column] = std::make_unique<CScoreCellImage>(m_Style);
+		return m_Cells[column].get();
+	}
+
+	//! Returns the cell of a column or nullptr for a text column
+	CScoreCellImage *GetCell(int column)
+	{
+		return column < (int)m_Cells.size() ? m_Cells[column].get() : nullptr;
+	}
+
+	virtual void PerformLayout() override
+	{
+		int count = std::min((int)m_Cells.size(), m_pListPanel->GetColumnCountBySection(m_iSectionID));
+
+		for (int i = 0; i < count; i++)
+		{
+			if (m_Cells[i])
+				m_Cells[i]->SetSize(m_pListPanel->GetColumnWidthBySection(m_iSectionID, i) - COLUMN_DATA_GAP, GetTall());
+		}
+
+		BaseClass::PerformLayout();
+
+		// When the base rebuilds its images, it leaves HEADER_IMAGE columns empty
+		bool bAdded = false;
+
+		for (int i = 0; i < count; i++)
+		{
+			if (m_Cells[i] && GetImageAtIndex(i) != m_Cells[i].get())
+			{
+				SetImageAtIndex(i, m_Cells[i].get(), 0);
+				bAdded = true;
+			}
+		}
+
+		// Texts of other columns may run over empty columns, not over cells
+		if (bAdded)
+			BaseClass::PerformLayout();
+	}
+
+	virtual void Paint() override
+	{
+		m_Style.hFont = GetFont();
+
+		for (const std::unique_ptr<CScoreCellImage> &pCell : m_Cells)
+		{
+			if (pCell)
+				pCell->SetColor(GetFgColor());
+		}
+
+		BaseClass::Paint();
+	}
+
+private:
+	ScoreCellStyle m_Style; //!< Style of the cells, with the font of the header
+	std::vector<std::unique_ptr<CScoreCellImage>> m_Cells; //!< Cells by column, nullptr for a text column
+};
 
 CScorePanel::CScorePanel()
     : BaseClass(nullptr, VIEWPORT_PANEL_SCORE)
@@ -148,10 +247,6 @@ CScorePanel::CScorePanel()
 	m_pServerNameLabel = new vgui2::Label(this, "ServerName", "A Half-Life Server");
 	m_pMapNameLabel = new vgui2::Label(this, "MapName", "Map: crossfire");
 	m_pPlayerCountLabel = new vgui2::Label(this, "PlayerCount", "2/32");
-	m_pLeaderTitleLabel = new vgui2::Label(this, "LeaderTitle", "");
-	m_pLeaderLineLabel = new vgui2::Label(this, "LeaderLine", "");
-	m_pLeaderTitleLabel->SetVisible(false);
-	m_pLeaderLineLabel->SetVisible(false);
 
 	// Player list
 	m_pPlayerList = new vgui2::SectionedListPanel(this, "PlayerList");
@@ -185,21 +280,28 @@ CScorePanel::CScorePanel()
 
 void CScorePanel::UpdateServerName()
 {
-	wchar_t wbuf[MAX_SERVERNAME_LENGTH];
 	CScoreboardData &data = CScoreboardData::Get();
 
-	// The title of the custom scoreboard replaces the server name
+	// The title of the custom scoreboard replaces the server name. Paint draws it, so its '&' isn't a hotkey mark.
 	if (m_bCustom && data.GetTitle()[0])
-		CScoreboardData::LocalizeString(data.GetTitle(), wbuf, sizeof(wbuf));
+	{
+		CScoreboardData::LocalizeString(data.GetTitle(), m_wszTitle, sizeof(m_wszTitle));
+		m_pServerNameLabel->SetText(L"");
+	}
 	else
+	{
+		wchar_t wbuf[MAX_SERVERNAME_LENGTH];
 		g_pVGuiLocalize->ConvertANSIToUnicode(g_pViewport->GetServerName(), wbuf, sizeof(wbuf));
-
-	m_pServerNameLabel->SetText(wbuf);
+		m_pServerNameLabel->SetText(wbuf);
+		m_wszTitle[0] = L'\0';
+	}
 
 	if (m_bCustom)
 		CScoreboardData::LocalizeString(data.GetTag(), m_wszTag, sizeof(m_wszTag));
 	else
 		m_wszTag[0] = L'\0';
+
+	LayoutBanner();
 }
 
 void CScorePanel::EnableMousePointer(bool bEnable)
@@ -259,18 +361,16 @@ void CScorePanel::OnThink()
 {
 	CScoreboardData &data = CScoreboardData::Get();
 
-	if (data.IsActive() != m_bCustom || (m_bCustom && (data.GetSerial() != m_iStoreSerial || m_bSectionsDirty)))
-	{
-		m_iStoreSerial = data.GetSerial();
+	// Sections and columns can't be changed in place, so the schema or the order of teams rebuilds them.
+	// The order is checked every frame: team frags come from ScoreInfo and TeamScore, which don't change the store.
+	if (data.IsActive() != m_bCustom || (m_bCustom && data.GetSchemaSerial() != m_iSchemaSerial))
+		FullUpdate();
+	else if (m_bCustom && (m_bSectionsDirty || !AreTeamsSorted()))
+		RefreshItems();
+	else if (m_bCustom && data.GetSerial() != m_iStoreSerial)
+		UpdateAllClients();
 
-		// Sections and columns can't be changed in place, so the schema or the order of teams rebuilds them
-		if (data.IsActive() != m_bCustom || data.GetSchemaSerial() != m_iSchemaSerial)
-			FullUpdate();
-		else if (m_bSectionsDirty || !std::is_sorted(m_SortedTeamIDs.begin(), m_SortedTeamIDs.begin() + m_iSortedTeamCount, [this](int ilhs, int irhs) { return IsTeamBefore(ilhs, irhs); }))
-			RefreshItems();
-		else
-			UpdateAllClients();
-	}
+	m_iStoreSerial = data.GetSerial();
 
 	if (m_iKillerIndex != 0 && m_PlayerData[m_iKillerIndex].nItemID != -1)
 	{
@@ -278,10 +378,15 @@ void CScorePanel::OnThink()
 		UpdateClientInfo(m_iKillerIndex);
 	}
 
-	if (m_flLastUpdateTime + UPDATE_PERIOD <= gEngfuncs.GetAbsoluteTime())
+	float flUpdatePeriod = m_bCustom && data.HasRunningClock() ? CLOCK_UPDATE_PERIOD : UPDATE_PERIOD;
+
+	if (m_flLastUpdateTime + flUpdatePeriod <= gEngfuncs.GetAbsoluteTime())
 	{
 		UpdateAllClients();
 	}
+
+	// Banner rows are templates evaluated every frame, like HUD elements
+	UpdateBanner();
 }
 
 void CScorePanel::OnCommand(const char *command)
@@ -324,22 +429,23 @@ void CScorePanel::PaintBackground()
 {
 	BaseClass::PaintBackground();
 
-	if (m_bGunGame && m_pLeaderTitleLabel->IsVisible())
+	bool bTop = m_BannerTop.wszText[0] != L'\0';
+	bool bBottom = m_BannerBottom.wszText[0] != L'\0';
+
+	if (bTop || bBottom)
 	{
-		// Leader banner: a box around both lines with an accent at the left edge
-		int x, y, wide, tall, lineX, lineY, lineWide, lineTall;
-		m_pLeaderTitleLabel->GetBounds(x, y, wide, tall);
-		m_pLeaderLineLabel->GetBounds(lineX, lineY, lineWide, lineTall);
+		// Banner: a box around the drawn rows with an accent at the left edge. The rows share x and width.
+		const BannerRow &first = bTop ? m_BannerTop : m_BannerBottom;
+		const BannerRow &last = bBottom ? m_BannerBottom : m_BannerTop;
+		int x0 = first.x - m_iBannerAccentWide - m_iBannerPadding;
+		int y0 = first.y - m_iBannerPadding;
+		int x1 = first.x + first.wide + m_iBannerPadding;
+		int y1 = last.y + last.tall + m_iBannerPadding;
 
-		int x0 = std::min(x, lineX) - m_iGGBannerAccentWide - m_iGGBannerPadding;
-		int y0 = y - m_iGGBannerPadding;
-		int x1 = std::max(x + wide, lineX + lineWide) + m_iGGBannerPadding;
-		int y1 = lineY + lineTall + m_iGGBannerPadding;
-
-		vgui2::surface()->DrawSetColor(m_GGBannerBgColor);
+		vgui2::surface()->DrawSetColor(m_BannerBgColor);
 		vgui2::surface()->DrawFilledRect(x0, y0, x1, y1);
-		vgui2::surface()->DrawSetColor(m_GGBannerAccentColor);
-		vgui2::surface()->DrawFilledRect(x0, y0, x0 + m_iGGBannerAccentWide, y1);
+		vgui2::surface()->DrawSetColor(m_BannerAccentColor);
+		vgui2::surface()->DrawFilledRect(x0, y0, x0 + m_iBannerAccentWide, y1);
 	}
 }
 
@@ -347,13 +453,33 @@ void CScorePanel::Paint()
 {
 	BaseClass::Paint();
 
-	if (m_bCustom && m_wszTag[0] && m_pServerNameLabel->IsVisible())
+	// Texts from the server are drawn here and not by labels, which take '&' for a hotkey mark
+	if (m_pServerNameLabel->IsVisible() && (m_wszTitle[0] || m_wszTag[0]))
 	{
 		int x, y, wide, tall, textWide, textTall;
 		m_pServerNameLabel->GetBounds(x, y, wide, tall);
-		m_pServerNameLabel->GetContentSize(textWide, textTall);
-		DrawScoreBadge(m_CellStyle, x + std::min(textWide, wide) + m_CellStyle.iSpacing, y + tall / 2, m_wszTag);
+
+		if (m_wszTitle[0])
+		{
+			textWide = PaintHeaderText(m_pServerNameLabel->GetFont(), x, y, wide, tall, m_pServerNameLabel->GetFgColor(), m_wszTitle);
+		}
+		else
+		{
+			m_pServerNameLabel->GetContentSize(textWide, textTall);
+			textWide = std::min(textWide, wide);
+		}
+
+		if (m_wszTag[0])
+			DrawScoreBadge(m_CellStyle, x + textWide + m_CellStyle.iSpacing, y + tall / 2, m_wszTag);
 	}
+
+	auto fnPaintBannerRow = [](const BannerRow &row, vgui2::HFont font) {
+		if (row.wszText[0])
+			PaintHeaderText(font, row.x, row.y, row.wide, row.tall, row.color, row.wszText);
+	};
+
+	fnPaintBannerRow(m_BannerTop, m_pServerNameLabel->GetFont());
+	fnPaintBannerRow(m_BannerBottom, m_pMapNameLabel->GetFont());
 }
 
 const char *CScorePanel::GetName()
@@ -420,12 +546,12 @@ void CScorePanel::FullUpdate()
 {
 	CScoreboardData &data = CScoreboardData::Get();
 	m_bCustom = data.IsActive();
-	m_bGunGame = m_bCustom && data.IsGunGame();
 	m_iStoreSerial = data.GetSerial();
 	m_iSchemaSerial = data.GetSchemaSerial();
 
 	UpdateServerName();
 	UpdateMapName();
+	UpdateBanner();
 	RefreshItems();
 }
 
@@ -443,6 +569,7 @@ void CScorePanel::RefreshItems()
 	std::fill(m_TeamData.begin(), m_TeamData.end(), TeamData());
 	std::fill(m_PlayerData.begin(), m_PlayerData.end(), PlayerData());
 	std::fill(m_IsTeamSectionCreated.begin(), m_IsTeamSectionCreated.end(), false);
+	std::fill(m_SectionHeaders.begin(), m_SectionHeaders.end(), nullptr);
 	m_bSectionsDirty = false;
 	m_pPlayerList->RemoveAll();
 	m_pPlayerList->RemoveAllSections();
@@ -528,7 +655,16 @@ void CScorePanel::CreateSection(int nTeamID)
 	char buf[128];
 	TeamData &td = m_TeamData[nTeamID];
 
-	m_pPlayerList->AddSection(nTeamID, "", m_bCustom ? StaticPlayerSortFuncCustom : StaticPlayerSortFuncByFrags);
+	if (m_bCustom)
+	{
+		m_SectionHeaders[nTeamID] = new CSectionHeader(m_pPlayerList, nTeamID, m_CellStyle);
+		m_pPlayerList->AddSection(nTeamID, m_SectionHeaders[nTeamID], StaticPlayerSortFuncCustom);
+	}
+	else
+	{
+		m_pPlayerList->AddSection(nTeamID, "", StaticPlayerSortFuncByFrags);
+	}
+
 	m_pPlayerList->SetSectionFgColor(nTeamID, g_pViewport->GetTeamColor(nTeamID));
 
 	if (nTeamID == HEADER_SECTION_ID)
@@ -539,11 +675,24 @@ void CScorePanel::CreateSection(int nTeamID)
 
 	if (m_bCustom)
 	{
-		// Team sections get their texts from UpdateScoresAndCounts
-		for (const CustomColumn &col : m_CustomColumns)
+		// Cells draw the column titles, team cells and places. Team sections get their texts from UpdateScoresAndCounts.
+		bool bTitles = nTeamID == HEADER_SECTION_ID;
+
+		for (int i = 0; i < (int)m_CustomColumns.size(); i++)
 		{
-			m_pPlayerList->AddColumnToSection(nTeamID, col.szName, nTeamID == HEADER_SECTION_ID ? col.wszTitle : L"",
-			    col.iFlags, col.iWidth);
+			const CustomColumn &col = m_CustomColumns[i];
+			bool bCell = bTitles ? col.type != ColumnType::Avatar : (col.type == ColumnType::Rank || col.type == ColumnType::Custom);
+			int flags = bCell ? col.iFlags | vgui2::SectionedListPanel::HEADER_IMAGE : col.iFlags;
+			m_pPlayerList->AddColumnToSection(nTeamID, col.szName, L"", flags, col.iWidth);
+
+			if (!bCell)
+				continue;
+
+			CScoreCellImage *pCell = m_SectionHeaders[nTeamID]->AddCell(i);
+			pCell->SetAlign(col.iAlign);
+
+			if (bTitles)
+				pCell->SetText(col.wszTitle);
 		}
 
 		return;
@@ -879,7 +1028,6 @@ void CScorePanel::UpdateScoresAndCounts()
 	// Update total player count
 	snprintf(buf, sizeof(buf), "%d/%d", iPlayerCount, gEngfuncs.GetMaxClients());
 	m_pPlayerCountLabel->SetText(buf);
-
 }
 
 int CScorePanel::GetNameColumnWidth()
@@ -1236,8 +1384,9 @@ void CScorePanel::Resize()
 	y = (ScreenHeight - height) / 2;
 	SetPos(x, y);
 
-	// A new size lays out the children from the layout file, which moves the banner
-	UpdateLeaderBanner();
+	// A new size lays out the children from the layout file, which moves the banner.
+	// The player count text also changes before every resize.
+	LayoutBanner();
 }
 
 bool CScorePanel::StaticPlayerSortFuncByFrags(vgui2::SectionedListPanel *list, int itemID1, int itemID2)
@@ -1268,13 +1417,9 @@ bool CScorePanel::StaticPlayerSortFuncByFrags(vgui2::SectionedListPanel *list, i
 
 bool CScorePanel::IsTeamBefore(int ilhs, int irhs)
 {
+	// The store has the full order: sort keys, then the standard order, then the number
 	if (m_bCustom)
-	{
-		int cmp = CScoreboardData::Get().CompareTeams(ilhs, irhs);
-
-		if (cmp != 0)
-			return cmp < 0;
-	}
+		return CScoreboardData::Get().CompareTeams(ilhs, irhs) < 0;
 
 	const TeamData &lhs = m_TeamData[ilhs];
 	const TeamData &rhs = m_TeamData[irhs];
@@ -1295,13 +1440,17 @@ bool CScorePanel::IsTeamBefore(int ilhs, int irhs)
 	return ilhs > irhs;
 }
 
+bool CScorePanel::AreTeamsSorted()
+{
+	return std::is_sorted(m_SortedTeamIDs.begin(), m_SortedTeamIDs.begin() + m_iSortedTeamCount, [this](int ilhs, int irhs) {
+		return IsTeamBefore(ilhs, irhs);
+	});
+}
+
 void CScorePanel::BuildCustomColumns()
 {
 	m_CustomColumns.clear();
 	m_iLineSpacingExtra = 0;
-	m_iLevelColumn = -1;
-	m_iWeaponColumn = -1;
-	m_iProgressColumn = -1;
 
 	if (!m_bCustom)
 		return;
@@ -1322,13 +1471,6 @@ void CScorePanel::BuildCustomColumns()
 	m_CellStyle.iStripGap = m_iCellStripGap;
 	m_CellStyle.iSpacing = m_iCellSpacing;
 
-	if (m_bGunGame)
-	{
-		m_iLevelColumn = data.FindColumn("level");
-		m_iWeaponColumn = data.FindColumn("weapon");
-		m_iProgressColumn = data.FindColumn("progress");
-	}
-
 	// Column names indexed by ColumnType, the same as the keys of Builtin columns
 	static const char *const s_StdColumnNames[] = { "rank", "avatar", "name", "steamid", "eff", "frags", "deaths", "ping" };
 	int nSlotCount = 0;
@@ -1343,18 +1485,18 @@ void CScorePanel::BuildCustomColumns()
 		return ColumnType::Custom;
 	};
 
-	// bCell: the column is drawn by CScoreCellImage
-	auto fnAddColumn = [&](ColumnType type, int nColumnID, const char *title, int width, int align, bool bCell) {
+	// Custom columns are drawn by CScoreCellImage
+	auto fnAddColumn = [&](ColumnType type, int nColumnID, const char *title, int width, int align) {
 		CustomColumn col;
 		col.type = type;
 		col.nColumnID = nColumnID;
-		col.nSlot = bCell ? nSlotCount++ : -1;
+		col.nSlot = type == ColumnType::Custom ? nSlotCount++ : -1;
 		col.iAlign = align;
 		col.iWidth = width;
 
 		if (type == ColumnType::Avatar)
 			col.iFlags = vgui2::SectionedListPanel::COLUMN_IMAGE | vgui2::SectionedListPanel::COLUMN_CENTER;
-		else if (bCell)
+		else if (type == ColumnType::Custom)
 			col.iFlags = vgui2::SectionedListPanel::COLUMN_IMAGE;
 		else if (type == ColumnType::Name && gHUD.GetColorCodeAction() == ColorCodeAction::Handle)
 			col.iFlags = vgui2::SectionedListPanel::COLUMN_BRIGHT | vgui2::SectionedListPanel::COLUMN_COLORED;
@@ -1434,7 +1576,7 @@ void CScorePanel::BuildCustomColumns()
 				title = pColumn->szTitle;
 		}
 
-		fnAddColumn(type, -1, title, width, align, false);
+		fnAddColumn(type, -1, title, width, align);
 	};
 
 	// Standard columns moved by Builtin columns
@@ -1444,7 +1586,7 @@ void CScorePanel::BuildCustomColumns()
 	{
 		const CScoreboardData::Column &col = data.GetColumn(i);
 
-		if (col.bValid && !col.IsHidden() && col.display == bhl::sb::E_Display::Builtin)
+		if (col.bValid && !col.IsHidden() && col.IsBuiltin())
 		{
 			ColumnType type = fnGetBuiltinType(col.szKey);
 
@@ -1469,10 +1611,11 @@ void CScorePanel::BuildCustomColumns()
 	{
 		const CScoreboardData::Column &col = data.GetColumn(i);
 
-		if (!col.bValid || col.IsHidden())
+		// Badge columns take no width: they are drawn in the cells of their host
+		if (!col.bValid || col.IsHidden() || col.IsBadge())
 			continue;
 
-		if (col.display == bhl::sb::E_Display::Builtin)
+		if (col.IsBuiltin())
 		{
 			ColumnType type = fnGetBuiltinType(col.szKey);
 
@@ -1483,28 +1626,24 @@ void CScorePanel::BuildCustomColumns()
 		}
 
 		int width = col.iWidth;
-		bool bCell = false;
 
 		switch (col.display)
 		{
 		case bhl::sb::E_Display::Icon:
-			width = width ? width : 100;
-			bCell = true;
+			width = width ? width : bhl::sb::DEFAULT_WIDTH_ICON;
 			break;
 		case bhl::sb::E_Display::Meter:
-			width = width ? width : 90;
-			bCell = true;
+			width = width ? width : bhl::sb::DEFAULT_WIDTH_METER;
 			break;
 		case bhl::sb::E_Display::Steps:
-			width = width ? width : 60;
-			bCell = true;
+			width = width ? width : bhl::sb::DEFAULT_WIDTH_STEPS;
 			break;
 		default:
-			width = width ? width : 60;
+			width = width ? width : bhl::sb::DEFAULT_WIDTH_TEXT;
 			break;
 		}
 
-		fnAddColumn(ColumnType::Custom, i, col.szTitle, vgui2::scheme()->GetProportionalScaledValue(width), col.GetAlign(), bCell);
+		fnAddColumn(ColumnType::Custom, i, col.szTitle, vgui2::scheme()->GetProportionalScaledValue(width), col.GetAlign());
 	}
 
 	if (!builtins[(int)ColumnType::Ping])
@@ -1553,8 +1692,9 @@ void CScorePanel::UpdateCustomCells(CPlayerInfo *pi, KeyValues *kv)
 	CScoreboardData &data = CScoreboardData::Get();
 	int client = pi->GetIndex();
 	int lineSpacing = m_pPlayerList->GetLineSpacing();
-	bool bLastLevel = IsOnLastLevel(client);
+	bool bTeamMode = data.IsTeamMode();
 	Color color = gHUD.GetClientColor(client, NoTeamColor::White);
+	int badgeIDs[bhl::sb::MAX_COLUMNS];
 	wchar_t wbuf[128];
 	char buf[128];
 
@@ -1562,8 +1702,8 @@ void CScorePanel::UpdateCustomCells(CPlayerInfo *pi, KeyValues *kv)
 	{
 		if (col.type == ColumnType::Rank)
 		{
-			// With team sections the place is shown in team headers
-			int place = m_PlayerData[client].nTeamID == HEADER_SECTION_ID ? GetPlayerRank(client) : 0;
+			// In team mode the place is shown in team headers
+			int place = bTeamMode ? 0 : data.GetPlayerPlace(client);
 			buf[0] = '\0';
 
 			if (place > 0)
@@ -1576,24 +1716,21 @@ void CScorePanel::UpdateCustomCells(CPlayerInfo *pi, KeyValues *kv)
 		if (col.type != ColumnType::Custom)
 			continue;
 
-		if (col.nSlot == -1)
-		{
-			data.GetPlayerValue(client, col.nColumnID).ToString(wbuf, sizeof(wbuf));
-			Q_WStringToUTF8(wbuf, buf, sizeof(buf));
-			kv->SetString(col.szName, buf);
-			continue;
-		}
-
 		// Image columns read the index of the image from the row
 		int index = CELL_IMAGE_BASE + col.nSlot * MAX_PLAYERS + client - 1;
 		CScoreCellImage *pCell = GetCellImage(index);
 		pCell->SetSize(col.iWidth - COLUMN_DATA_GAP, lineSpacing);
 		pCell->SetAlign(col.iAlign);
 		pCell->SetColor(color);
-		pCell->SetValue(data.GetColumn(col.nColumnID).display, data.GetPlayerValue(client, col.nColumnID));
+		pCell->SetValue(data.GetColumn(col.nColumnID), data.GetPlayerValue(client, col.nColumnID));
 
-		if (bLastLevel && col.nColumnID == m_iWeaponColumn)
-			pCell->SetBadge(g_pVGuiLocalize->Find("#BHL_GG_Final"));
+		int badgeCount = data.GetBadgeColumns(col.nColumnID, badgeIDs, ARRAYSIZE(badgeIDs));
+
+		for (int i = 0; i < badgeCount; i++)
+		{
+			data.GetPlayerValue(client, badgeIDs[i]).ToString(wbuf, sizeof(wbuf));
+			pCell->AddBadge(wbuf);
+		}
 
 		kv->SetInt(col.szName, index);
 	}
@@ -1601,20 +1738,29 @@ void CScorePanel::UpdateCustomCells(CPlayerInfo *pi, KeyValues *kv)
 
 void CScorePanel::UpdateCustomTeamHeader(int nTeamID)
 {
+	CSectionHeader *pHeader = m_SectionHeaders[nTeamID];
+
+	if (!pHeader)
+		return;
+
 	CScoreboardData &data = CScoreboardData::Get();
 	bool bIsTeam = nTeamID >= 1 && nTeamID <= MAX_TEAMS;
+	int badgeIDs[bhl::sb::MAX_COLUMNS];
 	wchar_t wbuf[128];
 
-	for (const CustomColumn &col : m_CustomColumns)
+	for (int i = 0; i < (int)m_CustomColumns.size(); i++)
 	{
-		if (col.type != ColumnType::Rank && col.type != ColumnType::Custom)
+		const CustomColumn &col = m_CustomColumns[i];
+		CScoreCellImage *pCell = pHeader->GetCell(i);
+
+		if (!pCell)
 			continue;
 
 		wbuf[0] = L'\0';
 
 		if (bIsTeam && col.type == ColumnType::Rank)
 		{
-			int place = GetTeamRank(nTeamID);
+			int place = data.IsTeamMode() ? data.GetTeamPlace(nTeamID) : 0;
 
 			if (place > 0)
 				V_snwprintf(wbuf, ARRAYSIZE(wbuf), L"%d", place);
@@ -1623,188 +1769,125 @@ void CScorePanel::UpdateCustomTeamHeader(int nTeamID)
 		{
 			const CScoreboardData::Value &value = data.GetTeamValue(nTeamID, col.nColumnID);
 
-			// Like dots in rows, a short progress has no counter
-			if (data.GetColumn(col.nColumnID).display != bhl::sb::E_Display::Meter || value.type != bhl::sb::E_ValueType::Progress || value.iMax > bhl::sb::MAX_DOTS)
+			// Like dots in rows, a short progress has no counter. A progress with max 0 is its cur.
+			bool bDots = data.GetColumn(col.nColumnID).display == bhl::sb::E_Display::Meter
+			    && value.type == bhl::sb::E_ValueType::Progress && value.iMax > 0 && value.iMax <= bhl::sb::MAX_DOTS;
+
+			if (!bDots)
 				value.ToString(wbuf, sizeof(wbuf));
 		}
 
-		m_pPlayerList->ModifyColumn(nTeamID, col.szName, wbuf);
+		pCell->SetText(wbuf);
+
+		if (!bIsTeam || col.type != ColumnType::Custom)
+			continue;
+
+		int badgeCount = data.GetBadgeColumns(col.nColumnID, badgeIDs, ARRAYSIZE(badgeIDs));
+
+		for (int j = 0; j < badgeCount; j++)
+		{
+			data.GetTeamValue(nTeamID, badgeIDs[j]).ToString(wbuf, sizeof(wbuf));
+			pCell->AddBadge(wbuf);
+		}
 	}
 }
 
-void CScorePanel::UpdateLeaderBanner()
+void CScorePanel::UpdateBanner()
+{
+	bool bTopChanged = UpdateBannerRow(m_BannerTop, bhl::sb::E_Place::BannerTop, m_BannerAccentColor);
+	bool bBottomChanged = UpdateBannerRow(m_BannerBottom, bhl::sb::E_Place::BannerBottom, m_pMapNameLabel->GetFgColor());
+
+	if (bTopChanged || bBottomChanged)
+		LayoutBanner();
+}
+
+bool CScorePanel::UpdateBannerRow(BannerRow &row, bhl::sb::E_Place place, Color schemeColor)
 {
 	CScoreboardData &data = CScoreboardData::Get();
-	wchar_t wbuf[256];
+	wchar_t text[bhl::sb::TEMPLATE_BUF_LEN];
+	int id = m_bCustom ? data.GetBannerRow(place, text, sizeof(text)) : -1;
 
-	// Leader: the first team in teamplay, the first participant otherwise
-	int leader = 0;
-	bool bIsTeam = false;
-
-	if (m_bGunGame)
+	if (id == -1)
 	{
-		for (int i = 1; i <= MAX_TEAMS; i++)
-		{
-			if (m_TeamData[i].iPlayerCount > 0 && (leader == 0 || IsTeamBefore(i, leader)))
-				leader = i;
-		}
-
-		bIsTeam = leader != 0;
-
-		for (int i = 1; i <= MAX_PLAYERS && !bIsTeam; i++)
-		{
-			CPlayerInfo *pi = GetPlayerInfo(i);
-
-			if (pi->IsConnected() && !pi->IsSpectator() && (leader == 0 || IsPlayerBefore(i, leader)))
-				leader = i;
-		}
+		text[0] = L'\0';
 	}
-
-	auto fnGetValue = [&](int col) -> const CScoreboardData::Value & {
-		return bIsTeam ? data.GetTeamValue(leader, col) : data.GetPlayerValue(leader, col);
-	};
-
-	bool bShowBanner = leader != 0 && m_iLevelColumn != -1 && IsLastLevel(fnGetValue(m_iLevelColumn));
-	m_pLeaderTitleLabel->SetVisible(bShowBanner);
-	m_pLeaderLineLabel->SetVisible(bShowBanner);
-
-	if (!bShowBanner)
-	{
-		if (m_iServerNameWide != -1)
-			m_pServerNameLabel->SetWide(m_iServerNameWide);
-
-		m_iServerNameWide = -1;
-		return;
-	}
-
-	wchar_t wname[128];
-	wchar_t wweapon[64] = L"";
-	wchar_t wkills[64];
-	int killsLeft = 0;
-
-	if (bIsTeam)
-		CScoreboardData::LocalizeString(GetTeamInfo(leader)->GetDisplayName(), wname, sizeof(wname));
 	else
-		Q_UTF8ToWString(GetPlayerInfo(leader)->GetDisplayName(true), wname, sizeof(wname), STRINGCONVERT_REPLACE);
-
-	if (m_iWeaponColumn != -1)
-		CScoreboardData::GetIconName(fnGetValue(m_iWeaponColumn), wweapon, sizeof(wweapon));
-
-	if (m_iProgressColumn != -1)
 	{
-		const CScoreboardData::Value &progress = fnGetValue(m_iProgressColumn);
+		const CScoreboardData::Element &element = data.GetElement(id);
 
-		if (progress.type == bhl::sb::E_ValueType::Progress)
-			killsLeft = std::max(progress.iMax - progress.iValue, 0);
+		if (element.HasFlag(bhl::sb::E_ElementFlags::HudColor))
+			row.color = Color(schemeColor.r(), schemeColor.g(), schemeColor.b(), schemeColor.a() * element.a / 255);
+		else
+			row.color = Color(element.r, element.g, element.b, element.a);
 	}
 
-	FormatScoreKills(wkills, sizeof(wkills), killsLeft);
-	ConstructScoreText(wbuf, sizeof(wbuf), "BHL_GG_LeaderLine", 3, wname, wweapon, wkills);
+	if (!wcscmp(text, row.wszText))
+		return false;
 
-	m_pLeaderTitleLabel->SetText("#BHL_GG_LeaderFinal");
-	m_pLeaderTitleLabel->SetFgColor(m_GGBannerAccentColor);
-	m_pLeaderLineLabel->SetText(wbuf);
+	V_wcsncpy(row.wszText, text, sizeof(row.wszText));
+	return true;
+}
 
-	// Both lines end left of the player count, on the lines of the server and the map name
+void CScorePanel::LayoutBanner()
+{
+	bool bTop = m_BannerTop.wszText[0] != L'\0';
+	bool bBottom = m_BannerBottom.wszText[0] != L'\0';
+
+	// The server name is narrowed only while a row stands on its line
+	if (!bTop && m_iServerNameWide != -1)
+	{
+		m_pServerNameLabel->SetWide(m_iServerNameWide);
+		m_iServerNameWide = -1;
+	}
+
+	if (!bTop && !bBottom)
+		return;
+
+	// Rows end left of the player count, on the lines of the server and the map name, in the fonts of their labels
 	int nameX, nameY, nameWide, nameTall, mapX, mapY, mapWide, mapTall, countX, countY, countWide, countTall;
-	int mapTextWide, countTextWide, titleWide, lineWide, tall;
+	int mapTextWide, countTextWide, tall;
 	m_pServerNameLabel->GetBounds(nameX, nameY, nameWide, nameTall);
 	m_pMapNameLabel->GetBounds(mapX, mapY, mapWide, mapTall);
 	m_pPlayerCountLabel->GetBounds(countX, countY, countWide, countTall);
 	m_pMapNameLabel->GetContentSize(mapTextWide, tall);
 	m_pPlayerCountLabel->GetContentSize(countTextWide, tall);
-	m_pLeaderTitleLabel->GetContentSize(titleWide, tall);
-	m_pLeaderLineLabel->GetContentSize(lineWide, tall);
+	int topWide = bTop ? GetCellTextWide(m_pServerNameLabel->GetFont(), m_BannerTop.wszText) : 0;
+	int bottomWide = bBottom ? GetCellTextWide(m_pMapNameLabel->GetFont(), m_BannerBottom.wszText) : 0;
 
-	if (m_iServerNameWide == -1)
+	if (bTop && m_iServerNameWide == -1)
 		m_iServerNameWide = nameWide;
 
 	int tagWide = m_wszTag[0] ? GetScoreBadgeWide(m_CellStyle, m_wszTag) + m_CellStyle.iSpacing : 0;
-	int boxLeft = m_iGGBannerAccentWide + m_iGGBannerPadding + m_CellStyle.iSpacing;
-	int bannerRight = countX + countWide - countTextWide - m_CellStyle.iSpacing - m_iGGBannerPadding;
+	int boxLeft = m_iBannerAccentWide + m_iBannerPadding + m_CellStyle.iSpacing;
+	int bannerRight = countX + countWide - countTextWide - m_CellStyle.iSpacing - m_iBannerPadding;
 
-	// A long line is cut, so the map name and a third of the server name stay visible
-	int bannerMinX = std::max(mapX + mapTextWide, nameX + tagWide + (bannerRight - nameX) / 3) + boxLeft;
-	int wide = std::min(std::max(titleWide, lineWide), std::max(bannerRight - bannerMinX, 0));
+	// Long rows are cut, so the map name and a third of the server name stay visible
+	int bannerMinX = 0;
+
+	if (bTop)
+		bannerMinX = nameX + tagWide + (bannerRight - nameX) / 3;
+
+	if (bBottom)
+		bannerMinX = std::max(bannerMinX, mapX + mapTextWide);
+
+	bannerMinX += boxLeft;
+
+	int wide = std::min(std::max(topWide, bottomWide), std::max(bannerRight - bannerMinX, 0));
 	int bannerX = bannerRight - wide;
-	m_pLeaderTitleLabel->SetBounds(bannerX, nameY, wide, nameTall);
-	m_pLeaderLineLabel->SetBounds(bannerX, mapY, wide, mapTall);
+
+	auto fnSetBounds = [&](BannerRow &row, int rowY, int rowTall) {
+		row.x = bannerX;
+		row.y = rowY;
+		row.wide = wide;
+		row.tall = rowTall;
+	};
+
+	fnSetBounds(m_BannerTop, nameY, nameTall);
+	fnSetBounds(m_BannerBottom, mapY, mapTall);
 
 	// The server name and its tag end before the banner
-	m_pServerNameLabel->SetWide(std::clamp(bannerX - boxLeft - tagWide - nameX, 0, m_iServerNameWide));
-}
-
-int CScorePanel::GetPlayerRank(int client)
-{
-	CScoreboardData &data = CScoreboardData::Get();
-
-	if (data.GetFirstSortColumn() != -1)
-		return data.GetPlayerPlace(client);
-
-	// Without sort keys the place follows row order
-	if (GetPlayerInfo(client)->IsSpectator())
-		return 0;
-
-	int place = 1;
-
-	for (int i = 1; i <= MAX_PLAYERS; i++)
-	{
-		CPlayerInfo *pi = GetPlayerInfo(i);
-
-		if (i != client && pi->IsConnected() && !pi->IsSpectator() && IsPlayerBefore(i, client))
-			place++;
-	}
-
-	return place;
-}
-
-int CScorePanel::GetTeamRank(int nTeamID)
-{
-	CScoreboardData &data = CScoreboardData::Get();
-
-	if (data.GetFirstSortColumn() != -1)
-		return data.GetTeamPlace(nTeamID);
-
-	for (int i = 0; i < m_iSortedTeamCount; i++)
-	{
-		if (m_SortedTeamIDs[i] == nTeamID)
-			return i + 1;
-	}
-
-	return 0;
-}
-
-bool CScorePanel::IsOnLastLevel(int client)
-{
-	return m_iLevelColumn != -1 && IsLastLevel(CScoreboardData::Get().GetPlayerValue(client, m_iLevelColumn));
-}
-
-bool CScorePanel::IsLastLevel(const CScoreboardData::Value &level)
-{
-	return level.type == bhl::sb::E_ValueType::Progress && level.iMax > 0 && level.iValue >= level.iMax;
-}
-
-bool CScorePanel::IsPlayerBefore(int client1, int client2)
-{
-	int cmp = CScoreboardData::Get().ComparePlayers(client1, client2);
-
-	if (cmp != 0)
-		return cmp < 0;
-
-	// Standard order
-	CPlayerInfo *pi1 = GetPlayerInfo(client1);
-	CPlayerInfo *pi2 = GetPlayerInfo(client2);
-
-	if (pi1->IsConnected() && pi2->IsConnected())
-	{
-		if (pi1->GetFrags() != pi2->GetFrags())
-			return pi1->GetFrags() > pi2->GetFrags();
-
-		if (pi1->GetDeaths() != pi2->GetDeaths())
-			return pi1->GetDeaths() < pi2->GetDeaths();
-	}
-
-	return client1 < client2;
+	if (bTop)
+		m_pServerNameLabel->SetWide(std::clamp(bannerX - boxLeft - tagWide - nameX, 0, m_iServerNameWide));
 }
 
 bool CScorePanel::StaticPlayerSortFuncCustom(vgui2::SectionedListPanel *list, int itemID1, int itemID2)
@@ -1813,5 +1896,6 @@ bool CScorePanel::StaticPlayerSortFuncCustom(vgui2::SectionedListPanel *list, in
 	KeyValues *it2 = list->GetItemData(itemID2);
 	Assert(it1 && it2);
 
-	return IsPlayerBefore(it1->GetInt("client"), it2->GetInt("client"));
+	// The store has the full order: sort keys, then the standard order, then the index
+	return CScoreboardData::Get().ComparePlayers(it1->GetInt("client"), it2->GetInt("client")) < 0;
 }

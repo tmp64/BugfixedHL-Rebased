@@ -101,8 +101,6 @@ set( SOURCE_FILES
 	hud/flashlight.h
 	hud/geiger.cpp
 	hud/geiger.h
-	hud/gungame_hud.cpp
-	hud/gungame_hud.h
 	hud/health.cpp
 	hud/health.h
 	hud/jumpspeed.cpp
@@ -113,6 +111,8 @@ set( SOURCE_FILES
 	hud/message.h
 	hud/scores.cpp
 	hud/scores.h
+	hud/server_panel.cpp
+	hud/server_panel.h
 	hud/spectator.cpp
 	hud/spectator.h
 	hud/speedometer.cpp
@@ -228,6 +228,8 @@ set( SOURCE_FILES
 	results.h
 	scoreboard_data.cpp
 	scoreboard_data.h
+	scoreboard_template.cpp
+	scoreboard_template.h
 	sdl_rt.cpp
 	sdl_rt.h
 	studio_util.cpp

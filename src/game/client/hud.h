@@ -322,7 +322,10 @@ private:
 	void UpdateHudColors();
 	void UpdateSupportsCvar();
 
-	//! Computes the client caps and writes them to _bhl (docs/scoreboard-protocol.md, 3.2)
+	/**
+	 * Computes the client caps, writes them to _bhl and passes them to the scoreboard store
+	 * (docs/scoreboard-protocol.md, 3.2). Writes nothing when _bhl already holds them.
+	 */
 	void UpdateCapsUserinfo();
 
 	//! Compares _bhl in userinfo with the caps, retries once with setinfo

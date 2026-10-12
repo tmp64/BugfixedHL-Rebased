@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <cwchar>
 #include <vector>
 #include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
 #include <vgui_controls/Controls.h>
 #include <com_model.h>
 #include "hud.h"
@@ -26,45 +26,6 @@ constexpr int TEXTURE_FAILED = -1;
 
 //! VGUI2 textures of hud.txt sprites by sprite index
 std::vector<int> s_SpriteTextures;
-
-int GetTextWide(vgui2::HFont font, const wchar_t *text)
-{
-	int wide = 0;
-
-	for (; *text; text++)
-		wide += vgui2::surface()->GetCharacterWidth(font, *text);
-
-	return wide;
-}
-
-/**
- * Cuts the text with an ellipsis to fit into maxWide. Returns the width of the result.
- */
-int FitText(vgui2::HFont font, wchar_t *text, int maxWide)
-{
-	int wide = GetTextWide(font, text);
-
-	if (wide <= maxWide)
-		return wide;
-
-	int ellipsisWide = vgui2::surface()->GetCharacterWidth(font, ELLIPSIS);
-	int len = 0;
-	wide = 0;
-
-	for (; text[len]; len++)
-	{
-		int charWide = vgui2::surface()->GetCharacterWidth(font, text[len]);
-
-		if (wide + charWide + ellipsisWide > maxWide)
-			break;
-
-		wide += charWide;
-	}
-
-	text[len] = ELLIPSIS;
-	text[len + 1] = L'\0';
-	return wide + ellipsisWide;
-}
 
 /**
  * Draws a box with round corners line by line, so it doesn't depend on alpha blending.
@@ -196,19 +157,25 @@ CScoreCellImage::CScoreCellImage(const ScoreCellStyle &style)
 void CScoreCellImage::Clear()
 {
 	m_Kind = Kind::Empty;
+	m_bMarkLast = false;
 	m_iSprite = -1;
 	m_iCur = 0;
 	m_iMax = 0;
 	m_wszText[0] = L'\0';
-	m_wszBadge[0] = L'\0';
+	m_wszBadges[0] = L'\0';
+	m_iBadgesLen = 0;
+	m_iBadgeCount = 0;
 }
 
-void CScoreCellImage::SetValue(bhl::sb::E_Display display, const CScoreboardData::Value &value)
+void CScoreCellImage::SetValue(const CScoreboardData::Column &column, const CScoreboardData::Value &value)
 {
 	Clear();
+	m_bMarkLast = column.IsMarkLast();
 
 	if (value.IsEmpty())
 		return;
+
+	bhl::sb::E_Display display = column.display;
 
 	if (value.type == bhl::sb::E_ValueType::Progress && value.iMax > 0
 	    && (display == bhl::sb::E_Display::Meter || display == bhl::sb::E_Display::Steps))
@@ -229,9 +196,27 @@ void CScoreCellImage::SetValue(bhl::sb::E_Display display, const CScoreboardData
 	}
 }
 
-void CScoreCellImage::SetBadge(const wchar_t *badge)
+void CScoreCellImage::SetText(const wchar_t *text)
 {
-	V_wcsncpy(m_wszBadge, badge ? badge : L"", sizeof(m_wszBadge));
+	Clear();
+
+	if (text[0])
+	{
+		m_Kind = Kind::Text;
+		V_wcsncpy(m_wszText, text, sizeof(m_wszText));
+	}
+}
+
+void CScoreCellImage::AddBadge(const wchar_t *text)
+{
+	int len = static_cast<int>(wcslen(text));
+
+	if (len == 0 || m_iBadgesLen + len + 1 > BADGES_LEN)
+		return;
+
+	memcpy(m_wszBadges + m_iBadgesLen, text, (len + 1) * sizeof(wchar_t));
+	m_iBadgesLen += len + 1;
+	m_iBadgeCount++;
 }
 
 void CScoreCellImage::SetAlign(int align)
@@ -254,6 +239,9 @@ void CScoreCellImage::Paint()
 		PaintSteps();
 		break;
 	case Kind::Empty:
+		// Badges come from cells of their own: they are drawn even when the host cell is empty
+		if (m_iBadgeCount > 0)
+			PaintText();
 		break;
 	}
 }
@@ -286,9 +274,9 @@ void CScoreCellImage::SetColor(Color col)
 	m_Color = col;
 }
 
-int CScoreCellImage::GetAlignOffset(int contentWide)
+int CScoreCellImage::GetAlignOffset(int contentWide, int areaWide)
 {
-	int freeWide = std::max(m_iWide - contentWide, 0);
+	int freeWide = std::max(areaWide - contentWide, 0);
 
 	if (m_iAlign == 1)
 		return freeWide / 2;
@@ -296,6 +284,40 @@ int CScoreCellImage::GetAlignOffset(int contentWide)
 		return freeWide;
 
 	return 0;
+}
+
+int CScoreCellImage::GetBadgesWide(int maxWide, int &count)
+{
+	const wchar_t *badge = m_wszBadges;
+	int wide = 0;
+	count = 0;
+
+	for (int i = 0; i < m_iBadgeCount; i++)
+	{
+		int badgeWide = m_Style.iSpacing + GetScoreBadgeWide(m_Style, badge);
+
+		if (wide + badgeWide > maxWide)
+			break;
+
+		wide += badgeWide;
+		count++;
+		badge += wcslen(badge) + 1;
+	}
+
+	return wide;
+}
+
+void CScoreCellImage::PaintBadges(int x, int yCenter, int count)
+{
+	const wchar_t *badge = m_wszBadges;
+
+	for (int i = 0; i < count; i++)
+	{
+		x += m_Style.iSpacing;
+		DrawScoreBadge(m_Style, x, yCenter, badge);
+		x += GetScoreBadgeWide(m_Style, badge);
+		badge += wcslen(badge) + 1;
+	}
 }
 
 void CScoreCellImage::PaintText()
@@ -325,14 +347,16 @@ void CScoreCellImage::PaintText()
 		}
 	}
 
+	// Badges come first: the text is cut to the rest
 	int iconSpace = iconWide > 0 ? iconWide + spacing : 0;
-	int badgeSpace = m_wszBadge[0] ? GetScoreBadgeWide(m_Style, m_wszBadge) + spacing : 0;
+	int badgeCount = 0;
+	int badgesWide = GetBadgesWide(m_iWide - iconSpace, badgeCount);
 
 	wchar_t text[ARRAYSIZE(m_wszText)];
 	V_wcsncpy(text, m_wszText, sizeof(text));
-	int textWide = FitText(font, text, std::max(m_iWide - iconSpace - badgeSpace, 0));
+	int textWide = FitCellText(font, text, std::max(m_iWide - iconSpace - badgesWide, 0));
 
-	int x = m_iX + GetAlignOffset(iconSpace + textWide + badgeSpace);
+	int x = m_iX + GetAlignOffset(iconSpace + textWide + badgesWide, m_iWide);
 
 	if (iconWide > 0 && iconTall > 0)
 	{
@@ -340,10 +364,11 @@ void CScoreCellImage::PaintText()
 		x += iconSpace;
 	}
 
-	DrawCellText(font, x, yCenter - vgui2::surface()->GetFontTall(font) / 2, m_Color, text);
+	// The text stands where a label puts it, so it lines up with text columns
+	if (text[0])
+		DrawCellText(font, x, m_iY + (m_iTall - vgui2::surface()->GetFontTall(font)) / 2, m_Color, text);
 
-	if (badgeSpace > 0)
-		DrawScoreBadge(m_Style, x + textWide + spacing, yCenter, m_wszBadge);
+	PaintBadges(x + textWide, yCenter, badgeCount);
 }
 
 void CScoreCellImage::PaintMeter()
@@ -351,6 +376,9 @@ void CScoreCellImage::PaintMeter()
 	vgui2::HFont font = m_Style.hFont;
 	int maxDots = bhl::sb::MAX_DOTS;
 	bool bBar = m_iMax > maxDots;
+	int badgeCount = 0;
+	int badgesWide = GetBadgesWide(m_iWide, badgeCount);
+	int areaWide = m_iWide - badgesWide;
 
 	// Only the bar has a counter: dots are easy to count
 	wchar_t counter[32] = L"";
@@ -359,17 +387,17 @@ void CScoreCellImage::PaintMeter()
 	if (bBar)
 	{
 		V_snwprintf(counter, ARRAYSIZE(counter), L"%d/%d", m_iCur, m_iMax);
-		counterSpace = m_Style.iSpacing + GetTextWide(font, counter);
+		counterSpace = m_Style.iSpacing + GetCellTextWide(font, counter);
 	}
 
 	int gap = m_Style.iDotGap;
-	int dot = (m_iWide - counterSpace - (maxDots - 1) * gap) / maxDots;
+	int dot = (areaWide - counterSpace - (maxDots - 1) * gap) / maxDots;
 	dot = std::min(std::min(dot, m_Style.iDotSize), m_iTall);
 
 	// The bar has the length of a full row of dots
 	int barWide = dot > 0 ? maxDots * dot + (maxDots - 1) * gap : 0;
 	int contentWide = bBar ? barWide + counterSpace : std::max(m_iMax * (dot + gap) - gap, 0);
-	int x = m_iX + GetAlignOffset(contentWide);
+	int x = m_iX + GetAlignOffset(contentWide + badgesWide, m_iWide);
 	int y = m_iY + (m_iTall - dot) / 2;
 	int cur = std::clamp(m_iCur, 0, m_iMax);
 
@@ -391,6 +419,8 @@ void CScoreCellImage::PaintMeter()
 
 	if (bBar)
 		DrawCellText(font, x + barWide + m_Style.iSpacing, m_iY + (m_iTall - vgui2::surface()->GetFontTall(font)) / 2, m_Color, counter);
+
+	PaintBadges(x + contentWide, m_iY + m_iTall / 2, badgeCount);
 }
 
 void CScoreCellImage::PaintSteps()
@@ -399,37 +429,43 @@ void CScoreCellImage::PaintSteps()
 	wchar_t text[32];
 	V_snwprintf(text, ARRAYSIZE(text), L"%d/%d", m_iCur, m_iMax);
 
+	// The strip takes the width that the badges leave
+	int badgeCount = 0;
+	int badgesWide = GetBadgesWide(m_iWide, badgeCount);
+	int stripWide = m_iWide - badgesWide;
+
 	int textTall = vgui2::surface()->GetFontTall(font);
 	int stripTall = m_Style.iStripTall;
 	int y = m_iY + (m_iTall - (textTall + m_Style.iStripGap + stripTall)) / 2;
-	DrawCellText(font, m_iX + GetAlignOffset(GetTextWide(font, text)), y, m_Color, text);
+	DrawCellText(font, m_iX + GetAlignOffset(GetCellTextWide(font, text), stripWide), y, m_Color, text);
+	PaintBadges(m_iX + stripWide, m_iY + m_iTall / 2, badgeCount);
 
 	int stripY = y + textTall + m_Style.iStripGap;
 
-	if (m_iMax * 2 > m_iWide)
+	if (m_iMax * 2 > stripWide)
 	{
 		// Too many steps for separate segments
-		int fillWide = m_iWide * std::clamp(m_iCur, 0, m_iMax) / m_iMax;
+		int fillWide = stripWide * std::clamp(m_iCur, 0, m_iMax) / m_iMax;
 		vgui2::surface()->DrawSetColor(m_Style.filledColor);
 		vgui2::surface()->DrawFilledRect(m_iX, stripY, m_iX + fillWide, stripY + stripTall);
 		vgui2::surface()->DrawSetColor(m_Style.emptyColor);
-		vgui2::surface()->DrawFilledRect(m_iX + fillWide, stripY, m_iX + m_iWide, stripY + stripTall);
+		vgui2::surface()->DrawFilledRect(m_iX + fillWide, stripY, m_iX + stripWide, stripY + stripTall);
 		return;
 	}
 
-	int gap = m_iMax * 3 <= m_iWide ? 1 : 0;
+	int gap = m_iMax * 3 <= stripWide ? 1 : 0;
 
 	for (int i = 0; i < m_iMax; i++)
 	{
-		int x0 = m_iX + i * (m_iWide + gap) / m_iMax;
-		int x1 = m_iX + (i + 1) * (m_iWide + gap) / m_iMax - gap;
+		int x0 = m_iX + i * (stripWide + gap) / m_iMax;
+		int x1 = m_iX + (i + 1) * (stripWide + gap) / m_iMax - gap;
 		Color color;
 
 		if (i == m_iCur - 1)
 			color = m_Style.currentColor;
 		else if (i < m_iCur - 1)
 			color = m_Style.filledColor;
-		else if (i == m_iMax - 1)
+		else if (m_bMarkLast && i == m_iMax - 1)
 			color = m_Style.lastColor;
 		else
 			color = m_Style.emptyColor;
@@ -451,7 +487,7 @@ void DrawScoreBadge(const ScoreCellStyle &style, int x, int yCenter, const wchar
 
 int GetScoreBadgeWide(const ScoreCellStyle &style, const wchar_t *text)
 {
-	return GetTextWide(style.hBadgeFont, text) + 2 * GetBadgePadding(style);
+	return GetCellTextWide(style.hBadgeFont, text) + 2 * GetBadgePadding(style);
 }
 
 void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color)
@@ -481,24 +517,45 @@ void DrawCellText(vgui2::HFont font, int x, int y, Color color, const wchar_t *t
 	vgui2::surface()->DrawPrintText(text, wcslen(text));
 }
 
-void ConstructScoreText(wchar_t *buf, int bufSizeBytes, const char *token, int count, const wchar_t *arg1, const wchar_t *arg2, const wchar_t *arg3)
+int GetCellTextWide(vgui2::HFont font, const wchar_t *text)
 {
-	wchar_t *format = g_pVGuiLocalize->Find(token);
+	int wide = 0;
 
-	if (!format)
-	{
-		buf[0] = L'\0';
-		return;
-	}
+	for (; *text; text++)
+		wide += vgui2::surface()->GetCharacterWidth(font, *text);
 
-	g_pVGuiLocalize->ConstructString(buf, bufSizeBytes, format, count, arg1, arg2, arg3);
+	return wide;
 }
 
-void FormatScoreKills(wchar_t *buf, int bufSizeBytes, int kills)
+int FitCellText(vgui2::HFont font, wchar_t *text, int maxWide)
 {
-	char token[32];
-	wchar_t number[16];
-	snprintf(token, sizeof(token), "BHL_GG_Kills%s", CScoreboardData::GetPluralSuffix(kills));
-	V_snwprintf(number, ARRAYSIZE(number), L"%d", kills);
-	ConstructScoreText(buf, bufSizeBytes, token, 1, number);
+	int wide = GetCellTextWide(font, text);
+
+	if (wide <= maxWide)
+		return wide;
+
+	int ellipsisWide = vgui2::surface()->GetCharacterWidth(font, ELLIPSIS);
+
+	if (ellipsisWide > maxWide)
+	{
+		text[0] = L'\0';
+		return 0;
+	}
+
+	int len = 0;
+	wide = 0;
+
+	for (; text[len]; len++)
+	{
+		int charWide = vgui2::surface()->GetCharacterWidth(font, text[len]);
+
+		if (wide + charWide + ellipsisWide > maxWide)
+			break;
+
+		wide += charWide;
+	}
+
+	text[len] = ELLIPSIS;
+	text[len + 1] = L'\0';
+	return wide + ellipsisWide;
 }

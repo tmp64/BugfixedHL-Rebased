@@ -16,8 +16,11 @@ enum class E_ApiInitResult
 	VersionMismatch // GetInterfaceVersion returned incompatible version
 };
 
-//! Server API minor version that added GetClientCaps and GetScoreboard
-constexpr int SCOREBOARD_API_MINOR = 2;
+/**
+ * Server API minor version that added GetClientCaps and GetScoreboard.
+ * Draft builds reported 1.2 with an incompatible IScoreboardExt, calling it would crash the server.
+ */
+constexpr int SCOREBOARD_API_MINOR = 3;
 
 /**
  * @returns pointer to server API or nullptr
@@ -30,7 +33,7 @@ bhl::IBugfixedServer *serverapi();
 bool IsServerApiReady();
 
 /**
- * Return true if API is available and has GetClientCaps and GetScoreboard.
+ * Return true if API is available and has GetClientCaps and GetScoreboard (v1.3 or newer).
  */
 bool IsScoreboardApiReady();
 

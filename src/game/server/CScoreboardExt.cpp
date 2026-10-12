@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -28,13 +29,16 @@ static void CopyString(char (&dst)[N], const char *src)
 	dst[len] = '\0';
 }
 
-static bool IsValidKey(const char *key)
+//! Returns a mask of the lowest count bits; count may be the width of T
+template <typename T>
+static T GetLowBits(int count)
 {
-	if (!key)
-		return false;
+	return count >= (int)(sizeof(T) * 8) ? ~T(0) : (T(1) << count) - 1;
+}
 
-	int len = (int)strlen(key);
-	return len >= 1 && len <= bhl::sb::MAX_KEY_LEN && (int)strspn(key, "abcdefghijklmnopqrstuvwxyz0123456789_") == len;
+static int ClampByte(int value)
+{
+	return std::clamp(value, 0, 255);
 }
 
 static int ClampWord(int value)
@@ -47,12 +51,17 @@ static bool IsByteProgress(int cur, int max)
 	return cur >= 0 && cur <= 255 && max >= 0 && max <= 255;
 }
 
+static bool IsParentPlace(int place)
+{
+	return bhl::sb::IsParentPlace((bhl::sb::E_Place)place);
+}
+
 //----------------------------------------------------------------------------------------------------
 // CScoreboardExt
 //----------------------------------------------------------------------------------------------------
 void CScoreboardExt::ClearAll()
 {
-	ClearSchema();
+	ClearState();
 
 	for (char *name : m_szTeamNames)
 		name[0] = '\0';
@@ -61,6 +70,9 @@ void CScoreboardExt::ClearAll()
 
 	for (client_state_t &state : m_Clients)
 		state = client_state_t();
+
+	for (pacing_t &pacing : m_Pacing)
+		pacing = pacing_t();
 }
 
 void CScoreboardExt::ClearPlayer(int idx)
@@ -84,23 +96,27 @@ void CScoreboardExt::ClearPlayer(int idx)
 		state.cellsDirty[idx] = 0;
 	}
 
+	// Overrides of the slot only change what this client gets, and its sync state starts anew
+	m_PlayerHud[idx] = player_hud_t();
 	m_Clients[idx] = client_state_t();
+	m_Pacing[idx] = pacing_t();
 }
 
 void CScoreboardExt::StartFullSync(int idx, bool delay)
 {
 	client_state_t &state = m_Clients[idx];
-	float nextSendTime = delay ? gpGlobals->time + FULL_SYNC_DELAY : state.nextSendTime;
+
+	if (delay)
+		m_Pacing[idx].nextSendTime = gpGlobals->time + FULL_SYNC_DELAY;
 
 	state = client_state_t();
-	state.nextSendTime = nextSendTime;
 	state.isResetPending = true;
 
 	if (!m_bActive)
 		return;
 
-	state.isConfigPending = true;
-	state.columnsPending = (1u << m_iColumnCount) - 1;
+	state.isConfigPending = m_bHasConfig;
+	state.columnsPending = GetLowBits<unsigned int>(m_iColumnCount);
 
 	for (int i = 0; i < m_iListCount; i++)
 	{
@@ -124,6 +140,22 @@ void CScoreboardExt::StartFullSync(int idx, bool delay)
 				state.cellsDirty[target] |= 1u << column;
 		}
 	}
+
+	for (int id = 0; id < bhl::sb::MAX_ELEMENTS; id++)
+	{
+		if (!m_Elements[id].key[0])
+			continue;
+
+		state.elementsPending |= 1u << id;
+
+		for (int variant = 0; variant < bhl::sb::MAX_VARIANTS; variant++)
+		{
+			if (!GetText(idx, id, variant).empty())
+				state.templatesPending[id] |= 1 << variant;
+		}
+	}
+
+	state.isHudStatePending = true;
 }
 
 void CScoreboardExt::StartFrame()
@@ -142,11 +174,24 @@ void CScoreboardExt::StartFrame()
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
-		if (!serverapi()->IsScoreboardClient(i) || gpGlobals->time < m_Clients[i].nextSendTime)
+		pacing_t &pacing = m_Pacing[i];
+
+		if (!serverapi()->IsScoreboardClient(i) || gpGlobals->time < pacing.nextSendTime)
 			continue;
 
+		// A budget per period, not per frame: the rate must not grow with the server fps
+		if (gpGlobals->time >= pacing.periodEnd)
+		{
+			pacing.periodEnd = gpGlobals->time + BUDGET_PERIOD;
+			pacing.bytesLeft = BUDGET;
+		}
+
+		m_iBytesLeft = pacing.bytesLeft;
+
 		if (!SendToClient(i))
-			m_Clients[i].nextSendTime = gpGlobals->time + BUDGET_DELAY;
+			pacing.nextSendTime = pacing.periodEnd;
+
+		pacing.bytesLeft = m_iBytesLeft;
 	}
 }
 
@@ -155,79 +200,48 @@ void CScoreboardExt::StartFrame()
 //----------------------------------------------------------------------------------------------------
 void CScoreboardExt::Reset()
 {
-	ClearSchema();
-
-	for (int i = 1; i <= MAX_PLAYERS; i++)
-	{
-		if (i <= gpGlobals->maxClients && serverapi()->IsScoreboardClient(i))
-			StartFullSync(i, false);
-		else
-			m_Clients[i] = client_state_t();
-	}
-}
-
-void CScoreboardExt::SetConfig(unsigned int hideFlags, const char *preset, const char *title, const char *tag)
-{
-	m_iHideFlags = hideFlags & 0xFFFF;
-	CopyString(m_szPreset, preset);
-	CopyString(m_szTitle, title);
-	CopyString(m_szTag, tag);
-
-	if (m_bActive)
-	{
-		for (client_state_t &state : m_Clients)
-			state.isConfigPending = true;
-
-		return;
-	}
-
-	m_bActive = true;
+	ClearState();
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
-	{
-		if (serverapi()->IsScoreboardClient(i))
-			StartFullSync(i, false);
-	}
+		StartFullSync(i, false);
+}
 
-	serverapi()->QueryUnknownClientCaps();
+void CScoreboardExt::SetConfig(unsigned int hideFlags, const char *title, const char *tag)
+{
+	char newTitle[sizeof(m_szTitle)];
+	char newTag[sizeof(m_szTag)];
+
+	hideFlags &= (unsigned int)bhl::sb::E_ConfigFlags::All;
+	CopyString(newTitle, title);
+	CopyString(newTag, tag);
+
+	if (m_bHasConfig && hideFlags == m_iHideFlags && !strcmp(newTitle, m_szTitle) && !strcmp(newTag, m_szTag))
+		return;
+
+	Activate();
+
+	m_bHasConfig = true;
+	m_iHideFlags = hideFlags;
+	CopyString(m_szTitle, newTitle);
+	CopyString(m_szTag, newTag);
+
+	for (client_state_t &state : m_Clients)
+		state.isConfigPending = true;
 }
 
 bool CScoreboardExt::AddColumn(const char *key, const char *title, int display, int width, int sort, unsigned int flags)
 {
-	if (!IsValidKey(key))
+	if (!bhl::sb::IsValidKey(key) || display < (int)bhl::sb::E_Display::Text || display > (int)bhl::sb::E_Display::Steps)
 		return false;
 
-	int id = FindColumn(key);
-
-	if (id == -1)
-	{
-		if (m_iColumnCount == bhl::sb::MAX_COLUMNS)
-			return false;
-
-		id = m_iColumnCount++;
-	}
-
-	column_t &column = m_Columns[id];
+	column_t column;
 	CopyString(column.key, key);
 	CopyString(column.title, title);
-	column.display = std::clamp(display, 0, 255);
-	column.flags = flags & 0xFFFF;
-	column.width = std::clamp(width, 0, 255);
-	column.sort = std::clamp(sort, 0, 255);
-
-	if (column.display == (int)bhl::sb::E_Display::Builtin)
-	{
-		for (int target = 0; target < MAX_TARGETS; target++)
-			ClearCell(target, id);
-	}
-
-	if (m_bActive)
-	{
-		for (client_state_t &state : m_Clients)
-			state.columnsPending |= 1u << id;
-	}
-
-	return true;
+	column.display = display;
+	column.flags = flags & (unsigned int)bhl::sb::E_ColumnFlags::All;
+	column.width = ClampByte(width);
+	column.sort = ClampByte(sort);
+	return SetColumn(column);
 }
 
 int CScoreboardExt::GetTeamTarget(const char *teamName)
@@ -280,8 +294,8 @@ void CScoreboardExt::SetProgress(int target, const char *key, int cur, int max)
 {
 	value_t cell;
 	cell.type = bhl::sb::E_ValueType::Progress;
-	cell.value = cur;
-	cell.max = max;
+	cell.value = ClampWord(cur);
+	cell.max = ClampWord(max);
 	SetCell(target, key, cell);
 }
 
@@ -304,7 +318,7 @@ void CScoreboardExt::Clear(int target, const char *key)
 
 bool CScoreboardExt::ListResize(const char *key, int count)
 {
-	if (!IsValidKey(key))
+	if (!bhl::sb::IsValidKey(key))
 		return false;
 
 	int id = FindList(key);
@@ -327,10 +341,10 @@ bool CScoreboardExt::ListResize(const char *key, int count)
 	for (int i = count; i < list.count; i++)
 		list.items[i] = value_t();
 
-	uint64_t itemsMask = count == bhl::sb::MAX_LIST_ITEMS ? ~0ULL : (1ULL << count) - 1;
+	uint64_t itemsMask = GetLowBits<uint64_t>(count);
 
 	// The client still has old values there if it missed the smaller total, so grown items are sent even if empty
-	uint64_t grownItems = count > list.count ? itemsMask & ~((1ULL << list.count) - 1) : 0;
+	uint64_t grownItems = count > list.count ? itemsMask & ~GetLowBits<uint64_t>(list.count) : 0;
 
 	list.count = count;
 
@@ -371,14 +385,316 @@ void CScoreboardExt::ListSetIcon(const char *key, int index, const char *sprite,
 	SetListItem(key, index, item);
 }
 
+void CScoreboardExt::SetClock(int target, const char *key, int ms, unsigned int flags)
+{
+	value_t cell;
+	cell.type = bhl::sb::E_ValueType::Clock;
+	cell.value = ms;
+	cell.flags = flags & (unsigned int)bhl::sb::E_ClockFlags::All;
+	SetCell(target, key, cell);
+}
+
+bool CScoreboardExt::AddBadge(const char *key, const char *host)
+{
+	if (!bhl::sb::IsValidKey(key) || !bhl::sb::IsValidKey(host))
+		return false;
+
+	column_t column;
+	CopyString(column.key, key);
+	CopyString(column.host, host);
+	column.display = (int)bhl::sb::E_Display::Badge;
+	return SetColumn(column);
+}
+
+bool CScoreboardExt::HudAdd(const char *key, int kind, float x, float y, int font, int align, unsigned int flags)
+{
+	if (!bhl::sb::IsValidKey(key) || kind < (int)bhl::sb::E_ElementKind::Text || kind > (int)bhl::sb::E_ElementKind::Icon)
+		return false;
+
+	int id = FindElement(key);
+	bool isNew = id == -1;
+
+	if (isNew)
+	{
+		id = FindFreeElementId();
+
+		if (id == -1)
+			return false;
+	}
+
+	Activate();
+
+	element_t &element = m_Elements[id];
+	element_def_t def = element.def;
+
+	if (!isNew && def.kind != kind)
+	{
+		DropTexts(id);
+		def.select[0] = '\0';
+		def.value[0] = '\0';
+		def.list[0] = '\0';
+		def.paramsSet = 0;
+	}
+
+	def.kind = kind;
+	def.flags = flags & (unsigned int)bhl::sb::E_ElementFlags::All & ~(unsigned int)bhl::sb::E_ElementFlags::HudColor;
+	def.x = bhl::sb::PositionToWire(x);
+	def.y = bhl::sb::PositionToWire(y);
+	def.font = font >= 0 && font < bhl::sb::FONT_COUNT ? font : (int)bhl::sb::E_Font::Text;
+	def.align = align & bhl::sb::ALIGN_MASK;
+
+	if (!isNew)
+	{
+		SetElementDef(id, def);
+		return true;
+	}
+
+	CopyString(element.key, key);
+	element.def = def;
+	MarkElement(id);
+	MarkHudState();
+	MarkChildren(element.key);
+	return true;
+}
+
+bool CScoreboardExt::HudSetPlace(const char *key, int place, const char *parent, int gap)
+{
+	int id = FindElement(key);
+
+	if (!parent)
+		parent = "";
+
+	if (id == -1 || place < (int)bhl::sb::E_Place::Screen || place > (int)bhl::sb::E_Place::ParentRight || (parent[0] && !bhl::sb::IsValidKey(parent)))
+		return false;
+
+	element_def_t def = m_Elements[id].def;
+	def.place = place;
+	CopyString(def.parent, IsParentPlace(place) ? parent : "");
+	def.gap = ClampByte(gap);
+	SetElementDef(id, def);
+	return true;
+}
+
+bool CScoreboardExt::HudSetColor(const char *key, int r, int g, int b, int a)
+{
+	int id = FindElement(key);
+
+	if (id == -1)
+		return false;
+
+	element_def_t def = m_Elements[id].def;
+	def.isHudColor = r < 0;
+	def.color[0] = def.isHudColor ? 0 : ClampByte(r);
+	def.color[1] = def.isHudColor ? 0 : ClampByte(g);
+	def.color[2] = def.isHudColor ? 0 : ClampByte(b);
+	def.color[3] = ClampByte(a);
+	SetElementDef(id, def);
+	return true;
+}
+
+bool CScoreboardExt::HudBind(const char *key, const char *value, const char *list, const char *select)
+{
+	int id = FindElement(key);
+
+	if (!value)
+		value = "";
+
+	if (!list)
+		list = "";
+
+	if (!select)
+		select = "";
+
+	if (id == -1
+	    || (value[0] && !bhl::sb::IsValidRef(value))
+	    || (list[0] && !bhl::sb::IsValidKey(list))
+	    || (select[0] && !bhl::sb::IsValidRef(select)))
+		return false;
+
+	element_def_t def = m_Elements[id].def;
+	CopyString(def.value, value);
+	CopyString(def.list, list);
+	CopyString(def.select, select);
+	SetElementDef(id, def);
+	return true;
+}
+
+bool CScoreboardExt::HudSetParam(const char *key, int param, int value)
+{
+	int id = FindElement(key);
+
+	if (id == -1)
+		return false;
+
+	element_def_t def = m_Elements[id].def;
+	const bhl::sb::ParamInfo *info = bhl::sb::FindParamInfo((bhl::sb::E_ElementKind)def.kind, param);
+
+	if (!info)
+		return false;
+
+	def.paramsSet |= 1u << param;
+	def.params[param] = std::clamp(value, info->iMin, info->iMax);
+	SetElementDef(id, def);
+	return true;
+}
+
+bool CScoreboardExt::HudSetText(int player, const char *key, int variant, const char *text)
+{
+	int id = FindElement(key);
+
+	if (!text)
+		text = "";
+
+	if (id == -1 || variant < 0 || variant >= bhl::sb::MAX_VARIANTS || !IsValidHudPlayer(player) || strlen(text) > bhl::sb::MAX_TEMPLATE_LEN)
+		return false;
+
+	element_t &element = m_Elements[id];
+	uint8_t bit = 1 << variant;
+
+	if (player == 0)
+	{
+		// The default wins over every player's own text, even when it doesn't change (5.4)
+		for (int i = 1; i <= MAX_PLAYERS; i++)
+		{
+			player_hud_t &hud = m_PlayerHud[i];
+
+			if (GetText(i, id, variant) != text)
+				m_Clients[i].templatesPending[id] |= bit;
+
+			hud.textsSet[id] &= ~bit;
+			hud.texts[id][variant].clear();
+		}
+
+		element.texts[variant] = text;
+		return true;
+	}
+
+	player_hud_t &hud = m_PlayerHud[player];
+
+	if (GetText(player, id, variant) != text)
+		m_Clients[player].templatesPending[id] |= bit;
+
+	if (element.texts[variant] == text)
+	{
+		hud.textsSet[id] &= ~bit;
+		hud.texts[id][variant].clear();
+	}
+	else
+	{
+		hud.textsSet[id] |= bit;
+		hud.texts[id][variant] = text;
+	}
+
+	return true;
+}
+
+bool CScoreboardExt::HudShow(int player, const char *key, bool show)
+{
+	int id = FindElement(key);
+
+	if (id == -1 || !IsValidHudPlayer(player))
+		return false;
+
+	unsigned int bit = 1u << id;
+
+	if (player == 0)
+	{
+		m_Elements[id].isVisible = show;
+
+		for (player_hud_t &hud : m_PlayerHud)
+		{
+			hud.visibleSet &= ~bit;
+			hud.visible &= ~bit;
+		}
+
+		// HudState goes only to clients whose visibility differs from what they have
+		MarkHudState();
+		return true;
+	}
+
+	player_hud_t &hud = m_PlayerHud[player];
+
+	if (show == m_Elements[id].isVisible)
+	{
+		hud.visibleSet &= ~bit;
+		hud.visible &= ~bit;
+	}
+	else
+	{
+		hud.visibleSet |= bit;
+
+		if (show)
+			hud.visible |= bit;
+		else
+			hud.visible &= ~bit;
+	}
+
+	m_Clients[player].isHudStatePending = true;
+	return true;
+}
+
+void CScoreboardExt::HudRemove(const char *key)
+{
+	if (key && key[0])
+	{
+		int id = FindElement(key);
+
+		if (id != -1)
+			RemoveElement(id);
+
+		return;
+	}
+
+	bool hasElements = false;
+
+	for (element_t &element : m_Elements)
+	{
+		if (element.key[0])
+		{
+			hasElements = true;
+			element = element_t();
+		}
+	}
+
+	if (!hasElements)
+		return;
+
+	for (player_hud_t &hud : m_PlayerHud)
+		hud = player_hud_t();
+
+	// The client drops every definition and template on "remove all"
+	for (client_state_t &state : m_Clients)
+	{
+		state.isRemoveAllPending = true;
+		state.elementsPending = 0;
+		state.textsDropped = 0;
+		memset(state.templatesPending, 0, sizeof(state.templatesPending));
+		state.isHudStatePending = true;
+	}
+}
+
+void CScoreboardExt::HudHideStd(unsigned int parts, bool hide)
+{
+	parts &= (unsigned int)bhl::sb::E_HudStd::All;
+
+	unsigned int hidden = hide ? m_iHiddenStd | parts : m_iHiddenStd & ~parts;
+
+	if (hidden == m_iHiddenStd)
+		return;
+
+	Activate();
+	m_iHiddenStd = hidden;
+	MarkHudState();
+}
+
 //----------------------------------------------------------------------------------------------------
 // State
 //----------------------------------------------------------------------------------------------------
-void CScoreboardExt::ClearSchema()
+void CScoreboardExt::ClearState()
 {
 	m_bActive = false;
+	m_bHasConfig = false;
 	m_iHideFlags = 0;
-	m_szPreset[0] = '\0';
 	m_szTitle[0] = '\0';
 	m_szTag[0] = '\0';
 
@@ -388,13 +704,7 @@ void CScoreboardExt::ClearSchema()
 	m_iColumnCount = 0;
 
 	for (list_t &list : m_Lists)
-	{
-		list.key[0] = '\0';
-		list.count = 0;
-
-		for (value_t &item : list.items)
-			item = value_t();
-	}
+		list = list_t();
 
 	m_iListCount = 0;
 
@@ -403,6 +713,28 @@ void CScoreboardExt::ClearSchema()
 		for (value_t &cell : cells)
 			cell = value_t();
 	}
+
+	for (element_t &element : m_Elements)
+		element = element_t();
+
+	m_iHiddenStd = 0;
+
+	for (player_hud_t &hud : m_PlayerHud)
+		hud = player_hud_t();
+}
+
+void CScoreboardExt::Activate()
+{
+	if (m_bActive)
+		return;
+
+	m_bActive = true;
+
+	// Clients still in the wait after InitHUD keep it
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+		StartFullSync(i, false);
+
+	serverapi()->QueryUnknownClientCaps();
 }
 
 int CScoreboardExt::GetCellTarget(int target)
@@ -417,6 +749,11 @@ int CScoreboardExt::GetCellTarget(int target)
 		return FIRST_TEAM + target - TEAM_TARGET_BASE;
 
 	return -1;
+}
+
+bool CScoreboardExt::IsValidHudPlayer(int player)
+{
+	return player == 0 || (player >= 1 && player <= gpGlobals->maxClients && serverapi()->IsClientConnected(player));
 }
 
 int CScoreboardExt::FindColumn(const char *key)
@@ -445,6 +782,91 @@ int CScoreboardExt::FindList(const char *key)
 	}
 
 	return -1;
+}
+
+int CScoreboardExt::FindElement(const char *key)
+{
+	if (!key || !key[0])
+		return -1;
+
+	for (int i = 0; i < bhl::sb::MAX_ELEMENTS; i++)
+	{
+		if (!strcmp(m_Elements[i].key, key))
+			return i;
+	}
+
+	return -1;
+}
+
+int CScoreboardExt::FindFreeElementId()
+{
+	// The client would show a new element under an id it still has something of (the old element, its
+	// visibility bit, a child placed at it) with that old state until everything of the new one arrives
+	unsigned int held = 0;
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+	{
+		if (!serverapi()->IsScoreboardClient(i))
+			continue;
+
+		const client_state_t &state = m_Clients[i];
+		held |= state.elementsSent | state.sentVisible;
+
+		for (int id = 0; id < bhl::sb::MAX_ELEMENTS; id++)
+		{
+			if ((state.elementsSent & (1u << id)) && state.sentParents[id] != bhl::sb::NO_ID)
+				held |= 1u << state.sentParents[id];
+		}
+	}
+
+	int fallback = -1;
+
+	for (int id = 0; id < bhl::sb::MAX_ELEMENTS; id++)
+	{
+		if (m_Elements[id].key[0])
+			continue;
+
+		if (!(held & (1u << id)))
+			return id;
+
+		if (fallback == -1)
+			fallback = id;
+	}
+
+	return fallback;
+}
+
+bool CScoreboardExt::SetColumn(const column_t &definition)
+{
+	int id = FindColumn(definition.key);
+	bool isNew = id == -1;
+
+	if (isNew)
+	{
+		if (m_iColumnCount == bhl::sb::MAX_COLUMNS)
+			return false;
+
+		id = m_iColumnCount++;
+	}
+	else if (IsEqual(m_Columns[id], definition))
+	{
+		return true;
+	}
+
+	m_Columns[id] = definition;
+
+	if (definition.display == (int)bhl::sb::E_Display::Builtin)
+	{
+		for (int target = 0; target < MAX_TARGETS; target++)
+			ClearCell(target, id);
+	}
+
+	MarkColumn(id);
+
+	if (isNew)
+		MarkBadges(definition.key);
+
+	return true;
 }
 
 void CScoreboardExt::SetCell(int target, const char *key, const value_t &value)
@@ -506,6 +928,123 @@ void CScoreboardExt::SetListItem(const char *key, int index, const value_t &valu
 	}
 }
 
+void CScoreboardExt::SetElementDef(int id, const element_def_t &def)
+{
+	if (IsEqual(m_Elements[id].def, def))
+		return;
+
+	m_Elements[id].def = def;
+	MarkElement(id);
+}
+
+void CScoreboardExt::RemoveElement(int id)
+{
+	char key[sizeof(m_Elements[id].key)];
+	unsigned int bit = 1u << id;
+
+	CopyString(key, m_Elements[id].key);
+	DropTexts(id);
+	m_Elements[id] = element_t();
+
+	for (player_hud_t &hud : m_PlayerHud)
+	{
+		hud.visibleSet &= ~bit;
+		hud.visible &= ~bit;
+	}
+
+	MarkElement(id);
+	MarkHudState();
+	MarkChildren(key);
+}
+
+void CScoreboardExt::DropTexts(int id)
+{
+	for (std::string &text : m_Elements[id].texts)
+		text.clear();
+
+	for (player_hud_t &hud : m_PlayerHud)
+	{
+		hud.textsSet[id] = 0;
+
+		for (std::string &text : hud.texts[id])
+			text.clear();
+	}
+
+	// A new definition keeps the client's templates: they are dropped by a removal sent before it
+	for (client_state_t &state : m_Clients)
+	{
+		state.textsDropped |= 1u << id;
+		state.templatesPending[id] = 0;
+	}
+}
+
+const std::string &CScoreboardExt::GetText(int player, int id, int variant)
+{
+	const player_hud_t &hud = m_PlayerHud[player];
+	return (hud.textsSet[id] & (1 << variant)) ? hud.texts[id][variant] : m_Elements[id].texts[variant];
+}
+
+unsigned int CScoreboardExt::GetVisibleElements(int player)
+{
+	const player_hud_t &hud = m_PlayerHud[player];
+	unsigned int visible = 0;
+
+	for (int id = 0; id < bhl::sb::MAX_ELEMENTS; id++)
+	{
+		unsigned int bit = 1u << id;
+
+		if (!m_Elements[id].key[0])
+			continue;
+
+		if ((hud.visibleSet & bit) ? (hud.visible & bit) != 0 : m_Elements[id].isVisible)
+			visible |= bit;
+	}
+
+	return visible;
+}
+
+void CScoreboardExt::MarkColumn(int id)
+{
+	if (!m_bActive)
+		return;
+
+	for (client_state_t &state : m_Clients)
+		state.columnsPending |= 1u << id;
+}
+
+void CScoreboardExt::MarkBadges(const char *host)
+{
+	for (int i = 0; i < m_iColumnCount; i++)
+	{
+		if (m_Columns[i].display == (int)bhl::sb::E_Display::Badge && !strcmp(m_Columns[i].host, host))
+			MarkColumn(i);
+	}
+}
+
+void CScoreboardExt::MarkElement(int id)
+{
+	for (client_state_t &state : m_Clients)
+		state.elementsPending |= 1u << id;
+}
+
+void CScoreboardExt::MarkChildren(const char *parent)
+{
+	for (int i = 0; i < bhl::sb::MAX_ELEMENTS; i++)
+	{
+		if (m_Elements[i].key[0] && !strcmp(m_Elements[i].def.parent, parent))
+			MarkElement(i);
+	}
+}
+
+void CScoreboardExt::MarkHudState()
+{
+	if (!m_bActive)
+		return;
+
+	for (client_state_t &state : m_Clients)
+		state.isHudStatePending = true;
+}
+
 //----------------------------------------------------------------------------------------------------
 // Sending
 //----------------------------------------------------------------------------------------------------
@@ -513,8 +1052,6 @@ bool CScoreboardExt::SendToClient(int idx)
 {
 	client_state_t &state = m_Clients[idx];
 	edict_t *pEdict = INDEXENT(idx);
-
-	m_iBytesLeft = FRAME_BUDGET;
 
 	if (state.isResetPending)
 	{
@@ -532,40 +1069,13 @@ bool CScoreboardExt::SendToClient(int idx)
 
 	UpdateClientTeams(state);
 
-	if (state.isConfigPending)
-	{
-		int size = 3 + (int)strlen(m_szPreset) + 1 + (int)strlen(m_szTitle) + 1 + (int)strlen(m_szTag) + 1;
-
-		if (!BeginMessage(pEdict, size))
-			return false;
-
-		WRITE_BYTE((int)bhl::sb::E_Op::Config);
-		WRITE_SHORT(m_iHideFlags);
-		WRITE_STRING(m_szPreset);
-		WRITE_STRING(m_szTitle);
-		WRITE_STRING(m_szTag);
-		MESSAGE_END();
-		state.isConfigPending = false;
-	}
-
-	for (int i = 0; i < m_iColumnCount; i++)
-	{
-		if (!(state.columnsPending & (1u << i)))
-			continue;
-
-		if (!SendColumn(pEdict, i))
-			return false;
-
-		state.columnsPending &= ~(1u << i);
-	}
-
-	for (int i = 0; i < m_iListCount; i++)
-	{
-		if (!SendList(pEdict, state, i))
-			return false;
-	}
-
-	return SendValues(pEdict, state);
+	// Elements before their templates, templates before HudState shows them
+	return SendHeader(pEdict, state)
+	    && SendLists(pEdict, state)
+	    && SendValues(pEdict, state)
+	    && SendElements(pEdict, state)
+	    && SendTemplates(pEdict, idx, state)
+	    && SendHudState(pEdict, idx, state);
 }
 
 void CScoreboardExt::UpdateClientTeams(client_state_t &state)
@@ -605,14 +1115,59 @@ bool CScoreboardExt::BeginMessage(edict_t *pEdict, int size)
 	return true;
 }
 
+bool CScoreboardExt::SendHeader(edict_t *pEdict, client_state_t &state)
+{
+	if (state.isConfigPending && m_bHasConfig)
+	{
+		int size = 3 + (int)strlen(m_szTitle) + 1 + (int)strlen(m_szTag) + 1;
+
+		if (!BeginMessage(pEdict, size))
+			return false;
+
+		WRITE_BYTE((int)bhl::sb::E_Op::Config);
+		WRITE_SHORT(m_iHideFlags);
+		WRITE_STRING(m_szTitle);
+		WRITE_STRING(m_szTag);
+		MESSAGE_END();
+	}
+
+	state.isConfigPending = false;
+
+	for (int i = 0; i < m_iColumnCount; i++)
+	{
+		if (!(state.columnsPending & (1u << i)))
+			continue;
+
+		if (!SendColumn(pEdict, i))
+			return false;
+
+		state.columnsPending &= ~(1u << i);
+	}
+
+	return true;
+}
+
+bool CScoreboardExt::SendLists(edict_t *pEdict, client_state_t &state)
+{
+	for (int i = 0; i < m_iListCount; i++)
+	{
+		if (!SendList(pEdict, state, i))
+			return false;
+	}
+
+	return true;
+}
+
 bool CScoreboardExt::SendColumn(edict_t *pEdict, int id)
 {
 	const column_t &column = m_Columns[id];
-	int size = 7 + (int)strlen(column.key) + 1 + (int)strlen(column.title) + 1;
+	int size = 7 + (int)strlen(column.key) + 1 + (int)strlen(column.title) + 1 + 1;
+	int host = column.display == (int)bhl::sb::E_Display::Badge ? FindColumn(column.host) : -1;
 
 	if (!BeginMessage(pEdict, size))
 		return false;
 
+	// AddBadge leaves flags, width and sort of a Badge at 0
 	WRITE_BYTE((int)bhl::sb::E_Op::Column);
 	WRITE_BYTE(id);
 	WRITE_BYTE(column.display);
@@ -621,6 +1176,7 @@ bool CScoreboardExt::SendColumn(edict_t *pEdict, int id)
 	WRITE_BYTE(column.sort);
 	WRITE_STRING(column.key);
 	WRITE_STRING(column.title);
+	WRITE_BYTE(host == -1 ? bhl::sb::NO_ID : host);
 	MESSAGE_END();
 	return true;
 }
@@ -798,9 +1354,238 @@ bool CScoreboardExt::FlushValues(edict_t *pEdict, client_state_t &state)
 	return true;
 }
 
+bool CScoreboardExt::SendElements(edict_t *pEdict, client_state_t &state)
+{
+	if (state.isRemoveAllPending)
+	{
+		if (state.elementsSent)
+		{
+			if (!SendElementRemoval(pEdict, bhl::sb::ALL_ELEMENTS))
+				return false;
+
+			state.elementsSent = 0;
+			memset(state.templatesSent, 0, sizeof(state.templatesSent));
+		}
+
+		state.isRemoveAllPending = false;
+	}
+
+	for (int id = 0; id < bhl::sb::MAX_ELEMENTS; id++)
+	{
+		unsigned int bit = 1u << id;
+
+		if (!(state.elementsPending & bit))
+			continue;
+
+		if (m_Elements[id].key[0])
+		{
+			// Both or neither: a split would leave the new element with the old templates
+			if ((state.textsDropped & bit) && (state.elementsSent & bit))
+			{
+				if (REMOVAL_SIZE + GetElementSize(id) > m_iBytesLeft || !SendElementRemoval(pEdict, id))
+					return false;
+
+				state.templatesSent[id] = 0;
+			}
+
+			if (!SendElement(pEdict, state, id))
+				return false;
+
+			state.elementsSent |= bit;
+		}
+		else if (state.elementsSent & bit)
+		{
+			if (!SendElementRemoval(pEdict, id))
+				return false;
+
+			state.elementsSent &= ~bit;
+			state.templatesSent[id] = 0;
+		}
+
+		state.textsDropped &= ~bit;
+		state.elementsPending &= ~bit;
+	}
+
+	return true;
+}
+
+int CScoreboardExt::GetElementSize(int id)
+{
+	const element_def_t &def = m_Elements[id].def;
+	return bhl::sb::ELEMENT_FIXED_SIZE + (int)strlen(def.select) + 1 + (int)strlen(def.value) + 1 + (int)strlen(def.list) + 1 + 1 + 3 * GetParamCount(def);
+}
+
+bool CScoreboardExt::SendElement(edict_t *pEdict, client_state_t &state, int id)
+{
+	const element_def_t &def = m_Elements[id].def;
+	int parent = def.parent[0] && IsParentPlace(def.place) ? FindElement(def.parent) : -1;
+
+	if (!BeginMessage(pEdict, GetElementSize(id)))
+		return false;
+
+	state.sentParents[id] = parent == -1 ? bhl::sb::NO_ID : parent;
+
+	WRITE_BYTE((int)bhl::sb::E_Op::Element);
+	WRITE_BYTE(id);
+	WRITE_BYTE(def.kind);
+	WRITE_SHORT(def.isHudColor ? def.flags | (unsigned int)bhl::sb::E_ElementFlags::HudColor : def.flags);
+	WRITE_SHORT(def.x);
+	WRITE_SHORT(def.y);
+	WRITE_BYTE(def.align);
+	WRITE_BYTE(def.place);
+	WRITE_BYTE(state.sentParents[id]);
+	WRITE_BYTE(def.gap);
+
+	for (int component : def.color)
+		WRITE_BYTE(component);
+
+	WRITE_BYTE(def.font);
+	WRITE_STRING(def.select);
+	WRITE_STRING(def.value);
+	WRITE_STRING(def.list);
+	WRITE_BYTE(GetParamCount(def));
+
+	for (int i = 0; i <= bhl::sb::MAX_PARAM_ID; i++)
+	{
+		if (!(def.paramsSet & (1u << i)))
+			continue;
+
+		WRITE_BYTE(i);
+		WRITE_SHORT(def.params[i]);
+	}
+
+	MESSAGE_END();
+	return true;
+}
+
+bool CScoreboardExt::SendElementRemoval(edict_t *pEdict, int id)
+{
+	if (!BeginMessage(pEdict, REMOVAL_SIZE))
+		return false;
+
+	WRITE_BYTE((int)bhl::sb::E_Op::Element);
+	WRITE_BYTE(id);
+	WRITE_BYTE((int)bhl::sb::E_ElementKind::None);
+	MESSAGE_END();
+	return true;
+}
+
+bool CScoreboardExt::SendTemplates(edict_t *pEdict, int idx, client_state_t &state)
+{
+	for (int id = 0; id < bhl::sb::MAX_ELEMENTS; id++)
+	{
+		if (!state.templatesPending[id])
+			continue;
+
+		if (!m_Elements[id].key[0])
+		{
+			state.templatesPending[id] = 0;
+			continue;
+		}
+
+		for (int variant = 0; variant < bhl::sb::MAX_VARIANTS; variant++)
+		{
+			uint8_t bit = 1 << variant;
+
+			if (!(state.templatesPending[id] & bit))
+				continue;
+
+			const std::string &text = GetText(idx, id, variant);
+
+			// "" removes the variant, so it only goes to a client that has one
+			if (!text.empty() || (state.templatesSent[id] & bit))
+			{
+				if (!BeginMessage(pEdict, bhl::sb::TEMPLATE_HEADER_SIZE + (int)text.size() + 1))
+					return false;
+
+				WRITE_BYTE((int)bhl::sb::E_Op::Template);
+				WRITE_BYTE(id);
+				WRITE_BYTE(variant);
+				WRITE_STRING(text.c_str());
+				MESSAGE_END();
+
+				if (text.empty())
+					state.templatesSent[id] &= ~bit;
+				else
+					state.templatesSent[id] |= bit;
+			}
+
+			state.templatesPending[id] &= ~bit;
+		}
+	}
+
+	return true;
+}
+
+bool CScoreboardExt::SendHudState(edict_t *pEdict, int idx, client_state_t &state)
+{
+	if (!state.isHudStatePending)
+		return true;
+
+	unsigned int visible = GetVisibleElements(idx);
+
+	if (visible != state.sentVisible || m_iHiddenStd != state.sentHidden)
+	{
+		if (!BeginMessage(pEdict, 7))
+			return false;
+
+		WRITE_BYTE((int)bhl::sb::E_Op::HudState);
+		WRITE_LONG((int)visible);
+		WRITE_SHORT(m_iHiddenStd);
+		MESSAGE_END();
+		state.sentVisible = visible;
+		state.sentHidden = m_iHiddenStd;
+	}
+
+	state.isHudStatePending = false;
+	return true;
+}
+
 bool CScoreboardExt::IsEqual(const value_t &a, const value_t &b)
 {
-	return a.type == b.type && a.value == b.value && a.max == b.max && !strcmp(a.text, b.text) && !strcmp(a.sprite, b.sprite);
+	return a.type == b.type && a.value == b.value && a.max == b.max && a.flags == b.flags && !strcmp(a.text, b.text) && !strcmp(a.sprite, b.sprite);
+}
+
+bool CScoreboardExt::IsEqual(const column_t &a, const column_t &b)
+{
+	return !strcmp(a.key, b.key) && !strcmp(a.title, b.title) && a.display == b.display && a.flags == b.flags
+	    && a.width == b.width && a.sort == b.sort && !strcmp(a.host, b.host);
+}
+
+bool CScoreboardExt::IsEqual(const element_def_t &a, const element_def_t &b)
+{
+	if (a.kind != b.kind || a.flags != b.flags || a.x != b.x || a.y != b.y || a.align != b.align
+	    || a.place != b.place || strcmp(a.parent, b.parent) || a.gap != b.gap || a.isHudColor != b.isHudColor
+	    || a.font != b.font || strcmp(a.select, b.select) || strcmp(a.value, b.value) || strcmp(a.list, b.list)
+	    || a.paramsSet != b.paramsSet)
+		return false;
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (a.color[i] != b.color[i])
+			return false;
+	}
+
+	for (int i = 0; i <= bhl::sb::MAX_PARAM_ID; i++)
+	{
+		if ((a.paramsSet & (1u << i)) && a.params[i] != b.params[i])
+			return false;
+	}
+
+	return true;
+}
+
+int CScoreboardExt::GetParamCount(const element_def_t &def)
+{
+	int count = 0;
+
+	for (int i = 0; i <= bhl::sb::MAX_PARAM_ID; i++)
+	{
+		if (def.paramsSet & (1u << i))
+			count++;
+	}
+
+	return count;
 }
 
 int CScoreboardExt::GetValueSize(const value_t &value)
@@ -825,6 +1610,9 @@ int CScoreboardExt::GetValueSize(const value_t &value)
 		break;
 	case bhl::sb::E_ValueType::Progress:
 		len = IsByteProgress(value.value, value.max) ? 2 : 4;
+		break;
+	case bhl::sb::E_ValueType::Clock:
+		len = bhl::sb::CLOCK_VALUE_LEN;
 		break;
 	}
 
@@ -863,9 +1651,13 @@ void CScoreboardExt::WriteValue(const value_t &value)
 		}
 		else
 		{
-			WRITE_SHORT(ClampWord(value.value));
-			WRITE_SHORT(ClampWord(value.max));
+			WRITE_SHORT(value.value);
+			WRITE_SHORT(value.max);
 		}
+		break;
+	case bhl::sb::E_ValueType::Clock:
+		WRITE_LONG(value.value);
+		WRITE_BYTE(value.flags);
 		break;
 	}
 }

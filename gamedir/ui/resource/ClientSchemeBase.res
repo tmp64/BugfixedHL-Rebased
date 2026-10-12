@@ -597,8 +597,49 @@ Scheme
 		   }
 		}	
 
-		// GunGame HUD
-		"GunGameHudLarge"	// place line of the HUD widget
+		// HUD elements defined by the server (HudServerPanel)
+		"HudServerText"	// text of HUD elements defined by the server
+		{
+			"1"
+			{
+				"name"		"Verdana"
+				"tall"		"12"
+				"weight"	"600"
+				"yres"	"480 599"
+			}
+			"2"
+			{
+				"name"		"Verdana"
+				"tall"		"13"
+				"weight"	"600"
+				"yres"	"600 767"
+			}
+			"3"
+			{
+				"name"		"Verdana"
+				"tall"		"14"
+				"weight"	"600"
+				"yres"	"768 1023"
+				"antialias"	"1"
+			}
+			"4"
+			{
+				"name"		"Verdana"
+				"tall"		"20"
+				"weight"	"600"
+				"yres"	"1024 1199"
+				"antialias"	"1"
+			}
+			"5"
+			{
+				"name"		"Verdana"
+				"tall"		"24"
+				"weight"	"600"
+				"yres"	"1200 6000"
+				"antialias"	"1"
+			}
+		}
+		"HudServerLarge"	// large font of HUD elements
 		{
 			"1"
 			{
@@ -639,26 +680,26 @@ Scheme
 				"antialias"	"1"
 			}
 		}
-		"GunGameHudText"	// other lines of the HUD widget
+		"HudServerSmall"	// small font of HUD elements
 		{
 			"1"
 			{
 				"name"		"Verdana"
-				"tall"		"12"
+				"tall"		"10"
 				"weight"	"600"
 				"yres"	"480 599"
 			}
 			"2"
 			{
 				"name"		"Verdana"
-				"tall"		"13"
+				"tall"		"11"
 				"weight"	"600"
 				"yres"	"600 767"
 			}
 			"3"
 			{
 				"name"		"Verdana"
-				"tall"		"14"
+				"tall"		"12"
 				"weight"	"600"
 				"yres"	"768 1023"
 				"antialias"	"1"
@@ -666,7 +707,7 @@ Scheme
 			"4"
 			{
 				"name"		"Verdana"
-				"tall"		"20"
+				"tall"		"16"
 				"weight"	"600"
 				"yres"	"1024 1199"
 				"antialias"	"1"
@@ -674,8 +715,49 @@ Scheme
 			"5"
 			{
 				"name"		"Verdana"
-				"tall"		"24"
+				"tall"		"18"
 				"weight"	"600"
+				"yres"	"1200 6000"
+				"antialias"	"1"
+			}
+		}
+		"HudServerHuge"	// huge font of HUD elements
+		{
+			"1"
+			{
+				"name"		"Verdana"
+				"tall"		"24"
+				"weight"	"800"
+				"yres"	"480 599"
+			}
+			"2"
+			{
+				"name"		"Verdana"
+				"tall"		"28"
+				"weight"	"800"
+				"yres"	"600 767"
+			}
+			"3"
+			{
+				"name"		"Verdana"
+				"tall"		"32"
+				"weight"	"800"
+				"yres"	"768 1023"
+				"antialias"	"1"
+			}
+			"4"
+			{
+				"name"		"Verdana"
+				"tall"		"44"
+				"weight"	"800"
+				"yres"	"1024 1199"
+				"antialias"	"1"
+			}
+			"5"
+			{
+				"name"		"Verdana"
+				"tall"		"52"
+				"weight"	"800"
 				"yres"	"1200 6000"
 				"antialias"	"1"
 			}

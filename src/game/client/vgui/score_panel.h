@@ -181,7 +181,6 @@ private:
 	vgui2::Label *m_pLeaderLineLabel = nullptr;
 	std::vector<CustomColumn> m_CustomColumns;
 	ScoreCellStyle m_CellStyle;
-	char m_szLayoutFile[64] = {};
 	wchar_t m_wszTag[32] = {};
 	bool m_bCustom = false;
 	bool m_bGunGame = false;
@@ -194,6 +193,7 @@ private:
 	int m_iLevelColumn = -1;
 	int m_iWeaponColumn = -1;
 	int m_iProgressColumn = -1;
+	int m_iServerNameWide = -1; //!< Width of the server name label before the leader banner cut it
 
 	// Column widths
 	CPanelAnimationVarAliasType(int, m_iColumnWidthAvatar, "column_avatar", "26", "proportional_int");
@@ -209,8 +209,7 @@ private:
 	CPanelAnimationVarAliasType(int, m_iVerticalMargin, "vertical_margin", "30", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iBottomPadding, "bottom_padding", "4", "proportional_int");
 
-	// Custom scoreboard. A key set in ScorePanel_<preset>.res must also be set in ScorePanel.res:
-	// otherwise it keeps the preset value after switching back.
+	// Custom scoreboard
 	CPanelAnimationVarAliasType(int, m_iColumnWidthRank, "column_rank", "24", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iColumnWidthNameMin, "column_name_min", "100", "proportional_int");
 	CPanelAnimationVar(vgui2::HFont, m_CellFont, "cell_font", "Default");
@@ -227,21 +226,10 @@ private:
 	CPanelAnimationVarAliasType(int, m_iCellStripGap, "cell_strip_gap", "1", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iCellSpacing, "cell_spacing", "3", "proportional_int");
 
-	// GunGame preset, set in ScorePanel_gungame.res
-	CPanelAnimationVar(int, m_iGGWidePercent, "gg_wide_percent", "70");
-	CPanelAnimationVar(int, m_iGGTopPercent, "gg_top_percent", "10");
-	CPanelAnimationVar(int, m_iGGPingHigh, "gg_ping_high", "100");
-	CPanelAnimationVar(Color, m_GGOwnRowColor, "gg_own_row_bgcolor", "255 160 0 56");
-	CPanelAnimationVar(Color, m_GGFinalRowColor, "gg_final_row_bgcolor", "255 64 32 40");
-	CPanelAnimationVar(Color, m_GGEmphasisColor, "gg_emphasis_color", "255 176 0 255");
-	CPanelAnimationVar(Color, m_GGPlaceFirstColor, "gg_place_first_color", "255 160 0 255");
-	CPanelAnimationVar(Color, m_GGPlaceFirstTextColor, "gg_place_first_textcolor", "0 0 0 255");
-	CPanelAnimationVar(Color, m_GGPlaceTopColor, "gg_place_top_color", "112 72 16 255");
-	CPanelAnimationVar(Color, m_GGPlaceFinalColor, "gg_place_final_color", "255 64 32 255");
-	CPanelAnimationVar(Color, m_GGPingHighColor, "gg_ping_high_color", "255 80 80 255");
+	// Banner "Leader on the last level" of the GunGame preset
 	CPanelAnimationVar(Color, m_GGBannerBgColor, "gg_banner_bgcolor", "255 64 32 48");
 	CPanelAnimationVar(Color, m_GGBannerAccentColor, "gg_banner_accent_color", "255 160 0 255");
-	CPanelAnimationVarAliasType(int, m_iGGBannerPadding, "gg_banner_padding", "3", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iGGBannerPadding, "gg_banner_padding", "1", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iGGBannerAccentWide, "gg_banner_accent_wide", "2", "proportional_int");
 
 	/**
@@ -368,12 +356,7 @@ private:
 	bool IsTeamBefore(int ilhs, int irhs);
 
 	/**
-	 * Loads ScorePanel_<preset>.res if the active preset has one, ScorePanel.res otherwise.
-	 */
-	void UpdateLayoutFile();
-
-	/**
-	 * Builds m_CustomColumns. Sets the width of the panel in the GunGame preset.
+	 * Builds m_CustomColumns.
 	 */
 	void BuildCustomColumns();
 
@@ -393,9 +376,9 @@ private:
 	void UpdateCustomTeamHeader(int nTeamID);
 
 	/**
-	 * Updates the map line and the leader banner of the GunGame preset.
+	 * Updates the leader banner of the GunGame preset. It stands in the header left of the player count.
 	 */
-	void UpdateGunGameHeader(int iPlayerCount);
+	void UpdateLeaderBanner();
 
 	/**
 	 * Returns the place for the rank column, 0 for none.

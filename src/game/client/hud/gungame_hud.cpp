@@ -10,7 +10,6 @@
 #include "hud/gungame_hud.h"
 #include "vgui/client_viewport.h"
 #include "vgui/score_panel_cells.h"
-#include "hud_renderer.h"
 
 static constexpr int PHASE_WARMUP = 1;
 static constexpr int PHASE_COUNTDOWN = 2;
@@ -476,7 +475,7 @@ void CHudGunGamePanel::PaintBackground()
 		}
 	}
 
-	if (m_iLevelCount == 0 || !CHudRenderer::Get().IsAvailable())
+	if (m_iLevelCount == 0)
 		return;
 
 	for (int i = 0; i < m_iBarShown; i++)
@@ -501,10 +500,7 @@ void CHudGunGamePanel::PaintBackground()
 
 		int x = m_iBarX + i * (m_iBarCellWide + m_iCellGap) + (m_iBarCellWide - wide) / 2;
 		int y = m_iBarY + (m_iCellTall - tall) / 2;
-		Color color = GetColor(level > m_iLevel ? m_iAlphaDim : 255);
-
-		CHudRenderer::SpriteSet(gHUD.GetSprite(sprite), color.r() * color.a() / 255, color.g() * color.a() / 255, color.b() * color.a() / 255);
-		CHudRenderer::SpriteDrawAdditiveScaled(0, x, y, wide, tall, &rc);
+		DrawScoreSprite(sprite, x, y, wide, tall, GetColor(level > m_iLevel ? m_iAlphaDim : 255));
 	}
 }
 

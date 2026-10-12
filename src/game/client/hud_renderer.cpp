@@ -52,12 +52,7 @@ void CHudRenderer::SpriteDrawAdditive(int frame, int x, int y, const wrect_t *pr
 	s_Instance.DrawSprite(frame, x, y, -1, -1, prc, SpriteDrawMode::Additive);
 }
 
-void CHudRenderer::SpriteDrawAdditiveScaled(int frame, int x, int y, int width, int height, const wrect_t *prc)
-{
-	s_Instance.DrawSprite(frame, x, y, -1, -1, prc, SpriteDrawMode::Additive, width, height);
-}
-
-void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float height, const wrect_t *prc, SpriteDrawMode mode, float outWidth, float outHeight)
+void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float height, const wrect_t *prc, SpriteDrawMode mode)
 {
 	if (m_hPic <= 0)
 	{
@@ -101,12 +96,6 @@ void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float he
 	{
 		s[0] = t[0] = 0.0f;
 		s[1] = t[1] = 1.0f;
-	}
-
-	if (outWidth > 0 && outHeight > 0)
-	{
-		width = outWidth;
-		height = outHeight;
 	}
 
 	const model_t *spriteModel = gEngfuncs.GetSpritePointer(m_hPic);

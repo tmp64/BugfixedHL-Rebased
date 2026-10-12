@@ -28,7 +28,7 @@ struct ScoreCellStyle
 };
 
 /**
- * Image of a custom scoreboard cell: text, icon, meter, steps or place.
+ * Image of a custom scoreboard cell: text, icon, meter or steps.
  * Draws within the bounds set by the row. An empty cell draws nothing.
  */
 class CScoreCellImage : public vgui2::IImage
@@ -41,14 +41,6 @@ public:
 	 * Content setters clear the badge.
 	 */
 	void SetValue(bhl::sb::E_Display display, const CScoreboardData::Value &value);
-	void SetText(const wchar_t *text);
-
-	/**
-	 * Sets a place with a round mark behind it.
-	 * @param	place		Place, 0 for an empty cell
-	 * @param	markColor	Color of the mark, alpha 0 for no mark
-	 */
-	void SetPlace(int place, Color markColor);
 
 	//! Sets the badge after the text, nullptr for none
 	void SetBadge(const wchar_t *badge);
@@ -72,7 +64,6 @@ private:
 		Icon,
 		Meter,
 		Steps,
-		Place,
 	};
 
 	const ScoreCellStyle &m_Style;
@@ -83,7 +74,6 @@ private:
 	int m_iSprite = -1;
 	int m_iCur = 0, m_iMax = 0;
 	Color m_Color = Color(255, 255, 255, 255);
-	Color m_MarkColor = Color(0, 0, 0, 0);
 	wchar_t m_wszText[128] = {};
 	wchar_t m_wszBadge[32] = {};
 
@@ -92,13 +82,21 @@ private:
 	void PaintText();
 	void PaintMeter();
 	void PaintSteps();
-	void PaintPlace();
 };
 
 /**
  * Draws a badge vertically centered on yCenter.
  */
 void DrawScoreBadge(const ScoreCellStyle &style, int x, int yCenter, const wchar_t *text);
+
+int GetScoreBadgeWide(const ScoreCellStyle &style, const wchar_t *text);
+
+/**
+ * Draws a sprite of hud.txt stretched to wide x tall and tinted with color.
+ * Unlike CHudRenderer it draws a VGUI2 texture, so it works with every renderer.
+ * The sprite is drawn with alpha blending, its brightness is the alpha, like an additive sprite.
+ */
+void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color);
 
 void DrawCellText(vgui2::HFont font, int x, int y, Color color, const wchar_t *text);
 
@@ -112,10 +110,5 @@ void ConstructScoreText(wchar_t *buf, int bufSizeBytes, const char *token, int c
  * Builds "N kills" with the plural form of the client language.
  */
 void FormatScoreKills(wchar_t *buf, int bufSizeBytes, int kills);
-
-/**
- * Converts the string to uppercase, including Latin-1 and Cyrillic letters (towupper doesn't in the C locale).
- */
-void ScoreTextToUpper(wchar_t *text);
 
 #endif

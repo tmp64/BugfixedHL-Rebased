@@ -32,14 +32,9 @@
 "BHL_SB_Kills"						"Kills"
 
 // GunGame
-"BHL_GG_ColPlayer"					"Player"
-"BHL_GG_You"						"YOU"
 "BHL_GG_Final"						"FINAL"
-"BHL_GG_LeaderFinal"				"LEADER ON THE LAST LEVEL"
+"BHL_GG_LeaderFinal"				"Leader on the last level"
 "BHL_GG_LeaderLine"					"%s1 · %s2 · %s3 to win"
-"BHL_GG_PlayersOne"					"%s1 / %s2 player"
-"BHL_GG_PlayersFew"					"%s1 / %s2 players"
-"BHL_GG_PlayersMany"				"%s1 / %s2 players"
 "BHL_GG_Place"						"PLACE %s1 / %s2"
 "BHL_GG_Overtake"					"To pass %s1: %s2"
 "BHL_GG_Lead"						"Lead: %s1"

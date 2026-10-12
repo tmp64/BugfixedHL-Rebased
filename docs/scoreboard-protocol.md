@@ -195,7 +195,7 @@ The client drops the schema, all cells and all lists and returns to the standard
 | `flags`  | `word`   | See below                                            |
 | `preset` | `string` | Up to 15 bytes; `""` means the generic look          |
 | `title`  | `string` | Up to 63 bytes; replaces the server name if not `""` |
-| `tag`    | `string` | Up to 15 bytes; a badge next to the title: `FFA`     |
+| `tag`    | `string` | Up to 15 bytes; a badge after the server name: `FFA` |
 
 | Bit  | Name          | Meaning                 |
 |------|---------------|-------------------------|
@@ -364,13 +364,17 @@ messages.
 | Message                    | Bytes     |
 |----------------------------|-----------|
 | `Reset`                    | 2         |
-| `Config`                   | ~25       |
-| `Column` × 9               | ~15–30    |
+| `Config`                   | ~17       |
+| `Column` × 8               | ~13–33    |
 | `List` `levels`, 24 levels | 2 × ≤ 192 |
 | `Values`, 32 players       | 7 × ≤ 192 |
 | Level-up of one player     | ~33       |
 | Kill without level-up      | ~18       |
 | Warmup second              | ~8        |
+| Warmup start or end        | ~130      |
+
+At the start and the end of the warmup the GunGame plugin sends the `level`, `weapon`, `progress`,
+`kills` and `score` columns again (8.1).
 
 ### 4.6 Limits
 
@@ -406,7 +410,7 @@ Plugins only change the state and mark the changed cells and list items dirty fo
 client. In `StartFrame` the server walks the ready clients that have `ScoreboardV1` and sends:
 
 1. `Reset`, if one is pending;
-2. `Config` and every `Column`, if the header is pending;
+2. `Config`, if it is pending, and every pending `Column`;
 3. the dirty list items packed into `List` messages;
 4. the dirty cells packed into `Values` messages.
 
@@ -459,15 +463,15 @@ still stored.
 - Column order: `rank`, Avatar, Name, then SteamID, Eff, Frags and Deaths at their default places
   unless the schema moves them, then custom and `Builtin` columns by `id`, then Ping unless moved.
   Hidden standard columns and `Hidden` custom columns are left out.
+- The panel keeps the size, place, frame and header of the standard scoreboard (`ScorePanel.res`).
 - Name takes all free width. If the other columns need more, Name shrinks down to 100 units
   (`column_name_min`), then down to 80 units; columns that still don't fit are dropped from the
   end.
-- A preset may bring its own layout file `ScorePanel_<preset>.res`. Without it, `ScorePanel.res`
-  is used.
 - While a `Steps` column is visible, rows are taller so the strip fits under the text.
 - Team section headers show team cells as text in the same columns (`ModifyColumn`; the list
-  control can't draw images in headers): `Icon` as its name, `Progress` as `cur/max`. Team frags
-  and deaths follow the `Hide*` flags.
+  control can't draw images in headers): `Icon` as its name, `Progress` as `cur/max`. A `Meter`
+  column with `max ≤ 10` stays empty, like dots without a counter. Team frags and deaths follow
+  the `Hide*` flags.
 
 ### 6.4 Sorting and places
 
@@ -481,18 +485,20 @@ still stored.
 
 ### 6.5 `hud_scores`
 
-With an active schema and a `Primary` column, `hud_scores` shows that column as text instead of
-frags and sorts the same way as the scoreboard. Without a `Primary` column it doesn't change.
+With an active schema, `hud_scores` uses the first `Primary` column (lowest `id`) that isn't
+`Hidden`. It shows that column as text instead of frags and sorts the same way as the scoreboard.
+Without such a column it doesn't change.
 
 ### 6.6 Drawing
 
-- `Icon`: the sprite from `hud.txt`, scaled to the row height with its aspect ratio kept and drawn
-  additively like the kill feed, tinted with the row text color. The text follows to the right.
+- `Icon`: the sprite from `hud.txt`, scaled to the row height with its aspect ratio kept and tinted
+  with the row text color. The text follows to the right. The client reads the sprite file and
+  draws it as a VGUI2 texture, so icons work with every renderer, the software one included.
+  The brightness of a pixel becomes its alpha, so the icon looks like an additive sprite.
 - `Meter`, the same element as in the GunGame HUD (8.4.3):
-  - `max ≤ 10`: `cur` filled dots and `max − cur` empty ones, drawn from a procedural circle texture;
-  - `max > 10`: a rounded bar of the same length as 10 dots, filled to `cur / max`;
-  - the `cur/max` counter stands to the right. In the scoreboard it is always shown, in the HUD
-    only next to the bar.
+  - `max ≤ 10`: `cur` filled dots and `max − cur` empty ones, without a counter;
+  - `max > 10`: a rounded bar of the same length as 10 dots, filled to `cur / max`, with the
+    `cur/max` counter to the right.
 - `Steps`: `cur/max` as text; below it a strip of `max` segments. Segments before `cur` are
   filled, segment `cur` is highlighted, the rest are dimmed, the last one is marked.
 - `Progress` in a `Text` column: `cur/max`.
@@ -506,20 +512,22 @@ frags and sorts the same way as the scoreboard. Without a `Primary` column it do
 
 ### 6.8 Debug commands
 
-- `hud_scoreboard_test [preset]` fills the store with fake data for the current players without
-  a server.
+- `hud_scoreboard_test [preset|off] [phase] [phase_left]` fills the store with fake data for the
+  current players without a server. With `phase` 1 or 2 it shows the warmup columns, like the
+  GunGame plugin.
 - `hud_scoreboard_dump` prints the store to the console.
 
 ## 7. Client behaviour: standard scoreboard
 
 Without an active schema the scoreboard is the same as now. The place column appears only when a
-schema adds the built-in `rank` column. The own-row highlight and the ping highlight from section 8
-exist only in the `gungame` preset.
+schema adds the built-in `rank` column. With a schema the scoreboard keeps the standard look: size,
+place, header, fonts, column titles and row highlights.
 
 ## 8. GunGame preset
 
-The preset follows two mockups made for 1920×1080: "TAB" for the scoreboard and "Main" for the
-game screen. Interface strings are localized (section 10); the mockups use Russian.
+The HUD widget follows the "Main" mockup made for 1920×1080. The scoreboard keeps the look of the
+standard BugfixedHL scoreboard and only adds the GunGame columns, the tag badge and the leader
+banner. Interface strings are localized (section 10); the examples use Russian.
 
 ### 8.1 Data
 
@@ -531,9 +539,8 @@ The plugin fills these keys:
 | `level`      | column  | player, team   | `Progress` | Current level, 1-based / number of levels       |
 | `weapon`     | column  | player, team   | `Icon`     | Weapon of the current level                     |
 | `progress`   | column  | player, team   | `Progress` | Kills on the current level / kills it needs     |
-| `kills`      | column  | player, team   | `Int`      | Kills in the match                              |
-| `deaths`     | builtin | —              | —          | Standard deaths, moved after `kills`            |
-| `score`      | column  | player, team   | `Int`      | Progress P, hidden, first sort key              |
+| `kills`      | column  | player, team   | `Int`      | Kills in the warmup, then in the match          |
+| `score`      | column  | player, team   | `Int`      | Progress P, hidden, first sort key in the match |
 | `phase`      | column  | the whole game | `Int`      | 0 game, 1 warmup, 2 start countdown, 3 finished |
 | `phase_left` | column  | the whole game | `Int`      | Seconds left in the warmup or the countdown     |
 | `levels`     | list    | the whole game | `Icon`     | Weapon of every level, in order                 |
@@ -543,7 +550,13 @@ The plugin fills these keys:
   them by `gg_teamplay_multigoal`. Ordering by P gives the same order as the plugin's
   `Sort_RankPos` (level, then kills).
 - `kills` counts kills of other players. Suicides and team kills don't count. The counter is reset
-  together with the scores after the warmup.
+  together with the scores when the match starts.
+- `Config` hides the standard Frags, Deaths, Eff and SteamID columns and leaves the title empty, so
+  the header shows the server name. The tag is `FFA` or `TEAM`.
+- Levels are the same for everybody in the warmup. While `phase` is 1 or 2 the plugin sends the
+  columns again: `level`, `weapon` and `progress` become `Hidden`, `kills` becomes visible,
+  `Primary` instead of `level` and the first sort key, `score` the second one. When the match
+  starts it sends the match columns: `kills` is `Hidden` and the second sort key.
 - A player is on the last level when `level.cur = level.max`.
 - Weapon names come from the client table (10.3) for standard HL sprites. `Icon.text` from the
   server is used only for other sprites.
@@ -553,7 +566,7 @@ The plugin fills these keys:
 The scoreboard and the HUD use the same rules.
 
 - Participants are players that are not spectators. Bots count.
-- Places follow P: equal P share a place (`1, 1, 3`).
+- Places follow P: equal P share a place (`1, 1, 3`). In the warmup they follow `kills`.
 - In teamplay places are counted among teams that have participants. Team names come from
   `TeamNames`, team P from the team `score` cell.
 - Overtake: the neighbour is the nearest participant with a strictly greater P;
@@ -564,62 +577,54 @@ The scoreboard and the HUD use the same rules.
 
 #### 8.3.1 Placement
 
-- Layout file `ScorePanel_gungame.res`.
-- Centered horizontally, about 70% of the screen width, but not narrower than the columns plus
-  the Name minimum; on 4:3 screens it is wider. The top edge is about 10% of the screen height down.
-- One row per player; the table grows down. When rows don't fit, the existing compact spacing
-  is used, then scrolling.
-- No server name, timer or hint line.
+- Size, place, frame and fonts of the standard scoreboard (`ScorePanel.res`).
+- One row per player. When rows don't fit, the existing compact spacing is used, then scrolling.
 
 #### 8.3.2 Header
 
-Left:
+The header of the standard scoreboard: the server name, the map below it and the player count on
+the right. The tag badge from `Config` (`FFA` or `TEAM`) follows the server name.
 
-- the title and the tag badge from `Config`: `GUNGAME` and `FFA`;
-- below them, one line with the map and the player count: `crossfire · 12 / 16 игроков`
-  (connected / max players). There are no icon files yet, so the line has no icons.
-
-Right, the banner `ЛИДЕР НА ПОСЛЕДНЕМ УРОВНЕ`:
+The banner `Лидер на последнем уровне` stands left of the player count, on the lines of the server
+and map names:
 
 - shown while the player or team on the first place is on the last level;
-- an accent bar instead of the crown icon, the banner title and the line
-  `Kr1sTaL · Crowbar · 1 убийство до победы`:
+- an accent bar, the banner title and the line `Kr1sTaL · Crowbar · 1 убийство до победы`:
   the leader's name, the weapon and `progress.max − progress.cur` kills left;
 - in teamplay the line names the team;
-- if several leaders share the first place, the first row in sort order is shown.
+- if several leaders share the first place, the first row in sort order is shown;
+- the server name is cut so that it and the tag end before the banner.
 
 #### 8.3.3 Columns
 
-`#` · Avatar · `ИГРОК` · `УРОВЕНЬ` · `ОРУЖИЕ` · `ПРОГРЕСС` · `УБИЙСТВА` · `СМЕРТИ` · `ПИНГ`
+In the match: `#` · Avatar · Name · `Уровень` · `Оружие` · `Прогресс` · Ping
 
-- Headers are drawn in uppercase.
-- The player column takes all free width; the others have fixed widths.
-- Numbers in the last three columns are aligned right.
-- Avatars follow `hud_scoreboard_showavatars`. SteamID and Eff are hidden.
+In the warmup: `#` · Avatar · Name · `Убийства` · Ping
 
-| Column     | Shows                                                                                   |
-|------------|-----------------------------------------------------------------------------------------|
-| `#`        | Place. The first three places are marked, the first stronger than the others.           |
-| `ИГРОК`    | Name without color codes, cut with `…`. The own row has the `ТЫ` badge after the name.  |
-| `УРОВЕНЬ`  | `9/14` with the strip of all levels below (`Steps`); the last level is marked.          |
-| `ОРУЖИЕ`   | Weapon icon and name. On the last level the `ФИНАЛ` badge follows the name.             |
-| `ПРОГРЕСС` | Dots (filled for done, empty for left) and `1/2` (`Meter`). Dots = kills on this level. |
-| `УБИЙСТВА` | `kills`                                                                                 |
-| `СМЕРТИ`   | Standard deaths                                                                         |
-| `ПИНГ`     | Ping without loss (`hud_scoreboard_showloss` is ignored); 100 and above is highlighted  |
+- Column titles, the name and the ping are drawn as in the standard scoreboard.
+- The name column takes all free width; the others have fixed widths.
+- Avatars follow `hud_scoreboard_showavatars`. Frags, Deaths, SteamID and Eff are hidden.
+
+| Column     | Shows                                                                                     |
+|------------|-------------------------------------------------------------------------------------------|
+| `#`        | Place as a number                                                                         |
+| `Уровень`  | `9/14` with the strip of all levels below (`Steps`); the last level is marked             |
+| `Оружие`   | Weapon icon and name. On the last level the `ФИНАЛ` badge follows the name                |
+| `Прогресс` | Dots for kills on this level, filled for done; above 10 kills a bar and `16/25` (`Meter`) |
+| `Убийства` | `kills`, aligned right; only in the warmup                                                |
 
 #### 8.3.4 Highlighted rows
 
-- Own row: the whole row is highlighted, the name is emphasized, `ТЫ` follows it.
-- A player on the last level: the row is highlighted, the level number and the weapon icon are
-  emphasized, `ФИНАЛ` follows the weapon. If this player is the leader, the first-place mark
-  shows the final too.
+- The own row and the last killer are highlighted as in the standard scoreboard.
+- A player on the last level: `ФИНАЛ` follows the weapon.
 
 #### 8.3.5 Teamplay
 
-- Sections per team, as in the current BugfixedHL scoreboard; sections are ordered by team P.
-- A team header shows the team place, level, weapon, progress, kills and deaths.
-- Players inside a team are sorted by `kills` (the second sort key).
+- Sections per team, as in the current BugfixedHL scoreboard; sections are ordered by team P, in
+  the warmup by team `kills`.
+- A team header shows the team place, level, weapon and, above 10 kills, the progress counter;
+  in the warmup the place and kills.
+- Players inside a team are sorted by `kills`.
 - Spectators stay in their own section at the bottom.
 
 ### 8.4 HUD widget
@@ -632,7 +637,7 @@ two elements: the place block at the top center and the level bar at the bottom 
 - The widget is on when the `gungame` preset is active and both `hud_scoreboard_custom` and
   `hud_gungame` are 1.
 - It follows the usual HUD rules: hidden with `hud_draw 0` and during intermission. It is also
-  hidden while the scoreboard is open, because the GunGame table starts near the top.
+  hidden while the scoreboard is open, because a long table reaches the top of the screen.
 - A spectator in first-person mode sees the data of the observed player. In other spectator
   modes the widget is hidden.
 - With `phase = 3` (finished) the widget is hidden; the plugin's winner message and final table
@@ -793,8 +798,8 @@ native bhl_sb_list_set_icon(const key[], index, const sprite[], const text[]);
 
 The plugin keeps working without the module: `set_module_filter` and `set_native_filter` in
 `plugin_natives` let it load, and every call is guarded by a flag. The `level * 100` frags hack
-stays for old clients. A new per-player counter keeps the kills in the match for the `kills`
-column.
+stays for old clients. A new per-player counter keeps the kills of the warmup and then of the
+match for the `kills` column.
 
 ```pawn
 Scoreboard_Setup()
@@ -805,15 +810,10 @@ Scoreboard_Setup()
 	new bool:isTeamPlay = get_pcvar_num(cvar[CVAR_TEAMPLAY]) == 1
 
 	bhl_sb_reset()
-	bhl_sb_config(BHL_SB_HIDE_FRAGS | BHL_SB_HIDE_EFF | BHL_SB_HIDE_STEAMID, "gungame", "GUNGAME",
-	              isTeamPlay ? "TEAM" : "FFA")
+	bhl_sb_config(BHL_SB_HIDE_FRAGS | BHL_SB_HIDE_DEATHS | BHL_SB_HIDE_EFF | BHL_SB_HIDE_STEAMID,
+	              "gungame", "", isTeamPlay ? "TEAM" : "FFA")
 	bhl_sb_add_column("rank", "", BHL_SB_BUILTIN)
-	bhl_sb_add_column("level", "#BHL_SB_Level", BHL_SB_STEPS, 60, 0, BHL_SB_COL_PRIMARY)
-	bhl_sb_add_column("weapon", "#BHL_SB_Weapon", BHL_SB_ICON, 120)
-	bhl_sb_add_column("progress", "#BHL_SB_Progress", BHL_SB_METER, 90)
-	bhl_sb_add_column("kills", "#BHL_SB_Kills", BHL_SB_TEXT, 60, 2, BHL_SB_COL_RIGHT)
-	bhl_sb_add_column("deaths", "", BHL_SB_BUILTIN, 0, 0, BHL_SB_COL_RIGHT)
-	bhl_sb_add_column("score", "", BHL_SB_TEXT, 0, 1, BHL_SB_COL_HIDDEN)
+	Scoreboard_SetColumns(g_isWarmup)
 	bhl_sb_add_column("phase", "", BHL_SB_TEXT, 0, 0, BHL_SB_COL_HIDDEN)
 	bhl_sb_add_column("phase_left", "", BHL_SB_TEXT, 0, 0, BHL_SB_COL_HIDDEN)
 
@@ -821,6 +821,19 @@ Scoreboard_Setup()
 
 	for (new i; i < g_levelsCount; i++)
 		bhl_sb_list_set_icon("levels", i, g_levelIcon[i], g_levelWeaponName[i])
+}
+
+// Called again with the other value when the warmup starts or ends; cells are kept
+Scoreboard_SetColumns(bool:warmup)
+{
+	new BhlSbColumnFlags:levelFlags = warmup ? BHL_SB_COL_HIDDEN : BHL_SB_COL_NONE
+	new BhlSbColumnFlags:killsFlags = warmup ? BHL_SB_COL_PRIMARY : BHL_SB_COL_HIDDEN
+
+	bhl_sb_add_column("level", "#BHL_SB_Level", BHL_SB_STEPS, 60, 0, warmup ? BHL_SB_COL_HIDDEN : BHL_SB_COL_PRIMARY)
+	bhl_sb_add_column("weapon", "#BHL_SB_Weapon", BHL_SB_ICON, 120, 0, levelFlags)
+	bhl_sb_add_column("progress", "#BHL_SB_Progress", BHL_SB_METER, 90, 0, levelFlags)
+	bhl_sb_add_column("kills", "#BHL_SB_Kills", BHL_SB_TEXT, 60, warmup ? 1 : 2, BHL_SB_COL_RIGHT | killsFlags)
+	bhl_sb_add_column("score", "", BHL_SB_TEXT, 0, warmup ? 2 : 1, BHL_SB_COL_HIDDEN)
 }
 
 Scoreboard_UpdatePlayer(id)
@@ -849,6 +862,7 @@ Names of plugin variables and helpers in the example are illustrative.
 | `On_PlayerKilled`        | `Scoreboard_UpdatePlayer(killer)`                     |
 | `Update_TeamData`        | Teammates and `bhl_sb_team(teamName)` cells           |
 | `WarmUp_Timer`           | `phase` 1 or 2 and `phase_left`; `phase` 0 at the end |
+| `Scoreboard_SetPhase`    | Warmup or match columns when the phase changes        |
 | `resetPlayersScore`      | `kills` 0 for everyone                                |
 | `endgame`                | Final values for everyone, `phase` 3                  |
 | Auto-save restore        | `Scoreboard_UpdatePlayer(id)`                         |
@@ -874,14 +888,9 @@ The client adds tokens to `bugfixedhl_*.txt`:
 | `BHL_SB_Weapon`      | Weapon                   | Оружие                    |
 | `BHL_SB_Progress`    | Progress                 | Прогресс                  |
 | `BHL_SB_Kills`       | Kills                    | Убийства                  |
-| `BHL_GG_ColPlayer`   | Player                   | Игрок                     |
-| `BHL_GG_You`         | YOU                      | ТЫ                        |
 | `BHL_GG_Final`       | FINAL                    | ФИНАЛ                     |
-| `BHL_GG_LeaderFinal` | LEADER ON THE LAST LEVEL | ЛИДЕР НА ПОСЛЕДНЕМ УРОВНЕ |
+| `BHL_GG_LeaderFinal` | Leader on the last level | Лидер на последнем уровне |
 | `BHL_GG_LeaderLine`  | %s1 · %s2 · %s3 to win   | %s1 · %s2 · %s3 до победы |
-| `BHL_GG_PlayersOne`  | %s1 / %s2 player         | %s1 / %s2 игрок           |
-| `BHL_GG_PlayersFew`  | %s1 / %s2 players        | %s1 / %s2 игрока          |
-| `BHL_GG_PlayersMany` | %s1 / %s2 players        | %s1 / %s2 игроков         |
 | `BHL_GG_Place`       | PLACE %s1 / %s2          | МЕСТО %s1 / %s2           |
 | `BHL_GG_Overtake`    | To pass %s1: %s2         | До обгона %s1: %s2        |
 | `BHL_GG_Lead`        | Lead: %s1                | Отрыв: %s1                |
@@ -892,8 +901,6 @@ The client adds tokens to `bugfixedhl_*.txt`:
 | `BHL_GG_KillsOne`    | %s1 kill                 | %s1 убийство              |
 | `BHL_GG_KillsFew`    | %s1 kills                | %s1 убийства              |
 | `BHL_GG_KillsMany`   | %s1 kills                | %s1 убийств               |
-
-`Players*` takes the plural form from the second number.
 
 ### 10.2 Plural forms
 
@@ -976,16 +983,20 @@ Protocol and server:
 - Map change, reconnect, joining mid-game, GunGame on and off, teamplay.
 - 32 players with bots: the full sync never triggers `Reliable channel overflowed`.
 - The full sync arrives after the client's `VidInit` and nothing is lost.
-- Malformed messages from a debug server command: the client doesn't crash.
+- Malformed messages: the client doesn't crash (checked offline by feeding the parser).
 
 GunGame scoreboard:
 
-- 640×480, 1280×720 and 1920×1080: the table fits; on 4:3 it is wider than 70%.
-- 12 and 32 players: the table grows down, then compact spacing, then scrolling.
-- 9, 14 and 24 levels in the level strip; dots with 1–10 kills and the bar with more.
-- Ties: shared places, the banner with several leaders on the last level.
+- 640×480, 1280×720 and 1920×1080: the table has the size of the standard one and the columns fit.
+- 12 and 32 players: compact spacing, then scrolling.
+- 9, 14 and 24 levels in the level strip; dots without a counter with 1–10 kills, the bar with
+  the counter with more.
+- Warmup: level, weapon and progress are hidden, kills and places by kills are shown; the match
+  columns come back when the match starts.
+- Ties: shared places, the banner with several leaders on the last level; a long server name
+  next to the banner.
 - Teamplay with 2 and 4 teams: team headers, players by kills, spectators at the bottom.
-- Avatars on and off; own row, last-level rows, ping 100 and above.
+- Weapon icons in the scoreboard and the level bar with the OpenGL and the software renderer.
 - A weapon with a non-standard sprite shows the name from the config.
 
 GunGame HUD:
@@ -1006,8 +1017,7 @@ GunGame HUD:
 1. Are the opt-out settings needed, and are `hud_scoreboard_custom` and `hud_gungame` good names?
 2. Icon tint in the scoreboard: the row text color or the HUD color?
 3. Color codes in `Text` values: strip them in version 1, or draw them like in player names?
-4. Exact sizes and colors from the mockups: dots, bar, level cells and their minimum, row height,
-   column widths, highlight colors, top-3 marks.
-5. Icons for the map, the player count and the crown: files from the designer.
-6. In teamplay, should player rows repeat the team level, weapon and progress, or leave them empty?
-7. Weapon names marked as proposals in 10.3.
+4. Exact sizes and colors of the HUD widget from the mockup: dots, bar, level cells and their
+   minimum.
+5. In teamplay, should player rows repeat the team level, weapon and progress, or leave them empty?
+6. Weapon names marked as proposals in 10.3.

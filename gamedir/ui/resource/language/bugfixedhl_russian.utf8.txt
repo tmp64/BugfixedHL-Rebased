@@ -32,14 +32,9 @@
 "BHL_SB_Kills"						"Убийства"
 
 // GunGame
-"BHL_GG_ColPlayer"					"Игрок"
-"BHL_GG_You"						"ТЫ"
 "BHL_GG_Final"						"ФИНАЛ"
-"BHL_GG_LeaderFinal"				"ЛИДЕР НА ПОСЛЕДНЕМ УРОВНЕ"
+"BHL_GG_LeaderFinal"				"Лидер на последнем уровне"
 "BHL_GG_LeaderLine"					"%s1 · %s2 · %s3 до победы"
-"BHL_GG_PlayersOne"					"%s1 / %s2 игрок"
-"BHL_GG_PlayersFew"					"%s1 / %s2 игрока"
-"BHL_GG_PlayersMany"				"%s1 / %s2 игроков"
 "BHL_GG_Place"						"МЕСТО %s1 / %s2"
 "BHL_GG_Overtake"					"До обгона %s1: %s2"
 "BHL_GG_Lead"						"Отрыв: %s1"

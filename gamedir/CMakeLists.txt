@@ -79,7 +79,6 @@ set( CLIENT_FILES
 	ui/resource/MOTD.res
 	ui/resource/open_source_software.txt
 	ui/resource/ScorePanel.res
-	ui/resource/ScorePanel_gungame.res
 	ui/resource/SpectatorInfoPanel.res
 	ui/resource/TeamMenu.res
 

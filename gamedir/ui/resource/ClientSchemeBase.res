@@ -597,7 +597,7 @@ Scheme
 		   }
 		}	
 
-		// GunGame HUD and scoreboard
+		// GunGame HUD
 		"GunGameHudLarge"	// place line of the HUD widget
 		{
 			"1"

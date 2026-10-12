@@ -441,7 +441,7 @@ int CScoreboardData::FindPrimaryColumn() const
 {
 	for (int i = 0; i < MAX_COLUMNS; i++)
 	{
-		if (m_Columns[i].bValid && m_Columns[i].IsPrimary())
+		if (m_Columns[i].bValid && m_Columns[i].IsPrimary() && !m_Columns[i].IsHidden())
 			return i;
 	}
 
@@ -736,7 +736,6 @@ void CScoreboardData::TestCommand()
 		COL_WEAPON,
 		COL_PROGRESS,
 		COL_KILLS,
-		COL_DEATHS,
 		COL_SCORE,
 		COL_PHASE,
 		COL_PHASE_LEFT,
@@ -758,7 +757,6 @@ void CScoreboardData::TestCommand()
 		{ "weapon", "#BHL_SB_Weapon", E_Display::Icon, 120, 0, E_ColumnFlags::None },
 		{ "progress", "#BHL_SB_Progress", E_Display::Meter, 90, 0, E_ColumnFlags::None },
 		{ "kills", "#BHL_SB_Kills", E_Display::Text, 60, 2, E_ColumnFlags::AlignRight },
-		{ "deaths", "", E_Display::Builtin, 0, 0, E_ColumnFlags::AlignRight },
 		{ "score", "", E_Display::Text, 0, 1, E_ColumnFlags::Hidden },
 		{ "phase", "", E_Display::Text, 0, 0, E_ColumnFlags::Hidden },
 		{ "phase_left", "", E_Display::Text, 0, 0, E_ColumnFlags::Hidden },
@@ -790,10 +788,11 @@ void CScoreboardData::TestCommand()
 
 	constexpr int LEVEL_COUNT = static_cast<int>(std::size(s_Levels));
 
+	int phase = gEngfuncs.Cmd_Argc() >= 3 ? atoi(gEngfuncs.Cmd_Argv(2)) : 0;
+
 	m_bConfigReceived = true;
-	m_ConfigFlags = static_cast<E_ConfigFlags>(static_cast<unsigned int>(E_ConfigFlags::HideFrags) | static_cast<unsigned int>(E_ConfigFlags::HideEff) | static_cast<unsigned int>(E_ConfigFlags::HideSteamID));
+	m_ConfigFlags = static_cast<E_ConfigFlags>(static_cast<unsigned int>(E_ConfigFlags::HideFrags) | static_cast<unsigned int>(E_ConfigFlags::HideDeaths) | static_cast<unsigned int>(E_ConfigFlags::HideEff) | static_cast<unsigned int>(E_ConfigFlags::HideSteamID));
 	V_strcpy_safe(m_szPreset, preset);
-	V_strcpy_safe(m_szTitle, "GUNGAME");
 	V_strcpy_safe(m_szTag, gHUD.m_Teamplay ? "TEAM" : "FFA");
 
 	for (int i = 0; i < static_cast<int>(std::size(s_Columns)); i++)
@@ -808,6 +807,22 @@ void CScoreboardData::TestCommand()
 		V_strcpy_safe(column.szTitle, s_Columns[i].pszTitle);
 	}
 
+	// Warmup and countdown show kills instead of levels, like the plugin
+	if (phase == 1 || phase == 2)
+	{
+		for (int col : { COL_LEVEL, COL_WEAPON, COL_PROGRESS })
+			SetEnumFlag(m_Columns[col].flags, E_ColumnFlags::Hidden);
+
+		ClearEnumFlag(m_Columns[COL_LEVEL].flags, E_ColumnFlags::Primary);
+		SetEnumFlag(m_Columns[COL_KILLS].flags, E_ColumnFlags::Primary);
+		m_Columns[COL_KILLS].iSort = 1;
+		m_Columns[COL_SCORE].iSort = 2;
+	}
+	else
+	{
+		SetEnumFlag(m_Columns[COL_KILLS].flags, E_ColumnFlags::Hidden);
+	}
+
 	UpdateSortColumns();
 
 	List &levels = m_Lists[0];
@@ -818,7 +833,7 @@ void CScoreboardData::TestCommand()
 	for (int i = 0; i < LEVEL_COUNT; i++)
 		levels.items[i] = MakeIcon(s_Levels[i].pszSprite, s_Levels[i].pszName);
 
-	m_GlobalValues[COL_PHASE] = MakeInt(gEngfuncs.Cmd_Argc() >= 3 ? atoi(gEngfuncs.Cmd_Argv(2)) : 0);
+	m_GlobalValues[COL_PHASE] = MakeInt(phase);
 	m_GlobalValues[COL_PHASE_LEFT] = MakeInt(gEngfuncs.Cmd_Argc() >= 4 ? atoi(gEngfuncs.Cmd_Argv(3)) : 0);
 
 	int playerCount = 0;

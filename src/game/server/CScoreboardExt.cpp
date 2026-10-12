@@ -800,8 +800,9 @@ int CScoreboardExt::FindElement(const char *key)
 
 int CScoreboardExt::FindFreeElementId()
 {
-	// The client would show a new element under an id it still has something of (the old element, its
-	// visibility bit, a child placed at it) with that old state until everything of the new one arrives
+	// A new element under an id the client still has something of (the old element, its visibility bit,
+	// a child placed at it) would show that old state until everything of the new one arrives. When every
+	// free id is held, the lowest is reused: SendElements still drops the old templates with a removal.
 	unsigned int held = 0;
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
@@ -972,10 +973,7 @@ void CScoreboardExt::DropTexts(int id)
 
 	// A new definition keeps the client's templates: they are dropped by a removal sent before it
 	for (client_state_t &state : m_Clients)
-	{
 		state.textsDropped |= 1u << id;
-		state.templatesPending[id] = 0;
-	}
 }
 
 const std::string &CScoreboardExt::GetText(int player, int id, int variant)
@@ -1055,7 +1053,7 @@ bool CScoreboardExt::SendToClient(int idx)
 
 	if (state.isResetPending)
 	{
-		if (!BeginMessage(pEdict, 2))
+		if (!BeginMessage(pEdict, bhl::sb::RESET_SIZE))
 			return false;
 
 		WRITE_BYTE((int)bhl::sb::E_Op::Reset);
@@ -1382,7 +1380,7 @@ bool CScoreboardExt::SendElements(edict_t *pEdict, client_state_t &state)
 			// Both or neither: a split would leave the new element with the old templates
 			if ((state.textsDropped & bit) && (state.elementsSent & bit))
 			{
-				if (REMOVAL_SIZE + GetElementSize(id) > m_iBytesLeft || !SendElementRemoval(pEdict, id))
+				if (bhl::sb::ELEMENT_REMOVAL_SIZE + GetElementSize(id) > m_iBytesLeft || !SendElementRemoval(pEdict, id))
 					return false;
 
 				state.templatesSent[id] = 0;
@@ -1460,7 +1458,7 @@ bool CScoreboardExt::SendElement(edict_t *pEdict, client_state_t &state, int id)
 
 bool CScoreboardExt::SendElementRemoval(edict_t *pEdict, int id)
 {
-	if (!BeginMessage(pEdict, REMOVAL_SIZE))
+	if (!BeginMessage(pEdict, bhl::sb::ELEMENT_REMOVAL_SIZE))
 		return false;
 
 	WRITE_BYTE((int)bhl::sb::E_Op::Element);
@@ -1476,12 +1474,6 @@ bool CScoreboardExt::SendTemplates(edict_t *pEdict, int idx, client_state_t &sta
 	{
 		if (!state.templatesPending[id])
 			continue;
-
-		if (!m_Elements[id].key[0])
-		{
-			state.templatesPending[id] = 0;
-			continue;
-		}
 
 		for (int variant = 0; variant < bhl::sb::MAX_VARIANTS; variant++)
 		{
@@ -1526,7 +1518,7 @@ bool CScoreboardExt::SendHudState(edict_t *pEdict, int idx, client_state_t &stat
 
 	if (visible != state.sentVisible || m_iHiddenStd != state.sentHidden)
 	{
-		if (!BeginMessage(pEdict, 7))
+		if (!BeginMessage(pEdict, bhl::sb::HUDSTATE_SIZE))
 			return false;
 
 		WRITE_BYTE((int)bhl::sb::E_Op::HudState);

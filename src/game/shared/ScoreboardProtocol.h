@@ -40,9 +40,11 @@ constexpr int MAX_CUT = 255; //!< Largest cut format of a placeholder
 constexpr int MAX_EVAL_LEN = 255; //!< Evaluated text, in UTF-16 units
 
 //! Message sizes, including the opcode byte
+constexpr int RESET_SIZE = 2;
 constexpr int ELEMENT_FIXED_SIZE = 18; //!< Opcode to font: an Element that ends before font is ignored
-constexpr int HUDSTATE_MIN_SIZE = 5; //!< Opcode and visible: a shorter HudState is ignored
+constexpr int ELEMENT_REMOVAL_SIZE = 3; //!< Element with kind None
 constexpr int TEMPLATE_HEADER_SIZE = 3; //!< Opcode, id and variant
+constexpr int HUDSTATE_SIZE = 7;
 
 //! Id that means "every column of the target" (Values, only with E_ValueType::None)
 constexpr int ALL_COLUMNS = 0xFF;
@@ -175,14 +177,6 @@ constexpr int DEFAULT_WIDTH_ICON = 100;
 constexpr int DEFAULT_WIDTH_METER = 90;
 constexpr int DEFAULT_WIDTH_STEPS = 60;
 
-//! Keys of Builtin columns. Any other key makes the client ignore the column.
-constexpr const char *BUILTIN_RANK = "rank";
-constexpr const char *BUILTIN_FRAGS = "frags";
-constexpr const char *BUILTIN_DEATHS = "deaths";
-constexpr const char *BUILTIN_EFF = "eff";
-constexpr const char *BUILTIN_STEAMID = "steamid";
-constexpr const char *BUILTIN_PING = "ping";
-
 //----------------------------------------------------------------------------------------------------
 // HUD elements (4.3, 8)
 //----------------------------------------------------------------------------------------------------
@@ -256,11 +250,6 @@ inline E_HAlign GetHAlign(int align)
 inline E_VAlign GetVAlign(int align)
 {
 	return static_cast<E_VAlign>((align >> ALIGN_V_SHIFT) & 3);
-}
-
-inline int MakeAlign(E_HAlign h, E_VAlign v)
-{
-	return static_cast<int>(h) | (static_cast<int>(v) << ALIGN_V_SHIFT);
 }
 
 //! Font of an element (8.5). Unknown ids are Text.

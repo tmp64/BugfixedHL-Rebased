@@ -24,7 +24,6 @@ namespace bhl
  * except templates, which are refused when too long. Unknown bits of flags and parts are dropped.
  * A setter that writes the value already stored marks nothing.
  *
- * The interface is not released: SetConfig changed in place for protocol draft 2.
  * New methods must be added to the end.
  */
 class IScoreboardExt

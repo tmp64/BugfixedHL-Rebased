@@ -493,8 +493,8 @@ Flags:
   while bytes remain, at most `count` and at most 16; missing params take their defaults.
 - A definition for an existing id replaces it. An `Element` never changes templates: the client
   drops the templates of an id only on a removal (kind `None` or an unknown kind, for that id or
-  `0xFF`) and on `Reset`. When the server drops the texts of an element, it sends all its
-  variants again (5.2).
+  `0xFF`) and on `Reset`. When the server drops the texts of an element, it sends a removal right
+  before the new definition (5.2).
 - The largest message is a `Strip`, the kind with the most params: 18 fixed bytes, strings of 22,
   22 and 16 bytes and 1 + 11 × 3 bytes of params, 112 bytes.
 
@@ -665,18 +665,20 @@ Plugins only change the state and mark the changes pending for every ready clien
 6. every pending `Template`, with the text for this client;
 7. `HudState`, if it is pending, with the visibility for this client.
 
-A client gets at most about 512 bytes per frame. When its budget is used up, nothing more is sent
-to it for about 0.1 s. A client with nothing pending gets small updates every frame. Several
-changes of one cell, element, template or visibility in one frame produce one message. A setter
-that writes the value already stored marks nothing, but a write for player 0 still drops the
-overrides (5.4).
+A client gets at most about 512 bytes per 0.1 s, so the rate stays about 5 KB/s at any server
+fps. When they are used up, nothing more is sent to it until the 0.1 s is over. Small updates go
+out in the frame they happen while the budget lasts. Several changes of one cell, element,
+template or visibility in one frame produce one message. A setter that writes the value already
+stored marks nothing, but a write for player 0 still drops the overrides (5.4).
 
-Whenever the server drops the texts of an element (removal, kind change, an id given to another
-key), it marks all 8 variants of that id pending for every client. A variant without a text is sent
-as `""`, and only to a client that holds that variant. Templates of an id that has no element are
-not sent. So a removal and a new element with the same id in one frame, or during the 0.1 s pause,
-never leave old variants on the client. A removal goes only to a client that has the element, and
-`HudState` only to a client whose visibility or hidden parts differ from what it has.
+A new element gets the lowest free id that no client still has anything of (the old element, its
+visibility bit, a child placed at it); only when every free id is held is the lowest free id
+reused. When the server drops the texts of an element (removal, kind change), a client that has
+the element gets `Element` kind `None` for that id right before the new definition, both in one
+frame or neither; then only non-empty variants are sent. A variant whose text is removed is sent as
+`""`, and only to a client that holds that variant. Templates of an id with no element are not
+sent. So a new element never shows old variants. A removal goes only to a client that has the
+element, and `HudState` only to a client whose visibility or hidden parts differ from what it has.
 
 ### 5.3 Full sync
 
@@ -724,6 +726,9 @@ The hidden standard HUD parts have no overrides.
 | Player changes team         | Nothing: placement comes from `TeamInfo` and `ScoreInfo`                     |
 | Client loses `ScoreboardV1` | Nothing more is sent to that client                                          |
 
+A client dropped before it spawned (while it loads the map or downloads) counts as a disconnect
+too; the server notices it in the next frame.
+
 ## 6. Client behaviour: scoreboard
 
 ### 6.1 Store
@@ -748,10 +753,10 @@ stored and HUD elements still use it.
   (`column_name_min`), then down to 80 units; columns that still don't fit are dropped from the
   end.
 - While a `Steps` column is visible, rows are taller so the strip fits under the text.
-- Team section headers show team cells as text in the same columns (`ModifyColumn`; the list
-  control can't draw images in headers): `Icon` as its name, `Progress` as `cur/max`. A `Meter`
-  column with `max ≤ 10` stays empty, like dots without a counter. Badges of team cells follow
-  their host cell as in player rows (6.7). Team frags and deaths follow the `Hide*` flags.
+- Team section headers show team cells in the same columns as text only, without icons, dots or
+  strips: `Icon` as its name, `Progress` as `cur/max`. A `Meter` column with `max ≤ 10` stays
+  empty, like dots without a counter. Badges of team cells follow their host cell as in player
+  rows (6.7). Team frags and deaths follow the `Hide*` flags.
 
 ### 6.4 Sorting and places
 
@@ -805,6 +810,8 @@ way as the scoreboard. Without such a column it doesn't change.
 - `Progress` in a `Text` column: `cur/max`.
 - `Clock` in any column: written with `time` (8.10). A running clock is refreshed at least once a
   second while the scoreboard is open.
+- Plugin strings (the title, column titles, cells, badges and banner rows) are drawn as they are:
+  `&` is an ordinary character, not a VGUI2 hotkey mark.
 
 ### 6.7 Badges
 
@@ -880,10 +887,14 @@ An element has:
 - up to 8 template variants;
 - a visibility bit set by the plugin.
 
-Elements are drawn in id order. The client has no conditions and no game logic: the plugin shows
-and hides elements, and a choice that depends on the subject comes from a value through `select`
-or from the missing-value rule (8.10). Texts are evaluated every frame, so a changed cell needs no
-HUD traffic.
+Elements are drawn in two passes, each in id order: first the shapes and sprites of all elements
+(`Meter` dots and bars, `Strip` cells and item icons, `Icon` sprites), then all texts (`Text`
+elements, `Meter` counters, `Icon` texts, `Strip` item texts and scroll markers). A text is
+therefore always drawn above any shape or sprite, whatever the ids.
+
+The client has no conditions and no game logic: the plugin shows and hides elements, and a choice
+that depends on the subject comes from a value through `select` or from the missing-value rule
+(8.10). Texts are evaluated every frame, so a changed cell needs no HUD traffic.
 
 ### 8.2 Subject
 
@@ -1218,7 +1229,7 @@ Variants:
   0–7, for example `@state` or `level:left`. A missing value, a number out of range or a variant
   without a template draws nothing.
 - `Icon`: variant 0 is the text after the icon (8.9).
-- `Meter`: variant 0 is the counter (8.7).
+- `Meter`: variant 0 is the counter (8.7); variants 1–7 are not used.
 - `Strip`: templates are not used.
 
 ### 8.11 Built-in values
@@ -1537,13 +1548,14 @@ stock bool:bhl_hud_text_lang(player, const key[], variant, const mlKey[])
 }
 
 //
-// Doubles { and } so that a server string formatted into a template stays literal
+// Doubles { and } so that a server string formatted into a template stays literal.
+// A too long string is cut on a UTF-8 character boundary. src and dst must be different arrays.
 //
 stock bhl_hud_escape(const src[], dst[], len)
 {
-	new j;
+	new i, j;
 
-	for (new i; src[i] && j < len; i++)
+	for (; src[i] && j < len; i++)
 	{
 		if (src[i] == '{' || src[i] == '}')
 		{
@@ -1554,6 +1566,13 @@ stock bhl_hud_escape(const src[], dst[], len)
 		}
 
 		dst[j++] = src[i];
+	}
+
+	// The next byte continues a character, so drop its copied part
+	while (j > 0 && (src[i] & 0xC0) == 0x80)
+	{
+		i--;
+		j--;
 	}
 
 	dst[j] = EOS;
@@ -1650,7 +1669,8 @@ Data:
 - Levels are the same for everybody in the warmup. While `phase` is 1 or 2 the plugin sends the
   columns again: `level`, `weapon` and `progress` become `Hidden`, `kills` becomes visible,
   `Primary` and the first sort key, `score` the second one. When the match starts it sends the
-  match columns: `kills` is `Hidden` and the second sort key.
+  match columns: `kills` is the second sort key, `Hidden` without teamplay. In teamplay `kills`
+  stays visible and `progress` is 60 units wide, so Ping still fits.
 - Without teamplay `level`, `weapon`, `progress` and `final` are player cells. In teamplay the
   level is shared by the team, so they are team cells only: the team header shows them, with the
   `final` badge after the team's weapon (6.7), and player rows leave them empty and show `kills`.
@@ -1711,14 +1731,15 @@ Scoreboard_Setup(){
 }
 
 Scoreboard_SetColumns(bool:warmup){
+	new bool:teamplay = get_pcvar_bool(cvar[CVAR_TEAMPLAY])
 	new BhlSbColumnFlags:levelFlags = warmup ? BHL_SB_COL_HIDDEN : BHL_SB_COL_NONE
-	new BhlSbColumnFlags:killsFlags = warmup ? BHL_SB_COL_PRIMARY : BHL_SB_COL_HIDDEN
+	new BhlSbColumnFlags:killsFlags = warmup ? BHL_SB_COL_PRIMARY : (teamplay ? BHL_SB_COL_NONE : BHL_SB_COL_HIDDEN)
 	
 	sbWarmupColumns = warmup
 	
 	bhl_sb_add_column("level","#BHL_SB_Level",BHL_SB_STEPS,60,0,BHL_SB_COL_MARK_LAST | (warmup ? BHL_SB_COL_HIDDEN : BHL_SB_COL_PRIMARY))
 	bhl_sb_add_column("weapon","#BHL_SB_Weapon",BHL_SB_ICON,120,0,levelFlags)
-	bhl_sb_add_column("progress","#BHL_SB_Progress",BHL_SB_METER,90,0,levelFlags)
+	bhl_sb_add_column("progress","#BHL_SB_Progress",BHL_SB_METER,teamplay ? 60 : 90,0,levelFlags)
 	bhl_sb_add_column("kills","#BHL_SB_Kills",BHL_SB_TEXT,60,warmup ? 1 : 2,BHL_SB_COL_RIGHT | killsFlags)
 	bhl_sb_add_column("score","",BHL_SB_TEXT,0,warmup ? 2 : 1,BHL_SB_COL_HIDDEN)
 }
@@ -1801,12 +1822,15 @@ Scoreboard_SetPhase(timeLeft){
 	sbPhase = phase
 	
 	new bool:match = phase == 0
+	new bool:won = phase == 3
 	
 	bhl_hud_show(0,"gg_rival",match)
 	bhl_hud_show(0,"gg_kills",match)
 	bhl_hud_show(0,"gg_levels",match)
-	bhl_hud_show(0,"gg_banner_top",phase != 3)
-	bhl_hud_show(0,"gg_banner_bot",phase != 3)
+	
+	// After the win the leader line would read "0 kills to win"
+	bhl_hud_show(0,"gg_banner_top",!won)
+	bhl_hud_show(0,"gg_banner_bot",!won)
 }
 
 bool:Player_HasBhlHud(id){
@@ -1815,7 +1839,9 @@ bool:Player_HasBhlHud(id){
 ```
 
 `Scoreboard_SetLevelCells` fills the level cells and the badge of its target: the player without
-teamplay, the team in teamplay. For the winner `level` stays on the last level:
+teamplay, the team in teamplay. A level change that waits for the respawn equip already shows the
+kills the equip sets: 0 after a level-up, one short of the next level (`WSET_KILLS − 1`) after a
+level-down. For the winner `level` stays on the last level:
 
 ```pawn
 	if(level == maxLevel - 1)
@@ -1862,6 +1888,7 @@ texts to every player can use the client tokens instead (10.1), in English and R
 | `client_putinserver`     | `Scoreboard_UpdatePlayer(id)`; `Hud_SetTexts(id)` except for bots and HLTV       |
 | `client_infochanged`     | `Hud_SetTexts(id)` when `lang` changed, only for a connected player              |
 | `Equip_PlayerWithWeapon` | `Scoreboard_UpdatePlayer(id)`                                                    |
+| Descore (suicide)        | `Scoreboard_UpdatePlayer(victim)`                                                |
 | Kill and level-up        | `Scoreboard_UpdatePlayer(killer)`, team cells in teamplay                        |
 | `Update_TeamData`        | Team cells through `bhl_sb_team(teamName)`                                       |
 | `WarmUp_Timer`           | `Scoreboard_SetPhase(left)` every second                                         |
@@ -2031,8 +2058,10 @@ Protocol and server:
 - A plugin with elements and hidden columns but no `Config`: the standard scoreboard and the
   elements.
 - Adding, changing, removing and removing all elements; ids reused after a removal; a removal and
-  a new element with fewer variants under the same id in one frame and during the 0.1 s pause (no
-  old variant is drawn); a kind change and back in one frame.
+  a new element in one frame and during the 0.1 s pause, also with every other id taken (no old
+  variant is drawn); a kind change and back in one frame.
+- A plugin that changes 32 cells every frame at `sys_ticrate 1000` never causes `Reliable channel
+  overflowed`.
 - A parent defined after its child; a parent removed (the children disappear) and added again; a
   parent id given to an unrelated element; a parent cycle; a banner element as a parent.
 - Two plugins hiding different standard parts; a player-0 visibility write that doesn't change the
@@ -2078,7 +2107,9 @@ GunGame scoreboard:
 - A spectator who is on the last level doesn't bring the banner while the leader isn't.
 - Teamplay with 2 and 4 teams: team headers with level, weapon, progress and the badge after the
   weapon, player rows with kills only, players by kills, spectators at the bottom, the banner names
-  the team.
+  the team. At 640×480 the kills column and Ping both fit.
+- `&` in the title, a column title, a `Text` cell, a team cell, a badge and a banner row: each
+  shows `&` and is not cut.
 - After the win both banner rows are gone.
 - Weapon icons in the scoreboard and the level strip with the OpenGL and the software renderer.
 - A weapon with a non-standard sprite shows the name from the config.

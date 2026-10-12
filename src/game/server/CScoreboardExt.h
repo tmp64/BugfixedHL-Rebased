@@ -69,7 +69,6 @@ private:
 	static constexpr int BUDGET = 512; //!< Bytes per client per BUDGET_PERIOD
 	static constexpr float BUDGET_PERIOD = 0.1f; //!< Seconds; about 5 KB/s per client, which the reliable channel drains
 	static constexpr float FULL_SYNC_DELAY = 0.5f; //!< Seconds after InitHUD before the full sync starts
-	static constexpr int REMOVAL_SIZE = 3; //!< Element message with kind None
 	static constexpr int MAX_MSG_CELLS = bhl::sb::MAX_MSG_SIZE / 3;
 
 	struct value_t

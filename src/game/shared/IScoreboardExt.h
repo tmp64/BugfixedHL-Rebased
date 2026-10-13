@@ -137,14 +137,16 @@ public:
 	 * @param	value	Ref (bhl::sb::IsValidRef) or ""
 	 * @param	list	List key or ""
 	 * @param	select	Ref or ""
-	 * @return	false if the element is unknown or a ref or the list key is invalid; nothing changes then
+	 * @return	false if the element is unknown, a ref or the list key is invalid, or the Element message
+	 *			would be larger than bhl::sb::MAX_MSG_SIZE; nothing changes then
 	 */
 	virtual bool HudBind(const char *key, const char *value, const char *list, const char *select) = 0;
 
 	/**
-	 * Sets a kind param (8.7-8.9). The value is clamped to the range of the param.
+	 * Sets a kind param (8.7-8.9) or a param of every kind. The value is clamped to the range of the param.
 	 * @param	param	bhl::sb::E_Param
-	 * @return	false if the element is unknown or has no such param
+	 * @return	false if the element is unknown, has no such param or the Element message would be larger
+	 *			than bhl::sb::MAX_MSG_SIZE
 	 */
 	virtual bool HudSetParam(const char *key, int param, int value) = 0;
 
@@ -175,6 +177,34 @@ public:
 	 * @param	parts	bhl::sb::E_HudStd
 	 */
 	virtual void HudHideStd(unsigned int parts, bool hide) = 0;
+
+	/**
+	 * Sets the color of a color slot (4.3): slots 0-7 are used while that template variant is drawn,
+	 * then bhl::sb::SLOT_WARN and bhl::sb::SLOT_ACCENT. The color is used as is, also with hud_color.
+	 * A kind change drops the slot colors. Components are clamped to 0-255.
+	 * Added in version v1.4
+	 * @param	r	r < 0 clears the slot; g, b and a are ignored then
+	 * @return	false if the element is unknown, the slot is out of range or the Element message would be
+	 *			larger than bhl::sb::MAX_MSG_SIZE; nothing changes then
+	 */
+	virtual bool HudSetSlotColor(const char *key, int slot, int r, int g, int b, int a) = 0;
+
+	/**
+	 * Sends a line to a Feed element (4.3, op Event). Events are not state: they go only to clients that
+	 * get the scoreboard and have HudV1 when this is called, wait until the client has the element,
+	 * are dropped when their life has passed before they could be sent, and are never sent again.
+	 * At most 8 events wait per client, the oldest is dropped.
+	 * Added in version v1.4
+	 * @param	player		0 for everybody, otherwise that player only
+	 * @param	variant		Template variant of the line, 0-7
+	 * @param	lifeMs		0 for the life_ms param of the element; clamped to 0-65535
+	 * @param	args		argCount numbers, sent as Int values @a to @d
+	 * @param	argCount	0 to bhl::sb::MAX_EVENT_INTS
+	 * @param	iconSprite	With iconText: an Icon value after the numbers if either is not empty; cut like SetIcon
+	 * @return	false if the element is unknown or not a Feed, the variant, argCount or player is out of range,
+	 *			or the player is not connected
+	 */
+	virtual bool HudEvent(int player, const char *key, int variant, int lifeMs, const int *args, int argCount, const char *iconSprite, const char *iconText) = 0;
 };
 
 }

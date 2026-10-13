@@ -61,6 +61,8 @@ public:
 	virtual bool HudShow(int player, const char *key, bool show);
 	virtual void HudRemove(const char *key);
 	virtual void HudHideStd(unsigned int parts, bool hide);
+	virtual bool HudSetSlotColor(const char *key, int slot, int r, int g, int b, int a);
+	virtual bool HudEvent(int player, const char *key, int variant, int lifeMs, const int *args, int argCount, const char *iconSprite, const char *iconText);
 
 private:
 	static constexpr int TEAM_TARGET_BASE = 0x100; //!< GetTeamTarget returns this plus the team slot
@@ -70,6 +72,7 @@ private:
 	static constexpr float BUDGET_PERIOD = 0.1f; //!< Seconds; about 5 KB/s per client, which the reliable channel drains
 	static constexpr float FULL_SYNC_DELAY = 0.5f; //!< Seconds after InitHUD before the full sync starts
 	static constexpr int MAX_MSG_CELLS = bhl::sb::MAX_MSG_SIZE / 3;
+	static constexpr int MAX_QUEUED_EVENTS = 8; //!< Events per client; the oldest is dropped
 
 	struct value_t
 	{
@@ -116,8 +119,10 @@ private:
 		char select[bhl::sb::MAX_REF_LEN + 1] = {};
 		char value[bhl::sb::MAX_REF_LEN + 1] = {};
 		char list[bhl::sb::MAX_KEY_LEN + 1] = {};
-		unsigned int paramsSet = 0; //!< Bit per param id: set by HudSetParam, sent
+		bhl::sb::ParamMask paramsSet = 0; //!< Bit per param id: set by HudSetParam, sent
 		int params[bhl::sb::MAX_PARAM_ID + 1] = {};
+		unsigned int slotsSet = 0; //!< Bit per color slot: set by HudSetSlotColor, sent
+		int slotColors[bhl::sb::MAX_COLOR_SLOTS][4] = {};
 	};
 
 	struct element_t
@@ -143,6 +148,24 @@ private:
 		float nextSendTime = 0; //!< Nothing is sent to the client before this time
 		float periodEnd = 0; //!< End of the budget period
 		int bytesLeft = 0; //!< Budget left in the period
+	};
+
+	//! Kept apart from client_state_t: a full sync neither clears nor replays events
+	struct event_t
+	{
+		char key[bhl::sb::MAX_KEY_LEN + 1] = {}; //!< Element, looked up when sent
+		int variant = 0;
+		int lifeMs = 0;
+		float time = 0; //!< When HudEvent was called
+		int argCount = 0;
+		value_t args[bhl::sb::MAX_EVENT_ARGS];
+	};
+
+	struct event_queue_t
+	{
+		event_t events[MAX_QUEUED_EVENTS]; //!< A ring, the oldest at first
+		int first = 0;
+		int count = 0;
 	};
 
 	struct client_state_t
@@ -196,6 +219,7 @@ private:
 
 	client_state_t m_Clients[MAX_PLAYERS + 1];
 	pacing_t m_Pacing[MAX_PLAYERS + 1];
+	event_queue_t m_Events[MAX_PLAYERS + 1];
 
 	int m_iBytesLeft = 0;
 	msg_cell_t m_MsgCells[MAX_MSG_CELLS];
@@ -215,11 +239,20 @@ private:
 	void SetCell(int target, const char *key, const value_t &value);
 	void ClearCell(int target, int column);
 	void SetListItem(const char *key, int index, const value_t &value);
-	void SetElementDef(int id, const element_def_t &def);
+
+	//! Returns false and changes nothing if the Element message would be larger than MAX_MSG_SIZE
+	bool SetElementDef(int id, const element_def_t &def);
 	void RemoveElement(int id);
 	void DropTexts(int id);
 	const std::string &GetText(int player, int id, int variant);
 	unsigned int GetVisibleElements(int player);
+
+	//! Whether the client gets events: a scoreboard client with HudV1
+	bool IsEventClient(int idx);
+	void QueueEvent(int idx, const event_t &event);
+
+	//! Milliseconds the client shows the line of an event of the element id (-1 if there is none)
+	int GetEventLife(const event_t &event, int id);
 
 	void MarkColumn(int id);
 	void MarkBadges(const char *host);
@@ -239,16 +272,18 @@ private:
 	bool AddValuesCell(edict_t *pEdict, client_state_t &state, int wire, int target, int column);
 	bool FlushValues(edict_t *pEdict, client_state_t &state);
 	bool SendElements(edict_t *pEdict, client_state_t &state);
-	int GetElementSize(int id);
+	static int GetElementSize(const element_def_t &def);
 	bool SendElement(edict_t *pEdict, client_state_t &state, int id);
 	bool SendElementRemoval(edict_t *pEdict, int id);
 	bool SendTemplates(edict_t *pEdict, int idx, client_state_t &state);
 	bool SendHudState(edict_t *pEdict, int idx, client_state_t &state);
+	bool SendEvents(edict_t *pEdict, int idx, client_state_t &state);
 
 	static bool IsEqual(const value_t &a, const value_t &b);
 	static bool IsEqual(const column_t &a, const column_t &b);
 	static bool IsEqual(const element_def_t &a, const element_def_t &b);
 	static int GetParamCount(const element_def_t &def);
+	static int GetEventSize(const event_t &event);
 	static int GetValueSize(const value_t &value);
 	static void WriteValue(const value_t &value);
 };

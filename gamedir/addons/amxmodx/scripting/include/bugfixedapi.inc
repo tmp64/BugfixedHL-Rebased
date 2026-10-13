@@ -200,7 +200,10 @@ enum BhlHudKind
 	BHL_HUD_TEXT = 1,
 	BHL_HUD_METER = 2,
 	BHL_HUD_STRIP = 3,
-	BHL_HUD_ICON = 4
+	BHL_HUD_ICON = 4,
+	BHL_HUD_BOARD = 5,	// rows of the scoreboard order or of a list
+	BHL_HUD_FEED = 6,	// lines of bhl_hud_event
+	BHL_HUD_BOX = 7	// backdrop of a group, placed with a parent place at the root of the group
 };
 
 enum BhlHudFont
@@ -263,7 +266,27 @@ enum BhlHudParam
 	BHL_HUD_P_ALPHA_ICON_FUTURE = 19,
 	BHL_HUD_P_FRAME = 20,
 	BHL_HUD_P_ICON_TALL = 30,
-	BHL_HUD_P_ICON_GAP = 31
+	BHL_HUD_P_ICON_GAP = 31,
+	BHL_HUD_P_FLASH_MS = 32,	// every kind
+	BHL_HUD_P_FADE_MS = 33,	// every kind
+	BHL_HUD_P_HOLD_MS = 34,	// every kind
+	BHL_HUD_P_WARN_AT = 35,	// every kind
+	BHL_HUD_P_WARN_PULSE_MS = 36,	// every kind
+	BHL_HUD_P_FORM = 40,	// 0 dots or bar, 1 ring
+	BHL_HUD_P_TRACK = 41,	// 0 off, 1 marks of the other players
+	BHL_HUD_P_ROWS = 44,
+	BHL_HUD_P_BOARD_MODE = 45,	// 0 first rows, 1 first rows and the own row, 2 rows around the own row
+	BHL_HUD_P_ROW_GAP = 46,
+	BHL_HUD_P_COLUMN_GAP = 47,
+	BHL_HUD_P_FILL_ALPHA = 48,
+	BHL_HUD_P_HIGHLIGHT_ALPHA = 49,
+	BHL_HUD_P_LINES = 52,
+	BHL_HUD_P_LIFE_MS = 53,
+	BHL_HUD_P_LINE_FADE_MS = 54,
+	BHL_HUD_P_QUEUE = 55,	// 0 newest lines on top, 1 one line at a time
+	BHL_HUD_P_LINE_GAP = 56,
+	BHL_HUD_P_ACCENT_WIDE = 60,
+	BHL_HUD_P_RADIUS = 61
 };
 
 enum BhlHudStd
@@ -285,6 +308,13 @@ enum BhlHudStd
  * Longest template in bytes. Longer texts are not set, they are never cut.
  */
 #define BHL_HUD_MAX_TEXT 188
+
+/**
+ * Color slots of bhl_hud_slot_color after the text variants 0-7.
+ * BHL_HUD_SLOT_WARN is used while the warn_at param holds, BHL_HUD_SLOT_ACCENT by the accent bar of a box.
+ */
+#define BHL_HUD_SLOT_WARN 8
+#define BHL_HUD_SLOT_ACCENT 9
 
 /**
  * Returns the scoreboard target of a player.
@@ -322,7 +352,7 @@ native BhlClientCaps:bhl_get_client_caps(idx);
 forward bhl_client_caps_changed(idx);
 
 /**
- * Returns whether the server supports the scoreboard and HUD extension (server API 1.3 or newer).
+ * Returns whether the server supports the scoreboard and HUD extension (server API 1.4 or newer).
  * All other bhl_sb_* and bhl_hud_* natives log one error and do nothing when it returns false.
  */
 native bool:bhl_sb_available();
@@ -445,15 +475,17 @@ native bool:bhl_hud_color(const key[], r = BHL_HUD_COLOR, g = 0, b = 0, a = 255)
  * In Pawn strings the ^ prefix of a ref is written ^^.
  * @param value			Column key or built-in value with an optional ^ and one of :cur, :max and :left,
  *						for example "progress", "@state", "level:left", "^^weapon"
- * @param list			List key: the icons of a strip
+ * @param list			List key: the icons of a strip, the rows of a board
  * @param select		Ref like value whose number picks the text variant 0-7, "" for variant 0
- * @return				false for an unknown element, an invalid ref or list key; nothing changes then
+ * @return				false for an unknown element, an invalid ref or list key, or when the element
+ *						would not fit in a message; nothing changes then
  */
 native bool:bhl_hud_bind(const key[], const value[] = "", const list[] = "", const select[] = "");
 
 /**
- * Sets a parameter of an element kind. The value is clamped to the range of the parameter.
- * @return				false for an unknown element or a parameter of another kind
+ * Sets a parameter of an element kind, or of every kind. The value is clamped to the range of the parameter.
+ * @return				false for an unknown element, a parameter of another kind, or when the element
+ *						would not fit in a message
  */
 native bool:bhl_hud_param(const key[], BhlHudParam:param, value);
 
@@ -492,6 +524,37 @@ native bhl_hud_remove(const key[] = "");
  * Changes only the given parts, so plugins that hide different parts don't undo each other.
  */
 native bhl_hud_hide_std(BhlHudStd:parts, bool:hide = true);
+
+/**
+ * Sets the color of a color slot of an element. It replaces the color of the element while that
+ * text variant is drawn (slots 0-7), while the warn_at param holds (BHL_HUD_SLOT_WARN), or for
+ * the accent bar of a box (BHL_HUD_SLOT_ACCENT). It is used as is, also for elements that follow
+ * hud_color. A kind change drops the slot colors.
+ * @param slot			0-7, BHL_HUD_SLOT_WARN or BHL_HUD_SLOT_ACCENT
+ * @param r				0-255, or -1 to clear the slot (g, b and a are ignored then)
+ * @return				false for an unknown element, a slot out of range, or when the element
+ *						would not fit in a message
+ */
+native bool:bhl_hud_slot_color(const key[], slot, r, g, b, a = 255);
+
+/**
+ * Adds a line to a feed: the text variant is evaluated once with the numbers and the icon.
+ * In the template {@a} to {@d} are the numbers ({@a:name} writes the name of the player with
+ * that index) and {@icon} is the icon text; the icon sprite is drawn before the line.
+ * Lines are not kept: only players in game who draw elements (BHL_CAPS_HUD_V1) get them now,
+ * and a line that can't be sent before its life ends is dropped.
+ * @param player		0 for every player, or a player index
+ * @param key			Key of a BHL_HUD_FEED element
+ * @param variant		Text variant 0-7
+ * @param life_ms		How long the line is shown, up to 65535, 0 for the life_ms param of the element
+ * @param sprite		Icon of the line: hud.txt name or "sprites/<name>.spr" precached by the plugin, "" for none
+ * @param sprite_text	Text of the icon, written by {@icon}
+ * @param ...			Up to 4 numbers
+ * @return				false for an unknown element or one that is not a feed, a variant out of range,
+ *						a player out of range or not connected, or more than 4 numbers
+ */
+native bool:bhl_hud_event(player, const key[], variant, life_ms = 0, const sprite[] = "",
+                          const sprite_text[] = "", any:...);
 
 /**
  * Sets a text variant from the plugin dictionary: for one player in his language,

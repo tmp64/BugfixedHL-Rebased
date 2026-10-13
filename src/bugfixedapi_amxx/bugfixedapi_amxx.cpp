@@ -512,7 +512,7 @@ static cell AMX_NATIVE_CALL bhl_hud_bind(AMX *amx, cell *params)
 
 	if (!bhl::serverapi()->GetScoreboard()->HudBind(key, value, list, select))
 	{
-		LogHudError(amx, __func__, key, "unknown element, or invalid value \"%s\", list \"%s\" or select \"%s\"", value, list, select);
+		LogHudError(amx, __func__, key, "unknown element, invalid value \"%s\", list \"%s\" or select \"%s\", or the element would exceed %d bytes", value, list, select, bhl::sb::MAX_MSG_SIZE);
 		return 0;
 	}
 
@@ -531,7 +531,7 @@ static cell AMX_NATIVE_CALL bhl_hud_param(AMX *amx, cell *params)
 
 	if (!bhl::serverapi()->GetScoreboard()->HudSetParam(key, param, params[3]))
 	{
-		LogHudError(amx, __func__, key, "unknown element, or its kind has no param %d", param);
+		LogHudError(amx, __func__, key, "unknown element, its kind has no param %d, or the element would exceed %d bytes", param, bhl::sb::MAX_MSG_SIZE);
 		return 0;
 	}
 
@@ -612,6 +612,61 @@ static cell AMX_NATIVE_CALL bhl_hud_hide_std(AMX *amx, cell *params)
 	return 1;
 }
 
+// native bool:bhl_hud_slot_color(const key[], slot, r, g, b, a = 255)
+static cell AMX_NATIVE_CALL bhl_hud_slot_color(AMX *amx, cell *params)
+{
+	if (!CheckScoreboardApi(amx, __func__))
+		return 0;
+
+	int length;
+	const char *key = MF_GetAmxString(amx, params[1], 0, &length);
+	int slot = params[2];
+
+	if (!bhl::serverapi()->GetScoreboard()->HudSetSlotColor(key, slot, params[3], params[4], params[5], params[6]))
+	{
+		LogHudError(amx, __func__, key, "unknown element, slot %d out of range, or the element would exceed %d bytes", slot, bhl::sb::MAX_MSG_SIZE);
+		return 0;
+	}
+
+	return 1;
+}
+
+// native bool:bhl_hud_event(player, const key[], variant, life_ms = 0, const sprite[] = "", const sprite_text[] = "", any:...)
+static cell AMX_NATIVE_CALL bhl_hud_event(AMX *amx, cell *params)
+{
+	constexpr int FIXED_PARAMS = 6;
+
+	if (!CheckScoreboardApi(amx, __func__))
+		return 0;
+
+	int length;
+	const char *key = MF_GetAmxString(amx, params[2], 0, &length);
+	const char *sprite = MF_GetAmxString(amx, params[5], 1, &length);
+	const char *spriteText = MF_GetAmxString(amx, params[6], 2, &length);
+	int player = params[1];
+	int variant = params[3];
+	int argCount = (int)(params[0] / sizeof(cell)) - FIXED_PARAMS;
+	int args[bhl::sb::MAX_EVENT_INTS] = {};
+
+	if (argCount > bhl::sb::MAX_EVENT_INTS)
+	{
+		LogHudError(amx, __func__, key, "%d numbers, more than %d", argCount, bhl::sb::MAX_EVENT_INTS);
+		return 0;
+	}
+
+	// Variadic args are passed by reference
+	for (int i = 0; i < argCount; i++)
+		args[i] = *MF_GetAmxAddr(amx, params[FIXED_PARAMS + 1 + i]);
+
+	if (!bhl::serverapi()->GetScoreboard()->HudEvent(player, key, variant, params[4], args, argCount, sprite, spriteText))
+	{
+		LogHudError(amx, __func__, key, "unknown element or not a feed, variant %d out of range, or player %d out of range or not connected", variant, player);
+		return 0;
+	}
+
+	return 1;
+}
+
 AMX_NATIVE_INFO bugfixedapi_Exports[] = {
 	{ "bhl_is_api_ready", bhl_is_api_ready },
 	{ "bhl_get_server_version", bhl_get_server_version },
@@ -652,6 +707,8 @@ AMX_NATIVE_INFO bugfixedapi_Exports[] = {
 	{ "bhl_hud_show", bhl_hud_show },
 	{ "bhl_hud_remove", bhl_hud_remove },
 	{ "bhl_hud_hide_std", bhl_hud_hide_std },
+	{ "bhl_hud_slot_color", bhl_hud_slot_color },
+	{ "bhl_hud_event", bhl_hud_event },
 	{ nullptr, nullptr }
 };
 

@@ -94,8 +94,10 @@ public:
 		char szList[bhl::sb::MAX_KEY_LEN + 1] = {};
 		bhl::sb::TemplateRef selectRef; //!< Parsed szSelect, not set if it is ""
 		bhl::sb::TemplateRef valueRef; //!< Parsed szValue, not set if it is ""
-		unsigned int iParamMask = 0; //!< Bit per param id that the server sent
+		bhl::sb::ParamMask iParamMask = 0; //!< Bit per param id that the server sent
 		int params[bhl::sb::MAX_PARAM_ID + 1] = {}; //!< Clamped values by param id
+		unsigned int iColorMask = 0; //!< Bit per color slot that the server sent
+		unsigned char colors[bhl::sb::MAX_COLOR_SLOTS][4] = {}; //!< rgba by slot
 
 		bool HasFlag(bhl::sb::E_ElementFlags flag) const { return IsEnumFlagSet(flags, flag); }
 
@@ -104,6 +106,9 @@ public:
 		 * Otherwise HudServerPanel uses its default from HudLayoutBase.res.
 		 */
 		bool GetParam(bhl::sb::E_Param param, int &value) const;
+
+		//! Returns true and the rgba if the server sent the color slot (4.3, 8.5)
+		bool GetSlotColor(int slot, unsigned char out[4]) const;
 	};
 
 	/**
@@ -140,6 +145,31 @@ public:
 		int iScore = 0;
 		int iFrags = 0; //!< @frags and @deaths: valid with bHasSubject
 		int iDeaths = 0;
+	};
+
+	//! Values of the built-ins that only some templates have (8.10): Board rows and events
+	struct TemplateExtras
+	{
+		const Value *pItem = nullptr; //!< @item
+		int iIndex = 0; //!< @index when > 0
+		const Value *pValue = nullptr; //!< Replaces the value that @value reads, with the format of the element's value ref applied (FormatValue)
+		const Value *pArgs = nullptr; //!< @a-@d by position, @icon is the first Icon
+		int iArgCount = 0;
+	};
+
+	//! Feed lines kept over all elements
+	static constexpr int MAX_HUD_LINES = 32;
+
+	//! A line of a Feed element from an Event message (4.3)
+	struct HudLine
+	{
+		int iElement = -1; //!< -1 for an unused slot
+		int iSeq = 0; //!< Grows with every line over all elements and is never reset: the announcer schedule of HudServerPanel
+		int iVariant = 0;
+		float flTime = 0; //!< GetTime() when it arrived
+		float flLife = 0; //!< Seconds, 0 for the element's life_ms
+		Value icon; //!< The first Icon arg, empty without one
+		wchar_t wszText[bhl::sb::TEMPLATE_BUF_LEN] = {}; //!< The template evaluated on arrival
 	};
 
 	static CScoreboardData &Get();
@@ -272,6 +302,12 @@ public:
 	//! First row of the order: a team in team mode, otherwise a participant; invalid without participants
 	Subject GetFirstRow() const;
 
+	/**
+	 * The ranked entities (6.4) in the scoreboard order: teams with participants in team mode, otherwise participants.
+	 * @return	Number of entities written, at most max
+	 */
+	int GetOrderedEntities(Subject *out, int max) const;
+
 	//! The ranked entity of a subject: his team in team mode, otherwise the subject itself
 	Subject GetRankedEntity(const Subject &subject) const;
 
@@ -334,6 +370,13 @@ public:
 	bool GetElementValue(int id, const Subject &subject, Value &out) const;
 
 	/**
+	 * Applies the cur, max or left format of a ref to a value as GetElementValue does: a Progress becomes an Int,
+	 * any other value becomes empty. None leaves the value as it is.
+	 * @return	false if the format emptied the value
+	 */
+	static bool FormatValue(bhl::sb::E_RefFormat format, Value &value);
+
+	/**
 	 * Variant of an element (8.10, Variants): Text by the number of select as ResolveRef gives it
 	 * ("" is 0), Icon and Meter 0, Strip none.
 	 * @return	0-7, or -1 if the select value is missing or out of range, or the variant has no template
@@ -354,8 +397,16 @@ public:
 	 * Evaluates any template for a subject in the context of element elementId (-1 for none).
 	 * Used by hud_server_eval.
 	 * @param	pMissing	See bhl::sb::CTemplate::Evaluate
+	 * @param	pExtras		@item, @index, @a-@d, @icon and the value of @value of a Board row or an event; refs with '^' resolve without them
 	 */
-	bool EvaluateTemplate(const bhl::sb::CTemplate &tpl, const Subject &subject, int elementId, wchar_t *buf, int bufSizeBytes, unsigned int *pMissing = nullptr) const;
+	bool EvaluateTemplate(const bhl::sb::CTemplate &tpl, const Subject &subject, int elementId, wchar_t *buf, int bufSizeBytes, unsigned int *pMissing = nullptr, const TemplateExtras *pExtras = nullptr) const;
+
+	/**
+	 * Lines of a Feed element that are kept, oldest first, up to MAX_HUD_LINES.
+	 * Lines don't expire here: HudServerPanel drops them by their life. The next message may replace them.
+	 * @return	Number of lines written
+	 */
+	int GetHudLines(int elementId, const HudLine **out) const;
 
 	/**
 	 * Banner row of the scoreboard (6.8): the lowest-id Text element with this place that is
@@ -378,6 +429,12 @@ public:
 
 	//! Incremented on every change of elements, templates and HudState
 	int GetHudSerial() const { return m_iHudSerial; }
+
+	//! Incremented when the store is cleared: Reset (a full sync starts with it), VidInit and the loss of ScoreboardV1
+	int GetResetCount() const { return m_iResetCount; }
+
+	//! Incremented on every removal of the element id, also by Clear
+	int GetElementRemovals(int id) const { return m_iElementRemovals[id]; }
 
 	//----------------------------------------------------------------------------------------------------
 	// Text helpers
@@ -418,6 +475,8 @@ private:
 	int m_iSerial = 0;
 	int m_iSchemaSerial = 0;
 	int m_iHudSerial = 0;
+	int m_iResetCount = 0;
+	int m_iElementRemovals[bhl::sb::MAX_ELEMENTS] = {};
 	int m_iFrame = 0; //!< Incremented by Frame(), invalidates the per-frame caches
 
 	Column m_Columns[bhl::sb::MAX_COLUMNS];
@@ -457,14 +516,18 @@ private:
 		Builtins builtins;
 	};
 
-	//! Subjects whose built-in values are kept per frame: the viewer's, the leader and a few more
-	static constexpr int BUILTINS_CACHE_SIZE = 4;
+	//! Subjects whose built-in values are kept per frame: the viewer's, the leader and the rows of a Board
+	static constexpr int BUILTINS_CACHE_SIZE = 16;
 
 	mutable Ranking m_Ranking;
 	mutable BuiltinsCacheEntry m_BuiltinsCache[BUILTINS_CACHE_SIZE];
 	mutable int m_iNextBuiltinsCache = 0;
 	mutable int m_iRunningClockSerial = -1; //!< m_iSerial when m_bHasRunningClock was computed
 	mutable bool m_bHasRunningClock = false;
+
+	HudLine m_HudLines[MAX_HUD_LINES]; //!< A ring: events are not state and change no serial
+	int m_iNextHudLine = 0; //!< Slot of the next line, the oldest one when the ring is full
+	int m_iLastHudLineSeq = 0;
 
 	//! Reads the payload of a BhlScore message
 	class CMsgReader;
@@ -476,7 +539,7 @@ private:
 	//! Returns MAX_COLUMNS values of the protocol target or nullptr
 	Value *GetTargetValues(int target);
 
-	//! Removes an element and its templates; its visibility bit stays
+	//! Removes an element, its templates and its Feed lines; its visibility bit stays
 	void RemoveElement(int id);
 
 	const Ranking &GetRanking() const;
@@ -503,6 +566,13 @@ private:
 	void ReadElement(CMsgReader &reader);
 	void ReadTemplate(CMsgReader &reader);
 	void ReadHudState(CMsgReader &reader);
+
+	/**
+	 * Adds a line to a Feed element: its variant's template is evaluated once, for the element's subject,
+	 * with the args. Ignored for another kind, a variant without a template, a broken message, or when
+	 * the text is empty and there is no icon sprite.
+	 */
+	void ReadEvent(CMsgReader &reader);
 
 	/**
 	 * Reads "type len payload" (4.3). A value of an unknown type, with a wrong len or a broken

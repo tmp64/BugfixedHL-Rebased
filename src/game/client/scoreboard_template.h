@@ -37,6 +37,15 @@ enum class E_Builtin
 	Deaths,
 	Name,
 	Value,
+
+	// Only in a context that has them (TemplateExtras of CScoreboardData::EvaluateTemplate), missing elsewhere
+	Item, //!< List item of a Board row
+	Index, //!< Number of a Board row, 1-based
+	A, //!< Event args 0-3 by position
+	B,
+	C,
+	D,
+	Icon, //!< First Icon arg of an event
 };
 
 //! Format of a ref that makes a number of a Progress

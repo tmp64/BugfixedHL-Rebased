@@ -497,6 +497,35 @@ bool GetProgressPart(E_RefFormat format, int cur, int max, int &out)
 	}
 }
 
+//! Applies the format of a ref to its resolved value; false makes the value missing
+bool ApplyRefFormat(E_RefFormat format, TemplateValue &out)
+{
+	if (format == E_RefFormat::None)
+		return true;
+
+	if (out.type != E_TemplateValueType::Progress || !GetProgressPart(format, out.iValue, out.iMax, out.iValue))
+	{
+		out.type = E_TemplateValueType::Missing;
+		return false;
+	}
+
+	out.type = E_TemplateValueType::Int;
+	out.iMax = 0;
+	return true;
+}
+
+//! The first arg of type Icon or nullptr
+const CScoreboardData::Value *FindIconArg(const CScoreboardData::Value *args, int count)
+{
+	for (int i = 0; i < count; i++)
+	{
+		if (args[i].type == E_ValueType::Icon)
+			return &args[i];
+	}
+
+	return nullptr;
+}
+
 //! The default counter of a Meter without variant 0 (8.7)
 const CTemplate &GetMeterCounterTemplate()
 {
@@ -512,16 +541,57 @@ const CTemplate &GetMeterCounterTemplate()
 class CStoreTemplateContext : public ITemplateContext
 {
 public:
-	CStoreTemplateContext(const CScoreboardData &data, const CScoreboardData::Subject &subject, int elementId)
+	CStoreTemplateContext(const CScoreboardData &data, const CScoreboardData::Subject &subject, int elementId, const CScoreboardData::TemplateExtras *pExtras)
 	    : m_Data(data)
 	    , m_Subject(subject)
 	    , m_iElementId(elementId)
+	    , m_pExtras(pExtras)
 	{
 	}
 
 	bool GetValue(const TemplateRef &ref, TemplateValue &out) override
 	{
-		return m_Data.ResolveRef(ref, m_Subject, m_iElementId, out);
+		if (!m_pExtras || ref.bFirstRow)
+			return m_Data.ResolveRef(ref, m_Subject, m_iElementId, out);
+
+		const CScoreboardData::TemplateExtras &extras = *m_pExtras;
+		const CScoreboardData::Value *value = nullptr;
+		CScoreboardData::Value index;
+
+		switch (ref.builtin)
+		{
+		case E_Builtin::Value:
+			if (!extras.pValue)
+				return m_Data.ResolveRef(ref, m_Subject, m_iElementId, out);
+
+			value = extras.pValue;
+			break;
+		case E_Builtin::Item:
+			value = extras.pItem;
+			break;
+		case E_Builtin::Index:
+			index.type = extras.iIndex > 0 ? E_ValueType::Int : E_ValueType::None;
+			index.iValue = extras.iIndex;
+			value = &index;
+			break;
+		case E_Builtin::A:
+		case E_Builtin::B:
+		case E_Builtin::C:
+		case E_Builtin::D:
+		{
+			int arg = static_cast<int>(ref.builtin) - static_cast<int>(E_Builtin::A);
+			value = extras.pArgs && arg < extras.iArgCount ? &extras.pArgs[arg] : nullptr;
+			break;
+		}
+		case E_Builtin::Icon:
+			value = extras.pArgs ? FindIconArg(extras.pArgs, extras.iArgCount) : nullptr;
+			break;
+		default:
+			return m_Data.ResolveRef(ref, m_Subject, m_iElementId, out);
+		}
+
+		out = TemplateValue();
+		return value && ValueToTemplate(*value, out) && ApplyRefFormat(ref.format, out);
 	}
 
 	bool GetPlayerName(int idx, wchar_t *buf, int bufLen) override
@@ -538,6 +608,7 @@ private:
 	const CScoreboardData &m_Data;
 	CScoreboardData::Subject m_Subject;
 	int m_iElementId = -1;
+	const CScoreboardData::TemplateExtras *m_pExtras = nullptr;
 };
 
 void ValueToDebugString(const CScoreboardData::Value &value, char *buf, int bufSize)
@@ -683,10 +754,19 @@ bool CScoreboardData::Element::GetParam(E_Param param, int &value) const
 {
 	int id = static_cast<int>(param);
 
-	if (id < 0 || id > MAX_PARAM_ID || !(iParamMask & (1u << id)))
+	if (id < 0 || id > MAX_PARAM_ID || !(iParamMask & ParamBit(id)))
 		return false;
 
 	value = params[id];
+	return true;
+}
+
+bool CScoreboardData::Element::GetSlotColor(int slot, unsigned char out[4]) const
+{
+	if (slot < 0 || slot >= MAX_COLOR_SLOTS || !(iColorMask & (1u << slot)))
+		return false;
+
+	memcpy(out, colors[slot], sizeof(colors[slot]));
 	return true;
 }
 
@@ -1100,6 +1180,14 @@ CScoreboardData::Subject CScoreboardData::GetFirstRow() const
 	return GetRanking().firstRow;
 }
 
+int CScoreboardData::GetOrderedEntities(Subject *out, int max) const
+{
+	const Ranking &r = GetRanking();
+	int count = max > 0 ? min(r.iCount, max) : 0;
+	std::copy(r.entities, r.entities + count, out);
+	return count;
+}
+
 CScoreboardData::Subject CScoreboardData::GetRankedEntity(const Subject &subject) const
 {
 	if (subject.IsTeam())
@@ -1198,13 +1286,15 @@ const CScoreboardData::Ranking &CScoreboardData::GetRanking() const
 		}
 	}
 
+	std::sort(r.entities, r.entities + r.iCount, [this](const Subject &a, const Subject &b) {
+		return CompareEntities(a, b) < 0;
+	});
+
 	for (int i = 0; i < r.iCount; i++)
-	{
 		r.bHasNumber[i] = GetEntityNumber(r.entities[i], sortCol, r.numbers[i]);
 
-		if (!r.firstRow.IsValid() || CompareEntities(r.entities[i], r.firstRow) < 0)
-			r.firstRow = r.entities[i];
-	}
+	if (r.iCount > 0)
+		r.firstRow = r.entities[0];
 
 	return r;
 }
@@ -1504,18 +1594,7 @@ bool CScoreboardData::ResolveRef(const TemplateRef &ref, const Subject &subject,
 		break;
 	}
 
-	if (ref.format == E_RefFormat::None)
-		return true;
-
-	if (out.type != E_TemplateValueType::Progress || !GetProgressPart(ref.format, out.iValue, out.iMax, out.iValue))
-	{
-		out.type = E_TemplateValueType::Missing;
-		return false;
-	}
-
-	out.type = E_TemplateValueType::Int;
-	out.iMax = 0;
-	return true;
+	return ApplyRefFormat(ref.format, out);
 }
 
 bool CScoreboardData::GetElementValue(int id, const Subject &subject, Value &out) const
@@ -1548,17 +1627,23 @@ bool CScoreboardData::GetElementValue(int id, const Subject &subject, Value &out
 		out.iValue = number;
 	}
 
-	if (out.IsEmpty() || ref->format == E_RefFormat::None)
-		return !out.IsEmpty();
+	return !out.IsEmpty() && FormatValue(ref->format, out);
+}
 
-	bool bIsPart = out.type == E_ValueType::Progress && GetProgressPart(ref->format, out.iValue, out.iMax, number);
-	out = Value();
+bool CScoreboardData::FormatValue(E_RefFormat format, Value &value)
+{
+	if (format == E_RefFormat::None)
+		return true;
+
+	int number = 0;
+	bool bIsPart = value.type == E_ValueType::Progress && GetProgressPart(format, value.iValue, value.iMax, number);
+	value = Value();
 
 	if (!bIsPart)
 		return false;
 
-	out.type = E_ValueType::Int;
-	out.iValue = number;
+	value.type = E_ValueType::Int;
+	value.iValue = number;
 	return true;
 }
 
@@ -1628,7 +1713,7 @@ const CTemplate *CScoreboardData::GetTemplate(int id, int variant) const
 	return &m_Templates[id][variant];
 }
 
-bool CScoreboardData::EvaluateTemplate(const CTemplate &tpl, const Subject &subject, int elementId, wchar_t *buf, int bufSizeBytes, unsigned int *pMissing) const
+bool CScoreboardData::EvaluateTemplate(const CTemplate &tpl, const Subject &subject, int elementId, wchar_t *buf, int bufSizeBytes, unsigned int *pMissing, const TemplateExtras *pExtras) const
 {
 	if (pMissing)
 		*pMissing = 0;
@@ -1638,8 +1723,23 @@ bool CScoreboardData::EvaluateTemplate(const CTemplate &tpl, const Subject &subj
 	if (!buf || bufLen <= 0)
 		return false;
 
-	CStoreTemplateContext ctx(*this, subject, elementId);
+	CStoreTemplateContext ctx(*this, subject, elementId, pExtras);
 	return tpl.Evaluate(ctx, buf, bufLen, pMissing);
+}
+
+int CScoreboardData::GetHudLines(int elementId, const HudLine **out) const
+{
+	int count = 0;
+
+	for (int i = 0; i < MAX_HUD_LINES; i++)
+	{
+		const HudLine &line = m_HudLines[(m_iNextHudLine + i) % MAX_HUD_LINES];
+
+		if (line.iElement == elementId)
+			out[count++] = &line;
+	}
+
+	return count;
 }
 
 int CScoreboardData::GetBannerRow(E_Place place, wchar_t *buf, int bufSizeBytes) const
@@ -1720,7 +1820,8 @@ void CScoreboardData::GetIconName(const Value &value, wchar_t *buf, int bufSizeB
 //-----------------------------------------------------
 void CScoreboardData::DumpCommand()
 {
-	static const char *const s_KindNames[] = { "None", "Text", "Meter", "Strip", "Icon" };
+	static const char *const s_KindNames[] = { "None", "Text", "Meter", "Strip", "Icon", "Board", "Feed", "Box" };
+	static_assert(std::size(s_KindNames) == static_cast<size_t>(LAST_ELEMENT_KIND) + 1, "every kind needs a name");
 	static const char *const s_PlaceNames[] = { "Screen", "Parent", "NumbersRow", "BannerTop", "BannerBottom", "ParentLeft", "ParentRight" };
 
 	ConPrintf("Scoreboard: active %d, config %d, hud_scoreboard_custom %d, hud_server_elements %d\n",
@@ -1827,6 +1928,14 @@ void CScoreboardData::DumpCommand()
 
 			if (info && element.GetParam(info->id, value))
 				ConPrintf(", %s %d", info->pszName, value);
+		}
+
+		for (int j = 0; j < MAX_COLOR_SLOTS; j++)
+		{
+			unsigned char color[4];
+
+			if (element.GetSlotColor(j, color))
+				ConPrintf(", slot %d color %d %d %d %d", j, color[0], color[1], color[2], color[3]);
 		}
 
 		ConPrintf("\n");
@@ -2213,6 +2322,7 @@ void CScoreboardData::Clear()
 	m_iSerial++;
 	m_iSchemaSerial++;
 	m_iHudSerial++;
+	m_iResetCount++;
 }
 
 void CScoreboardData::UpdateSortColumns()
@@ -2249,9 +2359,16 @@ CScoreboardData::Value *CScoreboardData::GetTargetValues(int target)
 void CScoreboardData::RemoveElement(int id)
 {
 	m_Elements[id] = Element();
+	m_iElementRemovals[id]++;
 
 	for (CTemplate &tpl : m_Templates[id])
 		tpl.Clear();
+
+	for (HudLine &line : m_HudLines)
+	{
+		if (line.iElement == id)
+			line = HudLine();
+	}
 }
 
 int CScoreboardData::MsgFunc_BhlScore(const char *pszName, int iSize, void *pbuf)
@@ -2294,6 +2411,9 @@ int CScoreboardData::MsgFunc_BhlScore(const char *pszName, int iSize, void *pbuf
 		break;
 	case E_Op::HudState:
 		ReadHudState(reader);
+		break;
+	case E_Op::Event:
+		ReadEvent(reader);
 		break;
 	default:
 		break;
@@ -2502,7 +2622,7 @@ void CScoreboardData::ReadElement(CMsgReader &reader)
 	if (!reader.ReadByte(id) || !reader.ReadByte(kind))
 		return;
 
-	if (kind < static_cast<int>(E_ElementKind::Text) || kind > static_cast<int>(E_ElementKind::Icon))
+	if (!IsKnownKind(kind))
 	{
 		// None or an unknown kind removes; 0xFF removes all only with None
 		if (id == ALL_ELEMENTS && kind == static_cast<int>(E_ElementKind::None))
@@ -2577,10 +2697,11 @@ void CScoreboardData::ReadElement(CMsgReader &reader)
 	if (strlen(str) <= static_cast<size_t>(MAX_KEY_LEN))
 		V_strcpy_safe(element.szList, str);
 
+	// Every param is read, so that the color block after them is found
 	int count = 0;
 	reader.ReadByte(count);
 
-	for (int i = 0; i < count && i < MAX_PARAMS && reader.GetRemaining() >= 3; i++)
+	for (int i = 0; i < count && reader.GetRemaining() >= 3; i++)
 	{
 		int param = 0;
 		int value = 0;
@@ -2593,7 +2714,28 @@ void CScoreboardData::ReadElement(CMsgReader &reader)
 			continue;
 
 		element.params[param] = clamp(value, info->iMin, info->iMax);
-		element.iParamMask |= 1u << param;
+		element.iParamMask |= ParamBit(param);
+	}
+
+	int colors = 0;
+	reader.ReadByte(colors);
+
+	for (int i = 0; i < colors && reader.GetRemaining() >= 5; i++)
+	{
+		int slot = 0;
+		int rgba[4] = {};
+		reader.ReadByte(slot);
+
+		for (int &component : rgba)
+			reader.ReadByte(component);
+
+		if (slot >= MAX_COLOR_SLOTS)
+			continue;
+
+		for (int j = 0; j < 4; j++)
+			element.colors[slot][j] = static_cast<unsigned char>(rgba[j]);
+
+		element.iColorMask |= 1u << slot;
 	}
 
 	m_Elements[id] = element;
@@ -2637,4 +2779,56 @@ void CScoreboardData::ReadHudState(CMsgReader &reader)
 	m_iHiddenStdParts = static_cast<unsigned int>(hide) & static_cast<unsigned int>(E_HudStd::All);
 	m_iSerial++;
 	m_iHudSerial++;
+}
+
+void CScoreboardData::ReadEvent(CMsgReader &reader)
+{
+	int id = 0;
+	int variant = 0;
+	int life = 0;
+	int count = 0;
+
+	if (!reader.ReadByte(id) || !reader.ReadByte(variant) || !reader.ReadWord(life) || !reader.ReadByte(count))
+		return;
+
+	const CTemplate *tpl = GetTemplate(id, variant);
+
+	if (!tpl || m_Elements[id].kind != E_ElementKind::Feed)
+		return;
+
+	// An arg of an unknown type keeps its position as an empty value
+	Value args[MAX_EVENT_ARGS];
+	int argCount = min(count, MAX_EVENT_ARGS);
+
+	for (int i = 0; i < argCount; i++)
+	{
+		int type = 0;
+
+		if (!ReadValue(reader, args[i], type))
+			return;
+	}
+
+	TemplateExtras extras;
+	extras.pArgs = args;
+	extras.iArgCount = argCount;
+	const Value *icon = FindIconArg(args, argCount);
+
+	HudLine line;
+	Subject subject;
+	GetElementSubject(id, subject);
+
+	if (!EvaluateTemplate(*tpl, subject, id, line.wszText, sizeof(line.wszText), nullptr, &extras) && (!icon || !icon->szSprite[0]))
+		return;
+
+	line.iElement = id;
+	line.iSeq = ++m_iLastHudLineSeq;
+	line.iVariant = variant;
+	line.flTime = GetTime();
+	line.flLife = life / 1000.0f;
+
+	if (icon)
+		line.icon = *icon;
+
+	m_HudLines[m_iNextHudLine] = line;
+	m_iNextHudLine = (m_iNextHudLine + 1) % MAX_HUD_LINES;
 }

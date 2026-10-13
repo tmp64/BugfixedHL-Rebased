@@ -36,6 +36,13 @@ namespace
 		{ "deaths", E_Builtin::Deaths },
 		{ "name", E_Builtin::Name },
 		{ "value", E_Builtin::Value },
+		{ "item", E_Builtin::Item },
+		{ "index", E_Builtin::Index },
+		{ "a", E_Builtin::A },
+		{ "b", E_Builtin::B },
+		{ "c", E_Builtin::C },
+		{ "d", E_Builtin::D },
+		{ "icon", E_Builtin::Icon },
 	};
 
 	E_Builtin FindBuiltin(const char *name)
@@ -874,6 +881,13 @@ bool CTemplate::Evaluate(ITemplateContext &ctx, wchar_t *buf, int bufLen, unsign
 		}
 
 		size_t len = GetWideLength(text, TEMPLATE_BUF_LEN);
+
+		// Only the TABs of the template separate the columns of a Board row (8.14)
+		for (size_t i = 0; i < len; i++)
+		{
+			if (text[i] == L'\t')
+				text[i] = L' ';
+		}
 
 		if (ph.iCut > 0)
 		{

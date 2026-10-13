@@ -7,7 +7,7 @@
 
 #define IBUGFIXEDSERVER_NAME  "IBugfixedServer"
 #define IBUGFIXEDSERVER_MAJOR 1
-#define IBUGFIXEDSERVER_MINOR 3
+#define IBUGFIXEDSERVER_MINOR 4
 
 class CGameRules;
 class IGameVersion;
@@ -163,7 +163,7 @@ public:
 	 * Returns the scoreboard and HUD extension. Never null.
 	 *
 	 * Draft builds of the extension reported v1.2 with an incompatible IScoreboardExt,
-	 * so callers must not use it below v1.3.
+	 * so callers must not use it below v1.3. HudSetSlotColor and HudEvent need v1.4.
 	 *
 	 * Added in version v1.3
 	 */

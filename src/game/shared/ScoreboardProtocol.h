@@ -24,8 +24,9 @@ constexpr int MAX_LISTS = 8;
 constexpr int MAX_LIST_ITEMS = 64;
 constexpr int MAX_ELEMENTS = 32;
 constexpr int MAX_VARIANTS = 8;
-constexpr int MAX_PARAMS = 16; //!< Params in one Element message
 constexpr int MAX_DOTS = 10; //!< A scoreboard Meter with max above this is a bar
+constexpr int MAX_EVENT_ARGS = 5; //!< Args of one Event: 4 numbers and an icon from the natives
+constexpr int MAX_EVENT_INTS = 4; //!< Number args of bhl_hud_event
 
 constexpr int MAX_KEY_LEN = 15; //!< Column, list and element keys
 constexpr int MAX_COLUMN_TITLE_LEN = 31;
@@ -45,6 +46,7 @@ constexpr int ELEMENT_FIXED_SIZE = 18; //!< Opcode to font: an Element that ends
 constexpr int ELEMENT_REMOVAL_SIZE = 3; //!< Element with kind None
 constexpr int TEMPLATE_HEADER_SIZE = 3; //!< Opcode, id and variant
 constexpr int HUDSTATE_SIZE = 7;
+constexpr int EVENT_HEADER_SIZE = 6; //!< Opcode, id, variant, life and count
 
 //! Id that means "every column of the target" (Values, only with E_ValueType::None)
 constexpr int ALL_COLUMNS = 0xFF;
@@ -107,6 +109,7 @@ enum class E_Op : unsigned int
 	Element = 5,
 	Template = 6,
 	HudState = 7,
+	Event = 8, //!< A line of a Feed element; not state, never replayed
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -187,7 +190,25 @@ enum class E_ElementKind : unsigned int
 	Meter = 2,
 	Strip = 3,
 	Icon = 4,
+	Board = 5, //!< Rows of the scoreboard order or of a list
+	Feed = 6, //!< Lines of Event messages
+	Box = 7, //!< Backdrop of the group of its parent
 };
+
+constexpr E_ElementKind LAST_ELEMENT_KIND = E_ElementKind::Box;
+
+inline bool IsKnownKind(int kind)
+{
+	return kind >= static_cast<int>(E_ElementKind::Text) && kind <= static_cast<int>(LAST_ELEMENT_KIND);
+}
+
+//! Color slots of an element: variants 0-7, then these (4.3, 8.5)
+constexpr int SLOT_WARN = 8; //!< Color while warn_at holds
+constexpr int SLOT_ACCENT = 9; //!< Accent bar of a Box
+constexpr int MAX_COLOR_SLOTS = 10;
+
+//! Warn color when the element has none in SLOT_WARN
+inline constexpr unsigned char DEFAULT_WARN_COLOR[4] = { 255, 64, 32, 255 };
 
 enum class E_ElementFlags : unsigned int
 {
@@ -294,14 +315,68 @@ enum class E_Param : unsigned int
 	// Icon
 	IconTall = 30,
 	IconGap = 31,
+
+	// Every kind (8.13). Ids from 32 on are sent after all older ids.
+	FlashMs = 32,
+	FadeMs = 33,
+	HoldMs = 34,
+	WarnAt = 35,
+	WarnPulseMs = 36,
+
+	// Meter
+	Form = 40,
+
+	// Strip
+	Track = 41,
+
+	// Board
+	Rows = 44,
+	BoardMode = 45,
+	RowGap = 46,
+	ColumnGap = 47,
+	FillAlpha = 48,
+	HighlightAlpha = 49,
+
+	// Feed
+	Lines = 52,
+	LifeMs = 53,
+	LineFadeMs = 54,
+	Queue = 55,
+	LineGap = 56,
+
+	// Box
+	AccentWide = 60,
+	Radius = 61,
 };
 
-constexpr int MAX_PARAM_ID = 31; //!< Param ids fit a 32-bit mask
+constexpr int MAX_PARAM_ID = 63; //!< Param ids fit a 64-bit mask
+
+using ParamMask = unsigned long long;
+
+inline ParamMask ParamBit(int id)
+{
+	return 1ull << id;
+}
+
+//! Meter forms (param form)
+enum class E_MeterForm : unsigned int
+{
+	Line = 0, //!< Dots or a bar
+	Ring = 1, //!< Dots on a circle
+};
+
+//! Rows of a Board (param board_mode)
+enum class E_BoardMode : unsigned int
+{
+	Top = 0, //!< The first rows
+	TopAndOwn = 1, //!< The first rows and the own or highlighted row under them
+	Window = 2, //!< Rows around the own or highlighted row
+};
 
 struct ParamInfo
 {
 	E_Param id;
-	E_ElementKind kind; //!< Params of other kinds are ignored
+	E_ElementKind kind; //!< Params of other kinds are ignored; None means every kind
 	const char *pszName; //!< Name in the spec and in HudServerPanel of HudLayoutBase.res
 	int iMin;
 	int iMax;
@@ -335,6 +410,32 @@ inline constexpr ParamInfo PARAM_INFO[] = {
 
 	{ E_Param::IconTall, E_ElementKind::Icon, "icon_tall", 0, 255, 0 },
 	{ E_Param::IconGap, E_ElementKind::Icon, "icon_gap", 0, 64, 2 },
+
+	{ E_Param::FlashMs, E_ElementKind::None, "flash_ms", 0, 5000, 0 },
+	{ E_Param::FadeMs, E_ElementKind::None, "fade_ms", 0, 5000, 0 },
+	{ E_Param::HoldMs, E_ElementKind::None, "hold_ms", 0, 30000, 0 },
+	{ E_Param::WarnAt, E_ElementKind::None, "warn_at", 0, 32767, 0 },
+	{ E_Param::WarnPulseMs, E_ElementKind::None, "warn_pulse_ms", 0, 5000, 0 },
+
+	{ E_Param::Form, E_ElementKind::Meter, "form", 0, 1, 0 },
+
+	{ E_Param::Track, E_ElementKind::Strip, "track", 0, 1, 0 },
+
+	{ E_Param::Rows, E_ElementKind::Board, "rows", 1, 16, 3 },
+	{ E_Param::BoardMode, E_ElementKind::Board, "board_mode", 0, 2, 0 },
+	{ E_Param::RowGap, E_ElementKind::Board, "row_gap", 0, 64, 2 },
+	{ E_Param::ColumnGap, E_ElementKind::Board, "column_gap", 0, 64, 8 },
+	{ E_Param::FillAlpha, E_ElementKind::Board, "fill_alpha", 0, 255, 0 },
+	{ E_Param::HighlightAlpha, E_ElementKind::Board, "highlight_alpha", 0, 255, 48 },
+
+	{ E_Param::Lines, E_ElementKind::Feed, "lines", 1, 8, 4 },
+	{ E_Param::LifeMs, E_ElementKind::Feed, "life_ms", 100, 30000, 5000 },
+	{ E_Param::LineFadeMs, E_ElementKind::Feed, "line_fade_ms", 0, 5000, 400 },
+	{ E_Param::Queue, E_ElementKind::Feed, "queue", 0, 1, 0 },
+	{ E_Param::LineGap, E_ElementKind::Feed, "line_gap", 0, 64, 2 },
+
+	{ E_Param::AccentWide, E_ElementKind::Box, "accent_wide", 0, 64, 0 },
+	{ E_Param::Radius, E_ElementKind::Box, "radius", 0, 32, 0 },
 };
 
 //! Returns the info of a param id or nullptr for an unknown id
@@ -353,7 +454,7 @@ inline const ParamInfo *FindParamInfo(int id)
 inline const ParamInfo *FindParamInfo(E_ElementKind kind, int id)
 {
 	const ParamInfo *info = FindParamInfo(id);
-	return info && info->kind == kind ? info : nullptr;
+	return info && (info->kind == kind || info->kind == E_ElementKind::None) ? info : nullptr;
 }
 
 //! Standard HUD parts that HudState.hide hides (8.12)
@@ -417,6 +518,34 @@ inline bool IsValidRef(const char *ref)
 
 	format++;
 	return !strcmp(format, "cur") || !strcmp(format, "max") || !strcmp(format, "left");
+}
+
+/**
+ * Checks whether the sprite of an Icon value is a sprite file rather than a hud.txt name (4.3):
+ * "sprites/<path>.spr", up to MAX_TEXT_LEN bytes of [A-Za-z0-9_./-], without "..".
+ */
+inline bool IsSpriteFilePath(const char *sprite)
+{
+	constexpr const char *PREFIX = "sprites/";
+	constexpr const char *SUFFIX = ".spr";
+
+	if (!sprite)
+		return false;
+
+	size_t len = strlen(sprite);
+	size_t prefixLen = strlen(PREFIX);
+	size_t suffixLen = strlen(SUFFIX);
+
+	if (len > MAX_TEXT_LEN || len <= prefixLen + suffixLen)
+		return false;
+
+	if (strncmp(sprite, PREFIX, prefixLen) || strcmp(sprite + len - suffixLen, SUFFIX))
+		return false;
+
+	if (strstr(sprite, ".."))
+		return false;
+
+	return strspn(sprite, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_./-") == len;
 }
 
 }

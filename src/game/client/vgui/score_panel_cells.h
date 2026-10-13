@@ -1,5 +1,6 @@
 #ifndef VGUI_SCORE_PANEL_CELLS_H
 #define VGUI_SCORE_PANEL_CELLS_H
+#include <climits>
 #include <Color.h>
 #include <vgui/IImage.h>
 #include <vgui/VGUI2.h>
@@ -113,6 +114,12 @@ private:
 };
 
 /**
+ * Draws a box with round corners line by line, so it doesn't depend on alpha blending.
+ * @param	clipX1	Only the part left of it is drawn
+ */
+void DrawRoundedBox(int x0, int y0, int x1, int y1, int radius, Color color, int clipX1 = INT_MAX);
+
+/**
  * Draws a badge vertically centered on yCenter.
  */
 void DrawScoreBadge(const ScoreCellStyle &style, int x, int yCenter, const wchar_t *text);
@@ -125,6 +132,18 @@ int GetScoreBadgeWide(const ScoreCellStyle &style, const wchar_t *text);
  * of that size with an alpha test, because VGUI2 doesn't blend there and after text in a paint pass.
  */
 void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color);
+
+/**
+ * Sprite of an Icon value for DrawScoreSprite: a name from hud.txt, or the path "sprites/<name>.spr" of a sprite file
+ * the server precaches (4.3). A file is loaded on first use and drawn whole. -1 if the client doesn't have the sprite.
+ */
+int GetScoreSpriteIndex(const char *name);
+
+//! Rectangle of a sprite from GetScoreSpriteIndex, empty for -1 or a file that isn't loaded
+const wrect_t &GetScoreSpriteRect(int sprite);
+
+//! Forgets the handles of sprite files: the engine reloads its sprite list on a new map
+void ResetScoreSpriteFiles();
 
 void DrawCellText(vgui2::HFont font, int x, int y, Color color, const wchar_t *text);
 

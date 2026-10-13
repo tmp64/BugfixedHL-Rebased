@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <bitset>
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -100,6 +101,7 @@ void CScoreboardExt::ClearPlayer(int idx)
 	m_PlayerHud[idx] = player_hud_t();
 	m_Clients[idx] = client_state_t();
 	m_Pacing[idx] = pacing_t();
+	m_Events[idx] = event_queue_t();
 }
 
 void CScoreboardExt::StartFullSync(int idx, bool delay)
@@ -408,7 +410,7 @@ bool CScoreboardExt::AddBadge(const char *key, const char *host)
 
 bool CScoreboardExt::HudAdd(const char *key, int kind, float x, float y, int font, int align, unsigned int flags)
 {
-	if (!bhl::sb::IsValidKey(key) || kind < (int)bhl::sb::E_ElementKind::Text || kind > (int)bhl::sb::E_ElementKind::Icon)
+	if (!bhl::sb::IsValidKey(key) || !bhl::sb::IsKnownKind(kind))
 		return false;
 
 	int id = FindElement(key);
@@ -434,6 +436,7 @@ bool CScoreboardExt::HudAdd(const char *key, int kind, float x, float y, int fon
 		def.value[0] = '\0';
 		def.list[0] = '\0';
 		def.paramsSet = 0;
+		def.slotsSet = 0;
 	}
 
 	def.kind = kind;
@@ -515,8 +518,7 @@ bool CScoreboardExt::HudBind(const char *key, const char *value, const char *lis
 	CopyString(def.value, value);
 	CopyString(def.list, list);
 	CopyString(def.select, select);
-	SetElementDef(id, def);
-	return true;
+	return SetElementDef(id, def);
 }
 
 bool CScoreboardExt::HudSetParam(const char *key, int param, int value)
@@ -532,10 +534,9 @@ bool CScoreboardExt::HudSetParam(const char *key, int param, int value)
 	if (!info)
 		return false;
 
-	def.paramsSet |= 1u << param;
+	def.paramsSet |= bhl::sb::ParamBit(param);
 	def.params[param] = std::clamp(value, info->iMin, info->iMax);
-	SetElementDef(id, def);
-	return true;
+	return SetElementDef(id, def);
 }
 
 bool CScoreboardExt::HudSetText(int player, const char *key, int variant, const char *text)
@@ -687,6 +688,74 @@ void CScoreboardExt::HudHideStd(unsigned int parts, bool hide)
 	MarkHudState();
 }
 
+bool CScoreboardExt::HudSetSlotColor(const char *key, int slot, int r, int g, int b, int a)
+{
+	int id = FindElement(key);
+
+	if (id == -1 || slot < 0 || slot >= bhl::sb::MAX_COLOR_SLOTS)
+		return false;
+
+	element_def_t def = m_Elements[id].def;
+
+	if (r < 0)
+	{
+		def.slotsSet &= ~(1u << slot);
+	}
+	else
+	{
+		def.slotsSet |= 1u << slot;
+		def.slotColors[slot][0] = ClampByte(r);
+		def.slotColors[slot][1] = ClampByte(g);
+		def.slotColors[slot][2] = ClampByte(b);
+		def.slotColors[slot][3] = ClampByte(a);
+	}
+
+	return SetElementDef(id, def);
+}
+
+bool CScoreboardExt::HudEvent(int player, const char *key, int variant, int lifeMs, const int *args, int argCount, const char *iconSprite, const char *iconText)
+{
+	int id = FindElement(key);
+
+	if (id == -1 || m_Elements[id].def.kind != (int)bhl::sb::E_ElementKind::Feed || variant < 0 || variant >= bhl::sb::MAX_VARIANTS
+	    || argCount < 0 || argCount > bhl::sb::MAX_EVENT_INTS || (argCount > 0 && !args) || !IsValidHudPlayer(player))
+		return false;
+
+	event_t event;
+	CopyString(event.key, key);
+	event.variant = variant;
+	event.lifeMs = ClampWord(lifeMs);
+	event.time = gpGlobals->time;
+
+	for (int i = 0; i < argCount; i++)
+	{
+		event.args[i].type = bhl::sb::E_ValueType::Int;
+		event.args[i].value = args[i];
+	}
+
+	event.argCount = argCount;
+
+	if ((iconSprite && iconSprite[0]) || (iconText && iconText[0]))
+	{
+		value_t &icon = event.args[event.argCount++];
+		icon.type = bhl::sb::E_ValueType::Icon;
+		CopyString(icon.sprite, iconSprite);
+		CopyString(icon.text, iconText);
+	}
+
+	if (GetEventSize(event) > bhl::sb::MAX_MSG_SIZE)
+		return false;
+
+	// Events are not state: clients that are not ready now never get this one
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+	{
+		if ((player == 0 || player == i) && IsEventClient(i))
+			QueueEvent(i, event);
+	}
+
+	return true;
+}
+
 //----------------------------------------------------------------------------------------------------
 // State
 //----------------------------------------------------------------------------------------------------
@@ -721,6 +790,9 @@ void CScoreboardExt::ClearState()
 
 	for (player_hud_t &hud : m_PlayerHud)
 		hud = player_hud_t();
+
+	for (event_queue_t &queue : m_Events)
+		queue = event_queue_t();
 }
 
 void CScoreboardExt::Activate()
@@ -929,13 +1001,17 @@ void CScoreboardExt::SetListItem(const char *key, int index, const value_t &valu
 	}
 }
 
-void CScoreboardExt::SetElementDef(int id, const element_def_t &def)
+bool CScoreboardExt::SetElementDef(int id, const element_def_t &def)
 {
+	if (GetElementSize(def) > bhl::sb::MAX_MSG_SIZE)
+		return false;
+
 	if (IsEqual(m_Elements[id].def, def))
-		return;
+		return true;
 
 	m_Elements[id].def = def;
 	MarkElement(id);
+	return true;
 }
 
 void CScoreboardExt::RemoveElement(int id)
@@ -999,6 +1075,37 @@ unsigned int CScoreboardExt::GetVisibleElements(int player)
 	}
 
 	return visible;
+}
+
+bool CScoreboardExt::IsEventClient(int idx)
+{
+	return serverapi()->IsScoreboardClient(idx) && IsEnumFlagSet(serverapi()->GetClientCaps(idx), bhl::E_ClientCaps::HudV1);
+}
+
+void CScoreboardExt::QueueEvent(int idx, const event_t &event)
+{
+	event_queue_t &queue = m_Events[idx];
+
+	if (queue.count == MAX_QUEUED_EVENTS)
+	{
+		queue.first = (queue.first + 1) % MAX_QUEUED_EVENTS;
+		queue.count--;
+	}
+
+	queue.events[(queue.first + queue.count++) % MAX_QUEUED_EVENTS] = event;
+}
+
+int CScoreboardExt::GetEventLife(const event_t &event, int id)
+{
+	if (event.lifeMs != 0)
+		return event.lifeMs;
+
+	constexpr int param = (int)bhl::sb::E_Param::LifeMs;
+
+	if (id != -1 && (m_Elements[id].def.paramsSet & bhl::sb::ParamBit(param)))
+		return m_Elements[id].def.params[param];
+
+	return bhl::sb::FindParamInfo(param)->iDefault;
 }
 
 void CScoreboardExt::MarkColumn(int id)
@@ -1067,13 +1174,14 @@ bool CScoreboardExt::SendToClient(int idx)
 
 	UpdateClientTeams(state);
 
-	// Elements before their templates, templates before HudState shows them
+	// Elements before their templates, templates before HudState shows them, events last
 	return SendHeader(pEdict, state)
 	    && SendLists(pEdict, state)
 	    && SendValues(pEdict, state)
 	    && SendElements(pEdict, state)
 	    && SendTemplates(pEdict, idx, state)
-	    && SendHudState(pEdict, idx, state);
+	    && SendHudState(pEdict, idx, state)
+	    && SendEvents(pEdict, idx, state);
 }
 
 void CScoreboardExt::UpdateClientTeams(client_state_t &state)
@@ -1380,7 +1488,7 @@ bool CScoreboardExt::SendElements(edict_t *pEdict, client_state_t &state)
 			// Both or neither: a split would leave the new element with the old templates
 			if ((state.textsDropped & bit) && (state.elementsSent & bit))
 			{
-				if (bhl::sb::ELEMENT_REMOVAL_SIZE + GetElementSize(id) > m_iBytesLeft || !SendElementRemoval(pEdict, id))
+				if (bhl::sb::ELEMENT_REMOVAL_SIZE + GetElementSize(m_Elements[id].def) > m_iBytesLeft || !SendElementRemoval(pEdict, id))
 					return false;
 
 				state.templatesSent[id] = 0;
@@ -1407,10 +1515,10 @@ bool CScoreboardExt::SendElements(edict_t *pEdict, client_state_t &state)
 	return true;
 }
 
-int CScoreboardExt::GetElementSize(int id)
+int CScoreboardExt::GetElementSize(const element_def_t &def)
 {
-	const element_def_t &def = m_Elements[id].def;
-	return bhl::sb::ELEMENT_FIXED_SIZE + (int)strlen(def.select) + 1 + (int)strlen(def.value) + 1 + (int)strlen(def.list) + 1 + 1 + 3 * GetParamCount(def);
+	int size = bhl::sb::ELEMENT_FIXED_SIZE + (int)strlen(def.select) + 1 + (int)strlen(def.value) + 1 + (int)strlen(def.list) + 1 + 1 + 3 * GetParamCount(def);
+	return def.slotsSet ? size + 1 + 5 * (int)std::bitset<bhl::sb::MAX_COLOR_SLOTS>(def.slotsSet).count() : size;
 }
 
 bool CScoreboardExt::SendElement(edict_t *pEdict, client_state_t &state, int id)
@@ -1418,7 +1526,7 @@ bool CScoreboardExt::SendElement(edict_t *pEdict, client_state_t &state, int id)
 	const element_def_t &def = m_Elements[id].def;
 	int parent = def.parent[0] && IsParentPlace(def.place) ? FindElement(def.parent) : -1;
 
-	if (!BeginMessage(pEdict, GetElementSize(id)))
+	if (!BeginMessage(pEdict, GetElementSize(def)))
 		return false;
 
 	state.sentParents[id] = parent == -1 ? bhl::sb::NO_ID : parent;
@@ -1445,11 +1553,28 @@ bool CScoreboardExt::SendElement(edict_t *pEdict, client_state_t &state, int id)
 
 	for (int i = 0; i <= bhl::sb::MAX_PARAM_ID; i++)
 	{
-		if (!(def.paramsSet & (1u << i)))
+		if (!(def.paramsSet & bhl::sb::ParamBit(i)))
 			continue;
 
 		WRITE_BYTE(i);
 		WRITE_SHORT(def.params[i]);
+	}
+
+	// Only when used, so that an Element without slot colors stays as before
+	if (def.slotsSet)
+	{
+		WRITE_BYTE((int)std::bitset<bhl::sb::MAX_COLOR_SLOTS>(def.slotsSet).count());
+
+		for (int i = 0; i < bhl::sb::MAX_COLOR_SLOTS; i++)
+		{
+			if (!(def.slotsSet & (1u << i)))
+				continue;
+
+			WRITE_BYTE(i);
+
+			for (int component : def.slotColors[i])
+				WRITE_BYTE(component);
+		}
 	}
 
 	MESSAGE_END();
@@ -1533,6 +1658,44 @@ bool CScoreboardExt::SendHudState(edict_t *pEdict, int idx, client_state_t &stat
 	return true;
 }
 
+bool CScoreboardExt::SendEvents(edict_t *pEdict, int idx, client_state_t &state)
+{
+	event_queue_t &queue = m_Events[idx];
+
+	while (queue.count > 0)
+	{
+		const event_t &event = queue.events[queue.first];
+		int id = FindElement(event.key);
+
+		// Dropped unsent once its line would be gone
+		if (gpGlobals->time <= event.time + GetEventLife(event, id) * 0.001f)
+		{
+			// Waits for the element, keeping the order
+			if (id == -1 || m_Elements[id].def.kind != (int)bhl::sb::E_ElementKind::Feed || !(state.elementsSent & (1u << id)))
+				return true;
+
+			if (!BeginMessage(pEdict, GetEventSize(event)))
+				return false;
+
+			WRITE_BYTE((int)bhl::sb::E_Op::Event);
+			WRITE_BYTE(id);
+			WRITE_BYTE(event.variant);
+			WRITE_SHORT(event.lifeMs);
+			WRITE_BYTE(event.argCount);
+
+			for (int i = 0; i < event.argCount; i++)
+				WriteValue(event.args[i]);
+
+			MESSAGE_END();
+		}
+
+		queue.first = (queue.first + 1) % MAX_QUEUED_EVENTS;
+		queue.count--;
+	}
+
+	return true;
+}
+
 bool CScoreboardExt::IsEqual(const value_t &a, const value_t &b)
 {
 	return a.type == b.type && a.value == b.value && a.max == b.max && a.flags == b.flags && !strcmp(a.text, b.text) && !strcmp(a.sprite, b.sprite);
@@ -1549,7 +1712,7 @@ bool CScoreboardExt::IsEqual(const element_def_t &a, const element_def_t &b)
 	if (a.kind != b.kind || a.flags != b.flags || a.x != b.x || a.y != b.y || a.align != b.align
 	    || a.place != b.place || strcmp(a.parent, b.parent) || a.gap != b.gap || a.isHudColor != b.isHudColor
 	    || a.font != b.font || strcmp(a.select, b.select) || strcmp(a.value, b.value) || strcmp(a.list, b.list)
-	    || a.paramsSet != b.paramsSet)
+	    || a.paramsSet != b.paramsSet || a.slotsSet != b.slotsSet)
 		return false;
 
 	for (int i = 0; i < 4; i++)
@@ -1560,7 +1723,13 @@ bool CScoreboardExt::IsEqual(const element_def_t &a, const element_def_t &b)
 
 	for (int i = 0; i <= bhl::sb::MAX_PARAM_ID; i++)
 	{
-		if ((a.paramsSet & (1u << i)) && a.params[i] != b.params[i])
+		if ((a.paramsSet & bhl::sb::ParamBit(i)) && a.params[i] != b.params[i])
+			return false;
+	}
+
+	for (int i = 0; i < bhl::sb::MAX_COLOR_SLOTS; i++)
+	{
+		if ((a.slotsSet & (1u << i)) && memcmp(a.slotColors[i], b.slotColors[i], sizeof(a.slotColors[i])))
 			return false;
 	}
 
@@ -1573,11 +1742,21 @@ int CScoreboardExt::GetParamCount(const element_def_t &def)
 
 	for (int i = 0; i <= bhl::sb::MAX_PARAM_ID; i++)
 	{
-		if (def.paramsSet & (1u << i))
+		if (def.paramsSet & bhl::sb::ParamBit(i))
 			count++;
 	}
 
 	return count;
+}
+
+int CScoreboardExt::GetEventSize(const event_t &event)
+{
+	int size = bhl::sb::EVENT_HEADER_SIZE;
+
+	for (int i = 0; i < event.argCount; i++)
+		size += GetValueSize(event.args[i]);
+
+	return size;
 }
 
 int CScoreboardExt::GetValueSize(const value_t &value)

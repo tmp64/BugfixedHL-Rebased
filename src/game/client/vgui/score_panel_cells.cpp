@@ -43,24 +43,6 @@ struct SpriteTexture
 std::map<std::array<int, 3>, SpriteTexture> s_SpriteTextures;
 unsigned s_iSpriteTextureUse = 0;
 
-/**
- * Draws a box with round corners line by line, so it doesn't depend on alpha blending.
- */
-void DrawRoundedBox(int x0, int y0, int x1, int y1, int radius, Color color)
-{
-	radius = std::min(radius, std::min(x1 - x0, y1 - y0) / 2);
-	vgui2::surface()->DrawSetColor(color);
-	vgui2::surface()->DrawFilledRect(x0, y0 + radius, x1, y1 - radius);
-
-	for (int i = 0; i < radius; i++)
-	{
-		float dy = radius - i - 0.5f;
-		int inset = (int)(radius - sqrtf(radius * radius - dy * dy) + 0.5f);
-		vgui2::surface()->DrawFilledRect(x0 + inset, y0 + i, x1 - inset, y0 + i + 1);
-		vgui2::surface()->DrawFilledRect(x0 + inset, y1 - i - 1, x1 - inset, y1 - i);
-	}
-}
-
 int GetBadgePadding(const ScoreCellStyle &style)
 {
 	return vgui2::surface()->GetFontTall(style.hBadgeFont) / 3;
@@ -136,6 +118,56 @@ bool LoadSpriteRGB(const char *path, const wrect_t &rc, std::vector<unsigned cha
 
 	gEngfuncs.COM_FreeFile(file);
 	return bValid;
+}
+
+//! Sprite files have indexes -2, -3, ...: gHUD.GetSprite and gHUD.GetSpriteRect take them as no sprite
+constexpr int FILE_SPRITE_FIRST = -2;
+
+//! The engine has 256 HUD sprite slots and stops with an error when they run out
+constexpr int MAX_FILE_SPRITES = 32;
+
+struct FileSprite
+{
+	char szPath[bhl::sb::MAX_TEXT_LEN + 1] = {};
+	HSPRITE hSprite = 0;
+	wrect_t rc = {};
+	bool bTried = false; //!< Loaded or failed since the last reset
+};
+
+//! Sprite files by index, kept for the whole game so an index always means the same path
+FileSprite s_FileSprites[MAX_FILE_SPRITES];
+int s_iFileSpriteCount = 0;
+
+FileSprite *GetFileSprite(int sprite)
+{
+	int i = FILE_SPRITE_FIRST - sprite;
+	return i >= 0 && i < s_iFileSpriteCount ? &s_FileSprites[i] : nullptr;
+}
+
+HSPRITE GetSpriteHandle(int sprite)
+{
+	if (sprite >= 0)
+		return gHUD.GetSprite(sprite);
+
+	FileSprite *pFile = GetFileSprite(sprite);
+	return pFile ? pFile->hSprite : 0;
+}
+
+/**
+ * The engine stops with an error on a missing file when developer is above 1, and on a broken one always:
+ * the file is read and checked first.
+ */
+void LoadFileSprite(FileSprite &file)
+{
+	std::vector<unsigned char> rgb;
+	int wide = 0;
+	int tall = 0;
+
+	if (!LoadSpriteRGB(file.szPath, wrect_t { 0, SPRITE_MAX_SIZE, 0, SPRITE_MAX_SIZE }, rgb, wide, tall))
+		return;
+
+	file.hSprite = gEngfuncs.pfnSPR_Load(file.szPath);
+	file.rc = wrect_t { 0, wide, 0, tall };
 }
 
 struct ScaleTap
@@ -230,13 +262,13 @@ int GetSpriteTexture(int sprite, int wide, int tall)
 
 	texture.id = TEXTURE_FAILED;
 
-	const model_t *model = gEngfuncs.GetSpritePointer(gHUD.GetSprite(sprite));
+	const model_t *model = gEngfuncs.GetSpritePointer(GetSpriteHandle(sprite));
 	std::vector<unsigned char> rgb;
 	std::vector<unsigned char> rgba;
 	int srcWide = 0;
 	int srcTall = 0;
 
-	if (!model || !LoadSpriteRGB(model->name, gHUD.GetSpriteRect(sprite), rgb, srcWide, srcTall))
+	if (!model || !LoadSpriteRGB(model->name, GetScoreSpriteRect(sprite), rgb, srcWide, srcTall))
 		return TEXTURE_FAILED;
 
 	ScaleSpriteToRGBA(rgb, srcWide, srcTall, wide, tall, rgba);
@@ -316,7 +348,7 @@ void CScoreCellImage::SetValue(const CScoreboardData::Column &column, const CSco
 	if (value.type == bhl::sb::E_ValueType::Icon && display == bhl::sb::E_Display::Icon && value.szSprite[0])
 	{
 		m_Kind = Kind::Icon;
-		m_iSprite = gHUD.GetSpriteIndex(value.szSprite);
+		m_iSprite = GetScoreSpriteIndex(value.szSprite);
 	}
 }
 
@@ -462,7 +494,7 @@ void CScoreCellImage::PaintText()
 
 	if (m_Kind == Kind::Icon && m_iSprite != -1)
 	{
-		const wrect_t &rc = gHUD.GetSpriteRect(m_iSprite);
+		const wrect_t &rc = GetScoreSpriteRect(m_iSprite);
 
 		if (rc.GetWidth() > 0 && rc.GetHeight() > 0)
 		{
@@ -607,6 +639,26 @@ void CScoreCellImage::PaintSteps()
 	}
 }
 
+void DrawRoundedBox(int x0, int y0, int x1, int y1, int radius, Color color, int clipX1)
+{
+	radius = std::min(radius, std::min(x1 - x0, y1 - y0) / 2);
+	vgui2::surface()->DrawSetColor(color);
+	vgui2::surface()->DrawFilledRect(x0, y0 + radius, std::min(x1, clipX1), y1 - radius);
+
+	for (int i = 0; i < radius; i++)
+	{
+		float dy = radius - i - 0.5f;
+		int inset = (int)(radius - sqrtf(radius * radius - dy * dy) + 0.5f);
+		int right = std::min(x1 - inset, clipX1);
+
+		if (x0 + inset >= right)
+			continue;
+
+		vgui2::surface()->DrawFilledRect(x0 + inset, y0 + i, right, y0 + i + 1);
+		vgui2::surface()->DrawFilledRect(x0 + inset, y1 - i - 1, right, y1 - i);
+	}
+}
+
 void DrawScoreBadge(const ScoreCellStyle &style, int x, int yCenter, const wchar_t *text)
 {
 	int padding = GetBadgePadding(style);
@@ -624,7 +676,9 @@ int GetScoreBadgeWide(const ScoreCellStyle &style, const wchar_t *text)
 
 void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color)
 {
-	if (sprite < 0 || wide <= 0 || tall <= 0 || wide > SPRITE_MAX_SIZE || tall > SPRITE_MAX_SIZE || gHUD.GetSprite(sprite) <= 0)
+	HSPRITE hSprite = GetSpriteHandle(sprite);
+
+	if (hSprite <= 0 || wide <= 0 || tall <= 0 || wide > SPRITE_MAX_SIZE || tall > SPRITE_MAX_SIZE)
 		return;
 
 	// Neither way blends with the alpha of the color, a dimmer color stands in for translucency
@@ -638,8 +692,8 @@ void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color)
 		vgui2::surface()->DrawFlushText();
 
 		// TriangleAPI sets its own blending, while VGUI2 turns blending off once a panel has drawn text
-		CHudRenderer::SpriteSet(gHUD.GetSprite(sprite), r, g, b);
-		CHudRenderer::SpriteDrawAdditiveScaled(0, x, y, wide, tall, &gHUD.GetSpriteRect(sprite));
+		CHudRenderer::SpriteSet(hSprite, r, g, b);
+		CHudRenderer::SpriteDrawAdditiveScaled(0, x, y, wide, tall, &GetScoreSpriteRect(sprite));
 		return;
 	}
 
@@ -702,4 +756,54 @@ int FitCellText(vgui2::HFont font, wchar_t *text, int maxWide)
 	text[len] = ELLIPSIS;
 	text[len + 1] = L'\0';
 	return wide + ellipsisWide;
+}
+
+int GetScoreSpriteIndex(const char *name)
+{
+	if (!bhl::sb::IsSpriteFilePath(name))
+		return gHUD.GetSpriteIndex(name);
+
+	int i = 0;
+
+	while (i < s_iFileSpriteCount && Q_stricmp(s_FileSprites[i].szPath, name))
+		i++;
+
+	if (i == s_iFileSpriteCount)
+	{
+		if (i == MAX_FILE_SPRITES)
+			return -1;
+
+		V_strcpy_safe(s_FileSprites[i].szPath, name);
+		s_iFileSpriteCount++;
+	}
+
+	FileSprite &file = s_FileSprites[i];
+
+	if (!file.bTried)
+	{
+		file.bTried = true;
+		LoadFileSprite(file);
+	}
+
+	return file.hSprite > 0 ? FILE_SPRITE_FIRST - i : -1;
+}
+
+const wrect_t &GetScoreSpriteRect(int sprite)
+{
+	static const wrect_t empty = {};
+
+	if (sprite >= 0)
+		return gHUD.GetSpriteRect(sprite);
+
+	FileSprite *pFile = GetFileSprite(sprite);
+	return pFile && pFile->hSprite > 0 ? pFile->rc : empty;
+}
+
+void ResetScoreSpriteFiles()
+{
+	for (int i = 0; i < s_iFileSpriteCount; i++)
+	{
+		s_FileSprites[i].hSprite = 0;
+		s_FileSprites[i].bTried = false;
+	}
 }

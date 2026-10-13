@@ -2,11 +2,12 @@
 #define IBUGFIXEDAPI_H
 #include <vinterface/interface.h>
 #include <ClientSupportsFlags.h>
+#include <IScoreboardExt.h>
 #include <enum_utils.h>
 
 #define IBUGFIXEDSERVER_NAME  "IBugfixedServer"
 #define IBUGFIXEDSERVER_MAJOR 1
-#define IBUGFIXEDSERVER_MINOR 0
+#define IBUGFIXEDSERVER_MINOR 4
 
 class CGameRules;
 class IGameVersion;
@@ -146,6 +147,27 @@ public:
 	 * @param	deaths	Number of deaths
 	 */
 	virtual void SetPlayerScore(int idx, int frags, int deaths) = 0;
+
+	/**
+	 * Returns features the client reports in the "_bhl" userinfo key or cvar, normalized
+	 * (docs/scoreboard-protocol.md, 3.1): only known bits, HudV1 only together with ScoreboardV1,
+	 * None for bots, HLTV proxies, empty slots and clients that don't report anything.
+	 *
+	 * Added in version v1.3
+	 *
+	 * @param	idx		Client index [1; (maxplayers)]
+	 */
+	virtual bhl::E_ClientCaps GetClientCaps(int idx) = 0;
+
+	/**
+	 * Returns the scoreboard and HUD extension. Never null.
+	 *
+	 * Draft builds of the extension reported v1.2 with an incompatible IScoreboardExt,
+	 * so callers must not use it below v1.3. HudSetSlotColor and HudEvent need v1.4.
+	 *
+	 * Added in version v1.3
+	 */
+	virtual bhl::IScoreboardExt *GetScoreboard() = 0;
 };
 }
 #endif

@@ -17,6 +17,13 @@ enum class E_ApiInitResult
 };
 
 /**
+ * Server API minor version that the bhl_sb_* and bhl_hud_* natives need: 1.3 added GetClientCaps and GetScoreboard,
+ * 1.4 appended HudSetSlotColor and HudEvent to IScoreboardExt.
+ * Draft builds reported 1.2 with an incompatible IScoreboardExt, calling it would crash the server.
+ */
+constexpr int SCOREBOARD_API_MINOR = 4;
+
+/**
  * @returns pointer to server API or nullptr
  */
 bhl::IBugfixedServer *serverapi();
@@ -25,6 +32,11 @@ bhl::IBugfixedServer *serverapi();
  * Return true if API is available.
  */
 bool IsServerApiReady();
+
+/**
+ * Return true if API is available and has every method of IScoreboardExt (v1.4 or newer).
+ */
+bool IsScoreboardApiReady();
 
 /**
  * Initializes server API.

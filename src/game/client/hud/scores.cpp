@@ -25,12 +25,23 @@
 #include "scores.h"
 #include "vgui/client_viewport.h"
 #include "hud/ag/ag_global.h"
+#include "scoreboard_data.h"
 
 ConVar hud_scores("hud_scores", "0", FCVAR_BHL_ARCHIVE, "Maximum number of lines for HUD scoreboard, 0 to disable");
 ConVar hud_scores_pos("hud_scores_pos", "30 50", FCVAR_BHL_ARCHIVE, "Position of HUD scoreboard, 'x y' in pixels");
 ConVar hud_scores_alpha("hud_scores_alpha", "20", FCVAR_BHL_ARCHIVE, "Alpha of HUD scoreboard");
 
 DEFINE_HUD_ELEM(CHudScores);
+
+//! Formats a line with the value of the Primary column of the scoreboard extension instead of frags
+static void FormatPrimaryLine(char *buf, int bufSize, const CScoreboardData::Value &value, const char *name)
+{
+	wchar_t wszValue[64];
+	char szValue[128];
+	value.ToString(wszValue, sizeof(wszValue));
+	Q_WStringToUTF8(wszValue, szValue, sizeof(szValue), STRINGCONVERT_REPLACE);
+	snprintf(buf, bufSize, "%-5s %s", szValue, name);
+}
 
 void CHudScores::Init()
 {
@@ -89,6 +100,9 @@ void CHudScores::Update()
 	int iMaxLines = hud_scores.GetInt();
 	m_iLines = 0;
 
+	const CScoreboardData &sbData = CScoreboardData::Get();
+	int iPrimaryCol = sbData.IsActive() ? sbData.FindPrimaryColumn() : -1;
+
 	if (gHUD.m_Teamplay)
 	{
 		std::fill(m_TeamData.begin(), m_TeamData.end(), TeamData());
@@ -131,6 +145,10 @@ void CHudScores::Update()
 
 		// Sort teams based on the score
 		std::sort(m_SortedTeamIDs.begin(), m_SortedTeamIDs.begin() + iTeamCount, [&](int ilhs, int irhs) {
+			// The same full order as the scoreboard
+			if (iPrimaryCol != -1)
+				return sbData.CompareTeams(ilhs, irhs) < 0;
+
 			const TeamData &lhs = m_TeamData[ilhs];
 			const TeamData &rhs = m_TeamData[irhs];
 
@@ -157,7 +175,11 @@ void CHudScores::Update()
 			TeamData &team = m_TeamData[teamIdx];
 			HudScoresData &data = m_ScoresData[m_iLines];
 
-			snprintf(buf, sizeof(buf), "%-5i %s", team.iFrags, GetTeamInfo(teamIdx)->GetDisplayName());
+			if (iPrimaryCol != -1)
+				FormatPrimaryLine(buf, sizeof(buf), sbData.GetTeamValue(teamIdx, iPrimaryCol), GetTeamInfo(teamIdx)->GetDisplayName());
+			else
+				snprintf(buf, sizeof(buf), "%-5i %s", team.iFrags, GetTeamInfo(teamIdx)->GetDisplayName());
+
 			Q_UTF8ToWString(buf, data.wszScore, sizeof(data.wszScore), STRINGCONVERT_REPLACE);
 			data.color = g_pViewport->GetTeamColor(teamIdx);
 			m_iLines++;
@@ -180,6 +202,10 @@ void CHudScores::Update()
 
 		// Sort players
 		std::sort(m_SortedPlayerIDs.begin(), m_SortedPlayerIDs.begin() + iPlayerCount, [&](int ilhs, int irhs) {
+			// The same full order as the scoreboard
+			if (iPrimaryCol != -1)
+				return sbData.ComparePlayers(ilhs, irhs) < 0;
+
 			CPlayerInfo *lhs = GetPlayerInfo(ilhs);
 			CPlayerInfo *rhs = GetPlayerInfo(irhs);
 
@@ -206,7 +232,11 @@ void CHudScores::Update()
 			CPlayerInfo *pi = GetPlayerInfo(idx);
 			HudScoresData &data = m_ScoresData[m_iLines];
 
-			snprintf(buf, sizeof(buf), "%-5i %s", pi->GetFrags(), pi->GetDisplayName());
+			if (iPrimaryCol != -1)
+				FormatPrimaryLine(buf, sizeof(buf), sbData.GetPlayerValue(idx, iPrimaryCol), pi->GetDisplayName());
+			else
+				snprintf(buf, sizeof(buf), "%-5i %s", pi->GetFrags(), pi->GetDisplayName());
+
 			Q_UTF8ToWString(buf, data.wszScore, sizeof(data.wszScore), STRINGCONVERT_REPLACE);
 			data.color = gHUD.GetClientColor(idx, NoTeamColor::Orange);
 			m_iLines++;

@@ -3,6 +3,7 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include "speedometer.h"
+#include "scoreboard_data.h"
 
 extern ConVar hud_jumpspeed;
 extern ConVar hud_jumpspeed_below_cross;
@@ -26,6 +27,10 @@ void CHudSpeedometer::Draw(float time)
 		return;
 
 	if (!hud_speedometer.GetBool())
+		return;
+
+	// The server hides only the bottom position
+	if (!hud_speedometer_below_cross.GetBool() && CScoreboardData::Get().IsStdPartHidden(bhl::sb::E_HudStd::Speedometer))
 		return;
 
 	if (m_iOldSpeed != m_iSpeed)

@@ -111,6 +111,8 @@ set( SOURCE_FILES
 	hud/message.h
 	hud/scores.cpp
 	hud/scores.h
+	hud/server_panel.cpp
+	hud/server_panel.h
 	hud/spectator.cpp
 	hud/spectator.h
 	hud/speedometer.cpp
@@ -143,6 +145,8 @@ set( SOURCE_FILES
 	vgui/crosshair_image.h
 	vgui/score_panel.cpp
 	vgui/score_panel.h
+	vgui/score_panel_cells.cpp
+	vgui/score_panel_cells.h
 	vgui/spectator_panel.cpp
 	vgui/spectator_panel.h
 	vgui/team_menu.cpp
@@ -222,6 +226,10 @@ set( SOURCE_FILES
 	rainbow.h
 	results.cpp
 	results.h
+	scoreboard_data.cpp
+	scoreboard_data.h
+	scoreboard_template.cpp
+	scoreboard_template.h
 	sdl_rt.cpp
 	sdl_rt.h
 	studio_util.cpp

@@ -52,6 +52,11 @@ void CHudRenderer::SpriteDrawAdditive(int frame, int x, int y, const wrect_t *pr
 	s_Instance.DrawSprite(frame, x, y, -1, -1, prc, SpriteDrawMode::Additive);
 }
 
+void CHudRenderer::SpriteDrawAdditiveScaled(int frame, float x, float y, float width, float height, const wrect_t *prc)
+{
+	s_Instance.DrawSprite(frame, x, y, width, height, prc, SpriteDrawMode::Additive);
+}
+
 void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float height, const wrect_t *prc, SpriteDrawMode mode)
 {
 	if (m_hPic <= 0)
@@ -61,13 +66,11 @@ void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float he
 	}
 
 	// This function is based on Xash3D code
-	if (width == -1 && height == -1)
-	{
-		// assume we get sizes from image
-		width = gEngfuncs.pfnSPR_Width(m_hPic, frame);
-		height = gEngfuncs.pfnSPR_Height(m_hPic, frame);
-	}
-
+	// assume we get sizes from image
+	float imageWidth = gEngfuncs.pfnSPR_Width(m_hPic, frame);
+	float imageHeight = gEngfuncs.pfnSPR_Height(m_hPic, frame);
+	float rectWidth = imageWidth;
+	float rectHeight = imageHeight;
 	float s[2], t[2];
 
 	if (prc)
@@ -75,27 +78,33 @@ void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float he
 		wrect_t rc = *prc;
 
 		// Sigh! some stupid modmakers set wrong rectangles in hud.txt
-		if (rc.left <= 0 || rc.left >= width)
+		if (rc.left <= 0 || rc.left >= imageWidth)
 			rc.left = 0;
-		if (rc.top <= 0 || rc.top >= height)
+		if (rc.top <= 0 || rc.top >= imageHeight)
 			rc.top = 0;
-		if (rc.right <= 0 || rc.right > width)
-			rc.right = width;
-		if (rc.bottom <= 0 || rc.bottom > height)
-			rc.bottom = height;
+		if (rc.right <= 0 || rc.right > imageWidth)
+			rc.right = imageWidth;
+		if (rc.bottom <= 0 || rc.bottom > imageHeight)
+			rc.bottom = imageHeight;
 
 		// calc user-defined rectangle
-		s[0] = (float)rc.left / width;
-		t[0] = (float)rc.top / height;
-		s[1] = (float)rc.right / width;
-		t[1] = (float)rc.bottom / height;
-		width = rc.right - rc.left;
-		height = rc.bottom - rc.top;
+		s[0] = (float)rc.left / imageWidth;
+		t[0] = (float)rc.top / imageHeight;
+		s[1] = (float)rc.right / imageWidth;
+		t[1] = (float)rc.bottom / imageHeight;
+		rectWidth = rc.right - rc.left;
+		rectHeight = rc.bottom - rc.top;
 	}
 	else
 	{
 		s[0] = t[0] = 0.0f;
 		s[1] = t[1] = 1.0f;
+	}
+
+	if (width == -1 && height == -1)
+	{
+		width = rectWidth;
+		height = rectHeight;
 	}
 
 	const model_t *spriteModel = gEngfuncs.GetSpritePointer(m_hPic);

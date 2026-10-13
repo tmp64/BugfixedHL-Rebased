@@ -313,8 +313,23 @@ private:
 	bool m_bIsHTMLEnabled = false;
 	int m_iFrameCount = 0;
 
+	int m_iCaps = -1; //!< Client caps written to _bhl, -1 before the first update
+	char m_szCaps[16] = {}; //!< m_iCaps as written to _bhl
+	int m_iCapsCheckFrame = 0; //!< Frame of the next check of _bhl in userinfo, 0 if none is pending
+	bool m_bCapsSetinfoSent = false;
+	bool m_bCapsCheckFailed = false; //!< _bhl can't be put into userinfo, don't retry until the caps change
+
 	void UpdateHudColors();
 	void UpdateSupportsCvar();
+
+	/**
+	 * Computes the client caps, writes them to _bhl and passes them to the scoreboard store
+	 * (docs/scoreboard-protocol.md, 3.2). Writes nothing when _bhl already holds them.
+	 */
+	void UpdateCapsUserinfo();
+
+	//! Compares _bhl in userinfo with the caps, retries once with setinfo
+	void CheckCapsUserinfo();
 
 	//! Detects the maximum supported HUD scale.
 	EHudScale DetectMaxHudScale();

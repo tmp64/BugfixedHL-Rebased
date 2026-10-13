@@ -106,4 +106,72 @@
 		"default_name_color_kill"	"OffWhite"
 		"default_name_color_death"	"OffWhite"
 	}
+
+	HudServerPanel
+	{
+		"fieldName"			"HudServerPanel"
+		"visible"			"1"
+		"enabled"			"1"
+		"xpos"				"0"
+		"ypos"				"0"
+		"wide"				"f0"
+		"tall"				"f0"
+
+		// Defaults of the params of HUD elements defined by the server; a param sent by the server wins.
+		// Sizes are proportional units of a 640x480 screen, alphas are 0-255 and apply to the element color.
+
+		// Meter: dots, or a rounded bar with a counter
+		"dots"				"10"		// Up to this max the meter is drawn as dots, above it as a bar; 0: always a bar
+		"dot_size"			"7"			// Diameter of a dot, height of the bar
+		"dot_gap"			"3"			// Distance between dots
+		"bar_wide"			"0"			// Length of the bar; 0: the length of "dots" dots (10 for 0 dots)
+		"counter"			"1"			// Counter: 0 never, 1 with the bar, 2 always
+		"counter_gap"		"6"			// Distance between the meter and the counter
+		"alpha_empty"		"80"		// Empty part of the bar
+		"form"				"0"			// 0: dots or a bar, 1: a ring of dots with the counter inside
+
+		// Strip: a row of cells, the current one framed
+		"cell_wide"			"30"		// Width of a cell
+		"cell_min_wide"		"14"		// Cells shrink down to this width, then the strip shows a window around the current cell
+		"cell_tall"			"15"		// Height of a cell
+		"cell_gap"			"3"			// Distance between cells
+		"icon_padding"		"2"			// Padding of the icon inside a cell
+		"max_wide"			"300"		// Width limit of the strip; 0: the screen width
+		"alpha_passed"		"112"		// Cells before the current one
+		"alpha_current"		"48"		// Current cell
+		"alpha_future"		"24"		// Cells after the current one
+		"alpha_icon_future"	"80"		// Icons and texts of the cells after the current one
+		"frame"				"1"			// 1: the current cell has a frame
+		"track"				"0"			// 1: markers of the other players above the cells they are on
+
+		// Icon: a sprite of hud.txt with a text after it
+		"icon_tall"			"0"			// Height of the icon; 0: the height of the element font
+		"icon_gap"			"2"			// Distance between the icon and the text
+
+		// Board: rows of the ranking or of a list
+		"rows"				"3"			// Number of rows
+		"board_mode"		"0"			// 0: the first rows, 1: also the own row after them, 2: rows around the own row
+		"row_gap"			"2"			// Distance between rows
+		"column_gap"		"8"			// Distance between columns (TAB characters in the row text)
+		"fill_alpha"		"0"			// Bar behind a row by its value
+		"highlight_alpha"	"48"		// Plate behind the own row
+
+		// Feed: lines of events
+		"lines"				"4"			// Number of lines
+		"life_ms"			"5000"		// Life of a line when the event doesn't give one
+		"line_fade_ms"		"400"		// A line fades in and out over this time
+		"queue"				"0"			// 0: the newest lines on top, 1: one line at a time in arrival order
+		"line_gap"			"2"			// Distance between lines
+
+		// Box: a backdrop of a group of elements
+		"accent_wide"		"0"			// Width of the accent bar on the left edge
+		"radius"			"0"			// Radius of the corners
+
+		// Every kind
+		"flash_ms"			"0"			// The color flashes white when the content changes
+		"fade_ms"			"0"			// The element fades in and out
+		"hold_ms"			"0"			// After it appears or changes the element is shown this long; 0: always
+		"warn_at"			"0"			// While the value is at most this, the element has the warn color; 0: off
+		"warn_pulse_ms"		"0"			// Period of the alpha pulse while warning; 0: no pulse
+	}
 }

@@ -469,6 +469,8 @@ void CHalfLifeMultiplay ::InitHUD(CBasePlayer *pl)
 	if (!sv_bhl_defer_motd.GetBool() || serverapi()->IsClientSupportsReceived(pl->entindex()))
 		SendDefaultMOTDToClient(pl->edict());
 
+	serverapi()->InitHUD(pl->edict());
+
 	// loop through all active players and send their score and team info to the new client
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{

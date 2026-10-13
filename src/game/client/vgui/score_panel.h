@@ -3,12 +3,14 @@
 
 #include <array>
 #include <map>
+#include <vector>
 #include <steam/steam_api.h>
 #include <tier1/utlmap.h>
 #include <vgui_controls/Frame.h>
 #include <cdll_dll.h>
 #include "IViewportPanel.h"
 #include "viewport_panel_names.h"
+#include "vgui/score_panel_cells.h"
 
 namespace vgui2
 {
@@ -52,6 +54,8 @@ public:
 	virtual void ApplySchemeSettings(vgui2::IScheme *pScheme) override;
 	virtual void OnThink() override;
 	virtual void OnCommand(const char *command) override;
+	virtual void PaintBackground() override;
+	virtual void Paint() override;
 
 	// IViewportPanel overrides
 	virtual const char *GetName() override;
@@ -69,6 +73,18 @@ private:
 	static constexpr int HEADER_SECTION_ID = 0;
 	static constexpr float HIGHLIGHT_KILLER_TIME = 10.f;
 	static constexpr float UPDATE_PERIOD = 0.5f;
+
+	//! Update period while the store has a running Clock, so its seconds change on time
+	static constexpr float CLOCK_UPDATE_PERIOD = 0.1f;
+
+	//! First index of custom cell images in m_pImageList (avatars use 1..MAX_PLAYERS)
+	static constexpr int CELL_IMAGE_BASE = MAX_PLAYERS + 1;
+
+	//! Width of a row is the width of the list minus this padding (SectionedListPanel::LayoutPanels)
+	static constexpr int LIST_ROW_PADDING = 10;
+
+	//! Gap at the right of a cell (COLUMN_DATA_GAP of SectionedListPanel)
+	static constexpr int COLUMN_DATA_GAP = 2;
 
 	enum class MenuAction
 	{
@@ -88,6 +104,8 @@ private:
 		Compact = 2,
 	};
 
+	class CSectionHeader;
+
 	struct TeamData
 	{
 		int iFrags = 0;
@@ -100,6 +118,39 @@ private:
 		bool bIsConnected = false;
 		int nItemID = -1;
 		int nTeamID = 0;
+	};
+
+	enum class ColumnType
+	{
+		Rank,
+		Avatar,
+		Name,
+		SteamID,
+		Eff,
+		Frags,
+		Deaths,
+		Ping,
+		Custom,
+	};
+
+	struct CustomColumn
+	{
+		ColumnType type = ColumnType::Custom;
+		int nColumnID = -1; //!< Column id in the store for ColumnType::Custom
+		int nSlot = -1; //!< Cell image slot of a custom column, -1 for a standard one
+		int iAlign = 0; //!< 0 left, 1 center, 2 right
+		int iFlags = 0; //!< SectionedListPanel column flags
+		int iWidth = 0;
+		char szName[32] = {}; //!< Column name, also the key in row data
+		wchar_t wszTitle[64] = {};
+	};
+
+	//! Row of the banner in the header (docs/scoreboard-protocol.md, 6.8)
+	struct BannerRow
+	{
+		wchar_t wszText[bhl::sb::TEMPLATE_BUF_LEN] = {}; //!< Evaluated text, "" when the row is not drawn
+		Color color;
+		int x = 0, y = 0, wide = 0, tall = 0; //!< Set by LayoutBanner
 	};
 
 	struct MenuData
@@ -138,6 +189,23 @@ private:
 
 	char m_szSpectatorTag[32] = "(spectator)";
 
+	// Custom scoreboard (docs/scoreboard-protocol.md)
+	BannerRow m_BannerTop; //!< On the line of the server name
+	BannerRow m_BannerBottom; //!< On the line of the map name
+	std::vector<CustomColumn> m_CustomColumns;
+	std::array<CSectionHeader *, MAX_TEAMS + 2> m_SectionHeaders = {}; //!< Headers of the sections by team
+	ScoreCellStyle m_CellStyle;
+	wchar_t m_wszTitle[bhl::sb::MAX_TITLE_LEN + 1] = {}; //!< Drawn in place of the server name
+	wchar_t m_wszTag[32] = {};
+	bool m_bCustom = false;
+	bool m_bSectionsDirty = false; //!< A section was created outside of RefreshItems
+	int m_iStoreSerial = -1;
+	int m_iSchemaSerial = -1;
+	int m_iSortedTeamCount = 0;
+	int m_iDefaultLineSpacing = 0;
+	int m_iLineSpacingExtra = 0; //!< Added to the line spacing while a Steps column is visible
+	int m_iServerNameWide = -1; //!< Width of the server name label before the banner cut it
+
 	// Column widths
 	CPanelAnimationVarAliasType(int, m_iColumnWidthAvatar, "column_avatar", "26", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iColumnWidthName, "column_name", "170", "proportional_int");
@@ -151,6 +219,31 @@ private:
 	CPanelAnimationVarAliasType(int, m_iMinHeight, "min_height", "200", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iVerticalMargin, "vertical_margin", "30", "proportional_int");
 	CPanelAnimationVarAliasType(int, m_iBottomPadding, "bottom_padding", "4", "proportional_int");
+
+	// Custom scoreboard
+	CPanelAnimationVarAliasType(int, m_iColumnWidthRank, "column_rank", "24", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iColumnWidthNameMin, "column_name_min", "100", "proportional_int");
+	CPanelAnimationVar(vgui2::HFont, m_CellFont, "cell_font", "Default");
+	CPanelAnimationVar(vgui2::HFont, m_BadgeFont, "badge_font", "DefaultVerySmall");
+	CPanelAnimationVar(Color, m_CellFilledColor, "cell_filled_color", "255 160 0 255");
+	CPanelAnimationVar(Color, m_CellEmptyColor, "cell_empty_color", "84 56 16 255");
+	CPanelAnimationVar(Color, m_CellCurrentColor, "cell_current_color", "255 255 255 255");
+	CPanelAnimationVar(Color, m_CellLastColor, "cell_last_color", "255 64 32 255");
+	CPanelAnimationVar(Color, m_CellIconColor, "cell_icon_color", "255 160 0 255");
+	CPanelAnimationVar(Color, m_BadgeBgColor, "badge_bgcolor", "255 160 0 255");
+	CPanelAnimationVar(Color, m_BadgeFgColor, "badge_fgcolor", "0 0 0 255");
+	CPanelAnimationVarAliasType(int, m_iCellDotSize, "cell_dot_size", "6", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellDotGap, "cell_dot_gap", "2", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellStripTall, "cell_strip_tall", "2", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellStripGap, "cell_strip_gap", "1", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellSpacing, "cell_spacing", "3", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iCellMargin, "cell_margin", "6", "proportional_int");
+
+	// Banner in the header, its rows are elements placed BannerTop and BannerBottom
+	CPanelAnimationVar(Color, m_BannerBgColor, "banner_bgcolor", "255 64 32 48");
+	CPanelAnimationVar(Color, m_BannerAccentColor, "banner_accent_color", "255 160 0 255");
+	CPanelAnimationVarAliasType(int, m_iBannerPadding, "banner_padding", "1", "proportional_int");
+	CPanelAnimationVarAliasType(int, m_iBannerAccentWide, "banner_accent_wide", "2", "proportional_int");
 
 	/**
 	 * Updates all labels, recreates all sections, recalculates all data.
@@ -269,6 +362,58 @@ private:
 	 * Sorts rows in DESC order by frags.
 	 */
 	static bool StaticPlayerSortFuncByFrags(vgui2::SectionedListPanel *list, int itemID1, int itemID2);
+
+	/**
+	 * Returns true if team ilhs goes before team irhs.
+	 */
+	bool IsTeamBefore(int ilhs, int irhs);
+
+	/**
+	 * Returns true if the team sections are still in the order of IsTeamBefore.
+	 */
+	bool AreTeamsSorted();
+
+	/**
+	 * Builds m_CustomColumns.
+	 */
+	void BuildCustomColumns();
+
+	/**
+	 * Returns the cell image at an index of m_pImageList. Creates it on first use.
+	 */
+	CScoreCellImage *GetCellImage(int index);
+
+	/**
+	 * Fills custom cells of a player row.
+	 */
+	void UpdateCustomCells(CPlayerInfo *pi, KeyValues *kv);
+
+	/**
+	 * Fills custom cells of a team section header.
+	 */
+	void UpdateCustomTeamHeader(int nTeamID);
+
+	/**
+	 * Evaluates the banner rows. Lays the banner out again if a text changed.
+	 */
+	void UpdateBanner();
+
+	/**
+	 * Evaluates one banner row and sets its color.
+	 * @param	schemeColor	Color of the row for an element with HudColor
+	 * @return	true if its text changed
+	 */
+	bool UpdateBannerRow(BannerRow &row, bhl::sb::E_Place place, Color schemeColor);
+
+	/**
+	 * Places the banner in the header left of the player count and narrows the server name.
+	 */
+	void LayoutBanner();
+
+	/**
+	 * Sorts rows by the order of the custom scoreboard.
+	 */
+	static bool StaticPlayerSortFuncCustom(vgui2::SectionedListPanel *list, int itemID1, int itemID2);
 };
 
 #endif

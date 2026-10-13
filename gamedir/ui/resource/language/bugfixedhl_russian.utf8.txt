@@ -24,6 +24,40 @@
 "BHL_Scores_MenuCopySteamID"		"Скопировать SteamID"
 "BHL_Scores_MenuCopySteamID64"		"Скопировать SteamID64"
 
+// Scoreboard extension
+"BHL_SB_Level"						"Уровень"
+"BHL_SB_Weapon"						"Оружие"
+"BHL_SB_Progress"					"Прогресс"
+"BHL_SB_Kills"						"Убийства"
+"BHL_SB_Final"						"ФИНАЛ"
+
+// HUD element templates (docs/scoreboard-protocol.md, 8.10): keep the placeholders in braces.
+// A list of word forms picks one by the number: 2 forms in English, 3 in Russian.
+"BHL_HUD_Place"						"МЕСТО {@place} / {@total}"
+"BHL_HUD_Overtake"					"До обгона {@rival:20}: {@pass|# убийство|# убийства|# убийств}"
+"BHL_HUD_Lead"						"Отрыв: {@lead|# убийство|# убийства|# убийств}"
+"BHL_HUD_Tied"						"Вровень"
+"BHL_HUD_Waiting"					"Ожидание соперников"
+"BHL_HUD_Warmup"					"РАЗМИНКА {@value:time}"
+"BHL_HUD_StartIn"					"СТАРТ ЧЕРЕЗ {@value}"
+
+// Weapon names (the same in every language)
+"BHL_Weapon_crowbar"				"Crowbar"
+"BHL_Weapon_9mmhandgun"				"Glock"
+"BHL_Weapon_357"					".357"
+"BHL_Weapon_9mmAR"					"MP5"
+"BHL_Weapon_shotgun"				"Shotgun"
+"BHL_Weapon_crossbow"				"Crossbow"
+"BHL_Weapon_bolt"					"Crossbow"
+"BHL_Weapon_rpg_rocket"				"RPG"
+"BHL_Weapon_gauss"					"Gauss"
+"BHL_Weapon_egon"					"Egon"
+"BHL_Weapon_hornet"					"Hornet"
+"BHL_Weapon_grenade"				"Grenade"
+"BHL_Weapon_satchel"				"Satchel"
+"BHL_Weapon_tripmine"				"Tripmine"
+"BHL_Weapon_snark"					"Snark"
+
 "BHL_Update_Notif_Title"			"Уведомление об обновлении"
 "BHL_Update_Notif_Text"				"Вышло новое обновление."
 "BHL_Update_Notif_OldVer"			"Ваша версия: "

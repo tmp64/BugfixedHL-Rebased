@@ -229,6 +229,7 @@ private:
 	CPanelAnimationVar(Color, m_CellEmptyColor, "cell_empty_color", "84 56 16 255");
 	CPanelAnimationVar(Color, m_CellCurrentColor, "cell_current_color", "255 255 255 255");
 	CPanelAnimationVar(Color, m_CellLastColor, "cell_last_color", "255 64 32 255");
+	CPanelAnimationVar(Color, m_CellIconColor, "cell_icon_color", "255 160 0 255");
 	CPanelAnimationVar(Color, m_BadgeBgColor, "badge_bgcolor", "255 160 0 255");
 	CPanelAnimationVar(Color, m_BadgeFgColor, "badge_fgcolor", "0 0 0 255");
 	CPanelAnimationVarAliasType(int, m_iCellDotSize, "cell_dot_size", "6", "proportional_int");

@@ -795,11 +795,12 @@ way as the scoreboard. Without such a column it doesn't change.
 ### 6.6 Drawing
 
 - `Icon`: the sprite from `hud.txt`, scaled to the row height with its aspect ratio kept and tinted
-  with the row text color. The text follows to the right. The icon is drawn additively, like the
-  HUD: with OpenGL through TriangleAPI, which sets its own blending (VGUI2 stops blending once a
-  row has drawn text). The software renderer gets a VGUI2 texture that the client reads from the
-  sprite file and scales to the drawn size itself; its pixels brighter than 48 are opaque and the
-  rest transparent, because it is drawn without blending. HUD element icons are drawn the same way.
+  with `cell_icon_color` (orange like the dots by default). The text follows to the right. The
+  icon is drawn additively, like the HUD: with OpenGL through TriangleAPI, which sets its own
+  blending (VGUI2 stops blending once a row has drawn text). The software renderer gets a VGUI2
+  texture that the client reads from the sprite file and scales to the drawn size itself; its
+  pixels brighter than 48 are opaque and the rest transparent, because it is drawn without
+  blending. HUD element icons are drawn the same way.
 - `Meter` keeps the dot look of the scoreboard, which is not the HUD `Meter` (8.7). Dots are discs
   of `cell_dot_size` with `cell_dot_gap` between them, smaller when the column or the row is too
   small for 10 of them:

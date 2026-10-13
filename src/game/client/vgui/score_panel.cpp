@@ -1465,6 +1465,7 @@ void CScorePanel::BuildCustomColumns()
 	m_CellStyle.lastColor = m_CellLastColor;
 	m_CellStyle.badgeBgColor = m_BadgeBgColor;
 	m_CellStyle.badgeFgColor = m_BadgeFgColor;
+	m_CellStyle.iconColor = m_CellIconColor;
 	m_CellStyle.iDotSize = m_iCellDotSize;
 	m_CellStyle.iDotGap = m_iCellDotGap;
 	m_CellStyle.iStripTall = m_iCellStripTall;

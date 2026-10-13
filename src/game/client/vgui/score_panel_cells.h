@@ -20,6 +20,7 @@ struct ScoreCellStyle
 	Color lastColor; //!< Last step
 	Color badgeBgColor;
 	Color badgeFgColor;
+	Color iconColor; //!< Tint of sprite icons
 	int iDotSize = 0; //!< Maximum diameter of a dot
 	int iDotGap = 0;
 	int iStripTall = 0; //!< Height of the steps strip

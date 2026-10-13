@@ -490,7 +490,7 @@ void CScoreCellImage::PaintText()
 
 	if (iconWide > 0 && iconTall > 0)
 	{
-		DrawScoreSprite(m_iSprite, x, yCenter - iconTall / 2, iconWide, iconTall, m_Color);
+		DrawScoreSprite(m_iSprite, x, yCenter - iconTall / 2, iconWide, iconTall, m_Style.iconColor);
 		x += iconSpace;
 	}
 
@@ -634,6 +634,9 @@ void DrawScoreSprite(int sprite, int x, int y, int wide, int tall, Color color)
 
 	if (CHudRenderer::Get().IsAvailable())
 	{
+		// VGUI2 buffers text and draws it with the texture bound at the flush, which would be the sprite after TriangleAPI
+		vgui2::surface()->DrawFlushText();
+
 		// TriangleAPI sets its own blending, while VGUI2 turns blending off once a panel has drawn text
 		CHudRenderer::SpriteSet(gHUD.GetSprite(sprite), r, g, b);
 		CHudRenderer::SpriteDrawAdditiveScaled(0, x, y, wide, tall, &gHUD.GetSpriteRect(sprite));

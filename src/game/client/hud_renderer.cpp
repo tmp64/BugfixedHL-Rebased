@@ -52,6 +52,11 @@ void CHudRenderer::SpriteDrawAdditive(int frame, int x, int y, const wrect_t *pr
 	s_Instance.DrawSprite(frame, x, y, -1, -1, prc, SpriteDrawMode::Additive);
 }
 
+void CHudRenderer::SpriteDrawAdditiveScaled(int frame, float x, float y, float width, float height, const wrect_t *prc)
+{
+	s_Instance.DrawSprite(frame, x, y, width, height, prc, SpriteDrawMode::Additive);
+}
+
 void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float height, const wrect_t *prc, SpriteDrawMode mode)
 {
 	if (m_hPic <= 0)
@@ -61,12 +66,12 @@ void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float he
 	}
 
 	// This function is based on Xash3D code
-	if (width == -1 && height == -1)
-	{
-		// assume we get sizes from image
-		width = gEngfuncs.pfnSPR_Width(m_hPic, frame);
-		height = gEngfuncs.pfnSPR_Height(m_hPic, frame);
-	}
+	float drawWidth = width;
+	float drawHeight = height;
+
+	// assume we get sizes from image
+	width = gEngfuncs.pfnSPR_Width(m_hPic, frame);
+	height = gEngfuncs.pfnSPR_Height(m_hPic, frame);
 
 	float s[2], t[2];
 
@@ -96,6 +101,12 @@ void CHudRenderer::DrawSprite(int frame, float x, float y, float width, float he
 	{
 		s[0] = t[0] = 0.0f;
 		s[1] = t[1] = 1.0f;
+	}
+
+	if (drawWidth != -1 || drawHeight != -1)
+	{
+		width = drawWidth;
+		height = drawHeight;
 	}
 
 	const model_t *spriteModel = gEngfuncs.GetSpritePointer(m_hPic);

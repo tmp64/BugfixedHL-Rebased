@@ -40,6 +40,8 @@ set( SOURCE_FILES
 	controller.cpp
 	crossbow.cpp
 	crowbar.cpp
+	CScoreboardExt.cpp
+	CScoreboardExt.h
 	decals.h
 	defaultai.cpp
 	defaultai.h

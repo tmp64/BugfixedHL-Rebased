@@ -35,6 +35,7 @@
 #include "gamerules.h"
 #include "game.h"
 #include "hltv.h"
+#include <ScoreboardProtocol.h>
 
 // #define DUCKFIX
 
@@ -216,6 +217,7 @@ int gmsgViewMode = 0;
 int gmsgVGUIMenu = 0;
 int gmsgStatusIcon = 0;
 int gmsgFog = 0;
+int gmsgBhlScore = 0;
 
 const char *const gCustomMessages[] = {
 	"IconInfo",
@@ -287,6 +289,7 @@ void LinkUserMessages(void)
 	}
 
 	gmsgFog = REG_USER_MSG("Fog", 7);
+	gmsgBhlScore = REG_USER_MSG(bhl::sb::MSG_NAME, -1);
 }
 
 LINK_ENTITY_TO_CLASS(player, CBasePlayer);
@@ -5023,7 +5026,7 @@ Vector CBasePlayer ::AutoaimDeflection(Vector &vecSrc, float flDist, float flDel
 	edict_t *bestent;
 	TraceResult tr;
 
-	if (g_psv_aim->value == 0 && (!g_psv_allow_autoaim || g_psv_allow_autoaim->value != 0))
+	if (g_psv_aim->value == 0 || (g_psv_allow_autoaim && g_psv_allow_autoaim->value == 0))
 	{
 		m_fOnTarget = FALSE;
 		return g_vecZero;

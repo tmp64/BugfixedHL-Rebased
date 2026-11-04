@@ -16,6 +16,9 @@ enum class E_ApiInitResult
 	VersionMismatch // GetInterfaceVersion returned incompatible version
 };
 
+//! Server API minor version of the IScoreboardExt layout the natives call: older draft builds have another one and would crash (docs/scoreboard-protocol.md, 9.1)
+constexpr int SCOREBOARD_API_MINOR = 4;
+
 /**
  * @returns pointer to server API or nullptr
  */
@@ -25,6 +28,11 @@ bhl::IBugfixedServer *serverapi();
  * Return true if API is available.
  */
 bool IsServerApiReady();
+
+/**
+ * Return true if API is available and has every method of IScoreboardExt (v1.4 or newer).
+ */
+bool IsScoreboardApiReady();
 
 /**
  * Initializes server API.

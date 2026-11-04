@@ -23,6 +23,11 @@ bool bhl::IsServerApiReady()
 	return (g_pServerApi != nullptr);
 }
 
+bool bhl::IsScoreboardApiReady()
+{
+	return g_pServerApi != nullptr && g_iServerMinor >= SCOREBOARD_API_MINOR;
+}
+
 bhl::E_ApiInitResult bhl::InitServerApi()
 {
 	assert(!IsServerApiReady());
@@ -50,7 +55,7 @@ bhl::E_ApiInitResult bhl::InitServerApi()
 
 	// Check version
 	pIface->GetInterfaceVersion(g_iServerMajor, g_iServerMinor);
-	if (!(g_iServerMajor == IBUGFIXEDSERVER_MAJOR && g_iServerMinor >= IBUGFIXEDSERVER_MINOR))
+	if (g_iServerMajor != IBUGFIXEDSERVER_MAJOR)
 		return E_ApiInitResult::VersionMismatch;
 
 	g_pServerApi = pIface;

@@ -12,5 +12,14 @@ enum class E_ClientSupports : unsigned int
 	HtmlMotd = (1 << 1)
 };
 
+//! Features the client reports in the "_bhl" userinfo key (docs/scoreboard-protocol.md, 3.1)
+enum class E_ClientCaps : unsigned int
+{
+	None = 0,
+	ScoreboardV1 = (1 << 0), //!< Receives "BhlScore" protocol version 1
+	HudV1 = (1 << 1), //!< Draws HUD elements; only set together with ScoreboardV1
+	All = ScoreboardV1 | HudV1 //!< Every bit this build knows, the default value of "_bhl"
+};
+
 }
 #endif

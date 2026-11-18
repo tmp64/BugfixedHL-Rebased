@@ -457,4 +457,4 @@ add_custom_target( ci-client )
 add_dependencies( ci-client client test_client )
 
 add_custom_target( ci-server )
-add_dependencies( ci-server server test_server bugfixedapi_amxx )
+add_dependencies( ci-server server test_server bugfixedapi_amxx test_bugfixedapi_enginefuncs_abi )

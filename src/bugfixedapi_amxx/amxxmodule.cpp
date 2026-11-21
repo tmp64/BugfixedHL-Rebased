@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "amxxmodule.h"
+#include "enginefuncs_abi.h"
 
 /************* METAMOD SUPPORT *************/
 #ifdef USE_METAMOD
@@ -2137,7 +2138,7 @@ C_DLLEXPORT int GetEngineFunctions(enginefuncs_t *pengfuncsFromEngine, int *inte
 		*interfaceVersion = ENGINE_INTERFACE_VERSION;
 		return (FALSE);
 	}
-	memcpy(pengfuncsFromEngine, &g_EngineFuncs_Table, sizeof(enginefuncs_t));
+	metamod_abi::CopyEngineFuncsPrefix(pengfuncsFromEngine, &g_EngineFuncs_Table);
 	g_pengfuncsTable = pengfuncsFromEngine;
 	return TRUE;
 }
@@ -2157,7 +2158,7 @@ C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t *pengfuncsFromEngine, int 
 		*interfaceVersion = ENGINE_INTERFACE_VERSION;
 		return (FALSE);
 	}
-	memcpy(pengfuncsFromEngine, &g_EngineFuncs_Post_Table, sizeof(enginefuncs_t));
+	metamod_abi::CopyEngineFuncsPrefix(pengfuncsFromEngine, &g_EngineFuncs_Post_Table);
 	g_pengfuncsTable_Post = pengfuncsFromEngine;
 	return TRUE;
 }
@@ -2320,7 +2321,7 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now, PL_UNLOAD_REASON reason)
 
 C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, globalvars_t *pGlobals)
 {
-	memcpy(&g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t));
+	metamod_abi::InitializeEngineFuncsFromHost(g_engfuncs, pengfuncsFromEngine);
 	gpGlobals = pGlobals;
 }
 

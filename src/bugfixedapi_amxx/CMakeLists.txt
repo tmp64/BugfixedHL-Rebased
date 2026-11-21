@@ -9,6 +9,7 @@ set( SOURCE_FILES
 
 	amxxmodule.cpp
 	amxxmodule.h
+	enginefuncs_abi.h
 	moduleconfig.h
 	IGameConfigs.h
 	ITextParsers.h

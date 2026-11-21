@@ -29,6 +29,26 @@ if( BUILD_TESTING )
 		server/sv_exports.h
 	)
 
+	add_executable( test_bugfixedapi_enginefuncs_abi
+		bugfixedapi_enginefuncs_abi.cpp
+	)
+
+	target_include_directories( test_bugfixedapi_enginefuncs_abi PRIVATE
+		${CMAKE_SOURCE_DIR}/src/bugfixedapi_amxx
+		${GAME_COMMON_INCLUDE_PATHS}
+		${CMAKE_SOURCE_DIR}/external/metamod/metamod
+		${SOURCE_SDK_INCLUDE_PATHS}
+	)
+
+	target_compile_definitions( test_bugfixedapi_enginefuncs_abi PRIVATE
+		${GAME_COMMON_DEFINES}
+		${SOURCE_SDK_DEFINES}
+		USE_METAMOD
+		HAVE_STDINT_H
+		MATHLIB_USE_C_ASSERT
+		MATHLIB_VECTOR_NONTRIVIAL
+	)
+
 	#-----------------------------------------------------------------
 
 	add_executable( test_client
@@ -109,6 +129,10 @@ if( BUILD_TESTING )
 	add_test( NAME server
 		COMMAND test_server "$<TARGET_FILE:server>"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/workdir"
+	)
+
+	add_test( NAME server_bugfixedapi_enginefuncs_abi
+		COMMAND test_bugfixedapi_enginefuncs_abi
 	)
 
 	set_tests_properties( client server PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=.:$ENV{LD_LIBRARY_PATH}")

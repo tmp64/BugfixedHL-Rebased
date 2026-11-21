@@ -1,0 +1,44 @@
+name: Build AMXX DLL (x86)
+
+on:
+  push:
+    branches:
+      - fix-312-metamod-r-abi
+  workflow_dispatch:
+
+jobs:
+  build-amxx:
+    runs-on: windows-2022
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_DEFAULT_TRIPLET: x86-windows-static
+      VCPKG_DEFAULT_HOST_TRIPLET: x86-windows-static
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: vcpkg.json
+          vcpkgDirectory: ${{ env.VCPKG_ROOT }}
+          vcpkgGitCommitId: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
+          runVcpkgInstall: false
+
+      - name: Configure and build AMXX DLL
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: github-actions
+          buildPreset: github-actions
+          buildPresetAdditionalArgs: "['--target', 'bugfixedapi_amxx']"
+        env:
+          VCPKG_FORCE_SYSTEM_BINARIES: 1
+
+      - name: Upload DLL (and debug symbols if present)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bugfixedapi-amxx-x86
+          path: _build/github-actions/**/bugfixedapi_amxx.dll
+          if-no-files-found: error

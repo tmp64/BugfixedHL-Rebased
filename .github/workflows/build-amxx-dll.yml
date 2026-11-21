@@ -40,7 +40,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bugfixedapi-amxx-x86
-          path: |
-            _build/github-actions/RelWithDebInfo/bugfixedapi_amxx.dll
-            _build/github-actions/RelWithDebInfo/bugfixedapi_amxx.pdb
+          path: _build/github-actions/**/bugfixedapi_amxx.dll
           if-no-files-found: error
